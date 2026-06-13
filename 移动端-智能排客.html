@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>排客管理系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: { DEFAULT: '#2f54eb', hover: '#1d39c4', light: 'rgba(47, 84, 235, 0.08)' }
+                    },
+                    borderRadius: { 'xl': '12px', '2xl': '16px' }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { -webkit-tap-highlight-color: transparent; font-feature-settings: "tnum"; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .strategy-page {
+            position: absolute; inset: 0; display: flex; flex-direction: column;
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease;
+            background-color: #f8fafc;
+        }
+        .dark .strategy-page { background-color: #18181b; }
+        .sp-active { transform: translateX(0); opacity: 1; z-index: 10; }
+        .sp-left { transform: translateX(-35%); opacity: 0.6; z-index: 5; pointer-events: none; }
+        .sp-right { transform: translateX(100%); opacity: 0; z-index: 20; }
+
+        #strategy-overlay {
+            position: absolute; inset: 0; z-index: 60; background-color: #f8fafc;
+            overflow: hidden; transform: translateX(100%);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .dark #strategy-overlay { background-color: #18181b; }
+        #strategy-overlay.open { transform: translateX(0); }
+
+        .watermark-container {
+            position: absolute; inset: 0; pointer-events: none; z-index: 2;
+            overflow: hidden; opacity: 0.035; display: flex; flex-wrap: wrap;
+            justify-content: space-around; align-content: space-around;
+        }
+        .watermark-item {
+            width: 32%; height: 85px; font-size: 10px; font-weight: bold;
+            text-align: center; transform: rotate(-22deg); white-space: nowrap;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-zinc-950 text-slate-800 dark:text-slate-100 min-h-screen flex justify-center items-start transition-colors duration-300">
+
+    <div class="w-full max-w-[448px] bg-white dark:bg-zinc-900 min-h-screen md:min-h-[850px] md:my-6 md:rounded-3xl md:shadow-2xl overflow-hidden flex flex-col border border-transparent md:border-slate-200/80 md:dark:border-zinc-800/80 relative">
+
+        <header class="sticky top-0 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md z-40 border-b border-slate-100 dark:border-zinc-800/80">
+            <div class="flex items-center justify-between px-6 py-4">
+                <div class="flex space-x-8 w-full justify-center relative">
+                    <button id="tab-btn-scheduling" onclick="switchTab('scheduling')" class="text-sm font-semibold pb-2 border-b-2 border-transparent text-slate-400 dark:text-zinc-500 hover:text-slate-600 transition-all duration-200">员工排客</button>
+                    <button id="tab-btn-rules" onclick="switchTab('rules')" class="text-sm font-bold pb-2 border-b-2 border-primary text-primary dark:text-blue-400 transition-all duration-200">排客规则</button>
+                </div>
+                <button onclick="toggleDarkMode()" class="absolute right-4 p-2 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 hover:scale-105 active:scale-95 transition-all duration-150" aria-label="Toggle Dark Mode">
+                    <svg id="sun-icon" class="w-4 h-4 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707.707M12 8a4 4 0 100 8 4 4 0 000-8z"></path></svg>
+                    <svg id="moon-icon" class="w-4 h-4 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                </button>
+            </div>
+        </header>
+
+        <main class="flex-1 overflow-y-auto no-scrollbar pb-24">
+
+            <!-- TAB 1: 员工排客 -->
+            <section id="tab-content-scheduling" class="p-4 space-y-4 hidden animate-[fadeIn_0.2s_ease-out]">
+                <div class="flex items-center justify-between bg-slate-100/60 dark:bg-zinc-800/40 rounded-xl px-4 py-3">
+                    <button onclick="changeDate(-1)" class="p-2 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                    </button>
+                    <span id="date-display" class="font-bold text-base tracking-wide text-slate-800 dark:text-zinc-100">4月23日</span>
+                    <button onclick="changeDate(1)" class="p-2 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                    </button>
+                </div>
+
+                <div class="flex gap-2 overflow-x-auto no-scrollbar py-1">
+                    <button id="filter-all" onclick="setFilter('all')" class="px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap shadow-sm transition-all duration-200 bg-primary text-white scale-100">全部</button>
+                    <button id="filter-idle" onclick="setFilter('idle')" class="px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap shadow-sm transition-all duration-200 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700/80 text-slate-600 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-zinc-700/50">
+                        <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 mr-1.5 animate-pulse"></span>极速接单 (空闲)
+                    </button>
+                    <button id="filter-busy" onclick="setFilter('busy')" class="px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap shadow-sm transition-all duration-200 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700/80 text-slate-600 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-zinc-700/50">
+                        <span class="inline-block w-2 h-2 rounded-full bg-amber-500 mr-1.5"></span>忙碌中
+                    </button>
+                    <button id="filter-pause" onclick="setFilter('pause')" class="px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap shadow-sm transition-all duration-200 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700/80 text-slate-600 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-zinc-700/50">
+                        <span class="inline-block w-2 h-2 rounded-full bg-slate-400 dark:bg-zinc-500 mr-1.5"></span>已暂停
+                    </button>
+                </div>
+
+                <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-zinc-400 font-medium px-1">
+                    <span class="text-primary dark:text-blue-400">●</span>
+                    <span id="stat-summary">共 8 人 · 今日在岗 3 人，当前空闲 3 人</span>
+                </div>
+
+                <div id="employee-list-container" class="space-y-3.5"></div>
+            </section>
+
+            <!-- TAB 2: 排客规则 -->
+            <section id="tab-content-rules" class="p-5 space-y-5 block animate-[fadeIn_0.2s_ease-out]">
+
+                <!-- 客单优化 · 当前应用策略（卡片样式） -->
+                <div>
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500 mb-2.5">客单优化 · 当前应用策略</h3>
+                    <div onclick="openStrategyOverlay()" class="bg-white dark:bg-zinc-900 rounded-2xl p-5 border border-slate-100 dark:border-zinc-800 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.06)] cursor-pointer hover:shadow-md active:scale-[0.99] transition-all relative overflow-hidden">
+                        <div class="absolute -right-4 -top-4 w-24 h-24 bg-primary/5 rounded-full blur-2xl pointer-events-none"></div>
+                        <div class="flex items-start gap-3.5 relative z-10">
+                            <div id="cur-strategy-icon-wrap" class="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-sm bg-amber-50 text-amber-600">
+                                <i id="cur-strategy-icon" class="fa-solid fa-gift text-xl"></i>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2">
+                                    <span id="cur-strategy-badge" class="px-1.5 py-0.5 rounded text-[9px] font-bold border border-emerald-200 bg-emerald-50 text-emerald-600">已启用</span>
+                                    <span id="cur-strategy-category" class="text-[10px] text-slate-400 font-medium">激励规则</span>
+                                </div>
+                                <h2 id="current-strategy" class="text-base font-extrabold text-slate-800 dark:text-zinc-100 mt-1 leading-snug truncate">测试哦</h2>
+                            </div>
+                            <div class="flex items-center gap-1 text-slate-400 dark:text-zinc-400 font-bold text-xs shrink-0 mt-1">
+                                <span>修改</span>
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-slate-100 dark:border-zinc-800 relative z-10">
+                            <p id="cur-strategy-desc" class="text-xs text-slate-500 dark:text-zinc-400 leading-relaxed line-clamp-2">一个好的规则能够帮助门店在客单价提升上获取20%以上的超额收益，通过阶梯奖励激发员工积极性。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500 mb-2.5">员工连续接单限制</h3>
+                    <div class="space-y-2.5">
+                        <div onclick="selectLimitRule(1)" id="rule-card-1" class="border rounded-xl p-3.5 cursor-pointer transition-all duration-200 flex items-start gap-3 bg-slate-50/50 border-slate-200/80 dark:border-zinc-800 dark:bg-zinc-800/20">
+                            <div class="mt-0.5"><span class="custom-radio flex items-center justify-center w-4 h-4 rounded-full border border-slate-300 dark:border-zinc-600 bg-white dark:bg-zinc-900"><span class="radio-dot w-2 h-2 rounded-full bg-primary dark:bg-blue-400 hidden"></span></span></div>
+                            <div class="flex-1">
+                                <h4 class="text-sm font-bold text-slate-800 dark:text-zinc-100">不限制</h4>
+                                <p class="text-xs text-slate-400 dark:text-zinc-400 mt-0.5">只要系统算出来是他，就一直派单</p>
+                            </div>
+                        </div>
+
+                        <div onclick="selectLimitRule(2)" id="rule-card-2" class="border rounded-xl p-3.5 cursor-pointer transition-all duration-200 flex items-start gap-3 border-slate-200/80 dark:border-zinc-800 bg-slate-50/20 dark:bg-zinc-800/10 opacity-70">
+                            <div class="mt-1"><span class="custom-radio flex items-center justify-center w-4 h-4 rounded-full border border-slate-300 dark:border-zinc-600 bg-white dark:bg-zinc-900"><span class="radio-dot w-2 h-2 rounded-full bg-primary dark:bg-blue-400 hidden"></span></span></div>
+                            <div class="flex-1">
+                                <div class="flex flex-wrap items-center gap-1.5">
+                                    <h4 class="text-sm font-bold text-slate-800 dark:text-zinc-100">适度控制 接满</h4>
+                                    <div class="flex items-center gap-1 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700/80 rounded-md p-0.5" onclick="event.stopPropagation()">
+                                        <button onclick="adjustStepper(event, 'moderate-limit', -1)" class="w-5 h-5 flex items-center justify-center text-slate-500 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded font-bold text-xs">-</button>
+                                        <input type="text" id="moderate-limit-input" value="3" readonly class="w-5 text-center text-xs font-bold text-slate-800 dark:text-zinc-100 bg-transparent focus:outline-none">
+                                        <button onclick="adjustStepper(event, 'moderate-limit', 1)" class="w-5 h-5 flex items-center justify-center text-slate-500 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded font-bold text-xs">+</button>
+                                    </div>
+                                    <span class="text-sm font-bold text-slate-800 dark:text-zinc-100">单后</span>
+                                </div>
+                                <p class="text-xs text-slate-400 dark:text-zinc-400 mt-0.5">系统派单率降低，让他喘口气的机会</p>
+                            </div>
+                        </div>
+
+                        <div onclick="selectLimitRule(3)" id="rule-card-3" class="border rounded-xl p-3.5 cursor-pointer transition-all duration-200 flex items-start gap-3 border-slate-200/80 dark:border-zinc-800 bg-slate-50/20 dark:bg-zinc-800/10 opacity-70">
+                            <div class="mt-1"><span class="custom-radio flex items-center justify-center w-4 h-4 rounded-full border border-slate-300 dark:border-zinc-600 bg-white dark:bg-zinc-900"><span class="radio-dot w-2 h-2 rounded-full bg-primary dark:bg-blue-400 hidden"></span></span></div>
+                            <div class="flex-1">
+                                <div class="flex flex-wrap items-center gap-1.5">
+                                    <h4 class="text-sm font-bold text-slate-800 dark:text-zinc-100">严格限制 接满</h4>
+                                    <div class="flex items-center gap-1 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700/80 rounded-md p-0.5" onclick="event.stopPropagation()">
+                                        <button onclick="adjustStepper(event, 'strict-limit', -1)" class="w-5 h-5 flex items-center justify-center text-slate-500 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded font-bold text-xs">-</button>
+                                        <input type="text" id="strict-limit-input" value="5" readonly class="w-5 text-center text-xs font-bold text-slate-800 dark:text-zinc-100 bg-transparent focus:outline-none">
+                                        <button onclick="adjustStepper(event, 'strict-limit', 1)" class="w-5 h-5 flex items-center justify-center text-slate-500 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded font-bold text-xs">+</button>
+                                    </div>
+                                    <span class="text-sm font-bold text-slate-800 dark:text-zinc-100">单后</span>
+                                </div>
+                                <p class="text-xs text-slate-400 dark:text-zinc-400 mt-0.5">今天不再派新单</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-3.5 border-t border-slate-100 dark:border-zinc-800/80 pt-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-sm font-bold text-slate-800 dark:text-zinc-100">开启新员工排客扶持</h3>
+                        <button onclick="toggleSupportSwitch()" id="support-toggle" class="w-11 h-6 flex items-center rounded-full p-0.5 bg-primary transition-all duration-300 focus:outline-none">
+                            <span class="w-5 h-5 rounded-full bg-white shadow-md transform translate-x-5 transition-transform duration-300"></span>
+                        </button>
+                    </div>
+
+                    <div id="new-emp-definition-wrapper" class="bg-slate-50 dark:bg-zinc-800/40 rounded-xl p-3 flex items-center justify-between text-sm transition-all duration-300">
+                        <span class="text-slate-600 dark:text-zinc-300 font-semibold">定义新员工</span>
+                        <div class="flex items-center gap-1.5 text-slate-800 dark:text-zinc-200">
+                            <span>入职</span>
+                            <div class="flex items-center gap-1 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700/80 rounded-md p-0.5">
+                                <button onclick="adjustStepper(event, 'new-employee', -1)" class="w-5 h-5 flex items-center justify-center text-slate-500 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded font-bold text-xs">-</button>
+                                <input type="text" id="new-employee-input" value="30" readonly class="w-7 text-center text-xs font-bold text-slate-800 dark:text-zinc-100 bg-transparent focus:outline-none">
+                                <button onclick="adjustStepper(event, 'new-employee', 1)" class="w-5 h-5 flex items-center justify-center text-slate-500 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded font-bold text-xs">+</button>
+                            </div>
+                            <span class="font-medium">天内</span>
+                        </div>
+                    </div>
+
+                    <div id="support-config-panel" class="border border-slate-200/70 dark:border-zinc-800/80 rounded-2xl overflow-hidden transition-all duration-300 origin-top bg-white dark:bg-zinc-900">
+                        <div class="bg-slate-50/80 dark:bg-zinc-800/50 px-4 py-2.5 flex items-center justify-between border-b border-slate-200/60 dark:border-zinc-800/60">
+                            <span class="text-xs font-bold text-slate-700 dark:text-zinc-300 px-1 py-1 rounded-t-lg">新员工排客保护</span>
+                            <span class="text-[10px] font-semibold text-slate-400 dark:text-zinc-500" id="total-protection-count">共 4 人</span>
+                        </div>
+                        <div class="grid grid-cols-12 gap-1 px-3 py-2 text-[11px] font-bold text-slate-400 dark:text-zinc-500 border-b border-slate-100 dark:border-zinc-800/60 bg-slate-50/40 dark:bg-zinc-900/40">
+                            <div class="col-span-3">员工</div>
+                            <div class="col-span-4 text-center">基础分</div>
+                            <div class="col-span-3">擅长品类</div>
+                            <div class="col-span-2">熟练程度</div>
+                        </div>
+                        <div id="protection-employee-list" class="divide-y divide-slate-100 dark:divide-zinc-800/60"></div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer id="rules-footer" class="absolute bottom-0 left-0 right-0 p-4 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md border-t border-slate-100 dark:border-zinc-800/80 flex gap-3 z-30">
+            <button onclick="handleReset()" class="flex-1 py-3.5 rounded-xl border border-slate-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-300 font-bold text-xs bg-slate-50/50 dark:bg-zinc-800/20 active:scale-[0.97] transition-all">重置</button>
+            <button onclick="handleConfirm()" class="flex-1 py-3.5 rounded-xl bg-primary hover:bg-primary-hover text-white font-bold text-xs shadow-lg shadow-blue-500/10 active:scale-[0.97] transition-all">确认配置</button>
+        </footer>
+
+        <!-- 策略层 OVERLAY -->
+        <div id="strategy-overlay">
+            <div id="watermark-bg" class="watermark-container"></div>
+
+            <!-- 视图一：策略列表（已精简头部，去掉标题块/搜索/新建按钮） -->
+            <div id="view-list" class="strategy-page sp-active">
+                <header class="bg-white dark:bg-zinc-900 px-5 py-4 border-b border-slate-100 dark:border-zinc-800 shrink-0 shadow-sm z-30">
+                    <div class="flex items-center justify-between">
+                        <button onclick="closeStrategyOverlay()" class="flex items-center space-x-1 text-slate-600 dark:text-zinc-300 hover:text-indigo-600 transition py-1 px-2 -ml-2 rounded-lg active:bg-slate-50 dark:active:bg-zinc-800">
+                            <i class="fa-solid fa-chevron-left text-sm"></i>
+                            <span class="text-xs font-bold">返回</span>
+                        </button>
+                        <h2 class="text-sm font-extrabold text-slate-800 dark:text-zinc-100 tracking-wide">客单优化策略</h2>
+                        <div class="w-12"></div>
+                    </div>
+                </header>
+
+                <main id="rules-list-container" class="flex-1 overflow-y-auto p-4 space-y-3 z-20 no-scrollbar"></main>
+
+                <footer class="bg-white dark:bg-zinc-900 border-t border-slate-100 dark:border-zinc-800 py-3 px-8 shrink-0 flex items-center justify-between z-30 text-slate-400">
+                    <button class="flex flex-col items-center space-y-0.5 text-indigo-600"><i class="fa-solid fa-sliders text-base"></i><span class="text-[9px] font-bold">策略看板</span></button>
+                    <button onclick="toggleWatermark()" id="footer-wm-btn" class="flex flex-col items-center space-y-0.5 hover:text-slate-700 transition"><i class="fa-solid fa-shield-halved text-base"></i><span class="text-[9px] font-bold">安全水印</span></button>
+                    <button onclick="showSimpleToast('数据已自动同步到云端节点','success')" class="flex flex-col items-center space-y-0.5 hover:text-slate-700 transition"><i class="fa-solid fa-cloud-arrow-up text-base"></i><span class="text-[9px] font-bold">极速云端</span></button>
+                </footer>
+            </div>
+
+            <!-- 视图二：策略详情 -->
+            <div id="view-detail" class="strategy-page sp-right">
+                <header class="bg-white dark:bg-zinc-900 px-4 py-3 border-b border-slate-100 dark:border-zinc-800 shrink-0 flex items-center justify-between z-30 shadow-sm">
+                    <button onclick="navigateToList()" class="flex items-center space-x-1 text-slate-600 dark:text-zinc-300 hover:text-indigo-600 transition py-1 px-2 -ml-2 rounded-lg active:bg-slate-50 dark:active:bg-zinc-800">
+                        <i class="fa-solid fa-chevron-left text-sm"></i><span class="text-xs font-bold">返回</span>
+                    </button>
+                    <h2 class="text-sm font-extrabold text-slate-800 dark:text-zinc-100 tracking-wide">策略详情</h2>
+                    <div class="w-10"></div>
+                </header>
+
+                <main class="flex-1 overflow-y-auto p-4 space-y-3 z-20 no-scrollbar pb-8">
+                    <div class="bg-white dark:bg-zinc-900 rounded-2xl p-5 border border-slate-100 dark:border-zinc-800 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.03)] relative overflow-hidden">
+                        <div class="absolute -right-4 -top-4 w-24 h-24 bg-indigo-50/50 rounded-full blur-2xl pointer-events-none"></div>
+                        <div class="flex items-start space-x-3.5 relative z-10">
+                            <div id="view-icon-wrapper" class="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-sm mt-1"><i id="view-icon" class="fa-solid text-xl"></i></div>
+                            <div class="flex-1">
+                                <div class="flex items-center space-x-2">
+                                    <span id="view-status-badge" class="px-1.5 py-0.5 rounded text-[8px] font-bold border"></span>
+                                    <span id="view-category" class="text-[10px] text-slate-400 font-medium"></span>
+                                </div>
+                                <h2 id="view-title" class="text-base font-extrabold text-slate-800 dark:text-zinc-100 mt-1 leading-snug">--</h2>
+                                <div class="text-[10px] text-slate-400 mt-1.5 flex items-center space-x-2">
+                                    <span><i class="fa-regular fa-user mr-1"></i><span id="view-creator">--</span></span>
+                                    <span><i class="fa-regular fa-calendar mr-1"></i><span id="view-date">--</span></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-slate-50 dark:border-zinc-800 relative z-10"><p id="view-desc" class="text-xs text-slate-500 dark:text-zinc-400 leading-relaxed"></p></div>
+                    </div>
+
+                    <div class="bg-white dark:bg-zinc-900 rounded-2xl p-4 border border-slate-100 dark:border-zinc-800 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.03)]">
+                        <div class="flex items-center space-x-2 pb-3 mb-1 border-b border-slate-50 dark:border-zinc-800">
+                            <div class="w-6 h-6 rounded-lg bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 flex items-center justify-center"><i class="fa-solid fa-compass text-xs"></i></div>
+                            <h3 class="text-xs font-extrabold text-slate-800 dark:text-zinc-100 tracking-wider">派单大方向</h3>
+                        </div>
+                        <div class="space-y-3 pt-1">
+                            <div class="flex justify-between items-center text-xs"><span class="text-slate-400 font-medium">业绩优选模式</span><span id="view-opt-mode" class="font-bold text-slate-800 dark:text-zinc-200 bg-slate-50 dark:bg-zinc-800 px-2 py-1 rounded">--</span></div>
+                            <div class="flex justify-between items-center text-xs"><span class="text-slate-400 font-medium">评估基准周期</span><span id="view-period" class="font-bold text-slate-800 dark:text-zinc-200">--</span></div>
+                            <div class="mt-2 pt-2 border-t border-slate-50 dark:border-zinc-800 border-dashed">
+                                <div class="flex justify-between items-center text-xs mb-2"><span class="text-slate-400 font-medium">派单评估指标权重</span></div>
+                                <div class="flex h-2.5 rounded-full overflow-hidden mb-2 bg-slate-100 dark:bg-zinc-800" id="view-weight-bar"></div>
+                                <div class="flex justify-between text-[10px] font-medium" id="view-weight-labels"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white dark:bg-zinc-900 rounded-2xl p-4 border border-slate-100 dark:border-zinc-800 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.03)]">
+                        <div class="flex items-center space-x-2 pb-3 mb-1 border-b border-slate-50 dark:border-zinc-800">
+                            <div class="w-6 h-6 rounded-lg bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 flex items-center justify-center"><i class="fa-regular fa-clock text-xs"></i></div>
+                            <h3 class="text-xs font-extrabold text-slate-800 dark:text-zinc-100 tracking-wider">客户体验控制</h3>
+                        </div>
+                        <div class="space-y-3 pt-1">
+                            <div class="flex justify-between items-center text-xs"><span class="text-slate-400 font-medium">客户最长等待阈值</span><span id="view-max-wait" class="font-bold text-slate-800 dark:text-zinc-200">--</span></div>
+                            <div class="flex justify-between items-center text-xs"><span class="text-slate-400 font-medium">无缝衔接翻台策略</span><span id="view-turnover" class="font-bold text-slate-800 dark:text-zinc-200">--</span></div>
+                            <div class="flex justify-between items-center text-xs"><span class="text-slate-400 font-medium">同分兜底分配方案</span><span id="view-tie-breaker" class="font-bold text-slate-800 dark:text-zinc-200">--</span></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white dark:bg-zinc-900 rounded-2xl p-4 border border-slate-100 dark:border-zinc-800 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.03)]">
+                        <div class="flex items-center space-x-2 pb-3 mb-1 border-b border-slate-50 dark:border-zinc-800">
+                            <div class="w-6 h-6 rounded-lg bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 flex items-center justify-center"><i class="fa-regular fa-heart text-xs"></i></div>
+                            <h3 class="text-xs font-extrabold text-slate-800 dark:text-zinc-100 tracking-wider">团队健康与关怀</h3>
+                        </div>
+                        <div class="space-y-3 pt-1">
+                            <div class="flex justify-between items-center text-xs"><span class="text-slate-400 font-medium">老手疲劳降权保护</span><div id="view-fatigue" class="flex items-center space-x-1.5 font-bold text-slate-800 dark:text-zinc-200">--</div></div>
+                            <div class="flex justify-between items-center text-xs"><span class="text-slate-400 font-medium">按员工擅长品类排客</span><div id="view-newbie" class="flex items-center space-x-1.5 font-bold text-slate-800 dark:text-zinc-200">--</div></div>
+                        </div>
+                    </div>
+
+                    <button onclick="applyCurrentStrategy()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 rounded-xl font-bold text-xs text-white shadow-md transition active:scale-[0.98]">应用此策略到排客规则</button>
+                    <div class="py-2 text-center text-[10px] text-slate-400">策略参数由后台核心算法引擎统一调度</div>
+                </main>
+            </div>
+
+            <div id="strategy-toast-wrapper" class="absolute bottom-20 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center space-y-2 pointer-events-none w-11/12 max-w-[280px]"></div>
+        </div>
+
+    </div>
+
+    <!-- 重置二次确认框 -->
+    <div id="reset-confirm-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center opacity-0 pointer-events-none transition-all duration-300 px-4">
+        <div class="bg-white dark:bg-zinc-900 w-full max-w-xs rounded-2xl p-5 space-y-4 transform scale-95 transition-transform duration-300 shadow-2xl">
+            <div class="text-center space-y-2">
+                <div class="w-12 h-12 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-500 mx-auto flex items-center justify-center">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                </div>
+                <h4 class="font-bold text-sm text-slate-800 dark:text-zinc-100">确认恢复默认配置？</h4>
+                <p class="text-[11px] text-slate-400 dark:text-zinc-400">重置操作将会把所有的连续接单限制及新员工扶持名单参数恢复为初始状态。</p>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="closeResetModal()" class="flex-1 py-2.5 border border-slate-200 dark:border-zinc-700 rounded-xl text-slate-600 dark:text-zinc-300 text-xs font-semibold">取消</button>
+                <button onclick="confirmReset()" class="flex-1 py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-semibold shadow-md shadow-amber-500/10">确定重置</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 页面1 Toast -->
+    <div id="custom-toast" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-slate-900/95 dark:bg-zinc-100/95 text-white dark:text-zinc-900 px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2.5 z-50 transition-all duration-300 opacity-0 pointer-events-none scale-90">
+        <span id="toast-icon"></span>
+        <span id="toast-message" class="text-xs font-bold whitespace-nowrap"></span>
+    </div>
+
+    <script>
+        /* ========== 页面1 数据 ========== */
+        let employees = [
+            { id: 1, name: "石维华", role: "店长", status: "idle", score: 100, orders: 7 },
+            { id: 2, name: "张美丽", role: "主管", status: "idle", score: 100, orders: 5 },
+            { id: 3, name: "李佳明", role: "黄金排客", status: "idle", score: 95, orders: 9 },
+            { id: 4, name: "王建国", role: "资深顾问", status: "busy", score: 98, orders: 4 },
+            { id: 5, name: "刘洋", role: "新员工", status: "idle", score: 100, orders: 1 },
+            { id: 6, name: "陈静", role: "新员工", status: "pause", score: 100, orders: 0 },
+            { id: 7, name: "郭明", role: "金牌排客", status: "busy", score: 92, orders: 6 },
+            { id: 8, name: "赵天赐", role: "新员工", status: "pause", score: 100, orders: 2 }
+        ];
+        const categoryOptions = ["s10", "养生", "美甲美睫", "半永久男", "半永久女", "Z10", "外协项目"];
+        const levelOptions = [{ name: "新手", val: 0.5 }, { name: "熟练", val: 1.0 }, { name: "专家", val: 1.5 }];
+        let protectionEmployees = [
+            { id: 1, name: "张三", type: "新员工", typeClass: "amber", score: 100, category: ["养生"], level: "专家" },
+            { id: 2, name: "李四", type: "老员工", typeClass: "emerald", score: 100, category: ["半永久女"], level: "专家" },
+            { id: 3, name: "王五", type: "老员工", typeClass: "emerald", score: 100, category: ["s10"], level: "熟练" },
+            { id: 4, name: "赵六", type: "新员工", typeClass: "amber", score: 100, category: ["养生"], level: "专家" }
+        ];
+        let currentFilter = 'all';
+        let currentTab = 'rules';
+        let currentDateOffset = 0;
+        let selectedLimitRuleIndex = 1;
+        let supportEnabled = true;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            renderEmployeeList();
+            renderProtectionList();
+            updateStats();
+            applyRuleStyles();
+            switchTab('rules');
+            renderWatermarks();
+            renderRulesList();
+            refreshCurrentStrategyCard();
+        });
+
+        function changeDate(direction) {
+            currentDateOffset += direction;
+            const days = ["4月21日", "4月22日", "4月23日", "4月24日", "4月25日", "4月26日", "4月27日"];
+            let targetIndex = (2 + currentDateOffset) % days.length;
+            if (targetIndex < 0) targetIndex += days.length;
+            const dateDisplay = document.getElementById('date-display');
+            dateDisplay.classList.add('scale-95', 'opacity-50');
+            setTimeout(() => {
+                dateDisplay.innerText = days[targetIndex];
+                dateDisplay.classList.remove('scale-95', 'opacity-50');
+                showToast("📅 日期已切换为 " + days[targetIndex], "info");
+            }, 100);
+        }
+
+        function toggleDarkMode() {
+            const htmlEl = document.documentElement;
+            if (htmlEl.classList.contains('dark')) {
+                htmlEl.classList.remove('dark'); htmlEl.classList.add('light');
+                localStorage.setItem('theme', 'light');
+            } else {
+                htmlEl.classList.remove('light'); htmlEl.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+            const btnScheduling = document.getElementById('tab-btn-scheduling');
+            const btnRules = document.getElementById('tab-btn-rules');
+            const contentScheduling = document.getElementById('tab-content-scheduling');
+            const contentRules = document.getElementById('tab-content-rules');
+            const rulesFooter = document.getElementById('rules-footer');
+            if (tab === 'scheduling') {
+                btnScheduling.className = "text-sm font-bold pb-2 border-b-2 border-primary text-primary dark:text-blue-400 transition-all duration-200";
+                btnRules.className = "text-sm font-semibold pb-2 border-b-2 border-transparent text-slate-400 dark:text-zinc-500 hover:text-slate-600 transition-all duration-200";
+                contentScheduling.classList.remove('hidden');
+                contentRules.classList.add('hidden');
+                rulesFooter.classList.add('hidden');
+                renderEmployeeList();
+            } else {
+                btnRules.className = "text-sm font-bold pb-2 border-b-2 border-primary text-primary dark:text-blue-400 transition-all duration-200";
+                btnScheduling.className = "text-sm font-semibold pb-2 border-b-2 border-transparent text-slate-400 dark:text-zinc-500 hover:text-slate-600 transition-all duration-200";
+                contentRules.classList.remove('hidden');
+                contentScheduling.classList.add('hidden');
+                rulesFooter.classList.remove('hidden');
+                renderProtectionList();
+            }
+        }
+
+        function setFilter(type) {
+            currentFilter = type;
+            const buttons = {
+                all: document.getElementById('filter-all'),
+                idle: document.getElementById('filter-idle'),
+                busy: document.getElementById('filter-busy'),
+                pause: document.getElementById('filter-pause')
+            };
+            Object.keys(buttons).forEach(key => {
+                if (key === type) {
+                    if (key === 'all') buttons[key].className = "px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap shadow-sm transition-all duration-200 bg-primary text-white scale-105";
+                    else if (key === 'idle') buttons[key].className = "px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap shadow-sm transition-all duration-200 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 scale-105";
+                    else if (key === 'busy') buttons[key].className = "px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap shadow-sm transition-all duration-200 bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800 scale-105";
+                    else buttons[key].className = "px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap shadow-sm transition-all duration-200 bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 border border-slate-300 dark:border-zinc-700 scale-105";
+                } else {
+                    buttons[key].className = "px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap shadow-sm transition-all duration-200 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700/80 text-slate-600 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-zinc-700/50";
+                }
+            });
+            renderEmployeeList();
+        }
+
+        function renderEmployeeList() {
+            const container = document.getElementById('employee-list-container');
+            container.innerHTML = '';
+            const filteredData = employees.filter(emp => currentFilter === 'all' ? true : emp.status === currentFilter);
+            if (filteredData.length === 0) {
+                container.innerHTML = `<div class="flex flex-col items-center justify-center py-12 text-slate-400 dark:text-zinc-500"><svg class="w-12 h-12 stroke-current mb-2 opacity-60" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg><p class="text-xs font-semibold">该状态下暂无在岗员工</p></div>`;
+                return;
+            }
+            filteredData.forEach(emp => {
+                const card = document.createElement('div');
+                card.className = "bg-white dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800 rounded-2xl p-4 shadow-sm hover:shadow-md dark:hover:border-zinc-700/50 transition-all duration-200 transform hover:-translate-y-0.5";
+                let statusBadge = '';
+                if (emp.status === 'idle') statusBadge = `<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>正常排客</span>`;
+                else if (emp.status === 'busy') statusBadge = `<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400"><span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>忙碌中</span>`;
+                else statusBadge = `<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400"><span class="w-1.5 h-1.5 rounded-full bg-slate-400 dark:bg-zinc-500"></span>已暂停</span>`;
+                const buttonText = emp.status === 'pause' ? '恢复' : '暂停';
+                const buttonClass = emp.status === 'pause' ? 'border border-primary/30 text-primary dark:text-blue-400 bg-primary/5 hover:bg-primary/10' : 'border border-slate-200 dark:border-zinc-700 text-slate-700 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-zinc-800';
+                card.innerHTML = `
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-2">
+                            <span class="font-extrabold text-sm tracking-wide text-slate-800 dark:text-zinc-100">${emp.name}</span>
+                            <span class="text-[9px] font-bold px-1 py-0.5 rounded bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400">${emp.role}</span>
+                            ${statusBadge}
+                        </div>
+                        <button onclick="toggleEmployeeStatus(${emp.id})" class="px-3 py-1 rounded-lg text-xs font-bold transition-all duration-150 active:scale-95 ${buttonClass}">${buttonText}</button>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 bg-slate-50 dark:bg-zinc-900/60 p-3 rounded-xl">
+                        <div class="text-center"><div class="text-[10px] text-slate-400 dark:text-zinc-500 font-semibold mb-0.5">新员工基础分</div><div class="text-sm font-black text-slate-700 dark:text-zinc-200">${emp.score}分</div></div>
+                        <div class="text-center border-l border-slate-200/60 dark:border-zinc-800"><div class="text-[10px] text-slate-400 dark:text-zinc-500 font-semibold mb-0.5">今日排客</div><div class="text-sm font-black text-slate-700 dark:text-zinc-200">${emp.orders}单</div></div>
+                    </div>`;
+                container.appendChild(card);
+            });
+        }
+
+        function toggleEmployeeStatus(id) {
+            const emp = employees.find(e => e.id === id);
+            if (emp) {
+                emp.status = emp.status === 'pause' ? 'idle' : 'pause';
+                renderEmployeeList(); updateStats();
+                showToast(emp.status === 'pause' ? `⏸ 已暂停 ${emp.name} 的排客` : `▶ 已恢复 ${emp.name} 的排客`, "info");
+            }
+        }
+
+        function renderProtectionList() {
+            const listContainer = document.getElementById('protection-employee-list');
+            listContainer.innerHTML = '';
+            document.getElementById('total-protection-count').innerText = `共 ${protectionEmployees.length} 人`;
+            protectionEmployees.forEach(emp => {
+                const row = document.createElement('div');
+                row.className = "grid grid-cols-12 gap-1 px-3 py-3 items-center bg-white dark:bg-zinc-900 transition-colors hover:bg-slate-50/50 dark:hover:bg-zinc-800/20";
+                const typeBadgeClass = emp.typeClass === 'amber' ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-900/30' : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/30';
+
+                if (!Array.isArray(emp.category)) emp.category = emp.category ? [emp.category] : [];
+                const selectedText = emp.category.length > 0 ? (emp.category.length > 1 ? `${emp.category[0]} +${emp.category.length - 1}` : emp.category[0]) : '请选择';
+                let catCheckHtml = '';
+                categoryOptions.forEach(opt => {
+                    const checked = emp.category.includes(opt);
+                    catCheckHtml += `<div onclick="event.stopPropagation(); toggleCategory(${emp.id}, '${opt}')" class="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-slate-50 dark:hover:bg-zinc-800/60 transition-colors"><span class="text-xs ${checked ? 'text-primary font-bold' : 'text-slate-600 dark:text-zinc-300'}">${opt}</span>${checked ? '<svg class="w-3.5 h-3.5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>' : ''}</div>`;
+                });
+
+                let lvlOptionsHtml = '';
+                levelOptions.forEach(opt => { lvlOptionsHtml += `<option value="${opt.name}" ${emp.level === opt.name ? 'selected' : ''}>${opt.name}</option>`; });
+
+                row.innerHTML = `
+                    <div class="col-span-3 flex items-center gap-2 min-w-0">
+                        <div class="w-7 h-7 rounded-full bg-blue-500 text-white font-bold text-xs flex items-center justify-center shrink-0">${emp.name.charAt(0)}</div>
+                        <div class="flex flex-col min-w-0 leading-tight">
+                            <span class="font-bold text-xs text-slate-800 dark:text-zinc-100 truncate">${emp.name}</span>
+                            <span class="text-[8px] font-semibold py-0.2 px-1 rounded-full text-center shrink-0 mt-0.5 ${typeBadgeClass}">${emp.type}</span>
+                        </div>
+                    </div>
+                    <div class="col-span-4 flex items-center justify-center">
+                        <div class="flex items-center gap-1 bg-slate-50 dark:bg-zinc-800/80 border border-slate-200/80 dark:border-zinc-700/70 rounded-md p-0.5">
+                            <button onclick="adjustProtectionScore(${emp.id}, -5)" class="w-5 h-5 flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-200 dark:hover:bg-zinc-700 rounded font-bold text-xs transition-colors">-</button>
+                            <input type="text" id="score-input-${emp.id}" value="${emp.score}" readonly class="w-6 text-center text-xs font-bold text-slate-800 dark:text-zinc-100 bg-transparent focus:outline-none">
+                            <button onclick="adjustProtectionScore(${emp.id}, 5)" class="w-5 h-5 flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-200 dark:hover:bg-zinc-700 rounded font-bold text-xs transition-colors">+</button>
+                        </div>
+                    </div>
+                    <div class="col-span-3 relative">
+                        <div onclick="event.stopPropagation(); toggleCategoryDropdown(${emp.id})" class="w-full text-xs py-1 px-1.5 border border-slate-200 dark:border-zinc-700/80 rounded-md bg-white dark:bg-zinc-800 text-slate-800 dark:text-zinc-200 flex items-center justify-between cursor-pointer">
+                            <span class="truncate">${selectedText}</span>
+                            <svg class="w-3 h-3 shrink-0 ml-0.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>
+                        </div>
+                        <div id="cat-dropdown-${emp.id}" class="hidden absolute z-30 mt-1 left-0 w-32 max-h-44 overflow-y-auto no-scrollbar bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 rounded-lg shadow-xl py-1">${catCheckHtml}</div>
+                    </div>
+                    <div class="col-span-2">
+                        <select onchange="updateProtectionLevel(${emp.id}, this.value)" class="w-full text-xs py-1 px-0.5 border border-slate-200 dark:border-zinc-700/80 rounded-md bg-white dark:bg-zinc-800 text-slate-800 dark:text-zinc-200 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary">${lvlOptionsHtml}</select>
+                    </div>`;
+                listContainer.appendChild(row);
+            });
+        }
+
+        function updateStats() {
+            const total = employees.length;
+            const onDuty = employees.filter(emp => emp.status !== 'pause').length;
+            const idleCount = employees.filter(emp => emp.status === 'idle').length;
+            document.getElementById('stat-summary').innerHTML = `共 <span class="font-bold text-slate-800 dark:text-zinc-200">${total}</span> 人 · 今日在岗 <span class="font-bold text-emerald-600 dark:text-emerald-400">${onDuty}</span> 人，当前空闲 <span class="font-bold text-emerald-600 dark:text-emerald-400">${idleCount}</span> 人`;
+        }
+
+        function adjustProtectionScore(id, change) {
+            if (!supportEnabled) return;
+            const emp = protectionEmployees.find(e => e.id === id);
+            if (emp) {
+                emp.score += change;
+                if (emp.score < 60) emp.score = 60;
+                if (emp.score > 150) emp.score = 150;
+                document.getElementById(`score-input-${id}`).value = emp.score;
+                showToast(`🎯 已调整 ${emp.name} 的基础分为: ${emp.score}分`, "success");
+            }
+        }
+
+        /* ===== 品类多选交互 ===== */
+        function toggleCategoryDropdown(id) {
+            if (!supportEnabled) return;
+            document.querySelectorAll('[id^="cat-dropdown-"]').forEach(el => { if (el.id !== `cat-dropdown-${id}`) el.classList.add('hidden'); });
+            const dd = document.getElementById(`cat-dropdown-${id}`);
+            if (dd) dd.classList.toggle('hidden');
+        }
+        function toggleCategory(id, value) {
+            if (!supportEnabled) return;
+            const emp = protectionEmployees.find(e => e.id === id);
+            if (!emp) return;
+            if (!Array.isArray(emp.category)) emp.category = emp.category ? [emp.category] : [];
+            const idx = emp.category.indexOf(value);
+            if (idx > -1) emp.category.splice(idx, 1); else emp.category.push(value);
+            renderProtectionList();
+            const dd = document.getElementById(`cat-dropdown-${id}`);
+            if (dd) dd.classList.remove('hidden');
+            showToast(`💅 ${emp.name} 的擅长品类: ${emp.category.length ? emp.category.join('、') : '未选择'}`, "success");
+        }
+        document.addEventListener('click', () => {
+            document.querySelectorAll('[id^="cat-dropdown-"]').forEach(el => el.classList.add('hidden'));
+        });
+
+        function updateProtectionLevel(id, value) {
+            if (!supportEnabled) return;
+            const emp = protectionEmployees.find(e => e.id === id);
+            if (emp) { emp.level = value; showToast(`🎓 ${emp.name} 的熟练度变更为: ${value}`, "success"); }
+        }
+
+        function selectLimitRule(index) { selectedLimitRuleIndex = index; applyRuleStyles(); }
+        function applyRuleStyles() {
+            for (let i = 1; i <= 3; i++) {
+                const card = document.getElementById(`rule-card-${i}`);
+                const dot = card.querySelector('.radio-dot');
+                const radioCircle = card.querySelector('.custom-radio');
+                if (i === selectedLimitRuleIndex) {
+                    card.className = "border rounded-xl p-3.5 cursor-pointer transition-all duration-200 flex items-start gap-3 bg-primary/5 dark:bg-blue-950/20 border-primary dark:border-blue-400 opacity-100 scale-[1.01]";
+                    dot.classList.remove('hidden');
+                    radioCircle.className = "custom-radio flex items-center justify-center w-4 h-4 rounded-full border border-primary dark:border-blue-400 bg-white dark:bg-zinc-900";
+                } else {
+                    card.className = "border rounded-xl p-3.5 cursor-pointer transition-all duration-200 flex items-start gap-3 border-slate-200/80 dark:border-zinc-800 bg-slate-50/20 dark:bg-zinc-800/10 opacity-60 hover:opacity-80";
+                    dot.classList.add('hidden');
+                    radioCircle.className = "custom-radio flex items-center justify-center w-4 h-4 rounded-full border border-slate-300 dark:border-zinc-600 bg-white dark:bg-zinc-900";
+                }
+            }
+        }
+
+        function adjustStepper(event, inputId, change) {
+            event.stopPropagation();
+            const input = document.getElementById(`${inputId}-input`);
+            let value = parseInt(input.value) || 0;
+            value += change;
+            if (value < 1) value = 1;
+            if (inputId === 'moderate-limit' && value >= 10) value = 10;
+            if (inputId === 'strict-limit' && value >= 20) value = 20;
+            if (inputId === 'new-employee' && value >= 180) value = 180;
+            input.value = value;
+        }
+
+        function toggleSupportSwitch() {
+            supportEnabled = !supportEnabled;
+            const toggle = document.getElementById('support-toggle');
+            const slider = toggle.querySelector('span');
+            const panel = document.getElementById('support-config-panel');
+            const definitionWrapper = document.getElementById('new-emp-definition-wrapper');
+            if (supportEnabled) {
+                toggle.className = "w-11 h-6 flex items-center rounded-full p-0.5 bg-primary transition-all duration-300 focus:outline-none";
+                slider.className = "w-5 h-5 rounded-full bg-white shadow-md transform translate-x-5 transition-transform duration-300";
+                panel.classList.remove('opacity-40', 'pointer-events-none');
+                definitionWrapper.classList.remove('opacity-40', 'pointer-events-none');
+                showToast("⚡ 已开启新员工扶持特权配置", "success");
+            } else {
+                toggle.className = "w-11 h-6 flex items-center rounded-full p-0.5 bg-slate-300 dark:bg-zinc-700 transition-all duration-300 focus:outline-none";
+                slider.className = "w-5 h-5 rounded-full bg-white shadow-md transform translate-x-0 transition-transform duration-300";
+                panel.classList.add('opacity-40', 'pointer-events-none');
+                definitionWrapper.classList.add('opacity-40', 'pointer-events-none');
+                showToast("🔒 已关闭新员工排客扶持", "info");
+            }
+        }
+
+        function handleReset() {
+            const modal = document.getElementById('reset-confirm-modal');
+            modal.classList.remove('pointer-events-none', 'opacity-0');
+            modal.querySelector('div').classList.remove('scale-95');
+        }
+        function closeResetModal() {
+            const modal = document.getElementById('reset-confirm-modal');
+            modal.classList.add('pointer-events-none', 'opacity-0');
+            modal.querySelector('div').classList.add('scale-95');
+        }
+        function confirmReset() {
+            selectedLimitRuleIndex = 1; applyRuleStyles();
+            document.getElementById('moderate-limit-input').value = 3;
+            document.getElementById('strict-limit-input').value = 5;
+            document.getElementById('new-employee-input').value = 30;
+            currentStrategyId = 2;
+            protectionEmployees = [
+                { id: 1, name: "张三", type: "新员工", typeClass: "amber", score: 100, category: ["养生"], level: "专家" },
+                { id: 2, name: "李四", type: "老员工", typeClass: "emerald", score: 100, category: ["半永久女"], level: "专家" },
+                { id: 3, name: "王五", type: "老员工", typeClass: "emerald", score: 100, category: ["s10"], level: "熟练" },
+                { id: 4, name: "赵六", type: "新员工", typeClass: "amber", score: 100, category: ["养生"], level: "专家" }
+            ];
+            if (!supportEnabled) toggleSupportSwitch();
+            renderProtectionList();
+            refreshCurrentStrategyCard();
+            closeResetModal();
+            showToast("🧹 排客配置与编辑数据均已恢复出厂默认", "success");
+        }
+
+        function handleConfirm() {
+            const ruleNames = ["不限制", "适度控制", "严格限制"];
+            const currentRuleName = ruleNames[selectedLimitRuleIndex - 1];
+            const moderateVal = document.getElementById('moderate-limit-input').value;
+            const strictVal = document.getElementById('strict-limit-input').value;
+            let summaryDesc = `配置已成功应用！当前模式: ${currentRuleName}`;
+            if (selectedLimitRuleIndex === 2) summaryDesc += ` (接满 ${moderateVal} 单后限制)`;
+            if (selectedLimitRuleIndex === 3) summaryDesc += ` (接满 ${strictVal} 单后停止)`;
+            showToast("🎉 " + summaryDesc, "success");
+            setTimeout(() => { switchTab('scheduling'); }, 1200);
+        }
+
+        let toastTimeout;
+        function showToast(message, type = "success") {
+            const toast = document.getElementById('custom-toast');
+            const toastMsg = document.getElementById('toast-message');
+            const toastIcon = document.getElementById('toast-icon');
+            let iconSvg = '';
+            if (type === 'success') iconSvg = `<svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+            else if (type === 'info') iconSvg = `<svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+            else iconSvg = `<svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>`;
+            toastIcon.innerHTML = iconSvg;
+            toastMsg.innerText = message;
+            toast.classList.remove('opacity-0', 'pointer-events-none', 'scale-90');
+            toast.classList.add('opacity-100', 'scale-100');
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.remove('opacity-100', 'scale-100');
+                toast.classList.add('opacity-0', 'pointer-events-none', 'scale-90');
+            }, 3000);
+        }
+
+        /* ========== 策略层 ========== */
+        function openStrategyOverlay() {
+            document.getElementById('strategy-overlay').classList.add('open');
+            navigateToList();
+        }
+        function closeStrategyOverlay() {
+            document.getElementById('strategy-overlay').classList.remove('open');
+        }
+
+        let rulesData = [
+            { id: 1, title: "这是一个新建规则包", desc: "一个好的规则能够帮助门店在客单价提升上获取20%以上的超额收益，通过阶梯奖励激发员工积极性。", status: "idle", category: "reward", icon: "fa-gift", iconBg: "bg-amber-50 text-amber-600", creator: "邱焕灯", updatedAt: "2026-06-02", optMode: "balance", period: 90, metrics: { new: 40, normal: 30, avg: 30 }, maxWait: 15, turnoverEnabled: true, turnoverTime: 15, tieBreaker: "weak", fatigueEnabled: true, fatigueFactor: 0.8, newbieEnabled: false, newbieScore: 100 },
+            { id: 2, title: "测试哦", desc: "122 - 针对周末高峰时段的美容美发连带消费进行专项积分折算模拟测试。", status: "active", category: "test", icon: "fa-flask", iconBg: "bg-emerald-50 text-emerald-600", creator: "邱焕灯", updatedAt: "2026-06-04", optMode: "efficient", period: 60, metrics: { new: 50, normal: 30, avg: 20 }, maxWait: 20, turnoverEnabled: true, turnoverTime: 10, tieBreaker: "star", fatigueEnabled: false, fatigueFactor: 0.9, newbieEnabled: true, newbieScore: 120 },
+            { id: 3, title: "公平轮排", desc: "系统根据员工今日历史派单、当前负荷和新老身份自动实现公平轮询分派，避免抢单争议。", status: "idle", category: "dispatch", icon: "fa-scale-balanced", iconBg: "bg-indigo-50 text-indigo-600", creator: "系统默认", updatedAt: "2026-05-28", optMode: "random", period: 30, metrics: { new: 33, normal: 33, avg: 34 }, maxWait: 10, turnoverEnabled: false, turnoverTime: 15, tieBreaker: "weak", fatigueEnabled: true, fatigueFactor: 0.7, newbieEnabled: false, newbieScore: 100 },
+            { id: 4, title: "基础测试策略机制", desc: "11 - 基础测试配置，用于检验多工种复合排客时的底层算法响应耗时与服务承接能力。", status: "idle", category: "test", icon: "fa-microchip", iconBg: "bg-slate-100 text-slate-600", creator: "测试员A", updatedAt: "2026-06-01", optMode: "balance", period: 45, metrics: { new: 40, normal: 40, avg: 20 }, maxWait: 15, turnoverEnabled: true, turnoverTime: 15, tieBreaker: "random", fatigueEnabled: true, fatigueFactor: 0.8, newbieEnabled: true, newbieScore: 90 }
+        ];
+
+        let appState = { searchQuery: '', watermarkEnabled: false, activeRuleId: null };
+        let currentStrategyId = 2;
+
+        function refreshCurrentStrategyCard() {
+            const rule = rulesData.find(r => r.id === currentStrategyId) || rulesData.find(r => r.status === 'active') || rulesData[0];
+            if (!rule) return;
+            const catMap = { reward: '激励规则', test: '沙箱测试', dispatch: '智能排班' };
+            document.getElementById('current-strategy').innerText = rule.title;
+            document.getElementById('cur-strategy-desc').innerText = rule.desc;
+            document.getElementById('cur-strategy-category').innerText = catMap[rule.category] || '通用规则';
+            const iconWrap = document.getElementById('cur-strategy-icon-wrap');
+            iconWrap.className = `w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-sm ${rule.iconBg}`;
+            document.getElementById('cur-strategy-icon').className = `fa-solid ${rule.icon} text-xl`;
+            const badge = document.getElementById('cur-strategy-badge');
+            if (rule.status === 'active') {
+                badge.innerText = '已启用';
+                badge.className = 'px-1.5 py-0.5 rounded text-[9px] font-bold border border-emerald-200 bg-emerald-50 text-emerald-600';
+            } else {
+                badge.innerText = '未启用';
+                badge.className = 'px-1.5 py-0.5 rounded text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-500';
+            }
+        }
+
+        function renderWatermarks() {
+            const bg = document.getElementById('watermark-bg');
+            bg.innerHTML = '';
+            if (!appState.watermarkEnabled) return;
+            for (let i = 0; i < 48; i++) {
+                const item = document.createElement('div');
+                item.className = 'watermark-item';
+                item.style.color = '#1e293b';
+                item.innerText = '邱焕灯 | 3592';
+                bg.appendChild(item);
+            }
+        }
+        function toggleWatermark() {
+            appState.watermarkEnabled = !appState.watermarkEnabled;
+            const btn = document.getElementById('footer-wm-btn');
+            if (appState.watermarkEnabled) { btn.className = "flex flex-col items-center space-y-0.5 text-indigo-600 transition"; showSimpleToast("防截密水印已重新开启", "success"); }
+            else { btn.className = "flex flex-col items-center space-y-0.5 text-slate-400 transition"; showSimpleToast("防截密水印已安全隐藏", "warning"); }
+            renderWatermarks();
+        }
+
+        function renderRulesList() {
+            const container = document.getElementById('rules-list-container');
+            container.innerHTML = '';
+            const filtered = rulesData.filter(rule => rule.title.toLowerCase().includes(appState.searchQuery.toLowerCase()) || rule.desc.toLowerCase().includes(appState.searchQuery.toLowerCase()));
+            const countEl = document.getElementById('rules-count');
+            if (countEl) countEl.innerText = `${rulesData.length} 规整`;
+            if (filtered.length === 0) {
+                container.innerHTML = `<div class="bg-white dark:bg-zinc-900 rounded-2xl p-8 text-center border border-slate-100 dark:border-zinc-800 shadow-sm space-y-3"><div class="w-12 h-12 bg-slate-50 dark:bg-zinc-800 rounded-full flex items-center justify-center mx-auto text-slate-400"><i class="fa-regular fa-folder-open text-xl"></i></div><div class="space-y-1"><p class="text-slate-700 dark:text-zinc-200 font-bold text-xs">暂无策略配置</p></div></div>`;
+                return;
+            }
+            filtered.forEach(rule => {
+                const isActive = rule.status === 'active';
+                const card = document.createElement('div');
+                card.className = `bg-white dark:bg-zinc-900 rounded-2xl p-4 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)] border transition-all hover:shadow-md cursor-pointer select-none active:scale-[0.99] ${isActive ? 'border-indigo-100 dark:border-indigo-900/40 ring-1 ring-indigo-50/50' : 'border-slate-100/80 dark:border-zinc-800'}`;
+                card.onclick = () => navigateToDetail(rule.id);
+                card.innerHTML = `
+                    <div class="flex items-start justify-between">
+                        <div class="flex items-center space-x-2.5">
+                            <div class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${rule.iconBg}"><i class="fa-solid ${rule.icon} text-xs"></i></div>
+                            <div>
+                                <h3 class="font-bold text-slate-800 dark:text-zinc-100 text-sm tracking-wide leading-tight">${escapeHtml(rule.title)}</h3>
+                                <span class="text-[9px] text-slate-400 mt-0.5 inline-block">更新时间: ${rule.updatedAt}</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2 shrink-0" onclick="event.stopPropagation();">
+                            ${isActive ? `<span class="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 text-[9px] font-extrabold tracking-wider border border-emerald-100 flex items-center space-x-1 animate-pulse"><span class="w-1 h-1 rounded-full bg-emerald-500 inline-block"></span><span>使用中</span></span>` : ''}
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" ${isActive ? 'checked' : ''} onchange="handleListSwitchToggle(${rule.id}, event)" class="sr-only peer" />
+                                <div class="w-8 h-4.5 bg-slate-200 dark:bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3.5 after:w-3.5 after:transition-all peer-checked:bg-indigo-600"></div>
+                            </label>
+                        </div>
+                    </div>
+                    <p class="text-[12px] text-slate-500 dark:text-zinc-400 mt-2.5 leading-relaxed line-clamp-2">${escapeHtml(rule.desc)}</p>
+                    <div class="mt-3 pt-2.5 border-t border-slate-100/60 dark:border-zinc-800 flex items-center justify-between text-[11px] text-slate-400">
+                        <span class="flex items-center"><i class="fa-regular fa-user mr-1 text-[10px]"></i>创建人: ${rule.creator}</span>
+                        <span class="text-indigo-600 hover:text-indigo-800 font-extrabold flex items-center group"><span>规则详情</span><i class="fa-solid fa-chevron-right ml-1 text-[9px] transform group-hover:translate-x-0.5 transition-transform"></i></span>
+                    </div>`;
+                container.appendChild(card);
+            });
+        }
+
+        function handleListSwitchToggle(id, event) {
+            event.stopPropagation();
+            const rule = rulesData.find(r => r.id === id);
+            if (rule) {
+                rule.status = rule.status === 'active' ? 'idle' : 'active';
+                renderRulesList();
+                showSimpleToast(`策略「${rule.title}」已${rule.status === 'active' ? '成功启用' : '暂停运行'}`, rule.status === 'active' ? 'success' : 'warning');
+            }
+        }
+
+        function navigateToDetail(id) {
+            const rule = rulesData.find(r => r.id === id);
+            if (!rule) return;
+            appState.activeRuleId = id;
+            const catMap = { reward: '激励规则', test: '沙箱测试', dispatch: '智能排班' };
+            const optModeMap = { balance: '团队平衡', efficient: '效率优先', random: '随机平均' };
+            const tieBreakerMap = { weak: '优先扶持弱者', star: '明星技师优先', random: '随机平分' };
+            document.getElementById('view-title').innerText = rule.title;
+            document.getElementById('view-desc').innerText = rule.desc;
+            document.getElementById('view-creator').innerText = rule.creator;
+            document.getElementById('view-date').innerText = rule.updatedAt;
+            document.getElementById('view-category').innerText = catMap[rule.category] || '通用规则';
+            const iconWrapper = document.getElementById('view-icon-wrapper');
+            iconWrapper.className = `w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-sm mt-1 ${rule.iconBg}`;
+            document.getElementById('view-icon').className = `fa-solid ${rule.icon} text-xl`;
+            const badge = document.getElementById('view-status-badge');
+            if (rule.status === 'active') { badge.innerText = '使用中'; badge.className = 'px-1.5 py-0.5 rounded text-[9px] font-bold border border-emerald-200 bg-emerald-50 text-emerald-600'; }
+            else { badge.innerText = '未启用'; badge.className = 'px-1.5 py-0.5 rounded text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-500'; }
+            document.getElementById('view-opt-mode').innerText = optModeMap[rule.optMode] || rule.optMode;
+            document.getElementById('view-period').innerText = `过去 ${rule.period} 天`;
+            const newW = rule.metrics.new || 0, normW = rule.metrics.normal || 0, avgW = rule.metrics.avg || 0;
+            document.getElementById('view-weight-bar').innerHTML = `${newW > 0 ? `<div style="width: ${newW}%" class="bg-indigo-500"></div>` : ''}${normW > 0 ? `<div style="width: ${normW}%" class="bg-emerald-400"></div>` : ''}${avgW > 0 ? `<div style="width: ${avgW}%" class="bg-amber-400"></div>` : ''}`;
+            document.getElementById('view-weight-labels').innerHTML = `${newW > 0 ? `<span class="text-indigo-600"><span class="inline-block w-2 h-2 rounded-sm bg-indigo-500 mr-1"></span>新客单 ${newW}%</span>` : ''}${normW > 0 ? `<span class="text-emerald-600"><span class="inline-block w-2 h-2 rounded-sm bg-emerald-400 mr-1"></span>老客单 ${normW}%</span>` : ''}${avgW > 0 ? `<span class="text-amber-600"><span class="inline-block w-2 h-2 rounded-sm bg-amber-400 mr-1"></span>均客单 ${avgW}%</span>` : ''}`;
+            document.getElementById('view-max-wait').innerText = `${rule.maxWait} 分钟`;
+            document.getElementById('view-turnover').innerHTML = rule.turnoverEnabled ? `<i class="fa-solid fa-check text-emerald-500 mr-1"></i>提前 ${rule.turnoverTime} 分钟释放` : `<span class="text-slate-400 font-normal">未开启</span>`;
+            document.getElementById('view-tie-breaker').innerText = tieBreakerMap[rule.tieBreaker] || rule.tieBreaker;
+            document.getElementById('view-fatigue').innerHTML = rule.fatigueEnabled ? `<i class="fa-solid fa-check text-emerald-500"></i><span>最高降权至 ${rule.fatigueFactor}</span>` : `<span class="text-slate-400 font-normal">未开启</span>`;
+            document.getElementById('view-newbie').innerHTML = rule.newbieEnabled ? `<i class="fa-solid fa-check text-emerald-500"></i><span class="text-indigo-600">保底加权 ${rule.newbieScore} 分</span>` : `<span class="text-slate-400 font-normal">未开启</span>`;
+            document.getElementById('view-list').className = "strategy-page sp-left";
+            document.getElementById('view-detail').className = "strategy-page sp-active";
+        }
+
+        function navigateToList() {
+            document.getElementById('view-list').className = "strategy-page sp-active";
+            document.getElementById('view-detail').className = "strategy-page sp-right";
+        }
+
+        function applyCurrentStrategy() {
+            const rule = rulesData.find(r => r.id === appState.activeRuleId);
+            if (!rule) return;
+            currentStrategyId = rule.id;
+            rulesData.forEach(r => r.status = r.id === rule.id ? 'active' : (r.status === 'active' ? 'idle' : r.status));
+            renderRulesList();
+            refreshCurrentStrategyCard();
+            closeStrategyOverlay();
+            showToast(`✅ 应用策略已成功调整为「${rule.title}」`, "success");
+        }
+
+        function showSimpleToast(message, type = 'success') {
+            const wrapper = document.getElementById('strategy-toast-wrapper');
+            const toast = document.createElement('div');
+            toast.className = "bg-slate-900/95 text-white px-3.5 py-2.5 rounded-xl text-xs font-bold shadow-xl flex items-center text-center transition-all duration-300 transform translate-y-3 opacity-0 border border-slate-800/60 pointer-events-auto";
+            let icon = `<i class="fa-solid fa-circle-check text-emerald-500 mr-2"></i>`;
+            if (type === 'warning') icon = `<i class="fa-solid fa-circle-exclamation text-amber-500 mr-2"></i>`;
+            toast.innerHTML = `${icon}<span>${escapeHtml(message)}</span>`;
+            wrapper.appendChild(toast);
+            setTimeout(() => { toast.classList.remove('translate-y-3', 'opacity-0'); }, 15);
+            setTimeout(() => { toast.classList.add('opacity-0', 'translate-y-[-10px]'); setTimeout(() => { toast.remove(); }, 300); }, 2500);
+        }
+
+        function escapeHtml(string) {
+            return String(string).replace(/[&<>"']/g, function (s) {
+                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[s];
+            });
+        }
+    </script>
+</body>
+</html>

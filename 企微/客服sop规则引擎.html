@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>企微SOP智能触达控制台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; 
+            background-color: #f5f7fa; 
+        }
+        
+        /* Ant Design Switch */
+        .ant-switch {
+            position: relative; display: inline-block; width: 44px; height: 22px;
+            background-color: #00000040; border-radius: 100px; cursor: pointer; transition: all .2s;
+            border: 0; outline: none;
+        }
+        .ant-switch-checked { background-color: #1677ff; }
+        .ant-switch::after {
+            position: absolute; top: 2px; left: 2px; width: 18px; height: 18px;
+            background-color: #fff; border-radius: 18px; box-shadow: 0 2px 4px 0 rgba(0,23,11,.2);
+            transition: all .2s cubic-bezier(.78,.14,.15,.86); content: "";
+        }
+        .ant-switch-checked::after { left: 100%; margin-left: -20px; }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #d9d9d9; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #bfbfbf; }
+
+        /* Toast animation */
+        @keyframes slideIn {
+            from { transform: translateY(-100%) translateX(-50%); opacity: 0; }
+            to { transform: translateY(0) translateX(-50%); opacity: 1; }
+        }
+        .toast-enter {
+            animation: slideIn 0.3s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="h-screen flex flex-col text-slate-800 overflow-hidden">
+
+    <!-- 顶部导航 -->
+    <header class="bg-white border-b border-gray-200 h-14 flex items-center justify-between px-6 shrink-0 z-10 shadow-sm">
+        <div class="flex items-center space-x-3">
+            <div class="w-8 h-8 rounded-lg bg-[#1677ff] flex items-center justify-center text-white font-bold text-lg shadow-sm">SOP</div>
+            <span class="font-bold text-[15px] tracking-wide text-gray-800">企微智客 SOP 控制台</span>
+            <span class="text-[10px] bg-blue-50 text-[#1677ff] border border-blue-200 px-1.5 py-0.5 rounded ml-2 font-medium">混合架构版</span>
+        </div>
+        <div class="flex items-center space-x-4 text-sm">
+            <button class="flex items-center space-x-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 text-xs px-3 py-1.5 rounded-md transition-all font-medium">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.228 10H18.228M15 11l3-3 3 3"></path></svg>
+                <span>手动同步旧CRM</span>
+            </button>
+            <div class="h-4 w-[1px] bg-gray-200"></div>
+            <div class="flex items-center space-x-2">
+                <div class="w-7 h-7 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-xs">李</div>
+                <div class="text-xs leading-tight">
+                    <p class="font-medium">客服主管</p>
+                    <p class="text-gray-400 scale-90 -ml-1">淡斑美疗组</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex flex-1 overflow-hidden">
+        <!-- 侧边栏 -->
+        <aside class="w-56 bg-white border-r border-gray-200 flex flex-col pt-3 shrink-0 shadow-sm z-0">
+            <div class="px-3 space-y-1">
+                <button onclick="switchTab('rules')" id="tab-btn-rules" class="w-full flex items-center space-x-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors text-[#1677ff] bg-blue-50">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+                    <span>SOP 规则配置</span>
+                </button>
+                <button onclick="switchTab('tasks')" id="tab-btn-tasks" class="w-full flex items-center space-x-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-50 hover:text-gray-900 relative">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                    <span>SOP 任务列表</span>
+                    <span class="absolute right-4 top-3 bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold scale-90 leading-none">3</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- 主内容区 -->
+        <main class="flex-1 overflow-y-auto p-6" id="main-content">
+            
+            <!-- 视图：规则列表 -->
+            <section id="view-rules">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-[18px] font-bold text-gray-800">SOP 规则列表</h2>
+                    <button onclick="openRuleModal()" class="bg-[#1677ff] hover:bg-[#4096ff] text-white text-[13px] px-4 py-2 rounded-md shadow-sm transition-all flex items-center font-medium">
+                        + 新建自动化跟进 SOP
+                    </button>
+                </div>
+
+                <!-- 规则分类 Tabs -->
+                <div class="flex space-x-8 border-b border-gray-200 mb-5 text-[14px]">
+                    <button onclick="switchRuleTab('local')" id="rule-tab-local" class="pb-2 border-b-2 border-[#1677ff] text-[#1677ff] font-medium transition-all">本地自动化跟进规则</button>
+                    <button onclick="switchRuleTab('api')" id="rule-tab-api" class="pb-2 border-b-2 border-transparent text-gray-500 hover:text-gray-900 transition-all">接口拉取任务规则</button>
+                </div>
+
+                <!-- 本地规则表格 -->
+                <div id="rules-table-local" class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse text-[13px]">
+                            <thead>
+                                <tr class="border-b border-gray-100 bg-slate-50 text-gray-500 font-medium">
+                                    <th class="p-4 w-16 text-center">序号</th>
+                                    <th class="p-4">规则名称</th>
+                                    <th class="p-4">业务类型</th>
+                                    <th class="p-4">触发条件</th>
+                                    <th class="p-4 w-44">绑定的客服账号</th>
+                                    <th class="p-4 w-28">规则状态</th>
+                                    <th class="p-4 w-44">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rules-local-tbody" class="divide-y divide-gray-100">
+                                <!-- JS Local Rules injected here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 接口任务表格 -->
+                <div id="rules-table-api" class="hidden bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse text-[13px]">
+                            <thead>
+                                <tr class="border-b border-gray-100 bg-slate-50 text-gray-500 font-medium">
+                                    <th class="p-4 w-16 text-center">序号</th>
+                                    <th class="p-4">规则名称</th>
+                                    <th class="p-4 max-w-[200px]">任务获取 URL</th>
+                                    <th class="p-4">驱动方式</th>
+                                    <th class="p-4">拉取条数</th>
+                                    <th class="p-4">APP 通道</th>
+                                    <th class="p-4 w-44">绑定的客服账号</th>
+                                    <th class="p-4 w-28">规则状态</th>
+                                    <th class="p-4 w-44">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rules-api-tbody" class="divide-y divide-gray-100">
+                                <!-- JS API Rules injected here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 视图：任务列表 -->
+            <section id="view-tasks" class="hidden">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-[18px] font-bold text-gray-800">待执行触达任务</h2>
+                    <div class="flex space-x-2">
+                        <input type="text" placeholder="搜索接收人、客服、任务 ID" class="border border-gray-300 rounded px-3 py-1.5 text-[13px] w-64 outline-none focus:border-[#1677ff]">
+                        <button class="bg-[#1677ff] hover:bg-[#4096ff] text-white text-[13px] px-4 py-1.5 rounded-md shadow-sm transition-all font-medium">筛选</button>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse text-[13px]">
+                            <thead>
+                                <tr class="border-b border-gray-100 bg-slate-50 text-gray-500 font-medium">
+                                    <th class="p-3 w-10 text-center"><input type="checkbox" class="rounded border-gray-300"></th>
+                                    <th class="p-3">下发时间</th>
+                                    <th class="p-3">负责客服</th>
+                                    <th class="p-3">接收人</th>
+                                    <th class="p-3">阶段数</th>
+                                    <th class="p-3">下发概况</th>
+                                    <th class="p-3">通道</th>
+                                    <th class="p-3">消息数</th>
+                                    <th class="p-3">任务状态</th>
+                                    <th class="p-3">内容预览</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tasks-tbody" class="divide-y divide-gray-100">
+                                <!-- JS Tasks injected here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- MODAL 1: 新建/编辑 SOP 规则 -->
+    <!-- ============================================== -->
+    <div id="rule-modal" class="fixed inset-0 bg-black/40 z-[50] hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-[850px] flex flex-col h-[90vh] max-h-[850px]">
+            <!-- 头部 -->
+            <div class="p-4 border-b border-gray-200 flex justify-between items-center bg-slate-50 rounded-t-xl shrink-0">
+                <h3 class="text-[15px] font-bold text-gray-800">新建自动化跟进 SOP</h3>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            
+            <!-- 滚动内容区 -->
+            <div class="p-6 overflow-y-auto flex-1 bg-white">
+                
+                <!-- 规则来源模式 -->
+                <div class="mb-6">
+                    <label class="block text-[13px] text-gray-500 font-medium mb-1.5">规则来源模式</label>
+                    <select id="source-mode-select" onchange="toggleSourceMode()" class="w-full border border-blue-300 text-blue-700 bg-blue-50 rounded-lg p-2.5 text-[13px] outline-none shadow-sm font-medium focus:ring-2 focus:ring-blue-100 transition-all">
+                        <option value="api">接口拉任务</option>
+                        <option value="local" selected>本地自动化跟进</option>
+                    </select>
+                </div>
+
+                <!-- ================= 模式 A：接口拉任务配置 ================= -->
+                <div id="mode-api-config" class="hidden space-y-5">
+                    <div class="mb-4">
+                        <label class="block text-[13px] text-gray-500 font-medium mb-1.5">执行时间区间（可选）</label>
+                        <div class="border border-dashed border-gray-300 bg-gray-50/50 rounded-lg p-3 text-center text-gray-400 text-[12px] mb-2">
+                            未配置时间区间时，默认全天可执行 SOP。
+                        </div>
+                        <button class="border border-gray-300 text-gray-600 px-3 py-1.5 rounded text-[12px] bg-white hover:bg-gray-50">+ 添加时间区间</button>
+                    </div>
+
+                    <div class="bg-[#fffbe6] border border-[#ffe58f] rounded-lg p-5">
+                        <div class="grid grid-cols-2 gap-5 mb-5">
+                            <div class="col-span-2">
+                                <label class="block text-[13px] text-gray-600 mb-1 font-medium">任务获取 URL</label>
+                                <input type="text" placeholder="https://你的平台地址/sop/tasks" class="w-full border border-gray-300 rounded p-2 text-[13px] outline-none focus:border-amber-400">
+                            </div>
+                            <div class="col-span-2">
+                                <label class="block text-[13px] text-gray-600 mb-1 font-medium">任务驱动方式</label>
+                                <select class="w-full border border-gray-300 rounded p-2 text-[13px] outline-none bg-white focus:border-amber-400">
+                                    <option>会话驱动</option>
+                                    <option>定时驱动</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[13px] text-gray-600 mb-1 font-medium">单次拉取条数</label>
+                                <input type="number" value="20" class="w-full border border-gray-300 rounded p-2 text-[13px] outline-none focus:border-amber-400">
+                            </div>
+                            <div>
+                                <label class="block text-[13px] text-gray-600 mb-1 font-medium">APP 下发队列</label>
+                                <select class="w-full border border-gray-300 rounded p-2 text-[13px] outline-none bg-white focus:border-amber-400">
+                                    <option>slow 慢通道</option>
+                                    <option>fast 快通道</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="text-[12px] text-[#d48806] bg-white p-2.5 rounded border border-[#ffe58f]">
+                            当前规则集合从上方 URL 拉取 SOP 任务，再按所选队列下发给 APP。Day 文案规则保留但不作为主执行来源。
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ================= 模式 B：本地自动化跟进配置 ================= -->
+                <div id="mode-local-config" class="space-y-6">
+                    <!-- 基本信息 -->
+                    <div class="grid grid-cols-2 gap-5 bg-slate-50 p-4 rounded-lg border border-gray-100">
+                        <div>
+                            <label class="block text-[13px] text-gray-500 font-medium mb-1.5">客户状态</label>
+                            <select class="w-full border border-blue-300 rounded-lg p-2 text-[13px] outline-none bg-white text-slate-700 focus:ring-2 focus:ring-blue-100 transition-all">
+                                <option>首次加微</option>
+                                <option>已下单未付款</option>
+                                <option>已完成服务</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[13px] text-gray-500 font-medium mb-1.5">下发通道</label>
+                            <select class="w-full border border-gray-300 rounded-lg p-2 text-[13px] outline-none bg-white focus:border-blue-400 transition-all">
+                                <option>slow 慢通道</option>
+                                <option>fast 快通道</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- 动态时间轴渲染区 -->
+                    <div class="border-t border-gray-100 pt-5">
+                        <h4 class="text-[14px] font-bold text-gray-800 mb-4">执行动作与话术</h4>
+                        <!-- Timeline 容器 -->
+                        <div id="dynamic-sop-stages-container" class="relative pl-6 space-y-6 pb-4">
+                            <!-- 垂直引导线在 JS 中动态判定渲染 -->
+                            <!-- JS Engine Content Injected Here -->
+                        </div>
+                    </div>
+                </div>
+                <!-- 结束模式 B -->
+                
+            </div>
+            <!-- 结束滚动内容区 -->
+
+            <!-- 底部操作按钮 -->
+            <div class="p-4 border-t border-gray-200 flex justify-end space-x-3 bg-slate-50 rounded-b-xl shrink-0">
+                <button onclick="closeModal()" class="border border-gray-300 bg-white text-gray-600 px-4 py-2 rounded text-[13px] font-medium hover:bg-gray-50 transition-colors">取消</button>
+                <button onclick="saveRule()" class="bg-[#1677ff] text-white px-4 py-2 rounded text-[13px] font-medium hover:bg-[#4096ff] shadow-sm transition-colors">发布并启用</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- MODAL 2: 绑定客服弹出层 -->
+    <!-- ============================================== -->
+    <div id="bind-customer-modal" class="fixed inset-0 bg-black/40 z-[60] hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-[500px] flex flex-col h-[65vh] max-h-[650px]">
+            <div class="p-4 border-b border-gray-200 flex justify-between items-center bg-slate-50 rounded-t-xl shrink-0">
+                <h3 class="text-[15px] font-bold text-gray-800">绑定关联客服账号</h3>
+                <button onclick="closeBindCustomerModal()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            
+            <div class="p-6 overflow-y-auto flex-1 bg-white">
+                <p class="text-[12px] text-gray-500 mb-4">请选择该 SOP 规则适用的客服账号。被选中的账号才会触发此规则生成触达任务。若未选择，则默认对所有账号不生效（或依业务逻辑而定）。</p>
+                
+                <!-- 已选客服展示区 (实时联动) -->
+                <div class="mb-5 bg-blue-50/50 p-3 rounded-lg border border-blue-100">
+                    <div class="text-[12px] font-semibold text-blue-800 mb-2 flex items-center">
+                        <span class="w-1.5 h-1.5 rounded-full bg-[#1677ff] mr-1.5"></span>
+                        已绑定的客服 (<span id="selected-cs-count">0</span>)
+                    </div>
+                    <!-- 动态 Tags -->
+                    <div id="selected-cs-tags" class="flex flex-wrap gap-2 items-start min-h-[28px]">
+                        <!-- JS Dynamically injects tags here -->
+                    </div>
+                </div>
+
+                <div class="text-[12px] text-gray-500 font-medium mb-2.5">
+                    提示：支持多选，点击下方方块直接勾选/取消。
+                </div>
+                
+                <div id="customer-checkbox-list" class="grid grid-cols-2 gap-3">
+                    <!-- JS Checkboxes injected here -->
+                </div>
+            </div>
+            
+            <div class="p-4 border-t border-gray-200 flex justify-end space-x-3 bg-slate-50 rounded-b-xl shrink-0">
+                <button onclick="closeBindCustomerModal()" class="border border-gray-300 bg-white text-gray-600 px-4 py-2 rounded text-[13px] font-medium hover:bg-gray-50">取消</button>
+                <button onclick="saveBoundCustomers()" class="bg-[#1677ff] text-white px-4 py-2 rounded text-[13px] font-medium hover:bg-[#4096ff] shadow-sm">保存绑定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- UI Notification Toast -->
+    <div id="toast-container" class="fixed top-5 left-1/2 -translate-x-1/2 z-[100] flex flex-col space-y-2 pointer-events-none"></div>
+
+    <script>
+        // ==========================================
+        // Data Mocks
+        // ==========================================
+        let rulesData = [
+            { id: 1, mode: "local", name: "SOP容量测试-SOPLOAD...-加微三阶段", type: "新客转化", condition: "加微", active: true, boundCustomers: ['田忠涛SL0083', '客服张静'] },
+            { id: 2, mode: "local", name: "SOP全场景测试-SOPFULL...-下单条件", type: "新客转化", condition: "下单", active: false, boundCustomers: [] },
+            { id: 3, mode: "local", name: "SOP全场景测试-SOPFULL...-结算多阶", type: "新客转化", condition: "结算", active: false, boundCustomers: ['客服组长-李静'] },
+            { id: 4, mode: "api", name: "旧CRM系统待付款订单拉取", url: "https://api.crm.com/v1/sop/unpaid", driver: "定时驱动", limit: 50, queue: "fast 快通道", active: true, boundCustomers: ['田忠涛SL0083'] },
+            { id: 5, mode: "api", name: "第三方商城会员生日关怀拉取", url: "https://api.mall.com/v2/tasks/birthday", driver: "会话驱动", limit: 20, queue: "slow 慢通道", active: false, boundCustomers: [] }
+        ];
+
+        let tasksData = [
+            { id: 1, time: "2026-06-03 09:00:43", cs: "田忠涛SL0083", receiver: "幺哥", stages: "1 阶段", result: "成功 1", channel: "慢速", msgCount: 2, status: "success", preview: "哈喽～打扰啦，还记得之前..." },
+            { id: 2, time: "2026-06-03 09:00:11", cs: "田忠涛SL0083", receiver: "顺和", stages: "1 阶段", result: "成功 1", channel: "慢速", msgCount: 2, status: "success", preview: "哈喽～打扰啦，还记得之前..." },
+            { id: 3, time: "2026-06-03 09:00:10", cs: "田忠涛SL0083", receiver: "26.5.27嘉定", stages: "1 阶段", result: "成功 1", channel: "慢速", msgCount: 1, status: "success", preview: "大雁全国连锁-李总监控..." }
+        ];
+
+        // ==========================================
+        // Timeline Dynamic Engine State
+        // ==========================================
+        let sopStagesState = [
+            {
+                id: 'stage-' + Date.now(),
+                timing: 'immediate', // 'immediate' | 'delayed'
+                delayDays: 1,
+                delayTime: '09:00',
+                priority: 'P2 常规',
+                messages: [
+                    { id: 'msg-' + Date.now(), type: 'text', content: '' }
+                ]
+            }
+        ];
+
+        function renderDynamicStages() {
+            const container = document.getElementById('dynamic-sop-stages-container');
+            if (!container) return;
+
+            const stagesHtml = sopStagesState.map((stage, stageIndex) => {
+                const isLast = stageIndex === sopStagesState.length - 1;
+                
+                return `
+                    <div class="relative z-10 group">
+                        <!-- 时序圆圈 -->
+                        <div class="absolute -left-[27px] top-6 w-3 h-3 rounded-full border-2 border-[#1677ff] bg-white z-10 ring-4 ring-white"></div>
+                        <!-- 连接线 (如果不是最后一个) -->
+                        ${!isLast ? `<div class="absolute -left-[22px] top-9 bottom-[-24px] w-[2px] bg-blue-100 z-0"></div>` : ''}
+
+                        <!-- 阶段主卡片 -->
+                        <div class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm mb-6 transition-all hover:border-blue-200">
+                            
+                            <!-- 头部配置：执行时机 & 优先级 -->
+                            <div class="flex items-center justify-between mb-5 flex-wrap gap-4">
+                                <div class="flex items-center space-x-3">
+                                    <label class="text-[13px] font-bold text-gray-700 flex items-center">
+                                        <span class="text-red-500 mr-1">*</span>执行时机
+                                    </label>
+                                    
+                                    <!-- 极简分段控制器 (Segmented Control) -->
+                                    <div class="flex bg-gray-100 p-0.5 rounded-md border border-gray-200/50">
+                                        <button type="button" onclick="updateStageTiming('${stage.id}', 'immediate')" class="px-4 py-1.5 text-[13px] rounded ${stage.timing === 'immediate' ? 'bg-white text-[#1677ff] shadow-sm font-bold' : 'text-gray-500 hover:text-gray-700 font-medium'} transition-all">立即执行</button>
+                                        <button type="button" onclick="updateStageTiming('${stage.id}', 'delayed')" class="px-4 py-1.5 text-[13px] rounded ${stage.timing === 'delayed' ? 'bg-white text-[#1677ff] shadow-sm font-bold' : 'text-gray-500 hover:text-gray-700 font-medium'} transition-all">延时执行</button>
+                                    </div>
+
+                                    <!-- 延时配置输入 (仅在选了延时执行时展现) -->
+                                    ${stage.timing === 'delayed' ? `
+                                        <div class="flex items-center space-x-2 text-gray-600 animate-[fadeIn_0.2s_ease-out]">
+                                            <span class="text-[12px]">上一步完成</span>
+                                            <input type="number" value="${stage.delayDays}" onchange="updateStageDelayDays('${stage.id}', this.value)" class="border border-gray-300 w-12 px-2 py-1 text-center text-[12px] rounded focus:border-[#1677ff] outline-none">
+                                            <select class="border border-gray-300 px-2 py-1 text-[12px] rounded focus:border-[#1677ff] outline-none bg-white">
+                                                <option>天</option>
+                                            </select>
+                                            <span class="text-[12px]">后</span>
+                                            <div class="relative">
+                                                <input type="time" value="${stage.delayTime}" onchange="updateStageDelayTime('${stage.id}', this.value)" class="border border-gray-300 px-2 py-1 pl-7 text-[12px] rounded focus:border-[#1677ff] outline-none w-28">
+                                                <svg class="w-3.5 h-3.5 text-gray-400 absolute left-2 top-[6px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                            </div>
+                                            <span class="text-[12px]">执行</span>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                                
+                                <!-- 右侧优先级 -->
+                                <div class="flex items-center space-x-2 shrink-0">
+                                    <span class="text-[12px] text-gray-400">优先级配置:</span>
+                                    <div class="relative">
+                                        <select onchange="updateStagePriority('${stage.id}', this.value)" class="appearance-none border border-gray-300 rounded px-2.5 py-1 pr-6 bg-white text-[12px] text-gray-600 focus:border-[#1677ff] outline-none hover:border-gray-400 transition-colors">
+                                            <option value="P0 紧急" ${stage.priority === 'P0 紧急' ? 'selected' : ''}>P0 紧急</option>
+                                            <option value="P1 重要" ${stage.priority === 'P1 重要' ? 'selected' : ''}>P1 重要</option>
+                                            <option value="P2 常规" ${stage.priority === 'P2 常规' ? 'selected' : ''}>P2 常规</option>
+                                        </select>
+                                        <div class="pointer-events-none absolute inset-y-0 right-1.5 flex items-center text-gray-400">
+                                            <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                        </div>
+                                    </div>
+                                    ${stageIndex > 0 ? `
+                                    <button type="button" onclick="deleteSopStage('${stage.id}')" class="ml-2 text-gray-300 hover:text-red-500 transition-colors p-1" title="删除此阶段">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                    </button>
+                                    ` : ''}
+                                </div>
+                            </div>
+
+                            <!-- 立即执行时的友好提示 -->
+                            ${stage.timing === 'immediate' ? `
+                                <div class="mb-5 text-[12px] bg-[#f6ffed] border border-[#b7eb8f] rounded px-3 py-2 text-[#52c41a] flex items-center font-medium">
+                                    <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                                    上一步状态条件满足后，系统将立即生成并下发 SOP 任务。
+                                </div>
+                            ` : ''}
+
+                            <!-- 消息节点区域 (灰色底色块收纳) -->
+                            <div class="space-y-3 bg-[#fafafa] border border-gray-100 rounded-lg p-4">
+                                ${stage.messages.map(msg => renderMessageNode(stage.id, msg)).join('')}
+                                
+                                <!-- 添加消息按钮 (极简风格) -->
+                                <button type="button" onclick="addSopMessage('${stage.id}')" class="w-full py-2.5 mt-2 border border-dashed border-gray-300 rounded-lg text-[#1677ff] text-[13px] flex items-center justify-center hover:bg-white hover:border-[#1677ff] transition-all font-medium">
+                                    <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                    添加消息
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            const addStageBtn = `
+                <div class="relative z-10 pt-2">
+                    <button type="button" onclick="addSopStage()" class="w-full py-3 border border-dashed border-[#1677ff]/50 text-[#1677ff] rounded-lg hover:bg-blue-50 transition-colors flex items-center justify-center font-medium text-[13px] bg-white">
+                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                        添加时间节点
+                    </button>
+                </div>
+            `;
+
+            container.innerHTML = stagesHtml + addStageBtn;
+        }
+
+        // Render individual message block
+        function renderMessageNode(stageId, msg) {
+            const isText = msg.type === 'text';
+            const isImage = msg.type === 'image';
+            const isVideo = msg.type === 'video';
+
+            // 依据截图高度还原的下拉框外观
+            const typeSelectorHtml = `
+                <div class="flex items-center space-x-2">
+                    <span class="text-[12px] text-gray-500 font-medium">消息类型</span>
+                    <div class="relative w-28">
+                        <select onchange="updateSopMsgType('${stageId}', '${msg.id}', this.value)" class="appearance-none bg-white border border-gray-300 text-gray-700 text-[13px] rounded px-3 py-1.5 pr-8 focus:outline-none focus:border-[#1677ff] w-full cursor-pointer hover:border-gray-400 transition-colors font-medium shadow-sm">
+                            <option value="text" ${isText ? 'selected' : ''}>${isText ? '✓ ' : ''}文字</option>
+                            <option value="image" ${isImage ? 'selected' : ''}>${isImage ? '✓ ' : ''}图片</option>
+                            <option value="video" ${isVideo ? 'selected' : ''}>${isVideo ? '✓ ' : ''}视频</option>
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400">
+                            <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            let contentHtml = '';
+            if (isText) {
+                // 文字输入框（已移除旧的变量按钮）
+                contentHtml = `
+                    <div class="mt-4 border border-gray-300 rounded bg-white relative">
+                        <textarea rows="3" placeholder="请输入话术内容..." class="w-full p-3 text-[13px] outline-none focus:border-[#1677ff] rounded resize-none" onchange="updateSopMsgContent('${stageId}', '${msg.id}', this.value)">${msg.content}</textarea>
+                    </div>`;
+            } else {
+                // 媒体（图片/视频）上传占位区域
+                const iconPath = isImage 
+                    ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>'
+                    : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>';
+                const labelStr = isImage ? '图片' : '视频';
+                
+                contentHtml = `
+                    <div class="mt-4 flex flex-col items-center justify-center border border-dashed border-gray-300 rounded p-8 bg-white hover:bg-gray-50 hover:border-gray-400 transition-all cursor-pointer group">
+                        <div class="w-10 h-10 bg-blue-50 text-[#1677ff] rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">${iconPath}</svg>
+                        </div>
+                        <p class="text-[13px] text-gray-500 font-medium">点击此处上传${labelStr}文件</p>
+                        <p class="text-[11px] text-gray-400 mt-1">支持拖拽上传</p>
+                    </div>`;
+            }
+
+            return `
+                <div class="bg-white border border-gray-200 rounded-lg p-4 relative shadow-sm">
+                    <div class="flex items-center justify-between">
+                        ${typeSelectorHtml}
+                        <button onclick="deleteSopMessage('${stageId}', '${msg.id}')" class="text-red-300 hover:text-red-500 transition-colors p-1" title="删除此消息">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>
+                    </div>
+                    ${contentHtml}
+                </div>
+            `;
+        }
+
+        // --- Engine Actions ---
+        function addSopStage() {
+            sopStagesState.push({
+                id: 'stage-' + Date.now(),
+                timing: 'delayed', // 新增默认延时
+                delayDays: 1,
+                delayTime: '09:00',
+                priority: 'P2 常规',
+                messages: [{ id: 'msg-' + Date.now(), type: 'text', content: '' }]
+            });
+            renderDynamicStages();
+        }
+
+        function deleteSopStage(stageId) {
+            sopStagesState = sopStagesState.filter(s => s.id !== stageId);
+            renderDynamicStages();
+        }
+
+        function updateStageTiming(stageId, timing) {
+            const stage = sopStagesState.find(s => s.id === stageId);
+            if (stage) stage.timing = timing;
+            renderDynamicStages();
+        }
+
+        function updateStageDelayDays(stageId, days) {
+            const stage = sopStagesState.find(s => s.id === stageId);
+            if (stage) stage.delayDays = days;
+        }
+
+        function updateStageDelayTime(stageId, time) {
+            const stage = sopStagesState.find(s => s.id === stageId);
+            if (stage) stage.delayTime = time;
+        }
+
+        function updateStagePriority(stageId, priority) {
+            const stage = sopStagesState.find(s => s.id === stageId);
+            if (stage) stage.priority = priority;
+        }
+
+        function addSopMessage(stageId) {
+            const stage = sopStagesState.find(s => s.id === stageId);
+            if (stage) {
+                stage.messages.push({ id: 'msg-' + Date.now(), type: 'text', content: '' });
+                renderDynamicStages();
+            }
+        }
+
+        function deleteSopMessage(stageId, msgId) {
+            const stage = sopStagesState.find(s => s.id === stageId);
+            if (stage) {
+                stage.messages = stage.messages.filter(m => m.id !== msgId);
+                if (stage.messages.length === 0) { // 保底保留一条
+                    stage.messages.push({ id: 'msg-' + Date.now(), type: 'text', content: '' });
+                }
+                renderDynamicStages();
+            }
+        }
+
+        function updateSopMsgType(stageId, msgId, newType) {
+            const stage = sopStagesState.find(s => s.id === stageId);
+            if (stage) {
+                const msg = stage.messages.find(m => m.id === msgId);
+                if (msg) msg.type = newType;
+                renderDynamicStages();
+            }
+        }
+
+        function updateSopMsgContent(stageId, msgId, content) {
+            const stage = sopStagesState.find(s => s.id === stageId);
+            if (stage) {
+                const msg = stage.messages.find(m => m.id === msgId);
+                if (msg) msg.content = content;
+            }
+        }
+
+        // ==========================================
+        // App Initialization
+        // ==========================================
+        window.onload = () => {
+            renderRules();
+            renderTasks();
+            renderDynamicStages();
+            
+            // 初始化规则面板
+            document.getElementById('source-mode-select').value = 'local';
+            toggleSourceMode();
+        };
+
+        // --- 主导航切换 ---
+        function switchTab(tabId) {
+            const rulesView = document.getElementById('view-rules');
+            const tasksView = document.getElementById('view-tasks');
+            const rulesBtn = document.getElementById('tab-btn-rules');
+            const tasksBtn = document.getElementById('tab-btn-tasks');
+
+            const activeBtnClass = "w-full flex items-center space-x-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors text-[#1677ff] bg-blue-50";
+            const inactiveBtnClass = "w-full flex items-center space-x-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-50 hover:text-gray-900 relative";
+
+            if (tabId === 'rules') {
+                rulesView.classList.remove('hidden');
+                tasksView.classList.add('hidden');
+                rulesBtn.className = activeBtnClass;
+                tasksBtn.className = inactiveBtnClass;
+            } else if (tabId === 'tasks') {
+                rulesView.classList.add('hidden');
+                tasksView.classList.remove('hidden');
+                rulesBtn.className = inactiveBtnClass;
+                tasksBtn.className = activeBtnClass;
+            }
+        }
+
+        // --- 规则列表内部 Tab 切换 ---
+        function switchRuleTab(tab) {
+            const localBtn = document.getElementById('rule-tab-local');
+            const apiBtn = document.getElementById('rule-tab-api');
+            
+            if (tab === 'local') {
+                localBtn.className = "pb-2 border-b-2 border-[#1677ff] text-[#1677ff] font-medium transition-all";
+                apiBtn.className = "pb-2 border-b-2 border-transparent text-gray-500 hover:text-gray-900 transition-all";
+                document.getElementById('rules-table-local').classList.remove('hidden');
+                document.getElementById('rules-table-api').classList.add('hidden');
+            } else {
+                apiBtn.className = "pb-2 border-b-2 border-[#1677ff] text-[#1677ff] font-medium transition-all";
+                localBtn.className = "pb-2 border-b-2 border-transparent text-gray-500 hover:text-gray-900 transition-all";
+                document.getElementById('rules-table-api').classList.remove('hidden');
+                document.getElementById('rules-table-local').classList.add('hidden');
+            }
+        }
+
+        // --- 生成客服绑定的标签 HTML ---
+        function generateBoundTagsHtml(boundCustomers) {
+            if (!boundCustomers || boundCustomers.length === 0) {
+                return `<span class="text-gray-400 text-[12px] italic">未绑定</span>`;
+            }
+            // 列表页缩略显示，最多2个
+            const displayList = boundCustomers.slice(0, 2);
+            const extraCount = boundCustomers.length - 2;
+            let html = displayList.map(name => `<span class="inline-block bg-blue-50 text-[#1677ff] border border-blue-200 px-1.5 py-0.5 rounded text-[11px] font-medium mr-1 mb-1 truncate max-w-[90px]" title="${name}">${name}</span>`).join('');
+            if (extraCount > 0) {
+                html += `<span class="inline-block bg-gray-50 text-gray-500 border border-gray-200 px-1.5 py-0.5 rounded text-[11px] font-medium mb-1">+${extraCount}</span>`;
+            }
+            return html;
+        }
+
+        // --- 渲染规则表格 ---
+        function renderRules() {
+            // Local Rules Table
+            const localTbody = document.getElementById('rules-local-tbody');
+            const localRules = rulesData.filter(r => r.mode === 'local');
+            localTbody.innerHTML = localRules.map((rule, idx) => `
+                <tr class="hover:bg-slate-50/50 transition-colors">
+                    <td class="p-4 text-center text-gray-500">${idx + 1}</td>
+                    <td class="p-4 font-medium text-gray-700">${rule.name}</td>
+                    <td class="p-4 text-gray-600">${rule.type}</td>
+                    <td class="p-4 text-gray-600">${rule.condition}</td>
+                    <td class="p-4">${generateBoundTagsHtml(rule.boundCustomers)}</td>
+                    <td class="p-4">
+                        <button onclick="toggleRuleActive(${rule.id})" class="ant-switch ${rule.active ? 'ant-switch-checked' : ''}"></button>
+                    </td>
+                    <td class="p-4">
+                        <button onclick="openBindCustomerModal(${rule.id})" class="text-[#1677ff] hover:text-[#4096ff] font-medium mr-3 text-[13px]">绑定客服</button>
+                        <button class="text-[#1677ff] hover:text-[#4096ff] font-medium mr-3 text-[13px]">编辑</button>
+                        <button class="text-red-500 hover:text-red-600 font-medium text-[13px]">删除</button>
+                    </td>
+                </tr>
+            `).join('');
+
+            // API Rules Table
+            const apiTbody = document.getElementById('rules-api-tbody');
+            const apiRules = rulesData.filter(r => r.mode === 'api');
+            apiTbody.innerHTML = apiRules.map((rule, idx) => `
+                <tr class="hover:bg-slate-50/50 transition-colors">
+                    <td class="p-4 text-center text-gray-500">${idx + 1}</td>
+                    <td class="p-4 font-medium text-gray-700">${rule.name}</td>
+                    <td class="p-4 text-gray-500 text-[12px] truncate max-w-[200px]" title="${rule.url}">${rule.url}</td>
+                    <td class="p-4 text-gray-600">${rule.driver}</td>
+                    <td class="p-4 text-gray-600">${rule.limit} 条</td>
+                    <td class="p-4 text-gray-600">${rule.queue}</td>
+                    <td class="p-4">${generateBoundTagsHtml(rule.boundCustomers)}</td>
+                    <td class="p-4">
+                        <button onclick="toggleRuleActive(${rule.id})" class="ant-switch ${rule.active ? 'ant-switch-checked' : ''}"></button>
+                    </td>
+                    <td class="p-4">
+                        <button onclick="openBindCustomerModal(${rule.id})" class="text-[#1677ff] hover:text-[#4096ff] font-medium mr-3 text-[13px]">绑定客服</button>
+                        <button class="text-[#1677ff] hover:text-[#4096ff] font-medium mr-3 text-[13px]">编辑</button>
+                        <button class="text-red-500 hover:text-red-600 font-medium text-[13px]">删除</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // --- 渲染任务表格 ---
+        function renderTasks() {
+            const tbody = document.getElementById('tasks-tbody');
+            tbody.innerHTML = tasksData.map(task => `
+                <tr class="hover:bg-slate-50/50 transition-colors text-[13px]">
+                    <td class="p-3 text-center"><input type="checkbox" class="rounded border-gray-300"></td>
+                    <td class="p-3 text-gray-500">${task.time}</td>
+                    <td class="p-3 text-gray-700">${task.cs}</td>
+                    <td class="p-3 font-medium text-gray-800">${task.receiver}</td>
+                    <td class="p-3 text-gray-600">${task.stages}</td>
+                    <td class="p-3 text-gray-600">${task.result}</td>
+                    <td class="p-3 text-gray-500">${task.channel}</td>
+                    <td class="p-3 font-medium text-gray-700">${task.msgCount}</td>
+                    <td class="p-3">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium border border-[#b7eb8f] bg-[#f6ffed] text-[#52c41a]">
+                            ${task.status}
+                        </span>
+                    </td>
+                    <td class="p-3 text-gray-400 truncate max-w-[150px]" title="${task.preview}">${task.preview}</td>
+                </tr>
+            `).join('');
+        }
+
+        function toggleRuleActive(id) {
+            const rule = rulesData.find(r => r.id === id);
+            if(rule) rule.active = !rule.active;
+            renderRules();
+        }
+
+        function openRuleModal() {
+            document.getElementById('rule-modal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('rule-modal').classList.add('hidden');
+        }
+
+        function toggleSourceMode() {
+            const mode = document.getElementById('source-mode-select').value;
+            if (mode === 'api') {
+                document.getElementById('mode-api-config').classList.remove('hidden');
+                document.getElementById('mode-local-config').classList.add('hidden');
+            } else {
+                document.getElementById('mode-api-config').classList.add('hidden');
+                document.getElementById('mode-local-config').classList.remove('hidden');
+            }
+        }
+
+        function saveRule() {
+            const mode = document.getElementById('source-mode-select').value;
+            
+            if (mode === 'api') {
+                rulesData.unshift({
+                    id: Date.now(), mode: 'api', name: `新同步规则-${Date.now().toString().slice(-4)}`,
+                    url: "https://api.system.com/pull", driver: "定时驱动", limit: 20, queue: "slow 慢通道", active: true, boundCustomers: []
+                });
+            } else {
+                rulesData.unshift({
+                    id: Date.now(), mode: 'local', name: `新本地SOP-${Date.now().toString().slice(-4)}`,
+                    type: "新客转化", condition: "首次加微", active: true, boundCustomers: []
+                });
+            }
+            
+            closeModal();
+            switchRuleTab(mode);
+            renderRules();
+            showToast("✅ SOP 规则已成功发布启用！");
+        }
+
+        function showToast(message) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = "toast-enter bg-white px-4 py-3 rounded shadow-lg border border-gray-100 flex items-center space-x-2 text-[13px]";
+            toast.innerHTML = `
+                <svg class="w-4 h-4 text-[#52c41a]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span class="text-gray-700 font-medium">${message}</span>
+            `;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+        
+        // ==========================================
+        // 绑定客服 (Bind CS) Logic
+        // ==========================================
+        let currentBindRuleId = null;
+        // 模拟全量的客服账号库
+        const mockAllAccounts = [
+            "田忠涛SL0083", "客服张静", "客服组长-李静", 
+            "回访专员-赵丽", "美疗师-大雁", "前台-小美", 
+            "新客转化-刘专员", "系统测试员01"
+        ];
+
+        // 渲染弹窗顶部的已选标签
+        function renderSelectedCSTags() {
+            const checkboxes = document.querySelectorAll('.customer-checkbox:checked');
+            const selectedNames = Array.from(checkboxes).map(cb => cb.value);
+            const tagsContainer = document.getElementById('selected-cs-tags');
+            
+            document.getElementById('selected-cs-count').innerText = selectedNames.length;
+
+            if (selectedNames.length === 0) {
+                tagsContainer.innerHTML = `<span class="text-gray-400 text-[12px] italic mt-1 ml-1">暂未选择任何客服</span>`;
+                return;
+            }
+
+            tagsContainer.innerHTML = selectedNames.map(name => `
+                <span class="inline-flex items-center bg-blue-100 text-blue-800 border border-blue-200 px-2 py-1 rounded text-[12px] font-medium">
+                    ${name}
+                    <button type="button" onclick="toggleCSCheckbox('${name}')" class="ml-1.5 hover:text-blue-600 focus:outline-none">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </span>
+            `).join('');
+        }
+        
+        // 点击标签上的叉号取消勾选
+        function toggleCSCheckbox(accountName) {
+            const checkbox = document.querySelector(`.customer-checkbox[value="${accountName}"]`);
+            if (checkbox) {
+                checkbox.checked = false;
+                handleCheckboxChange(checkbox);
+            }
+        }
+
+        // Checkbox 改变时的 UI 联动反馈
+        function handleCheckboxChange(checkbox) {
+            const label = checkbox.closest('label');
+            if (checkbox.checked) {
+                label.classList.add('bg-blue-50/50', 'border-blue-300');
+            } else {
+                label.classList.remove('bg-blue-50/50', 'border-blue-300');
+            }
+            renderSelectedCSTags();
+        }
+
+        // 打开绑定客服弹窗
+        function openBindCustomerModal(ruleId) {
+            currentBindRuleId = ruleId;
+            const rule = rulesData.find(r => r.id === ruleId);
+            const boundList = rule.boundCustomers || [];
+
+            const container = document.getElementById('customer-checkbox-list');
+            container.innerHTML = mockAllAccounts.map(account => {
+                const isChecked = boundList.includes(account);
+                return `
+                    <label class="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-slate-50 cursor-pointer transition-all ${isChecked ? 'bg-blue-50/50 border-blue-300' : ''}">
+                        <input type="checkbox" value="${account}" onchange="handleCheckboxChange(this)" class="customer-checkbox w-4 h-4 text-[#1677ff] bg-white border-gray-300 rounded focus:ring-[#1677ff]" ${isChecked ? 'checked' : ''}>
+                        <span class="text-[13px] text-gray-700 font-medium">${account}</span>
+                    </label>
+                `;
+            }).join('');
+            
+            renderSelectedCSTags();
+            document.getElementById('bind-customer-modal').classList.remove('hidden');
+        }
+
+        function closeBindCustomerModal() {
+            document.getElementById('bind-customer-modal').classList.add('hidden');
+            currentBindRuleId = null;
+        }
+
+        function saveBoundCustomers() {
+            if (!currentBindRuleId) return;
+            const rule = rulesData.find(r => r.id === currentBindRuleId);
+            if (rule) {
+                const checkboxes = document.querySelectorAll('.customer-checkbox:checked');
+                rule.boundCustomers = Array.from(checkboxes).map(cb => cb.value);
+                renderRules(); // 刷新表格以展示最新绑定的内容
+                showToast("✅ 客服账号绑定配置已成功保存！");
+            }
+            closeBindCustomerModal();
+        }
+    </script>
+</body>
+</html>

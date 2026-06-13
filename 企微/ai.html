@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI自动回复 - 规则配置</title>
+    <!-- Tailwind CSS 核心引擎 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome 图标库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google 字体库 -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        /* 自定义滚动条样式 */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <!-- 顶部全局导航栏 -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-40 px-6 py-4 flex items-center justify-between shadow-sm">
+        <div class="flex items-center space-x-3">
+            <div class="bg-indigo-600 text-white p-2 rounded-lg flex items-center justify-center shadow-md shadow-indigo-100">
+                <i class="fa-solid fa-robot text-lg"></i>
+            </div>
+            <div>
+                <h1 class="text-lg font-bold text-slate-900 tracking-tight">销冠 AI 智能助手</h1>
+                <p class="text-xs text-slate-500">自动回复规则管理系统 · 第一阶段</p>
+            </div>
+        </div>
+        <div class="flex items-center space-x-4">
+            <div class="bg-slate-100 text-slate-600 px-3 py-1.5 rounded-full text-xs font-medium flex items-center space-x-1">
+                <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                <span>AI引擎运行中</span>
+            </div>
+            <div class="h-8 w-px bg-slate-200"></div>
+            <div class="flex items-center space-x-2">
+                <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-semibold text-sm">
+                    运营
+                </div>
+                <span class="text-sm font-medium text-slate-700 hidden sm:inline-block">产品负责人</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex flex-1 overflow-hidden">
+        <!-- 侧边栏 -->
+        <aside class="w-64 bg-slate-900 text-slate-300 hidden md:flex flex-col justify-between py-6">
+            <div class="space-y-6 px-4">
+                <div class="space-y-1">
+                    <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">控制台</p>
+                    <a href="https://alidocs.dingtalk.com/i/nodes/vy20BglGWOMZenBLu0vONr0aJA7depqY?utm_scene=person_space" target="_blank" rel="noopener noreferrer" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition">
+                        <i class="fa-regular fa-file-lines w-5 text-indigo-400"></i>
+                        <span class="text-sm font-medium">需求文档</span>
+                    </a>
+                </div>
+                <div class="space-y-1">
+                    <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">核心配置</p>
+                    <a href="#" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg bg-indigo-600/10 text-indigo-400 border border-indigo-500/20">
+                        <i class="fa-solid fa-sliders w-5"></i>
+                        <span class="text-sm font-semibold">AI自动回复规则</span>
+                    </a>
+                    <a href="#" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition">
+                        <i class="fa-solid fa-comments-dollar w-5"></i>
+                        <span class="text-sm font-medium">SOP话术池配置</span>
+                    </a>
+                    <a href="#" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition">
+                        <i class="fa-solid fa-users-gear w-5"></i>
+                        <span class="text-sm font-medium">企微账号库</span>
+                    </a>
+                </div>
+                <div class="space-y-1">
+                    <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">安全与审计</p>
+                    <a href="#" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition">
+                        <i class="fa-solid fa-shield-halved w-5"></i>
+                        <span class="text-sm font-medium">干预日志与拦截</span>
+                    </a>
+                </div>
+            </div>
+            <div class="px-7 py-4 border-t border-slate-800">
+                <div class="flex items-center space-x-2 text-xs text-slate-500">
+                    <i class="fa-solid fa-code-branch"></i>
+                    <span>v1.0.0-Beta</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 主内容工作区 -->
+        <main class="flex-1 overflow-y-auto bg-slate-50/50 p-6 sm:p-8" id="main-content">
+
+            <!-- SECTION 1: 规则列表页 (List View) -->
+            <div id="view-list" class="space-y-6">
+
+                <!-- 列表控制栏 -->
+                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 space-y-4">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div>
+                            <h2 class="text-lg font-bold text-slate-900">AI自动回复规则管理</h2>
+                            <p class="text-sm text-slate-500">控制不同销冠账号在特定时段、针对不同开口状态客群的AI托管策略。</p>
+                        </div>
+                        <div>
+                            <button id="btn-create-rule" onclick="openEditView()" class="w-full md:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-5 py-2.5 rounded-xl flex items-center justify-center space-x-2 shadow-lg shadow-indigo-100 transition-all transform active:scale-95">
+                                <i class="fa-solid fa-plus text-sm"></i>
+                                <span>新建规则</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 筛选区域 -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-slate-100">
+                        <div class="relative">
+                            <label class="text-xs font-medium text-slate-400 mb-1 block">规则状态</label>
+                            <select id="filter-status" onchange="applyFilters()" class="w-full pl-3 pr-10 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 hover:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all appearance-none cursor-pointer">
+                                <option value="all">全部状态</option>
+                                <option value="active">启用中</option>
+                                <option value="disabled">已停用</option>
+                            </select>
+                            <i class="fa-solid fa-chevron-down absolute right-3 bottom-3 text-slate-400 text-xs pointer-events-none"></i>
+                        </div>
+                        <div class="relative">
+                            <label class="text-xs font-medium text-slate-400 mb-1 block">生效账号分组</label>
+                            <select id="filter-account" onchange="applyFilters()" class="w-full pl-3 pr-10 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 hover:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all appearance-none cursor-pointer">
+                                <option value="all">全部账号</option>
+                                <option value="consult">零成本咨询组</option>
+                                <option value="vip">高净值VIP组</option>
+                                <option value="test">测试账号</option>
+                            </select>
+                            <i class="fa-solid fa-chevron-down absolute right-3 bottom-3 text-slate-400 text-xs pointer-events-none"></i>
+                        </div>
+                        <div class="relative">
+                            <label class="text-xs font-medium text-slate-400 mb-1 block">搜索规则名称</label>
+                            <div class="relative">
+                                <input type="text" id="filter-search" oninput="applyFilters()" placeholder="输入规则名称或描述搜索..." class="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 hover:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all">
+                                <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-sm"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 规则表格 -->
+                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 text-xs font-semibold uppercase tracking-wider">
+                                    <th class="py-4 px-6">规则名称及描述</th>
+                                    <th class="py-4 px-4 text-center">生效账号</th>
+                                    <th class="py-4 px-4">生效时段</th>
+                                    <th class="py-4 px-4">触发条件</th>
+                                    <th class="py-4 px-4 text-center">今日触发/回复</th>
+                                    <th class="py-4 px-4 text-center">状态</th>
+                                    <th class="py-4 px-6 text-right">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rule-table-body" class="divide-y divide-slate-100 text-sm text-slate-600">
+                                <!-- 动态插入 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 2: 规则编辑页 (Edit View) -->
+            <div id="view-edit" class="hidden space-y-6 max-w-5xl mx-auto">
+                <!-- 面包屑及头部区域 -->
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div class="space-y-1">
+                        <nav class="flex items-center space-x-2 text-xs font-medium text-slate-400">
+                            <span class="hover:text-slate-600 cursor-pointer" onclick="closeEditView()">AI自动回复规则</span>
+                            <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                            <span class="text-slate-600 font-semibold" id="form-breadcrumb-title">新建规则</span>
+                        </nav>
+                        <h2 class="text-2xl font-bold text-slate-900" id="form-title">新建自动回复规则</h2>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button type="button" onclick="closeEditView()" class="px-4 py-2 border border-slate-200 rounded-xl text-sm font-medium text-slate-600 bg-white hover:bg-slate-50 transition">
+                            取消
+                        </button>
+                        <button type="button" onclick="openConfirmModal()" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm rounded-xl shadow-lg shadow-indigo-100 transition">
+                            保存并启用
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 表单主要内容：分块表单 -->
+                <form id="rule-form" class="space-y-6" onsubmit="event.preventDefault();">
+                    <!-- 存储规则ID隐藏域 -->
+                    <input type="hidden" id="edit-rule-id" value="">
+
+                    <!-- 模块一：基础信息 -->
+                    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 space-y-4">
+                        <div class="flex items-center space-x-2 border-b border-slate-100 pb-3">
+                            <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">1</div>
+                            <h3 class="text-base font-bold text-slate-900">基础信息</h3>
+                        </div>
+                        <div class="grid grid-cols-1 gap-4">
+                            <div class="space-y-1">
+                                <label class="text-sm font-semibold text-slate-700 flex items-center">
+                                    规则名称 <span class="text-rose-500 ml-1">*</span>
+                                </label>
+                                <input type="text" id="input-name" placeholder="例如：零成本咨询-夜间AI接管" maxlength="30" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all">
+                                <p class="text-[11px] text-slate-400">简明易懂的规则名称，限30字以内。</p>
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-sm font-semibold text-slate-700">规则描述</label>
+                                <textarea id="input-desc" placeholder="请输入本条自动回复规则的详细描述，以便团队成员理解运作机制..." rows="2" maxlength="100" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"></textarea>
+                                <p class="text-[11px] text-slate-400">非必填，说明具体逻辑或应用背景，限100字。</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 模块二：生效账号 -->
+                    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 space-y-4">
+                        <div class="flex items-center space-x-2 border-b border-slate-100 pb-3">
+                            <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">2</div>
+                            <h3 class="text-base font-bold text-slate-900">生效账号</h3>
+                        </div>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="text-sm font-semibold text-slate-700 block mb-2">账号选择方式</label>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <label class="border-2 border-indigo-600 bg-indigo-50/20 p-4 rounded-xl flex items-start space-x-3 cursor-pointer select-none transition" id="label-acc-spec">
+                                        <input type="radio" name="acc_type" value="specific" checked onclick="toggleAccType('specific')" class="mt-1 text-indigo-600 focus:ring-indigo-500">
+                                        <div>
+                                            <span class="text-sm font-bold text-slate-800 block">指定账号</span>
+                                            <span class="text-xs text-slate-500">逐个指定启用AI接管的销冠账号（首期强力推荐）</span>
+                                        </div>
+                                    </label>
+                                    <label class="border border-slate-200 p-4 rounded-xl flex items-start space-x-3 cursor-pointer select-none hover:bg-slate-50 transition" id="label-acc-group">
+                                        <input type="radio" name="acc_type" value="group" onclick="toggleAccType('group')" class="mt-1 text-indigo-600 focus:ring-indigo-500">
+                                        <div>
+                                            <span class="text-sm font-bold text-slate-800 block">按账号分组</span>
+                                            <span class="text-xs text-slate-500">按部门或销售组批量托管（如“零成本咨询组”）</span>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- 动态账号选择区域 -->
+                            <div id="acc-specific-pane" class="space-y-3">
+                                <label class="text-sm font-semibold text-slate-700 flex items-center justify-between">
+                                    <span>选择生效销冠企微账号</span>
+                                    <button type="button" onclick="showAccountSelectModal()" class="text-xs text-indigo-600 hover:text-indigo-800 font-medium flex items-center space-x-1">
+                                        <i class="fa-solid fa-plus-circle"></i>
+                                        <span>从企微列表批量添加</span>
+                                    </button>
+                                </label>
+                                <div class="border border-slate-200 rounded-xl p-3 bg-slate-50 min-h-[80px] flex flex-wrap gap-2" id="selected-accounts-list">
+                                    <!-- 动态已选标签 -->
+                                    <div class="bg-white border border-slate-200 px-3 py-1.5 rounded-lg flex items-center space-x-2 text-xs shadow-sm font-medium">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                        <span>企微销冠-张小凡</span>
+                                        <button type="button" class="text-slate-400 hover:text-slate-600" onclick="this.parentElement.remove()"><i class="fa-solid fa-xmark"></i></button>
+                                    </div>
+                                    <div class="bg-white border border-slate-200 px-3 py-1.5 rounded-lg flex items-center space-x-2 text-xs shadow-sm font-medium">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                        <span>企微销冠-陆雪琪</span>
+                                        <button type="button" class="text-slate-400 hover:text-slate-600" onclick="this.parentElement.remove()"><i class="fa-solid fa-xmark"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="acc-group-pane" class="hidden space-y-3">
+                                <label class="text-sm font-semibold text-slate-700">选择账号分组</label>
+                                <select class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all">
+                                    <option value="consult">零成本咨询组 (包含 12 个企微账号)</option>
+                                    <option value="vip">高净值VIP转化组 (包含 5 个企微账号)</option>
+                                    <option value="test">新玩法AB测试组 (包含 2 个企微账号)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 模块三：生效时段 -->
+                    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 space-y-4">
+                        <div class="flex items-center space-x-2 border-b border-slate-100 pb-3">
+                            <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">3</div>
+                            <h3 class="text-base font-bold text-slate-900">生效时段</h3>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                <label class="border-2 border-indigo-600 bg-indigo-50/20 p-4 rounded-xl flex items-start space-x-2 cursor-pointer select-none text-left" id="label-time-daily">
+                                    <input type="radio" name="time_type" value="daily" checked onclick="toggleTimeType('daily')" class="mt-1 text-indigo-600">
+                                    <div>
+                                        <span class="text-sm font-bold text-slate-800 block">每日固定时段</span>
+                                        <span class="text-[11px] text-slate-500">例如：每夜 22:30 至次日 09:00</span>
+                                    </div>
+                                </label>
+                                <label class="border border-slate-200 p-4 rounded-xl flex items-start space-x-2 cursor-pointer select-none text-left hover:bg-slate-50 transition" id="label-time-weekly">
+                                    <input type="radio" name="time_type" value="weekly" onclick="toggleTimeType('weekly')" class="mt-1 text-indigo-600">
+                                    <div>
+                                        <span class="text-sm font-bold text-slate-800 block">按周定制</span>
+                                        <span class="text-[11px] text-slate-500">工作日与周末执行不同自动回复时间</span>
+                                    </div>
+                                </label>
+                                <label class="border border-slate-200 p-4 rounded-xl flex items-start space-x-2 cursor-pointer select-none text-left hover:bg-slate-50 transition" id="label-time-all">
+                                    <input type="radio" name="time_type" value="all" onclick="toggleTimeType('all')" class="mt-1 text-indigo-600">
+                                    <div>
+                                        <span class="text-sm font-bold text-slate-800 block">24小时全天接管</span>
+                                        <span class="text-[11px] text-slate-500">节假日或全职托管场景使用</span>
+                                    </div>
+                                </label>
+                            </div>
+
+                            <!-- 每日时段配置容器 -->
+                            <div id="time-pane-daily" class="space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <label class="text-sm font-semibold text-slate-700">时段配置</label>
+                                    <button type="button" onclick="addTimeSlot()" class="text-xs text-indigo-600 hover:text-indigo-800 font-medium flex items-center space-x-1">
+                                        <i class="fa-solid fa-plus-circle"></i>
+                                        <span>添加时段</span>
+                                    </button>
+                                </div>
+                                <div id="time-slots-container" class="space-y-2">
+                                    <!-- 初始时段行 -->
+                                    <div class="flex items-center space-x-3 bg-slate-50 p-3 rounded-xl border border-slate-200 text-sm">
+                                        <span class="text-slate-400 font-medium"><i class="fa-solid fa-clock"></i> 时段 1:</span>
+                                        <div class="flex items-center space-x-2">
+                                            <input type="time" value="22:30" class="border border-slate-200 px-2 py-1.5 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                                            <span class="text-slate-400">至</span>
+                                            <input type="time" value="09:00" class="border border-slate-200 px-2 py-1.5 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                                            <span class="text-xs bg-slate-200 text-slate-600 px-2 py-1 rounded-md font-medium">次日</span>
+                                        </div>
+                                        <button type="button" onclick="this.parentElement.remove()" class="text-rose-500 hover:text-rose-700 ml-auto"><i class="fa-regular fa-trash-can"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 按周时段定制 -->
+                            <div id="time-pane-weekly" class="hidden space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-150">
+                                <label class="text-sm font-semibold text-slate-700 block">选择生效工作日</label>
+                                <div class="flex flex-wrap gap-2">
+                                    <label class="px-3 py-2 bg-indigo-600 text-white rounded-lg text-xs font-semibold cursor-pointer">周一</label>
+                                    <label class="px-3 py-2 bg-indigo-600 text-white rounded-lg text-xs font-semibold cursor-pointer">周二</label>
+                                    <label class="px-3 py-2 bg-indigo-600 text-white rounded-lg text-xs font-semibold cursor-pointer">周三</label>
+                                    <label class="px-3 py-2 bg-indigo-600 text-white rounded-lg text-xs font-semibold cursor-pointer">周四</label>
+                                    <label class="px-3 py-2 bg-indigo-600 text-white rounded-lg text-xs font-semibold cursor-pointer">周五</label>
+                                    <label class="px-3 py-2 bg-slate-200 text-slate-600 rounded-lg text-xs font-semibold cursor-pointer">周六</label>
+                                    <label class="px-3 py-2 bg-slate-200 text-slate-600 rounded-lg text-xs font-semibold cursor-pointer">周日</label>
+                                </div>
+                            </div>
+
+                            <!-- 特殊日期折叠框 -->
+                            <div class="border border-slate-200 rounded-xl overflow-hidden">
+                                <button type="button" onclick="toggleAccordion('date-accordion')" class="w-full bg-slate-50 hover:bg-slate-100 px-4 py-3 text-left text-sm font-semibold text-slate-700 flex items-center justify-between transition-all">
+                                    <span><i class="fa-regular fa-calendar-days text-indigo-600 mr-2"></i> 特殊日期排除/包含 (法定节假日、自定义特殊日期)</span>
+                                    <i id="date-accordion-icon" class="fa-solid fa-chevron-down text-xs transition-transform"></i>
+                                </button>
+                                <div id="date-accordion" class="hidden p-4 border-t border-slate-200 space-y-4 bg-white">
+                                    <div class="flex items-center justify-between">
+                                        <div class="space-y-0.5">
+                                            <span class="text-xs font-bold text-slate-700">国家法定节假日</span>
+                                            <p class="text-xs text-slate-400">自动检测并支持春节、国庆等假期配置。</p>
+                                        </div>
+                                        <select class="border border-slate-200 rounded-lg px-3 py-1.5 text-xs bg-slate-50">
+                                            <option value="all-day">节假日全天候自动回复</option>
+                                            <option value="normal">仅应用本规则常规配置</option>
+                                        </select>
+                                    </div>
+                                    <hr class="border-slate-100">
+                                    <div class="space-y-2">
+                                        <span class="text-xs font-bold text-slate-700 block">排除自定义日期</span>
+                                        <div class="flex space-x-2">
+                                            <input type="date" class="border border-slate-200 px-3 py-1.5 rounded-lg text-xs bg-slate-50">
+                                            <button type="button" class="bg-indigo-600 text-white text-xs px-3 py-1.5 rounded-lg hover:bg-indigo-700">添加排除日期</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 人工兜底切换规则 -->
+                            <div class="pt-4 border-t border-slate-100 space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <div class="space-y-0.5">
+                                        <span class="text-sm font-bold text-slate-800 flex items-center">
+                                            <i class="fa-solid fa-hourglass-half text-amber-500 mr-2"></i>白天人工时段——AI防漏单兜底回复
+                                        </span>
+                                        <p class="text-xs text-slate-400">保障非AI自动回复时段（如白天），当销冠临时走开、未及时响应客户时启动托管。</p>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="input-backup" checked class="sr-only peer">
+                                        <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                                    </label>
+                                </div>
+                                <div class="flex items-center space-x-2 bg-amber-50 border border-amber-200/50 p-3 rounded-xl text-xs text-amber-900 font-medium">
+                                    <span>在白天人工服务期，若客户发送消息后超过</span>
+                                    <input type="number" id="input-backup-mins" value="15" min="1" max="120" class="w-14 px-2 py-1 border border-amber-300 rounded text-center bg-white focus:ring-1 focus:ring-indigo-500">
+                                    <span>分钟未得回复，则自动切换AI进行兜底性主动话术关怀。</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 模块四：触发条件 -->
+                    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 space-y-4">
+                        <div class="flex items-center space-x-2 border-b border-slate-100 pb-3">
+                            <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">4</div>
+                            <h3 class="text-base font-bold text-slate-900">触发条件与开口判断</h3>
+                        </div>
+
+                        <!-- 选项卡卡片设计 -->
+                        <div class="border border-slate-200 rounded-xl overflow-hidden bg-slate-50/50">
+                            <!-- 选项卡头部 -->
+                            <div class="flex border-b border-slate-200 bg-slate-100/80">
+                                <button type="button" onclick="switchConditionTab('tab-cond1')" id="btn-tab-cond1" class="flex-1 py-3 px-4 text-xs font-bold text-slate-800 border-b-2 border-indigo-600 bg-white flex items-center justify-center space-x-2 transition-all">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                    <span>状态一：新加微未开口新客</span>
+                                </button>
+                                <button type="button" onclick="switchConditionTab('tab-cond2')" id="btn-tab-cond2" class="flex-1 py-3 px-4 text-xs font-semibold text-slate-500 hover:bg-slate-50 border-b-2 border-transparent flex items-center justify-center space-x-2 transition-all">
+                                    <span class="w-2 h-2 rounded-full bg-slate-300"></span>
+                                    <span>状态二：开口中断老客</span>
+                                </button>
+                                <button type="button" onclick="switchConditionTab('tab-cond3')" id="btn-tab-cond3" class="flex-1 py-3 px-4 text-xs font-semibold text-slate-500 hover:bg-slate-50 border-b-2 border-transparent flex items-center justify-center space-x-2 transition-all">
+                                    <span class="w-2 h-2 rounded-full bg-slate-300"></span>
+                                    <span>状态三：流程完毕未转化</span>
+                                </button>
+                            </div>
+
+                            <!-- 状态1内容 -->
+                            <div id="tab-cond1" class="p-5 bg-white space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm font-bold text-slate-800">启用新加微未开口判定</span>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="cond1-enable" checked class="sr-only peer">
+                                        <div class="w-9 h-5 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
+                                    </label>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 border-t border-slate-100">
+                                    <div class="space-y-1">
+                                        <label class="text-xs font-semibold text-slate-600">“未开口”判定判定时长</label>
+                                        <div class="flex items-center space-x-2">
+                                            <input type="number" id="cond1-hours" value="2" class="border border-slate-200 px-3 py-1.5 rounded-lg text-sm bg-slate-50 w-24">
+                                            <span class="text-xs text-slate-500">小时 (建议2小时，支持0.5-72小时)</span>
+                                        </div>
+                                    </div>
+                                    <div class="space-y-1">
+                                        <label class="text-xs font-semibold text-slate-600">AI托管介入行为</label>
+                                        <select id="cond1-action" class="border border-slate-200 px-3 py-1.5 rounded-lg text-xs bg-slate-50 w-full">
+                                            <option value="both" selected>主动触达+被动应答 (极力推荐)</option>
+                                            <option value="sop">按预设SOP流程主动推进</option>
+                                            <option value="passive">仅在客户消息来时由AI应答 (纯被动)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="bg-indigo-50/50 p-3 rounded-lg flex items-center space-x-3 text-xs text-indigo-900 border border-indigo-100">
+                                    <i class="fa-solid fa-circle-info"></i>
+                                    <span>系统将自动检测企微服务中的新客户，添加2小时后仍无聊天往来，则自动执行首期关联的SOP挽回方案。</span>
+                                </div>
+                            </div>
+
+                            <!-- 状态2内容 -->
+                            <div id="tab-cond2" class="hidden p-5 bg-white space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm font-bold text-slate-800">启用开口中断客户激活</span>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="cond2-enable" class="sr-only peer">
+                                        <div class="w-9 h-5 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
+                                    </label>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 border-t border-slate-100">
+                                    <div class="space-y-1">
+                                        <label class="text-xs font-semibold text-slate-600">判定最后一次聊天间隔</label>
+                                        <div class="flex items-center space-x-2">
+                                            <input type="number" id="cond2-hours" value="24" class="border border-slate-200 px-3 py-1.5 rounded-lg text-sm bg-slate-50 w-24">
+                                            <span class="text-xs text-slate-500">小时 (达到此时间AI自动尝试激活)</span>
+                                        </div>
+                                    </div>
+                                    <div class="space-y-1">
+                                        <label class="text-xs font-semibold text-slate-600">AI接管激活话术组</label>
+                                        <select class="border border-slate-200 px-3 py-1.5 rounded-lg text-xs bg-slate-50 w-full">
+                                            <option value="default">默认激活话术池 (第1组)</option>
+                                            <option value="promotional">营销活动型话术池 (第2组)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 状态3内容 -->
+                            <div id="tab-cond3" class="hidden p-5 bg-white space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm font-bold text-slate-800">启用流程走完未转化激活</span>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="cond3-enable" class="sr-only peer">
+                                        <div class="w-9 h-5 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
+                                    </label>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 border-t border-slate-100">
+                                    <div class="space-y-1">
+                                        <label class="text-xs font-semibold text-slate-600">全部执行完毕且未付预约款判定</label>
+                                        <div class="flex items-center space-x-2">
+                                            <input type="number" id="cond3-days" value="3" class="border border-slate-200 px-3 py-1.5 rounded-lg text-sm bg-slate-50 w-24">
+                                            <span class="text-xs text-slate-500">天后 (判定客户处于流失阶段)</span>
+                                        </div>
+                                    </div>
+                                    <div class="space-y-1">
+                                        <label class="text-xs font-semibold text-slate-600">AI接管策略模式</label>
+                                        <select class="border border-slate-200 px-3 py-1.5 rounded-lg text-xs bg-slate-50 w-full">
+                                            <option value="low-freq">低频挽回高价值解答策略 (防打扰)</option>
+                                            <option value="high-freq">连续3天优惠促单策略</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-xs text-amber-600 font-medium"><i class="fa-solid fa-triangle-exclamation mr-1"></i>温馨建议：第一阶段线上测试跑通前，建议只勾选并启用状态一，其他两个状态保持默认关闭。</p>
+                    </div>
+
+                    <!-- 模块五：安全护栏 -->
+                    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 space-y-4">
+                        <div class="flex items-center space-x-2 border-b border-slate-100 pb-3">
+                            <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">5</div>
+                            <h3 class="text-base font-bold text-slate-900">安全防护栏 (必配保障)</h3>
+                        </div>
+
+                        <div class="space-y-4">
+                            <!-- 强制转人工敏感词 -->
+                            <div class="space-y-1.5">
+                                <label class="text-sm font-semibold text-slate-700">强制转人工核心关键词 (逗号隔开)</label>
+                                <div class="border border-slate-200 rounded-xl p-3 bg-slate-50/50 space-y-2">
+                                    <div id="keywords-container" class="flex flex-wrap gap-1.5">
+                                        <!-- 默认初始拦截词 -->
+                                    </div>
+                                    <div class="flex space-x-2">
+                                        <input type="text" id="input-keyword-text" placeholder="输入敏感词回车或英文逗号添加" class="flex-1 px-3 py-1.5 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-white">
+                                        <button type="button" onclick="addCustomKeyword()" class="bg-slate-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-slate-800 transition">添加</button>
+                                    </div>
+                                </div>
+                                <p class="text-[11px] text-slate-400">客户一单触发任何上述关键词，AI自动停手，不生成任何回复，并将微信会话标注为“高优待处理”。</p>
+                            </div>
+
+                            <!-- 其他护栏参数 -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-slate-100">
+                                <div class="space-y-2">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-xs font-semibold text-slate-700">识别出找真人即刻转交</span>
+                                        <label class="relative inline-flex items-center cursor-pointer">
+                                            <input type="checkbox" id="input-explicit" checked class="sr-only peer">
+                                            <div class="w-9 h-5 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
+                                        </label>
+                                    </div>
+                                    <p class="text-[11px] text-slate-400">客户表达“人工”、“找真人客服”等模糊倾向，AI自动终止接管并通知微信主人。</p>
+                                </div>
+
+                                <div class="space-y-1">
+                                    <label class="text-xs font-semibold text-slate-700">单客户单日AI最大回复上限 (防刷骚扰)</label>
+                                    <div class="flex items-center space-x-2">
+                                        <input type="number" id="input-day-limit" value="10" min="1" max="100" class="border border-slate-200 px-3 py-1 rounded-lg text-xs w-24">
+                                        <span class="text-xs text-slate-500">条 / 天 (达到上限停止回复)</span>
+                                    </div>
+                                    <p class="text-[11px] text-slate-400">防止由于算法死循环或外部恶意刷流行为造成的打扰问题。</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- 底部操作区 -->
+                <div class="flex items-center justify-end space-x-3 pt-4 border-t border-slate-200">
+                    <button type="button" onclick="closeEditView()" class="px-6 py-2.5 border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 bg-white hover:bg-slate-50 transition">
+                        取消
+                    </button>
+                    <button type="button" onclick="saveAsDraft()" class="px-6 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-sm rounded-xl transition">
+                        保存为草稿
+                    </button>
+                    <button type="button" onclick="openConfirmModal()" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm rounded-xl shadow-lg shadow-indigo-100 transition">
+                        保存并启用
+                    </button>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- MODAL 1: 企微账号批量选择弹窗 -->
+    <div id="acc-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4 transition-all">
+        <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                <h3 class="font-bold text-slate-900 flex items-center"><i class="fa-solid fa-address-book text-indigo-600 mr-2"></i>批量导入生效微信账号</h3>
+                <button onclick="closeAccountSelectModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <!-- 搜索 -->
+            <div class="p-4 border-b border-slate-100">
+                <input type="text" placeholder="输入企微昵称、部门关键字查找账号..." class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+            </div>
+            <!-- 列表 -->
+            <div class="overflow-y-auto p-4 space-y-2 flex-1">
+                <!-- 账号项 -->
+                <label class="flex items-center justify-between p-3 border border-slate-150 rounded-xl hover:bg-slate-50 cursor-pointer">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center text-xs">张</div>
+                        <div>
+                            <span class="text-sm font-bold text-slate-800 block">企微销冠-张小凡</span>
+                            <span class="text-[11px] text-slate-400">运营部-零成本咨询组一</span>
+                        </div>
+                    </div>
+                    <input type="checkbox" checked class="rounded text-indigo-600 focus:ring-indigo-500">
+                </label>
+                <label class="flex items-center justify-between p-3 border border-slate-150 rounded-xl hover:bg-slate-50 cursor-pointer">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center text-xs">陆</div>
+                        <div>
+                            <span class="text-sm font-bold text-slate-800 block">企微销冠-陆雪琪</span>
+                            <span class="text-[11px] text-slate-400">运营部-零成本咨询组一</span>
+                        </div>
+                    </div>
+                    <input type="checkbox" checked class="rounded text-indigo-600 focus:ring-indigo-500">
+                </label>
+                <label class="flex items-center justify-between p-3 border border-slate-150 rounded-xl hover:bg-slate-50 cursor-pointer">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 font-bold flex items-center justify-center text-xs">碧</div>
+                        <div>
+                            <span class="text-sm font-bold text-slate-800 block">企微销冠-碧瑶</span>
+                            <span class="text-[11px] text-slate-400">销售二部-高净值VIP组</span>
+                        </div>
+                    </div>
+                    <input type="checkbox" class="rounded text-indigo-600 focus:ring-indigo-500">
+                </label>
+                <label class="flex items-center justify-between p-3 border border-slate-150 rounded-xl hover:bg-slate-50 cursor-pointer">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 rounded-full bg-amber-100 text-amber-700 font-bold flex items-center justify-center text-xs">林</div>
+                        <div>
+                            <span class="text-sm font-bold text-slate-800 block">企微销冠-林惊羽</span>
+                            <span class="text-[11px] text-slate-400">售后服务部-体验专区</span>
+                        </div>
+                    </div>
+                    <input type="checkbox" class="rounded text-indigo-600 focus:ring-indigo-500">
+                </label>
+            </div>
+            <!-- 底部 -->
+            <div class="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-end space-x-2">
+                <button type="button" onclick="closeAccountSelectModal()" class="px-4 py-2 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 bg-white hover:bg-slate-100">取消</button>
+                <button type="button" onclick="closeAccountSelectModal()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold shadow-md">确定导入 (2个账号)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: 二次确认启用弹窗 -->
+    <div id="confirm-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4 transition-all">
+        <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden flex flex-col">
+            <div class="px-6 py-5 border-b border-slate-100 bg-indigo-600 text-white flex items-center justify-between">
+                <h3 class="font-bold flex items-center text-base"><i class="fa-regular fa-circle-check text-xl mr-2"></i> 规则确认启用与防呆风险评估</h3>
+                <button type="button" onclick="closeConfirmModal()" class="text-indigo-200 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <!-- 数据影响分析报告 -->
+            <div class="p-6 space-y-4">
+                <div class="bg-indigo-50/50 p-4 rounded-xl border border-indigo-200/40 text-sm space-y-1.5">
+                    <p class="font-bold text-indigo-900">📋 本次自动回复策略对齐诊断：</p>
+                    <ul class="text-xs text-indigo-800 space-y-1 list-disc pl-4 font-medium">
+                        <li>已关联影响微信号数：<strong id="confirm-accounts-cnt">2 个账号</strong></li>
+                        <li>托管生效时段：<strong id="confirm-time-range">夜间 22:30 至 次日 09:00</strong></li>
+                        <li>预估每日自动接管并盘活新客数：<strong>约 80 - 150 个客户会话/天</strong></li>
+                        <li>护栏关键词过滤：<strong>已启用（8项核心拦截词）</strong></li>
+                    </ul>
+                </div>
+
+                <div class="space-y-3">
+                    <span class="text-xs font-bold text-slate-500 block uppercase tracking-wider">最后置信检查项</span>
+                    <label class="flex items-start space-x-2.5 cursor-pointer text-xs">
+                        <input type="checkbox" checked class="rounded mt-0.5 text-indigo-600 focus:ring-indigo-500">
+                        <span class="text-slate-600 leading-relaxed">我确认本条规则时段配置（主要针对非人工服务时间），确认在选定时间段内启用AI托管。</span>
+                    </label>
+                    <label class="flex items-start space-x-2.5 cursor-pointer text-xs">
+                        <input type="checkbox" checked class="rounded mt-0.5 text-indigo-600 focus:ring-indigo-500">
+                        <span class="text-slate-600 leading-relaxed">已仔细评估强制转人工机制，确认已经包含如“退款”、“不想要”等关键敏感词保障。</span>
+                    </label>
+                </div>
+            </div>
+            <!-- 确认区 -->
+            <div class="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-end space-x-2">
+                <button type="button" onclick="closeConfirmModal()" class="px-4 py-2 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 bg-white hover:bg-slate-100">返回修改</button>
+                <button type="button" onclick="submitRuleForm()" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold shadow-lg shadow-indigo-100">我已核对，立即发布并启用</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 模态Toast系统（替代原生alert） -->
+    <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-10 opacity-0 pointer-events-none transition-all duration-300 flex items-center space-x-3 bg-slate-900 text-white px-5 py-3.5 rounded-xl shadow-2xl">
+        <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400 text-base"></i>
+        <span id="toast-msg" class="text-xs font-medium">配置已成功保存！</span>
+    </div>
+
+
+    <script>
+        // 初始化数据库 (模拟后端返回 - 已精简优先级和试运行状态)
+        let mockRules = [
+            {
+                id: "rule-1",
+                name: "零成本咨询 - 夜间AI托管",
+                desc: "针对夜间休眠时间（22:30-次日09:00）新客未开口，由AI自动接管推送SOP，防止流失。",
+                accounts: ["企微销冠-张小凡", "企微销冠-陆雪琪"],
+                accountsCount: 2,
+                timeType: "daily",
+                timeSlots: [{start: "22:30", end: "09:00"}],
+                backupMinutes: 15,
+                status: true, // 启用中
+                triggerToday: 189,
+                repliesToday: 156
+            },
+            {
+                id: "rule-2",
+                name: "高价值VIP线索 - 白天兜底守护",
+                desc: "白天由于客服忙碌导致的漏回复兜底。超过20分钟未说话，由AI主动破冰关怀并接管问卷。",
+                accounts: ["企微销冠-碧瑶"],
+                accountsCount: 1,
+                timeType: "daily",
+                timeSlots: [{start: "09:00", end: "18:00"}],
+                backupMinutes: 20,
+                status: false, // 已停用
+                triggerToday: 45,
+                repliesToday: 32
+            },
+            {
+                id: "rule-3",
+                name: "测试库账号 - 全职全天候回复",
+                desc: "节假日测试账号，对全时段任何未转化的客户采用SOP以及促销手段低频关怀测试。",
+                accounts: ["企微销冠-林惊羽"],
+                accountsCount: 1,
+                timeType: "all",
+                timeSlots: [],
+                backupMinutes: 15,
+                status: true, // 启用中
+                triggerToday: 12,
+                repliesToday: 12
+            }
+        ];
+
+        // 默认护栏阻断拦截关键词
+        let globalKeywords = ["投诉", "退款", "举报", "医疗事故", "过敏", "烂脸", "垃圾", "虚假广告", "消费者保护协会"];
+
+        // 页面启动渲染
+        window.onload = function() {
+            renderRulesTable();
+            renderKeywords();
+            
+            // 安全绑定关键词回车输入事件
+            const keywordInput = document.getElementById('input-keyword-text');
+            if (keywordInput) {
+                keywordInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        addCustomKeyword();
+                    }
+                });
+            }
+        };
+
+        // 渲染规则表格
+        function renderRulesTable() {
+            const tableBody = document.getElementById('rule-table-body');
+            if (!tableBody) return;
+            tableBody.innerHTML = '';
+
+            mockRules.forEach(rule => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50/70 transition-colors";
+                tr.setAttribute('data-id', rule.id);
+
+                // 生成状态与标签
+                const statusBadge = rule.status 
+                    ? `<span class="bg-emerald-50 text-emerald-600 border border-emerald-200/50 px-2 py-1 rounded-md text-[11px] font-bold inline-flex items-center"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1"></span>启用中</span>`
+                    : `<span class="bg-slate-50 text-slate-500 border border-slate-200/50 px-2 py-1 rounded-md text-[11px] font-bold inline-flex items-center"><span class="w-1.5 h-1.5 rounded-full bg-slate-400 mr-1"></span>已停用</span>`;
+
+                // 时段显示
+                let timeStr = "";
+                if(rule.timeType === 'all') {
+                    timeStr = '<span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-medium">24小时全天候</span>';
+                } else {
+                    timeStr = rule.timeSlots.map(s => `<code class="text-xs font-semibold text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded">${s.start}-${s.end}</code>`).join(' + ');
+                }
+
+                // 生效账号显示
+                const accDisplay = `
+                    <div class="text-center">
+                        <span class="text-xs font-bold text-slate-700 underline cursor-pointer hover:text-indigo-600" onclick="showToast('正在加载 [${rule.accounts.join(', ')}] 的账号画像分析...')">
+                            ${rule.accountsCount} 个账号
+                        </span>
+                    </div>
+                `;
+
+                tr.innerHTML = `
+                    <td class="py-4 px-6 max-w-sm">
+                        <div class="flex items-center space-x-1.5">
+                            <span class="text-sm font-bold text-slate-900">${rule.name}</span>
+                        </div>
+                        <p class="text-xs text-slate-400 truncate mt-0.5">${rule.desc}</p>
+                    </td>
+                    <td class="py-4 px-4">${accDisplay}</td>
+                    <td class="py-4 px-4">${timeStr}</td>
+                    <td class="py-4 px-4">
+                        <span class="text-xs bg-indigo-50 text-indigo-700 px-2 py-1 rounded font-medium border border-indigo-100/50">新客未开口 2小时</span>
+                    </td>
+                    <td class="py-4 px-4 text-center">
+                        <div class="text-xs font-semibold text-slate-800">${rule.triggerToday} / ${rule.repliesToday}</div>
+                    </td>
+                    <td class="py-4 px-4 text-center">
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" class="sr-only peer" ${rule.status ? 'checked' : ''} onchange="toggleRuleStatus('${rule.id}', this)">
+                            <div class="w-9 h-5 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
+                        </label>
+                    </td>
+                    <td class="py-4 px-6 text-right space-x-1">
+                        <button type="button" onclick="editRule('${rule.id}')" class="text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 p-1.5 rounded transition text-xs font-bold"><i class="fa-regular fa-pen-to-square"></i> 编辑</button>
+                        <button type="button" onclick="copyRule('${rule.id}')" class="text-slate-500 hover:text-slate-800 hover:bg-slate-100 p-1.5 rounded transition text-xs font-bold"><i class="fa-regular fa-copy"></i> 复制</button>
+                        <button type="button" onclick="deleteRule('${rule.id}')" class="text-rose-600 hover:text-rose-800 hover:bg-rose-50 p-1.5 rounded transition text-xs font-bold"><i class="fa-regular fa-trash-can"></i> 删除</button>
+                    </td>
+                `;
+
+                tableBody.appendChild(tr);
+            });
+        }
+
+        // 一键启停规则
+        function toggleRuleStatus(ruleId, checkbox) {
+            const rule = mockRules.find(r => r.id === ruleId);
+            if(rule) {
+                rule.status = checkbox.checked;
+                showToast(`规则 [${rule.name}] 已${rule.status ? '开启' : '关闭'}！`);
+                setTimeout(renderRulesTable, 500);
+            }
+        }
+
+        // 筛选应用逻辑
+        function applyFilters() {
+            const statusVal = document.getElementById('filter-status').value;
+            const accountVal = document.getElementById('filter-account').value;
+            const searchVal = document.getElementById('filter-search').value.toLowerCase();
+
+            const rows = document.querySelectorAll('#rule-table-body tr');
+
+            rows.forEach(row => {
+                const id = row.getAttribute('data-id');
+                const rule = mockRules.find(r => r.id === id);
+                if (!rule) return;
+
+                let show = true;
+
+                // 状态筛选
+                if (statusVal === 'active' && !rule.status) show = false;
+                if (statusVal === 'disabled' && rule.status) show = false;
+
+                // 账号筛选
+                if (accountVal !== 'all') {
+                    if (accountVal === 'consult' && rule.id !== 'rule-1') show = false;
+                    if (accountVal === 'vip' && rule.id !== 'rule-2') show = false;
+                    if (accountVal === 'test' && rule.id !== 'rule-3') show = false;
+                }
+
+                // 搜索过滤
+                if (searchVal) {
+                    const matchName = rule.name.toLowerCase().includes(searchVal);
+                    const matchDesc = rule.desc.toLowerCase().includes(searchVal);
+                    if (!matchName && !matchDesc) show = false;
+                }
+
+                if(show) {
+                    row.classList.remove('hidden');
+                } else {
+                    row.classList.add('hidden');
+                }
+            });
+        }
+
+        // 打开新建/编辑规则页面
+        function openEditView() {
+            document.getElementById('view-list').classList.add('hidden');
+            document.getElementById('view-edit').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // 关闭编辑页面回到列表
+        function closeEditView() {
+            document.getElementById('view-edit').classList.add('hidden');
+            document.getElementById('view-list').classList.remove('hidden');
+            document.getElementById('edit-rule-id').value = "";
+            document.getElementById('rule-form').reset();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // 进入编辑单条规则状态
+        function editRule(ruleId) {
+            const rule = mockRules.find(r => r.id === ruleId);
+            if (!rule) return;
+
+            document.getElementById('form-breadcrumb-title').innerText = "编辑规则";
+            document.getElementById('form-title').innerText = `编辑自动回复规则 - ${rule.name}`;
+            document.getElementById('edit-rule-id').value = rule.id;
+
+            // 灌装数据
+            document.getElementById('input-name').value = rule.name;
+            document.getElementById('input-desc').value = rule.desc;
+            document.getElementById('input-backup-mins').value = rule.backupMinutes;
+
+            // 处理时段数据重灌
+            if(rule.timeType === 'all') {
+                const radioAll = document.querySelector('input[name="time_type"][value="all"]');
+                if (radioAll) radioAll.checked = true;
+                toggleTimeType('all');
+            } else {
+                const radioDaily = document.querySelector('input[name="time_type"][value="daily"]');
+                if (radioDaily) radioDaily.checked = true;
+                toggleTimeType('daily');
+                
+                const container = document.getElementById('time-slots-container');
+                if (container) {
+                    container.innerHTML = "";
+                    rule.timeSlots.forEach((slot, index) => {
+                        const div = document.createElement('div');
+                        div.className = "flex items-center space-x-3 bg-slate-50 p-3 rounded-xl border border-slate-200 text-sm";
+                        div.innerHTML = `
+                            <span class="text-slate-400 font-medium"><i class="fa-solid fa-clock"></i> 时段 ${index + 1}:</span>
+                            <div class="flex items-center space-x-2">
+                                <input type="time" value="${slot.start}" class="border border-slate-200 px-2 py-1.5 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                                <span class="text-slate-400">至</span>
+                                <input type="time" value="${slot.end}" class="border border-slate-200 px-2 py-1.5 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                                <span class="text-xs bg-slate-200 text-slate-600 px-2 py-1 rounded-md font-medium">次日</span>
+                            </div>
+                            <button type="button" onclick="this.parentElement.remove()" class="text-rose-500 hover:text-rose-700 ml-auto"><i class="fa-regular fa-trash-can"></i></button>
+                        `;
+                        container.appendChild(div);
+                    });
+                }
+            }
+
+            openEditView();
+        }
+
+        // 复制规则功能
+        function copyRule(ruleId) {
+            const rule = mockRules.find(r => r.id === ruleId);
+            if (!rule) return;
+
+            const newRule = JSON.parse(JSON.stringify(rule));
+            newRule.id = "rule-" + Date.now();
+            newRule.name = newRule.name + " (副本)";
+            newRule.status = false;
+
+            mockRules.push(newRule);
+            showToast("成功复制了一条规则！");
+            renderRulesTable();
+        }
+
+        // 删除规则功能
+        function deleteRule(ruleId) {
+            const idx = mockRules.findIndex(r => r.id === ruleId);
+            if(idx !== -1) {
+                const ruleName = mockRules[idx].name;
+                mockRules.splice(idx, 1);
+                showToast(`[${ruleName}] 规则已被移除！`, 'trash');
+                renderRulesTable();
+            }
+        }
+
+        // 账号选择方式切换
+        function toggleAccType(type) {
+            const specPane = document.getElementById('acc-specific-pane');
+            const groupPane = document.getElementById('acc-group-pane');
+            const labelSpec = document.getElementById('label-acc-spec');
+            const labelGroup = document.getElementById('label-acc-group');
+
+            if (type === 'specific') {
+                if(specPane) specPane.classList.remove('hidden');
+                if(groupPane) groupPane.classList.add('hidden');
+                if(labelSpec) labelSpec.className = "border-2 border-indigo-600 bg-indigo-50/20 p-4 rounded-xl flex items-start space-x-3 cursor-pointer select-none transition";
+                if(labelGroup) labelGroup.className = "border border-slate-200 p-4 rounded-xl flex items-start space-x-3 cursor-pointer select-none hover:bg-slate-50 transition";
+            } else {
+                if(specPane) specPane.classList.add('hidden');
+                if(groupPane) groupPane.classList.remove('hidden');
+                if(labelGroup) labelGroup.className = "border-2 border-indigo-600 bg-indigo-50/20 p-4 rounded-xl flex items-start space-x-3 cursor-pointer select-none transition";
+                if(labelSpec) labelSpec.className = "border border-slate-200 p-4 rounded-xl flex items-start space-x-3 cursor-pointer select-none hover:bg-slate-50 transition";
+            }
+        }
+
+        // 时段配置方式切换
+        function toggleTimeType(type) {
+            const paneDaily = document.getElementById('time-pane-daily');
+            const paneWeekly = document.getElementById('time-pane-weekly');
+            const lDaily = document.getElementById('label-time-daily');
+            const lWeekly = document.getElementById('label-time-weekly');
+            const lAll = document.getElementById('label-time-all');
+
+            if (lDaily) lDaily.className = "border border-slate-200 p-4 rounded-xl flex items-start space-x-2 cursor-pointer select-none text-left hover:bg-slate-50 transition";
+            if (lWeekly) lWeekly.className = "border border-slate-200 p-4 rounded-xl flex items-start space-x-2 cursor-pointer select-none text-left hover:bg-slate-50 transition";
+            if (lAll) lAll.className = "border border-slate-200 p-4 rounded-xl flex items-start space-x-2 cursor-pointer select-none text-left hover:bg-slate-50 transition";
+
+            if (type === 'daily') {
+                if(paneDaily) paneDaily.classList.remove('hidden');
+                if(paneWeekly) paneWeekly.classList.add('hidden');
+                if(lDaily) lDaily.className = "border-2 border-indigo-600 bg-indigo-50/20 p-4 rounded-xl flex items-start space-x-2 cursor-pointer select-none text-left";
+            } else if (type === 'weekly') {
+                if(paneDaily) paneDaily.classList.add('hidden');
+                if(paneWeekly) paneWeekly.classList.remove('hidden');
+                if(lWeekly) lWeekly.className = "border-2 border-indigo-600 bg-indigo-50/20 p-4 rounded-xl flex items-start space-x-2 cursor-pointer select-none text-left";
+            } else {
+                if(paneDaily) paneDaily.classList.add('hidden');
+                if(paneWeekly) paneWeekly.classList.add('hidden');
+                if(lAll) lAll.className = "border-2 border-indigo-600 bg-indigo-50/20 p-4 rounded-xl flex items-start space-x-2 cursor-pointer select-none text-left";
+            }
+        }
+
+        // 动态时段项添加
+        function addTimeSlot() {
+            const container = document.getElementById('time-slots-container');
+            if (!container) return;
+            const count = container.children.length + 1;
+            const div = document.createElement('div');
+            div.className = "flex items-center space-x-3 bg-slate-50 p-3 rounded-xl border border-slate-200 text-sm";
+            div.innerHTML = `
+                <span class="text-slate-400 font-medium"><i class="fa-solid fa-clock"></i> 时段 ${count}:</span>
+                <div class="flex items-center space-x-2">
+                    <input type="time" class="border border-slate-200 px-2 py-1.5 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                    <span class="text-slate-400">至</span>
+                    <input type="time" class="border border-slate-200 px-2 py-1.5 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                    <span class="text-xs bg-slate-200 text-slate-600 px-2 py-1 rounded-md font-medium">当日</span>
+                </div>
+                <button type="button" onclick="this.parentElement.remove()" class="text-rose-500 hover:text-rose-700 ml-auto"><i class="fa-regular fa-trash-can"></i></button>
+            `;
+            container.appendChild(div);
+        }
+
+        // 折叠面板切换
+        function toggleAccordion(id) {
+            const acc = document.getElementById(id);
+            const icon = document.getElementById(id + '-icon');
+            if (acc) {
+                if (acc.classList.contains('hidden')) {
+                    acc.classList.remove('hidden');
+                    if (icon) icon.classList.add('rotate-180');
+                } else {
+                    acc.classList.add('hidden');
+                    if (icon) icon.classList.remove('rotate-180');
+                }
+            }
+        }
+
+        // 触发条件不同用户状态条件卡切换
+        function switchConditionTab(tabId) {
+            const tabs = ['tab-cond1', 'tab-cond2', 'tab-cond3'];
+            tabs.forEach(t => {
+                const element = document.getElementById(t);
+                const btn = document.getElementById('btn-' + t);
+                if (element && btn) {
+                    if (t === tabId) {
+                        element.classList.remove('hidden');
+                        btn.className = "flex-1 py-3 px-4 text-xs font-bold text-slate-800 border-b-2 border-indigo-600 bg-white flex items-center justify-center space-x-2 transition-all";
+                    } else {
+                        element.classList.add('hidden');
+                        btn.className = "flex-1 py-3 px-4 text-xs font-semibold text-slate-500 hover:bg-slate-50 border-b-2 border-transparent flex items-center justify-center space-x-2 transition-all";
+                    }
+                }
+            });
+        }
+
+        // 安全词标签管理渲染
+        function renderKeywords() {
+            const container = document.getElementById('keywords-container');
+            if (!container) return;
+            container.innerHTML = "";
+            globalKeywords.forEach(keyword => {
+                const chip = document.createElement('span');
+                chip.className = "bg-rose-50 border border-rose-200 text-rose-700 px-2.5 py-1 rounded-lg text-xs font-medium flex items-center space-x-1 shadow-sm";
+                chip.innerHTML = `
+                    <span>${keyword}</span>
+                    <button type="button" class="text-rose-400 hover:text-rose-600 ml-1 font-bold" onclick="removeKeyword('${keyword}')">×</button>
+                `;
+                container.appendChild(chip);
+            });
+        }
+
+        function addCustomKeyword() {
+            const input = document.getElementById('input-keyword-text');
+            if (!input) return;
+            const val = input.value.trim().replace(/,/g, '');
+            if(val && !globalKeywords.includes(val)) {
+                globalKeywords.push(val);
+                renderKeywords();
+                input.value = "";
+            }
+        }
+
+        function removeKeyword(keyword) {
+            const idx = globalKeywords.indexOf(keyword);
+            if(idx !== -1) {
+                globalKeywords.splice(idx, 1);
+                renderKeywords();
+            }
+        }
+
+        // 账号选择模态框控制
+        function showAccountSelectModal() {
+            const modal = document.getElementById('acc-modal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
+        }
+
+        function closeAccountSelectModal() {
+            const modal = document.getElementById('acc-modal');
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        }
+
+        // 保存并启用二次防呆确认弹窗
+        function openConfirmModal() {
+            const ruleNameInput = document.getElementById('input-name');
+            if (!ruleNameInput) return;
+            const ruleName = ruleNameInput.value.trim();
+            if(!ruleName) {
+                showToast("⚠️ 基础校验失败：规则名称为必填项！", "exclamation", "bg-rose-600 text-white");
+                ruleNameInput.focus();
+                ruleNameInput.classList.add('border-rose-500', 'ring-rose-500/20');
+                return;
+            }
+
+            const accCount = document.querySelectorAll('#selected-accounts-list > div').length;
+            const confirmAccounts = document.getElementById('confirm-accounts-cnt');
+            if (confirmAccounts) confirmAccounts.innerText = `${accCount} 个企微账号`;
+
+            const isWeeklyRadio = document.querySelector('input[name="time_type"][value="weekly"]');
+            const isAllRadio = document.querySelector('input[name="time_type"][value="all"]');
+            const isWeekly = isWeeklyRadio ? isWeeklyRadio.checked : false;
+            const isAll = isAllRadio ? isAllRadio.checked : false;
+            const confirmTimeRange = document.getElementById('confirm-time-range');
+
+            if (confirmTimeRange) {
+                if(isAll) {
+                    confirmTimeRange.innerText = "24小时全天候介入";
+                } else if (isWeekly) {
+                    confirmTimeRange.innerText = "工作日按周定制生效";
+                } else {
+                    const slots = document.querySelectorAll('#time-slots-container input[type="time"]');
+                    if(slots.length >= 2) {
+                        confirmTimeRange.innerText = `每日固定时段 ${slots[0].value} - ${slots[1].value}`;
+                    } else {
+                        confirmTimeRange.innerText = "每日指定时段配置";
+                    }
+                }
+            }
+
+            const modal = document.getElementById('confirm-modal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
+        }
+
+        // 关闭确认弹窗
+        function closeConfirmModal() {
+            const modal = document.getElementById('confirm-modal');
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        }
+
+        // 草稿保存
+        function saveAsDraft() {
+            const ruleNameInput = document.getElementById('input-name');
+            if (!ruleNameInput) return;
+            const ruleName = ruleNameInput.value.trim();
+            if(!ruleName) {
+                showToast("⚠️ 基础校验失败：请填写规则名称后再保存为草稿！", "exclamation", "bg-rose-600 text-white");
+                return;
+            }
+            showToast(`🎉 规则 [${ruleName}] 已保存为草稿！`);
+            closeEditView();
+        }
+
+        // 最终确认无误提交表单
+        function submitRuleForm() {
+            const nameInput = document.getElementById('input-name');
+            if (!nameInput) return;
+            const name = nameInput.value.trim();
+            const desc = document.getElementById('input-desc').value.trim() || "未填写描述说明";
+            const backupMinutes = document.getElementById('input-backup-mins').value;
+            const ruleId = document.getElementById('edit-rule-id').value;
+
+            if(ruleId) {
+                const rule = mockRules.find(r => r.id === ruleId);
+                if(rule) {
+                    rule.name = name;
+                    rule.desc = desc;
+                    rule.backupMinutes = parseInt(backupMinutes);
+                }
+            } else {
+                const checkedTimeTypeRadio = document.querySelector('input[name="time_type"]:checked');
+                const timeType = checkedTimeTypeRadio ? checkedTimeTypeRadio.value : 'daily';
+                const newRule = {
+                    id: "rule-" + Date.now(),
+                    name: name,
+                    desc: desc,
+                    accounts: ["企微销冠-张小凡", "企微销冠-陆雪琪"],
+                    accountsCount: 2,
+                    timeType: timeType,
+                    timeSlots: [{start: "22:30", end: "09:00"}],
+                    backupMinutes: parseInt(backupMinutes),
+                    status: true,
+                    triggerToday: 0,
+                    repliesToday: 0
+                };
+                mockRules.unshift(newRule);
+            }
+
+            closeConfirmModal();
+            closeEditView();
+            showToast("🚀 自动回复规则已保存成功，并在企微集群实时生效运转！");
+            renderRulesTable();
+        }
+
+        // 自定义 Toast
+        function showToast(message, iconName = 'circle-check', extraClass = 'bg-slate-900 text-white') {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-msg');
+            const toastIcon = document.getElementById('toast-icon');
+
+            if (toast && toastMsg && toastIcon) {
+                toastMsg.innerText = message;
+                toastIcon.className = `fa-solid fa-${iconName} text-indigo-400 text-base`;
+                if (iconName === 'exclamation') toastIcon.className = `fa-solid fa-${iconName} text-amber-400 text-base`;
+
+                toast.className = `fixed bottom-6 right-6 z-50 transform translate-y-0 opacity-100 transition-all duration-300 flex items-center space-x-3 px-5 py-3.5 rounded-xl shadow-2xl ${extraClass}`;
+
+                // 统一清理前一次计时器
+                if (window.toastTimer) clearTimeout(window.toastTimer);
+                window.toastTimer = setTimeout(() => {
+                    toast.className = "fixed bottom-6 right-6 z-50 transform translate-y-10 opacity-0 pointer-events-none transition-all duration-300 flex items-center space-x-3 bg-slate-900 text-white px-5 py-3.5 rounded-xl shadow-2xl";
+                }, 3000);
+            }
+        }
+    </script>
+</body>
+</html>

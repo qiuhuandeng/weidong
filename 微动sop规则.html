@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOP 规则配置系统 - 极速轻量版</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts Inter & Noto Sans SC -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans SC', sans-serif;
+            background-color: #f5f5f5;
+            color: rgba(0, 0, 0, 0.88);
+        }
+        /* 自定义滚动条 */
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #999;
+        }
+        /* AntD 投影 */
+        .antd-shadow-sm {
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03), 0 1px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px 0 rgba(0, 0, 0, 0.02);
+        }
+        .antd-shadow-md {
+            box-shadow: 0 6px 16px 0 rgba(0, 0, 0, 0.08), 0 3px 6px -4px rgba(0, 0, 0, 0.12), 0 9px 28px 8px rgba(0, 0, 0, 0.05);
+        }
+        /* 按钮与交互过渡 */
+        .antd-btn {
+            transition: all 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
+        }
+    </style>
+</head>
+<body class="antialiased text-[#1f1f1f] min-h-screen flex flex-col pb-12">
+
+    <!-- AntD 导航条 -->
+    <header class="bg-white border-b border-[#f0f0f0] px-8 py-3.5 flex items-center justify-between sticky top-0 z-10 antd-shadow-sm">
+        <div class="flex items-center space-x-3">
+            <div class="w-8 h-8 rounded bg-[#1677ff] flex items-center justify-center text-white font-bold text-base shadow-sm">
+                A
+            </div>
+            <div>
+                <h1 class="text-sm font-semibold text-[#1f1f1f]">私域 SOP 规则管理系统</h1>
+                <p class="text-[11px] text-[#8c8c8c]">企业微信场景智能化协同与分发系统 · 极速轻量无依赖版</p>
+            </div>
+        </div>
+        
+        <div class="flex items-center space-x-6 text-xs">
+            <div class="flex items-center space-x-2 bg-[#f6ffed] border border-[#b7eb8f] px-2.5 py-1 rounded text-[#52c41a]">
+                <span class="relative flex h-2 w-2">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#52c41a] opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-[#52c41a]"></span>
+                </span>
+                <span class="font-medium">企业微信 API 服务已连接</span>
+            </div>
+            <div class="flex items-center space-x-2 border-l pl-4 border-[#f0f0f0]">
+                <div class="w-7 h-7 rounded-full bg-[#1677ff] text-white flex items-center justify-center text-xs font-semibold">
+                    AD
+                </div>
+                <span class="text-[#595959] font-medium">高级管理员</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主工作空间 -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-6 py-6 space-y-4">
+        
+        <!-- 筛选面板 (SOP规则总数等四个色块已成功移除) -->
+        <section class="bg-white p-4 rounded border border-[#f0f0f0] antd-shadow-sm flex items-center justify-between flex-wrap gap-4">
+            <div class="flex items-center space-x-6 flex-wrap gap-y-2">
+                <!-- 规则名称查询 -->
+                <div class="flex items-center space-x-2">
+                    <span class="text-xs text-[#595959] font-normal">规则名称:</span>
+                    <input 
+                        type="text" 
+                        id="filterNameInput"
+                        placeholder="请输入规则名称" 
+                        class="w-52 px-3 py-1.5 text-xs bg-white border border-[#d9d9d9] rounded hover:border-[#4096ff] focus:border-[#4096ff] focus:outline-none focus:ring-2 focus:ring-[#1677ff]/20 transition-all placeholder:text-[#bfbfbf]"
+                    />
+                </div>
+
+                <!-- 状态下拉 -->
+                <div class="flex items-center space-x-2">
+                    <span class="text-xs text-[#595959] font-normal">规则状态:</span>
+                    <div class="relative">
+                        <select 
+                            id="filterStatusSelect"
+                            class="appearance-none w-32 pl-3 pr-8 py-1.5 text-xs bg-white border border-[#d9d9d9] rounded hover:border-[#4096ff] focus:border-[#4096ff] focus:outline-none focus:ring-2 focus:ring-[#1677ff]/20 transition-all cursor-pointer text-[#1f1f1f]"
+                        >
+                            <option value="全部">全部</option>
+                            <option value="启用">启用</option>
+                            <option value="禁用">禁用</option>
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-[#bfbfbf]">
+                            <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 检索操作组 -->
+            <div class="flex items-center space-x-2">
+                <button 
+                    onclick="handleResetFilters()"
+                    class="antd-btn px-4 py-1.5 text-xs font-medium bg-white border border-[#d9d9d9] rounded text-[#595959] hover:text-[#4096ff] hover:border-[#4096ff] active:bg-[#f5f5f5]"
+                >
+                    重置
+                </button>
+                <button 
+                    onclick="handleApplyFilters()"
+                    class="antd-btn px-4 py-1.5 text-xs font-medium bg-[#1677ff] border border-[#1677ff] rounded text-white hover:bg-[#4096ff] hover:border-[#4096ff] flex items-center space-x-1 shadow-sm"
+                >
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    <span>搜索</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- 数据视图主区域 -->
+        <section class="bg-white rounded border border-[#f0f0f0] antd-shadow-sm overflow-hidden">
+            
+            <!-- 页签条 (完美对应页签组件，并赋予 AntD 干净的质感) -->
+            <div class="border-b border-[#f0f0f0] px-5 py-3 flex items-center justify-between flex-wrap gap-2.5 bg-white">
+                <div class="flex bg-[#f5f5f5] p-0.5 rounded border border-[#f0f0f0]" id="tabsContainer">
+                    <!-- 页签动态渲染 -->
+                </div>
+
+                <button 
+                    onclick="openRuleModal()"
+                    class="antd-btn px-3 py-1.5 text-xs font-medium bg-[#1677ff] text-white border border-[#1677ff] rounded hover:bg-[#4096ff] hover:border-[#4096ff] flex items-center space-x-1 shadow-sm"
+                >
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg>
+                    <span>新建规则</span>
+                </button>
+            </div>
+
+            <!-- 轻量级业务指导框 -->
+            <div class="bg-[#e6f4ff] border-b border-[#bae7ff] px-5 py-2.5 text-xs text-[#0050b3] flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <svg class="w-4 h-4 text-[#1677ff] shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
+                    <span>
+                        <strong>场景细分与精细分发模式：</strong> 同一触发类型下可以创建多个规则。您可分别应用、绑定给不同的企微销售或客服账号。
+                    </span>
+                </div>
+                <span class="text-xs text-[#595959]">当前场景数据：<strong class="text-[#1677ff] font-semibold" id="tabCountSpan">0</strong> 条</span>
+            </div>
+
+            <!-- 数据展示表格 -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="bg-[#fafafa] border-b border-[#f0f0f0] text-[#595959] font-medium">
+                            <th class="py-3 px-5 text-center w-14 border-r border-[#f0f0f0]">序号</th>
+                            <th class="py-3 px-5 w-[350px] border-r border-[#f0f0f0]">规则名称</th>
+                            <th class="py-3 px-5 w-28 border-r border-[#f0f0f0]">业务类型</th>
+                            <th class="py-3 px-5 text-center w-24 border-r border-[#f0f0f0]">触发条件</th>
+                            <th class="py-3 px-5 w-[240px] border-r border-[#f0f0f0]">绑定账号</th>
+                            <th class="py-3 px-5 text-center w-24 border-r border-[#f0f0f0]">规则状态</th>
+                            <th class="py-3 px-5 text-center w-40">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-[#f0f0f0] text-[#1f1f1f]" id="rulesTableBody">
+                        <!-- 表格行数据动态加载 -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 分页导航 -->
+            <div class="bg-white border-t border-[#f0f0f0] px-5 py-3.5 flex items-center justify-between text-xs text-[#595959]">
+                <div id="paginationSummary">
+                    共 <strong class="text-[#1f1f1f]" id="totalCountStrong">0</strong> 条记录
+                </div>
+                <div class="flex items-center space-x-1">
+                    <button class="antd-btn px-2.5 py-1 border border-[#d9d9d9] rounded hover:border-[#4096ff] hover:text-[#4096ff] disabled:opacity-40 disabled:cursor-not-allowed bg-white" disabled>
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                    </button>
+                    <button class="px-2.5 py-1 border border-[#1677ff] rounded bg-[#e6f4ff] text-[#1677ff] font-medium">1</button>
+                    <button class="antd-btn px-2.5 py-1 border border-[#d9d9d9] rounded hover:border-[#4096ff] hover:text-[#4096ff] disabled:opacity-40 disabled:cursor-not-allowed bg-white" disabled>
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 绑定企微账号模态框 (深度对齐并且去冗余+批量选择) -->
+    <div id="bindModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/45 backdrop-blur-[2px] transition-all hidden">
+        <div class="bg-white rounded-lg antd-shadow-md w-full max-w-[680px] overflow-hidden transform transition-all border border-[#f0f0f0] flex flex-col max-h-[95vh]">
+            
+            <!-- 弹窗标题栏 -->
+            <div class="border-b border-[#f0f0f0] px-6 py-3.5 flex items-center justify-between">
+                <div>
+                    <h3 class="text-base font-semibold text-[#1f1f1f]">绑定企业微信账号</h3>
+                    <p class="text-[11px] text-[#8c8c8c] mt-0.5">
+                        正在为规则配置适用对象：<span id="bindModalSubtitleRule" class="font-medium text-[#262626] bg-[#fafafa] border border-[#d9d9d9] px-1.5 py-0.5 rounded">--</span>
+                    </p>
+                </div>
+                <button onclick="closeBindModal()" class="text-[#8c8c8c] hover:text-[#262626] transition-colors focus:outline-none">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <!-- 弹窗主体内容 -->
+            <div class="p-6 overflow-y-auto flex-grow space-y-5">
+                
+                <!-- 第一步：选择企微主体 & 检索过滤 -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-[#595959] mb-1.5">
+                            第一步：选择企业微信主体
+                        </label>
+                        <div class="relative">
+                            <select 
+                                id="corpSubjectSelect"
+                                onchange="onCorpSubjectChange()"
+                                class="appearance-none w-full pl-3 pr-9 py-1.5 text-xs bg-white border border-[#d9d9d9] rounded hover:border-[#4096ff] focus:border-[#4096ff] focus:outline-none focus:ring-2 focus:ring-[#1677ff]/20 transition-all cursor-pointer text-[#1f1f1f]"
+                            >
+                                <!-- 动态注入主体 -->
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-[#bfbfbf]">
+                                <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-medium text-[#595959] mb-1.5">
+                            过滤主体员工
+                        </label>
+                        <input 
+                            type="text" 
+                            id="employeeKeywordInput"
+                            oninput="onEmployeeSearch()"
+                            placeholder="输入姓名 / 部门搜索员工" 
+                            class="w-full px-3 py-1.5 text-xs bg-white border border-[#d9d9d9] rounded hover:border-[#4096ff] focus:border-[#4096ff] focus:outline-none focus:ring-2 focus:ring-[#1677ff]/20 transition-all placeholder:text-[#bfbfbf]"
+                        />
+                    </div>
+                </div>
+
+                <!-- 第二步：待选员工列表 (去头像去职称、支持批量多选) -->
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="block text-xs font-medium text-[#595959]">
+                            第二步：选择企微员工（支持批量多选）
+                        </span>
+                        <button 
+                            type="button" 
+                            id="batchAddSelectedBtn"
+                            onclick="handleBatchAddSelected()"
+                            class="text-xs bg-[#e6f4ff] text-[#1677ff] border border-[#91caff] hover:bg-[#bae7ff] px-2.5 py-1 rounded transition-colors font-semibold flex items-center space-x-1"
+                        >
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg>
+                            <span>批量绑定 (<span id="batchCountBadge">0</span>)</span>
+                        </button>
+                    </div>
+
+                    <!-- 统一化去头像直观列表 -->
+                    <div class="border border-[#d9d9d9] rounded bg-white overflow-hidden">
+                        <!-- 批量选列表控制栏 -->
+                        <div class="bg-[#fafafa] px-4 py-2 border-b border-[#f0f0f0] flex items-center justify-between text-xs text-[#595959]">
+                            <div class="flex items-center space-x-2">
+                                <input 
+                                    type="checkbox" 
+                                    id="masterEmployeeCheckbox"
+                                    onclick="toggleAllEmployeeCheckboxes(this)"
+                                    class="rounded border-[#d9d9d9] text-[#1677ff] focus:ring-[#1677ff] w-3.5 h-3.5 cursor-pointer"
+                                />
+                                <label for="masterEmployeeCheckbox" class="font-medium select-none cursor-pointer">全选当前筛选的员工</label>
+                            </div>
+                            <span class="text-[#8c8c8c]">员工名 / 所属部门</span>
+                        </div>
+
+                        <!-- 列表主体 -->
+                        <div class="max-h-48 overflow-y-auto divide-y divide-[#f0f0f0]" id="employeeListContainer">
+                            <!-- 动态员工DOM结构插入 -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 底部已绑定账号预览 -->
+                <div class="bg-[#fafafa] p-4 rounded border border-[#d9d9d9]">
+                    <div class="flex items-center justify-between mb-2.5">
+                        <span class="text-xs font-semibold text-[#595959]">
+                            当前已配置绑定的企微账号 (<span id="currentBoundCountText">0</span>)
+                        </span>
+                        <button 
+                            type="button"
+                            onclick="handleClearAllBound()"
+                            class="text-xs text-[#ff4d4f] hover:text-[#ff7875] font-medium transition-colors"
+                        >
+                            清空全部
+                        </button>
+                    </div>
+                    
+                    <div class="flex flex-wrap gap-2" id="tempBoundTagWrapper">
+                        <!-- 动态绑定标签 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 页脚操作栏 -->
+            <div class="bg-[#fafafa] border-t border-[#f0f0f0] px-6 py-4 flex items-center justify-between">
+                <div class="text-[11px] text-[#8c8c8c] max-w-[340px] leading-relaxed">
+           
+                </div>
+                <div class="flex items-center space-x-2">
+                    <button 
+                        onclick="closeBindModal()"
+                        class="antd-btn px-4 py-1.5 text-xs bg-white border border-[#d9d9d9] text-[#595959] rounded hover:text-[#4096ff] hover:border-[#4096ff]"
+                    >
+                        取消
+                    </button>
+                    <button 
+                        onclick="handleSaveBinding()"
+                        class="antd-btn px-5 py-1.5 text-xs bg-[#1677ff] text-white border border-[#1677ff] rounded hover:bg-[#4096ff] hover:border-[#4096ff] font-medium shadow-sm"
+                    >
+                        确定绑定
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- 新增 & 编辑规则配置弹窗 -->
+    <div id="ruleFormModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/45 backdrop-blur-[2px] transition-all hidden">
+        <div class="bg-white rounded-lg antd-shadow-md w-full max-w-[480px] overflow-hidden transform transition-all border border-[#f0f0f0] flex flex-col">
+            <!-- 页头 -->
+            <div class="border-b border-[#f0f0f0] px-6 py-4 flex items-center justify-between">
+                <div>
+                    <h3 class="text-sm font-semibold text-[#1f1f1f]" id="ruleModalTitleText">创建 SOP 业务规则</h3>
+                    <p class="text-[11px] text-[#8c8c8c] mt-0.5">设定基础参数以便在场景触发时下发运营计划</p>
+                </div>
+                <button type="button" onclick="closeRuleModal()" class="text-[#8c8c8c] hover:text-[#262626] transition-colors focus:outline-none">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <!-- 表单内容 -->
+            <div class="p-6 space-y-4 text-xs">
+                <!-- 1. 规则名称 -->
+                <div>
+                    <label class="block text-xs font-medium text-[#595959] mb-1.5">
+                        规则名称 <span class="text-[#ff4d4f]">*</span>
+                    </label>
+                    <input 
+                        type="text" 
+                        id="ruleFormNameInput"
+                        placeholder="请输入代表性 SOP 规则名称" 
+                        class="w-full px-3 py-1.5 text-xs bg-white border border-[#d9d9d9] rounded hover:border-[#4096ff] focus:border-[#4096ff] focus:outline-none focus:ring-2 focus:ring-[#1677ff]/20"
+                    />
+                </div>
+
+                <!-- 2. 业务类型 -->
+                <div>
+                    <label class="block text-xs font-medium text-[#595959] mb-1.5">
+                        业务类型
+                    </label>
+                    <select 
+                        id="ruleFormBusinessTypeSelect"
+                        class="w-full px-3 py-1.5 text-xs bg-white border border-[#d9d9d9] rounded focus:border-[#4096ff]"
+                    >
+                        <option value="新客转化">新客转化</option>
+                        <option value="老客复购">老客复购</option>
+                        <option value="专属VIP特权">专属VIP特权</option>
+                        <option value="售后流退防流失">售后流退防流失</option>
+                    </select>
+                </div>
+
+                <!-- 3. 触发条件 (关联页签分类) -->
+                <div>
+                    <label class="block text-xs font-medium text-[#595959] mb-1.5">
+                        触发场景归类 (对应页签)
+                    </label>
+                    <select 
+                        id="ruleFormTriggerSelect"
+                        class="w-full px-3 py-1.5 text-xs bg-white border border-[#d9d9d9] rounded focus:border-[#4096ff]"
+                    >
+                        <!-- 动态填充页签 -->
+                    </select>
+                    <p class="text-[10px] text-[#8c8c8c] mt-1">保存成功后，本配置卡片将自动在您所选的触发类别中汇总展示。</p>
+                </div>
+
+                <!-- 4. 默认初始状态 -->
+                <div>
+                    <label class="block text-xs font-medium text-[#595959] mb-1.5">
+                        初始状态
+                    </label>
+                    <div class="flex items-center space-x-4 mt-2">
+                        <label class="inline-flex items-center cursor-pointer">
+                            <input 
+                                type="radio" 
+                                class="form-radio text-[#1677ff] focus:ring-[#1677ff] h-3.5 w-3.5" 
+                                name="statusRadio" 
+                                id="ruleFormStatusTrue"
+                                checked 
+                            />
+                            <span class="ml-2 text-xs text-[#1f1f1f]">开启</span>
+                        </label>
+                        <label class="inline-flex items-center cursor-pointer">
+                            <input 
+                                type="radio" 
+                                class="form-radio text-[#ff4d4f] focus:ring-[#ff4d4f] h-3.5 w-3.5" 
+                                name="statusRadio" 
+                                id="ruleFormStatusFalse"
+                            />
+                            <span class="ml-2 text-xs text-[#1f1f1f]">挂起禁用</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 页脚 -->
+            <div class="bg-[#fafafa] border-t border-[#f0f0f0] px-6 py-3 flex items-center justify-end space-x-2">
+                <button 
+                    type="button" 
+                    onclick="closeRuleModal()"
+                    class="antd-btn px-4 py-1.5 text-xs bg-white border border-[#d9d9d9] text-[#595959] rounded hover:bg-[#fafafa]"
+                >
+                    取消
+                </button>
+                <button 
+                    type="button" 
+                    onclick="handleSaveRuleForm()"
+                    class="antd-btn px-5 py-1.5 text-xs bg-[#1677ff] text-white border border-[#1677ff] rounded hover:bg-[#4096ff]"
+                >
+                    确认配置
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 自定义删除确认模态框 -->
+    <div id="deleteConfirmModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 backdrop-blur-[1px] transition-all hidden">
+        <div class="bg-white rounded-lg antd-shadow-md w-full max-w-[380px] overflow-hidden transform transition-all border border-[#f0f0f0]">
+            <div class="p-5">
+                <div class="flex items-start space-x-3">
+                    <div class="p-1.5 bg-[#fffbe6] text-[#faad14] rounded-full shrink-0">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                    </div>
+                    <div class="text-xs">
+                        <h4 class="font-semibold text-sm text-[#1f1f1f] mb-1.5">您确定要删除此 SOP 规则吗？</h4>
+                        <p class="text-[#8c8c8c] leading-relaxed mb-1">
+                            即将移除：<strong class="text-[#262626] font-medium break-all" id="deleteTargetName">--</strong>
+                        </p>
+                        <p class="text-[#ff4d4f] font-normal">注意：此项操作无法撤回，绑定在该规则上的企微代表客服将即时解除关联关系！</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-[#fafafa] border-t border-[#f0f0f0] px-5 py-3 flex items-center justify-end space-x-2">
+                <button 
+                    onclick="closeDeleteModal()"
+                    class="antd-btn px-3 py-1.5 text-xs bg-white border border-[#d9d9d9] text-[#595959] rounded hover:border-[#4096ff] hover:text-[#4096ff]"
+                >
+                    取消
+                </button>
+                <button 
+                    onclick="executeDelete()"
+                    class="antd-btn px-4 py-1.5 text-xs bg-[#ff4d4f] border border-[#ff4d4f] text-white rounded hover:bg-[#ff7875]"
+                >
+                    确认删除
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 全局 Toast 通知 -->
+    <div id="toastContainer" class="fixed top-6 right-6 z-[120] pointer-events-none">
+        <!-- 动态Toast结构 -->
+    </div>
+
+    <!-- 逻辑控制 Script - 零依赖、纯原生高效 Vanilla JS -->
+    <script>
+        // --- 静态核心配置数据 ---
+        const CORP_SUBJECTS = [
+            { id: 'corp-1', name: '广州极速零售科技有限公司 (总部)' },
+            { id: 'corp-2', name: '上海微盟企业管理咨询服务部' },
+            { id: 'corp-3', name: '北京字节跳动（网络分部）' },
+            { id: 'corp-4', name: '深圳腾讯科技大区运营中心' }
+        ];
+
+        const EMPLOYEES = [
+            { id: 'emp-101', name: '林扬妹', role: '资深客服专家', dept: '新客转化组', corpId: 'corp-1' },
+            { id: 'emp-102', name: '陈国强', role: '销售经理', dept: '华南拓展组', corpId: 'corp-1' },
+            { id: 'emp-103', name: '张静怡', role: '私域运营师', dept: '社群维护组', corpId: 'corp-1' },
+            { id: 'emp-104', name: '李晓明', role: '客服代表', dept: '售后保障组', corpId: 'corp-1' },
+            
+            { id: 'emp-201', name: '王丽丽', role: '运营主管', dept: '华东大区', corpId: 'corp-2' },
+            { id: 'emp-202', name: '周杰', role: '社群群主', dept: '上海分部', corpId: 'corp-2' },
+            { id: 'emp-203', name: '刘青', role: '销售咨询', dept: '转化提升组', corpId: 'corp-2' },
+            
+            { id: 'emp-301', name: '赵敏', role: '大客户经理', dept: '北京业务部', corpId: 'corp-3' },
+            { id: 'emp-302', name: '孙悟空', role: '高级顾问', dept: '技术支持部', corpId: 'corp-3' },
+
+            { id: 'emp-401', name: '司马懿', role: '高级运营', dept: '华南运营部', corpId: 'corp-4' },
+            { id: 'emp-402', name: '诸葛亮', role: '战略分析', dept: '私域策略组', corpId: 'corp-4' }
+        ];
+
+        const TABS = ['加微', '下单', '预约', '排客', '改约', '取消', '超时', '到店', '流退', '结算'];
+
+        // --- 应用可变状态 ---
+        let rules = [
+            { id: 1, name: 'SOP容量测试-SOPLOAD20260507184605', businessType: '新客转化', triggerCondition: '加微', boundAccounts: [{ corpId: 'corp-1', employeeId: 'emp-101', name: '林扬妹' }], status: true },
+            { id: 2, name: 'SOP容量测试-SOPLOAD20260507184152', businessType: '新客转化', triggerCondition: '加微', boundAccounts: [{ corpId: 'corp-1', employeeId: 'emp-101', name: '林扬妹' }], status: false },
+            { id: 3, name: 'SOP容量测试-SOPLOAD20260507183754', businessType: '新客转化', triggerCondition: '加微', boundAccounts: [{ corpId: 'corp-1', employeeId: 'emp-101', name: '林扬妹' }], status: false },
+            { id: 4, name: 'SOP全场景测试-SOPFULL20260507182411', businessType: '新客转化', triggerCondition: '加微', boundAccounts: [{ corpId: 'corp-1', employeeId: 'emp-101', name: '林扬妹' }], status: false },
+            { id: 5, name: 'SOP全场景测试-SOPFULL20260507182422', businessType: '新客转化', triggerCondition: '下单', boundAccounts: [{ corpId: 'corp-1', employeeId: 'emp-101', name: '林扬妹' }], status: false },
+            { id: 6, name: 'SOP全场景测试-SOPFULL20260507182433', businessType: '新客转化', triggerCondition: '结算', boundAccounts: [{ corpId: 'corp-1', employeeId: 'emp-101', name: '林扬妹' }], status: false },
+            { id: 7, name: 'SOP全场景测试-SOPFULL20260507182444', businessType: '新客转化', triggerCondition: '流退', boundAccounts: [{ corpId: 'corp-1', employeeId: 'emp-101', name: '林扬妹' }], status: false },
+            { id: 8, name: 'SOP全场景测试-SOPFULL20260507182455', businessType: '新客转化', triggerCondition: '到店', boundAccounts: [{ corpId: 'corp-1', employeeId: 'emp-101', name: '林扬妹' }], status: false },
+            { id: 9, name: '复购加速计划-SOPREBUY20260601002342', businessType: '老客复购', triggerCondition: '下单', boundAccounts: [{ corpId: 'corp-1', employeeId: 'emp-102', name: '陈国强' }, { corpId: 'corp-1', employeeId: 'emp-103', name: '张静怡' }], status: true },
+            { id: 10, name: '高端客户1对1尊享服务规约', businessType: '新客转化', triggerCondition: '预约', boundAccounts: [], status: true }
+        ];
+
+        let activeTab = '加微';
+        let appliedFilters = { name: '', status: '全部' };
+
+        // 绑定弹窗独有临时状态
+        let currentRuleForBind = null;
+        let selectedCorpId = 'corp-3'; // 默认选中北京字节
+        let tempBoundEmployees = []; // 当前已被添加进临时绑定池的员工
+        let checkedEmployeeIds = new Set(); // 绑定弹窗当前勾选待批量添加的员工ID
+
+        // 规则弹窗独有临时状态
+        let editingRuleId = null; 
+
+        // 删除临时状态
+        let ruleIdToDelete = null;
+
+        // --- 全局 Toast 通知 ---
+        function showNotification(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `px-4 py-3 rounded shadow-lg border flex items-center space-x-2.5 text-xs pointer-events-auto transition-all duration-300 transform translate-y-2 opacity-0 mb-3`;
+            
+            let bgClass = 'bg-[#f6ffed] text-[#52c41a] border-[#b7eb8f]';
+            let iconSvg = `<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>`;
+            
+            if (type === 'error') {
+                bgClass = 'bg-[#fff1f0] text-[#ff4d4f] border-[#ffccc7]';
+                iconSvg = `<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path></svg>`;
+            } else if (type === 'warning') {
+                bgClass = 'bg-[#fffbe6] text-[#d48806] border-[#ffe58f]';
+                iconSvg = `<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>`;
+            } else if (type === 'info') {
+                bgClass = 'bg-[#e6f4ff] text-[#1677ff] border-[#91caff]';
+                iconSvg = `<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>`;
+            }
+
+            toast.innerHTML = `<div class="shrink-0 text-current">${iconSvg}</div><span class="font-medium">${message}</span>`;
+            toast.className += ` ${bgClass}`;
+            
+            container.appendChild(toast);
+            
+            // 触发进入过渡
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 10);
+
+            // 消失动画
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-[-10px]');
+                setTimeout(() => {
+                    toast.remove();
+                }, 3000);
+            }, 3000);
+        }
+
+        // --- 初始化配置 ---
+        window.onload = function() {
+            renderTabs();
+            renderTable();
+            populateCorpSubjectDropdown();
+            populateRuleModalTriggers();
+        };
+
+        // --- 1. 渲染主页签组件 ---
+        function renderTabs() {
+            const container = document.getElementById('tabsContainer');
+            container.innerHTML = '';
+            
+            TABS.forEach(tab => {
+                const isActive = activeTab === tab;
+                const btn = document.createElement('button');
+                btn.className = `px-4 py-1.5 text-xs font-medium rounded transition-all whitespace-nowrap ${
+                    isActive 
+                        ? 'bg-white text-[#1677ff] font-semibold shadow-sm' 
+                        : 'text-[#595959] hover:text-[#1677ff]'
+                }`;
+                btn.textContent = tab;
+                btn.onclick = () => {
+                    activeTab = tab;
+                    renderTabs();
+                    renderTable();
+                    showNotification(`已切换到“${tab}”分类视图`, 'info');
+                };
+                container.appendChild(btn);
+            });
+        }
+
+        // --- 2. 渲染核心规则列表 ---
+        function renderTable() {
+            const tbody = document.getElementById('rulesTableBody');
+            tbody.innerHTML = '';
+
+            // 数据过滤逻辑
+            const filtered = rules.filter(rule => {
+                if (rule.triggerCondition !== activeTab) return false;
+                
+                if (appliedFilters.name && !rule.name.toLowerCase().includes(appliedFilters.name.toLowerCase())) {
+                    return false;
+                }
+
+                if (appliedFilters.status !== '全部') {
+                    const statusBool = appliedFilters.status === '启用';
+                    if (rule.status !== statusBool) return false;
+                }
+                return true;
+            });
+
+            // 更新页签计数与分页指示
+            document.getElementById('tabCountSpan').textContent = filtered.length;
+            document.getElementById('totalCountStrong').textContent = filtered.length;
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colSpan="7" class="py-14 text-center text-[#bfbfbf]">
+                            <div class="flex flex-col items-center justify-center space-y-2">
+                                <svg class="w-10 h-10 text-slate-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0a2 2 0 01-2 2H6a2 2 0 01-2-2m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path></svg>
+                                <p class="text-xs">该页签下暂无符合检索条件的 SOP 配置规则</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            filtered.forEach((rule, idx) => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-[#f5f5f5]/60 transition-colors';
+
+                // 绑定客服账号的Tag串
+                let boundTagsHtml = `<span class="text-[#bfbfbf] italic text-[11px]">暂未配置具体账号</span>`;
+                if (rule.boundAccounts && rule.boundAccounts.length > 0) {
+                    boundTagsHtml = `<div class="flex flex-wrap gap-1.5 max-w-[210px]">`;
+                    rule.boundAccounts.forEach(acc => {
+                        boundTagsHtml += `
+                            <span class="inline-flex items-center bg-[#fafafa] border border-[#d9d9d9] px-2 py-0.5 rounded text-[11px] text-[#595959]">
+                                <svg class="w-2.5 h-2.5 mr-1 text-[#8c8c8c]" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg>
+                                ${acc.name}
+                            </span>
+                        `;
+                    });
+                    boundTagsHtml += `</div>`;
+                }
+
+                // 状态开启动态渲染
+                const switchBg = rule.status ? '#1677ff' : 'rgba(0,0,0,.25)';
+                const switchTransform = rule.status ? 'translateX(22px)' : 'translateX(0px)';
+
+                tr.innerHTML = `
+                    <td class="py-3 px-5 text-center text-[#8c8c8c]">${idx + 1}</td>
+                    <td class="py-3 px-5 font-medium text-[#262626] break-all">
+                        <div class="flex items-center space-x-2">
+                            <span class="truncate max-w-[280px]" title="${rule.name}">${rule.name}</span>
+                            ${rule.boundAccounts.length === 0 ? `
+                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] bg-[#fffbe6] text-[#d48806] border border-[#ffe58f] whitespace-nowrap">
+                                    未绑定企微
+                                </span>
+                            ` : ''}
+                        </div>
+                    </td>
+                    <td class="py-3 px-5 text-[#595959]">${rule.businessType}</td>
+                    <td class="py-3 px-5 text-center">
+                        <span class="inline-block px-2 py-0.5 rounded bg-[#e6f4ff] text-[#1677ff] border border-[#91caff] font-medium scale-95 origin-center">
+                            ${rule.triggerCondition}
+                        </span>
+                    </td>
+                    <td class="py-3 px-5">${boundTagsHtml}</td>
+                    <td class="py-3 px-5 text-center">
+                        <button 
+                            onclick="toggleRuleStatus(${rule.id})"
+                            class="relative inline-flex h-[22px] w-[44px] shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none"
+                            style="background-color: ${switchBg}"
+                        >
+                            <span 
+                                class="pointer-events-none inline-block h-[18px] w-[18px] transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
+                                style="transform: ${switchTransform}"
+                            />
+                        </button>
+                    </td>
+                    <td class="py-3 px-5 text-center">
+                        <div class="flex items-center justify-center text-xs">
+                            <button 
+                                onclick="openBindModal(${rule.id})"
+                                class="text-[#1677ff] hover:text-[#4096ff] transition-colors flex items-center space-x-0.5 font-medium"
+                            >
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+                                <span>绑定</span>
+                            </button>
+                            <span class="text-[#f0f0f0] mx-2">|</span>
+                            
+                            <button 
+                                onclick="openRuleModal(${rule.id})"
+                                class="text-[#1677ff] hover:text-[#4096ff] transition-colors font-medium"
+                            >
+                                编辑
+                            </button>
+                            <span class="text-[#f0f0f0] mx-2">|</span>
+                            
+                            <button 
+                                onclick="openDeleteModal(${rule.id})"
+                                class="text-[#ff4d4f] hover:text-[#ff7875] transition-colors font-medium"
+                            >
+                                删除
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // --- 3. 过滤检索动作集 ---
+        function handleApplyFilters() {
+            appliedFilters.name = document.getElementById('filterNameInput').value.trim();
+            appliedFilters.status = document.getElementById('filterStatusSelect').value;
+            renderTable();
+            showNotification('数据已检索更新', 'success');
+        }
+
+        function handleResetFilters() {
+            document.getElementById('filterNameInput').value = '';
+            document.getElementById('filterStatusSelect').value = '全部';
+            appliedFilters = { name: '', status: '全部' };
+            renderTable();
+            showNotification('筛选条件已重置', 'info');
+        }
+
+        function toggleRuleStatus(ruleId) {
+            const rule = rules.find(r => r.id === ruleId);
+            if (rule) {
+                rule.status = !rule.status;
+                renderTable();
+                showNotification(`“${rule.name.substring(0, 12)}...” 状态已变更为 [${rule.status ? '启用' : '禁用'}]`, 'success');
+            }
+        }
+
+        // --- 4. 绑定企微账号弹窗系统 (去头像去职称、增加批量选择) ---
+        function populateCorpSubjectDropdown() {
+            const select = document.getElementById('corpSubjectSelect');
+            select.innerHTML = '';
+            CORP_SUBJECTS.forEach(corp => {
+                const opt = document.createElement('option');
+                opt.value = corp.id;
+                opt.textContent = corp.name;
+                select.appendChild(opt);
+            });
+            select.value = selectedCorpId;
+        }
+
+        function openBindModal(ruleId) {
+            const rule = rules.find(r => r.id === ruleId);
+            if (!rule) return;
+
+            currentRuleForBind = rule;
+            selectedCorpId = CORP_SUBJECTS[2].id; // 默认选中北京字节跳动
+            document.getElementById('corpSubjectSelect').value = selectedCorpId;
+            document.getElementById('employeeKeywordInput').value = '';
+            
+            // 深拷贝原绑定，防直接污染
+            tempBoundEmployees = JSON.parse(JSON.stringify(rule.boundAccounts || []));
+            checkedEmployeeIds.clear(); // 清空多选池
+
+            document.getElementById('bindModalSubtitleRule').textContent = rule.name;
+            
+            updateBindModalUI();
+            
+            // 显示Modal
+            const modal = document.getElementById('bindModal');
+            modal.classList.remove('hidden');
+        }
+
+        function closeBindModal() {
+            document.getElementById('bindModal').classList.add('hidden');
+            currentRuleForBind = null;
+        }
+
+        // 更新绑定弹窗里待选列表、勾选状态和已绑定标签
+        function updateBindModalUI() {
+            // A. 筛选员工
+            const keyword = document.getElementById('employeeKeywordInput').value.trim().toLowerCase();
+            const candidates = EMPLOYEES.filter(emp => {
+                if (emp.corpId !== selectedCorpId) return false;
+                if (keyword) {
+                    return emp.name.toLowerCase().includes(keyword) || emp.dept.toLowerCase().includes(keyword);
+                }
+                return true;
+            });
+
+            // B. 渲染员工去头像极简扁平列表
+            const listContainer = document.getElementById('employeeListContainer');
+            listContainer.innerHTML = '';
+
+            if (candidates.length === 0) {
+                listContainer.innerHTML = `
+                    <div class="py-8 text-center text-[#bfbfbf] text-[11px]">
+                        该选定主体下暂无符合检索条件的企微员工账号
+                    </div>
+                `;
+            } else {
+                candidates.forEach(emp => {
+                    const isAlreadyAdded = tempBoundEmployees.some(b => b.employeeId === emp.id);
+                    const isChecked = checkedEmployeeIds.has(emp.id);
+
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = `p-3 flex items-center justify-between text-xs transition-colors ${
+                        isAlreadyAdded ? 'bg-[#fafafa] opacity-55' : 'hover:bg-[#e6f4ff]/40'
+                    }`;
+
+                    itemDiv.innerHTML = `
+                        <div class="flex items-center space-x-3">
+                            ${isAlreadyAdded ? `
+                                <input type="checkbox" disabled class="rounded border-[#d9d9d9] text-gray-300 w-3.5 h-3.5 cursor-not-allowed" />
+                            ` : `
+                                <input 
+                                    type="checkbox" 
+                                    ${isChecked ? 'checked' : ''} 
+                                    onclick="toggleEmployeeCheck('${emp.id}', this)"
+                                    class="rounded border-[#d9d9d9] text-[#1677ff] focus:ring-[#1677ff] w-3.5 h-3.5 cursor-pointer" 
+                                />
+                            `}
+                            <div class="flex items-center space-x-4">
+                                <span class="font-semibold text-[#1f1f1f] min-w-[64px]">${emp.name}</span>
+                                <span class="text-slate-400 font-normal">[${emp.dept}]</span>
+                            </div>
+                        </div>
+                        <div>
+                            ${isAlreadyAdded ? `
+                                <span class="text-[11px] font-medium text-[#52c41a] flex items-center space-x-1">
+                                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                                    <span>已绑定</span>
+                                </span>
+                            ` : `
+                                <button 
+                                    type="button"
+                                    onclick="handleSingleAdd('${emp.id}')"
+                                    class="text-[#1677ff] hover:text-[#4096ff] transition-colors font-semibold flex items-center space-x-0.5 text-xs"
+                                >
+                                    <span>+ 添加绑定</span>
+                                </button>
+                            `}
+                        </div>
+                    `;
+                    listContainer.appendChild(itemDiv);
+                });
+            }
+
+            // 更新“批量一键绑定”按钮上的数量徽标
+            document.getElementById('batchCountBadge').textContent = checkedEmployeeIds.size;
+
+            // C. 渲染已绑定关系标签卡
+            const tagWrapper = document.getElementById('tempBoundTagWrapper');
+            tagWrapper.innerHTML = '';
+            document.getElementById('currentBoundCountText').textContent = tempBoundEmployees.length;
+
+            if (tempBoundEmployees.length === 0) {
+                tagWrapper.innerHTML = `
+                    <div class="w-full text-center py-6 text-xs text-[#bfbfbf] border border-dashed border-[#d9d9d9] rounded bg-white">
+                        未配置任何企微客服代表。启用后此 SOP 策略将作为通案在渠道中保留。
+                    </div>
+                `;
+            } else {
+                tempBoundEmployees.forEach(item => {
+                    const corpFull = CORP_SUBJECTS.find(c => c.id === item.corpId);
+                    const shortCorpName = corpFull ? corpFull.name.split(' ')[0] : '企微主体';
+
+                    const tag = document.createElement('span');
+                    tag.className = 'inline-flex items-center bg-white border border-[#d9d9d9] pl-2.5 pr-1.5 py-1 rounded text-xs text-[#1f1f1f] shadow-sm';
+                    tag.innerHTML = `
+                        <span class="font-medium mr-1">${item.name}</span>
+                        <span class="text-[10px] text-[#bfbfbf] bg-[#fafafa] px-1 py-0.5 rounded mr-1.5 border border-[#f0f0f0]">
+                            ${shortCorpName}
+                        </span>
+                        <button 
+                            type="button"
+                            onclick="handleRemoveBoundTag('${item.employeeId}')"
+                            class="w-4 h-4 rounded-full text-[#8c8c8c] hover:text-[#ff4d4f] hover:bg-[#fff1f0] flex items-center justify-center transition-all text-xs font-semibold"
+                        >
+                            ×
+                        </button>
+                    `;
+                    tagWrapper.appendChild(tag);
+                });
+            }
+
+            // D. 联动“当前筛选主全选勾选框”的状态
+            const activeUnaddedCandidates = candidates.filter(emp => !tempBoundEmployees.some(b => b.employeeId === emp.id));
+            const masterCheckbox = document.getElementById('masterEmployeeCheckbox');
+            if (activeUnaddedCandidates.length > 0) {
+                masterCheckbox.disabled = false;
+                const allChecked = activeUnaddedCandidates.every(emp => checkedEmployeeIds.has(emp.id));
+                masterCheckbox.checked = allChecked;
+            } else {
+                masterCheckbox.checked = false;
+                masterCheckbox.disabled = true;
+            }
+        }
+
+        // 切换主体时
+        function onCorpSubjectChange() {
+            selectedCorpId = document.getElementById('corpSubjectSelect').value;
+            checkedEmployeeIds.clear(); // 清空不同主体的多选残留
+            updateBindModalUI();
+        }
+
+        // 输入员工检索时
+        function onEmployeeSearch() {
+            updateBindModalUI();
+        }
+
+        // 单个员工多选状态变更
+        function toggleEmployeeCheck(empId, checkbox) {
+            if (checkbox.checked) {
+                checkedEmployeeIds.add(empId);
+            } else {
+                checkedEmployeeIds.delete(empId);
+            }
+            updateBindModalUI();
+        }
+
+        // 全选 / 取消全选
+        function toggleAllEmployeeCheckboxes(masterCheckbox) {
+            const keyword = document.getElementById('employeeKeywordInput').value.trim().toLowerCase();
+            const candidates = EMPLOYEES.filter(emp => {
+                if (emp.corpId !== selectedCorpId) return false;
+                if (keyword) {
+                    return emp.name.toLowerCase().includes(keyword) || emp.dept.toLowerCase().includes(keyword);
+                }
+                return true;
+            });
+
+            // 过滤掉已经在已添加状态的
+            const activeCandidates = candidates.filter(emp => !tempBoundEmployees.some(b => b.employeeId === emp.id));
+
+            activeCandidates.forEach(emp => {
+                if (masterCheckbox.checked) {
+                    checkedEmployeeIds.add(emp.id);
+                } else {
+                    checkedEmployeeIds.delete(emp.id);
+                }
+            });
+            updateBindModalUI();
+        }
+
+        // 执行单条添加
+        function handleSingleAdd(empId) {
+            const emp = EMPLOYEES.find(e => e.id === empId);
+            if (!emp) return;
+
+            const isExist = tempBoundEmployees.some(b => b.employeeId === empId);
+            if (isExist) return;
+
+            const corpInfo = CORP_SUBJECTS.find(c => c.id === emp.corpId);
+            tempBoundEmployees.push({
+                corpId: emp.corpId,
+                employeeId: emp.id,
+                name: emp.name,
+                corpName: corpInfo ? corpInfo.name : ''
+            });
+
+            // 添加后从多选池中移除
+            checkedEmployeeIds.delete(empId);
+            updateBindModalUI();
+            showNotification(`已添加：${emp.name}`, 'success');
+        }
+
+        // 执行批量添加
+        function handleBatchAddSelected() {
+            if (checkedEmployeeIds.size === 0) {
+                showNotification('请先勾选需要批量添加绑定的员工账号', 'warning');
+                return;
+            }
+
+            let addedCount = 0;
+            checkedEmployeeIds.forEach(empId => {
+                const emp = EMPLOYEES.find(e => e.id === empId);
+                if (emp) {
+                    const isExist = tempBoundEmployees.some(b => b.employeeId === empId);
+                    if (!isExist) {
+                        const corpInfo = CORP_SUBJECTS.find(c => c.id === emp.corpId);
+                        tempBoundEmployees.push({
+                            corpId: emp.corpId,
+                            employeeId: emp.id,
+                            name: emp.name,
+                            corpName: corpInfo ? corpInfo.name : ''
+                        });
+                        addedCount++;
+                    }
+                }
+            });
+
+            checkedEmployeeIds.clear();
+            updateBindModalUI();
+            showNotification(`批量添加成功！本次新增绑定了 ${addedCount} 个企业微信账号`, 'success');
+        }
+
+        // 移除单项标签
+        function handleRemoveBoundTag(empId) {
+            tempBoundEmployees = tempBoundEmployees.filter(b => b.employeeId !== empId);
+            updateBindModalUI();
+        }
+
+        // 清空所有待绑定标签
+        function handleClearAllBound() {
+            tempBoundEmployees = [];
+            updateBindModalUI();
+            showNotification('已清空所有待绑定员工', 'info');
+        }
+
+        // 点击确定，真正存储修改
+        function handleSaveBinding() {
+            if (!currentRuleForBind) return;
+
+            rules = rules.map(rule => {
+                if (rule.id === currentRuleForBind.id) {
+                    return { ...rule, boundAccounts: [...tempBoundEmployees] };
+                }
+                return rule;
+            });
+
+            renderTable();
+            closeBindModal();
+            showNotification('企业微信绑定关系配置成功！', 'success');
+        }
+
+
+        // --- 5. 新建 / 编辑规则弹窗系统 ---
+        function populateRuleModalTriggers() {
+            const select = document.getElementById('ruleFormTriggerSelect');
+            select.innerHTML = '';
+            TABS.forEach(tab => {
+                const opt = document.createElement('option');
+                opt.value = tab;
+                opt.textContent = tab;
+                select.appendChild(opt);
+            });
+        }
+
+        function openRuleModal(ruleId = null) {
+            if (ruleId) {
+                // 编辑模式
+                const rule = rules.find(r => r.id === ruleId);
+                if (!rule) return;
+
+                editingRuleId = ruleId;
+                document.getElementById('ruleModalTitleText').textContent = '编辑 SOP 规则';
+                document.getElementById('ruleFormNameInput').value = rule.name;
+                document.getElementById('ruleFormBusinessTypeSelect').value = rule.businessType;
+                document.getElementById('ruleFormTriggerSelect').value = rule.triggerCondition;
+                
+                if (rule.status) {
+                    document.getElementById('ruleFormStatusTrue').checked = true;
+                } else {
+                    document.getElementById('ruleFormStatusFalse').checked = true;
+                }
+            } else {
+                // 新增模式
+                editingRuleId = null;
+                document.getElementById('ruleModalTitleText').textContent = '创建 SOP 业务规则';
+                document.getElementById('ruleFormNameInput').value = '';
+                document.getElementById('ruleFormBusinessTypeSelect').value = '新客转化';
+                document.getElementById('ruleFormTriggerSelect').value = activeTab; // 默认随当前页签
+                document.getElementById('ruleFormStatusTrue').checked = true;
+            }
+
+            document.getElementById('ruleFormModal').classList.remove('hidden');
+        }
+
+        function closeRuleModal() {
+            document.getElementById('ruleFormModal').classList.add('hidden');
+            editingRuleId = null;
+        }
+
+        function handleSaveRuleForm() {
+            const name = document.getElementById('ruleFormNameInput').value.trim();
+            const businessType = document.getElementById('ruleFormBusinessTypeSelect').value;
+            const trigger = document.getElementById('ruleFormTriggerSelect').value;
+            const status = document.getElementById('ruleFormStatusTrue').checked;
+
+            if (!name) {
+                showNotification('请录入完整规则名称！', 'warning');
+                return;
+            }
+
+            if (editingRuleId) {
+                // 编辑保存
+                rules = rules.map(r => {
+                    if (r.id === editingRuleId) {
+                        return {
+                            ...r,
+                            name: name,
+                            businessType: businessType,
+                            triggerCondition: trigger,
+                            status: status
+                        };
+                    }
+                    return r;
+                });
+                showNotification('SOP 规则编辑成功', 'success');
+            } else {
+                // 新建保存
+                const nextId = rules.length > 0 ? Math.max(...rules.map(r => r.id)) + 1 : 1;
+                const newRule = {
+                    id: nextId,
+                    name: name,
+                    businessType: businessType,
+                    triggerCondition: trigger,
+                    boundAccounts: [],
+                    status: status
+                };
+                rules.unshift(newRule);
+                showNotification('全新 SOP 规则创建成功，您可点击列表中的“绑定”指定微信客服', 'success');
+            }
+
+            renderTable();
+            closeRuleModal();
+        }
+
+        // --- 6. 自定义删除弹窗系统 ---
+        function openDeleteModal(ruleId) {
+            const rule = rules.find(r => r.id === ruleId);
+            if (!rule) return;
+
+            ruleIdToDelete = ruleId;
+            document.getElementById('deleteTargetName').textContent = rule.name;
+            document.getElementById('deleteConfirmModal').classList.remove('hidden');
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteConfirmModal').classList.add('hidden');
+            ruleIdToDelete = null;
+        }
+
+        function executeDelete() {
+            if (!ruleIdToDelete) return;
+
+            const rule = rules.find(r => r.id === ruleIdToDelete);
+            const rName = rule ? rule.name : '';
+
+            rules = rules.filter(r => r.id !== ruleIdToDelete);
+            renderTable();
+            closeDeleteModal();
+            showNotification(`规则“${rName.substring(0, 12)}...” 已被彻底移除`, 'success');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>合作方案设置 - 外协结算管理</title>
+    <!-- Tailwind CSS 用于高效流畅的设计系统 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1677ff',
+                        primaryHover: '#4096ff',
+                        primaryActive: '#0958d9',
+                        antSuccess: '#52c41a',
+                        antWarning: '#faad14',
+                        antError: '#ff4d4f',
+                        antText: '#1f1f1f',
+                        antTextSecondary: '#8c8c8c',
+                        antBg: '#f5f5f5',
+                        antBorder: '#d9d9d9'
+                    },
+                    boxShadow: {
+                        antCard: '0 1px 2px 0 rgba(0, 0, 0, 0.03), 0 1px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px 0 rgba(0, 0, 0, 0.02)',
+                        antDropdown: '0 6px 16px 0 rgba(0, 0, 0, 0.08), 0 3px 6px -4px rgba(0, 0, 0, 0.12), 0 9px 28px 8px rgba(0, 0, 0, 0.05)'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+            background-color: #f5f5f5;
+            color: #1f1f1f;
+        }
+        /* 自定义微调以达到极致的Ant Design风格 */
+        .ant-table-header th {
+            background-color: #fafafa !important;
+            color: rgba(0, 0, 0, 0.88);
+            font-weight: 500;
+            border-bottom: 1px solid #f0f0f0 !important;
+            white-space: nowrap;
+        }
+        .ant-input {
+            transition: all 0.2s;
+        }
+        .ant-input:focus {
+            border-color: #4096ff;
+            box-shadow: 0 0 0 2px rgba(5, 145, 255, 0.1);
+            outline: none;
+        }
+        .ant-table-row:hover {
+            background-color: #fcfcfc;
+        }
+        /* 自定义 Tooltip 显示 */
+        .tooltip-container {
+            position: relative;
+        }
+        .tooltip-text {
+            visibility: hidden;
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #000000e0;
+            color: #fff;
+            text-align: center;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            white-space: nowrap;
+            z-index: 50;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+        }
+        .tooltip-container:hover .tooltip-text {
+            visibility: visible;
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-16">
+
+    <!-- 全局提示 (Toast Message Component) -->
+    <div id="global-message-container" class="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- 顶栏面包屑与头部 -->
+    <header class="bg-white border-b border-gray-100 px-6 py-4 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-[1600px] mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+                <div class="text-xs text-gray-400 flex items-center gap-1 mb-1">
+                    <span>系统设置</span> <span class="text-gray-300">/</span> <span>外协结算管理</span> <span class="text-gray-300">/</span> <span class="text-gray-600">合作方案设置</span>
+                </div>
+                <div class="flex items-center gap-3 flex-wrap">
+                    <h1 class="text-xl font-bold text-gray-800">外协合作方案设置</h1>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100">
+                        当前合作机构: 北京外协中心
+                    </span>
+                    <span class="text-xs text-gray-400">更新时间: 2026-06-04 16:00</span>
+                </div>
+            </div>
+            <!-- 全局操控栏 -->
+            <div class="flex items-center gap-3">
+                <span class="text-xs text-gray-400 font-mono">机构ID: 9636</span>
+                <button onclick="saveAllPlans()" class="inline-flex items-center px-4 py-2 bg-primary text-sm font-medium rounded text-white hover:bg-primaryHover active:bg-primaryActive shadow-sm transition-colors">
+                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
+                    保存所有配置
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 核心内容区域 -->
+    <main class="max-w-[1600px] mx-auto px-4 md:px-6 mt-6 flex flex-col gap-6">
+        
+        <!-- 业务场景提示 Banner -->
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 flex gap-3 text-sm text-blue-800 shadow-sm">
+            <svg class="w-5 h-5 flex-shrink-0 text-blue-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <div>
+                <span class="font-semibold">升级与乱码重构说明：</span> 针对非标外协机构新增了<span class="font-bold">「机构固定成本」</span>与拆分细节的<span class="font-bold">「我司承担奖励 / 机构承担奖励」</span>。同时，为了适应不同机构的算账优先级差异，您可以自由选择【公式A：先扣奖励模式】或【公式B：后扣奖励模式】进行自动化对账核算。
+            </div>
+        </div>
+
+        <!-- 模块一：体验卡合作 -->
+        <div class="bg-white rounded-lg border border-gray-100 shadow-antCard overflow-hidden">
+            <div class="p-5 border-b border-gray-100">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-base font-bold text-gray-800">体验卡合作</h2>
+                        <p class="text-xs text-gray-400 mt-1">绑定的是微动后台-产品-y10体验卡产品ID，以下设置的是该体验卡的不同套餐及分润。</p>
+                    </div>
+                    <button onclick="openAddModal('experience')" class="inline-flex items-center px-3 py-1.5 bg-white border border-primary text-xs font-semibold rounded text-primary hover:bg-blue-50 transition-colors">
+                        <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                        关联产品
+                    </button>
+                </div>
+            </div>
+
+            <!-- 体验卡列表滚动容器 -->
+            <div class="overflow-x-auto w-full">
+                <table class="w-full text-left text-xs text-gray-600 border-collapse table-auto min-w-[1500px]">
+                    <thead class="ant-table-header uppercase">
+                        <tr>
+                            <th class="p-3 pl-4 border-b border-gray-100 w-24">合同编号</th>
+                            <th class="p-3 border-b border-gray-100 min-w-[130px]">体验卡套餐名称</th>
+                            <th class="p-3 border-b border-gray-100 w-20">售价(元)</th>
+                            <th class="p-3 border-b border-gray-100 bg-amber-50/20 w-24">
+                                <span class="flex items-center gap-1 tooltip-container cursor-help">
+                                    机构固定成本
+                                    <svg class="w-3.5 h-3.5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                    <span class="tooltip-text">每次合作需要优先拨出给机构的纯物理成本。</span>
+                                </span>
+                            </th>
+                            <th class="p-3 border-b border-gray-100 bg-amber-50/20 w-24">我司承担奖励</th>
+                            <th class="p-3 border-b border-gray-100 bg-amber-50/20 w-24">机构代扣奖励</th>
+                            <th class="p-3 border-b border-gray-100 bg-amber-50/20 w-28">计算优先级</th>
+                            <th class="p-3 border-b border-gray-100 w-24">合作方分润(元)</th>
+                            <th class="p-3 border-b border-gray-100 w-20">我司分润(元)</th>
+                            <th class="p-3 border-b border-gray-100 w-24 bg-red-50/10 text-red-700 font-semibold">开单老师分润(元)</th>
+                            <th class="p-3 border-b border-gray-100 w-24 bg-red-50/10 text-red-700 font-semibold">店长分润(元)</th>
+                            <th class="p-3 border-b border-gray-100 w-20 bg-red-50/10 text-red-700 font-semibold">手续费%</th>
+                            <th class="p-3 border-b border-gray-100 min-w-[100px] bg-red-50/10 text-red-700 font-semibold">适用门店</th>
+                            <th class="p-3 border-b border-gray-100 min-w-[180px] bg-red-50/10 text-red-700 font-semibold">合作起止时间</th>
+                            <th class="p-3 border-b border-gray-100 w-20 bg-red-50/10 text-red-700 font-semibold">合作状态</th>
+                            <th class="p-3 border-b border-gray-100 w-20 bg-red-50/10 text-red-700 font-semibold">是否明卡</th>
+                            <th class="p-3 border-b border-gray-100 text-center w-28 bg-red-50/10 text-red-700 font-semibold">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="experience-body" class="divide-y divide-gray-100">
+                        <!-- JS动态渲染体验卡 -->
+                    </tbody>
+                </table>
+            </div>
+            <div id="experience-empty-state" class="hidden py-8 text-center text-gray-400 text-xs">
+                暂无关联体验卡，请点击右上角关联产品。
+            </div>
+        </div>
+
+        <!-- 模块二：非体验卡合作 -->
+        <div class="bg-white rounded-lg border border-gray-100 shadow-antCard overflow-hidden">
+            <div class="p-5 border-b border-gray-100">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-base font-bold text-gray-800">非体验卡合作</h2>
+                        <p class="text-xs text-gray-400 mt-1">已关联产品除了「体验卡ID」外的产品都是「非体验卡」，按订单回款百分比分润。</p>
+                    </div>
+                    <button onclick="openAddModal('non-experience')" class="inline-flex items-center px-3 py-1.5 bg-white border border-primary text-xs font-semibold rounded text-primary hover:bg-blue-50 transition-colors">
+                        <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                        增加非体验卡分润方案
+                    </button>
+                </div>
+            </div>
+
+            <!-- 非体验卡列表滚动容器 -->
+            <div class="overflow-x-auto w-full">
+                <table class="w-full text-left text-xs text-gray-600 border-collapse table-auto min-w-[1500px]">
+                    <thead class="ant-table-header uppercase">
+                        <tr>
+                            <th class="p-3 pl-4 border-b border-gray-100 w-24">合同编号</th>
+                            <th class="p-3 border-b border-gray-100 min-w-[100px]">分润备注</th>
+                            <th class="p-3 border-b border-gray-100 bg-amber-50/20 w-24">
+                                <span class="flex items-center gap-1 tooltip-container cursor-help">
+                                    机构固定成本
+                                    <svg class="w-3.5 h-3.5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                    <span class="tooltip-text">升单回款中，固定拨离给合作方的基础固定费（如美牙耗材费）。</span>
+                                </span>
+                            </th>
+                            <th class="p-3 border-b border-gray-100 bg-amber-50/20 w-24">我司承担奖励</th>
+                            <th class="p-3 border-b border-gray-100 bg-amber-50/20 w-24">机构代扣奖励</th>
+                            <th class="p-3 border-b border-gray-100 bg-amber-50/20 w-28">计算优先级</th>
+                            <th class="p-3 border-b border-gray-100 w-20">合作方%</th>
+                            <th class="p-3 border-b border-gray-100 w-20">我司分润%</th>
+                            <th class="p-3 border-b border-gray-100 w-24 bg-red-50/10 text-red-700 font-semibold">开单老师分润(%)</th>
+                            <th class="p-3 border-b border-gray-100 w-24 bg-red-50/10 text-red-700 font-semibold">店长分润(%)</th>
+                            <th class="p-3 border-b border-gray-100 w-20 bg-red-50/10 text-red-700 font-semibold">手续费%</th>
+                            <th class="p-3 border-b border-gray-100 min-w-[100px] bg-red-50/10 text-red-700 font-semibold">适用门店</th>
+                            <th class="p-3 border-b border-gray-100 min-w-[110px] bg-red-50/10 text-red-700 font-semibold">关联产品</th>
+                            <th class="p-3 border-b border-gray-100 min-w-[180px] bg-red-50/10 text-red-700 font-semibold">合作起止时间</th>
+                            <th class="p-3 border-b border-gray-100 w-20 bg-red-50/10 text-red-700 font-semibold">合作状态</th>
+                            <th class="p-3 border-b border-gray-100 text-center w-28 bg-red-50/10 text-red-700 font-semibold">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="non-experience-body" class="divide-y divide-gray-100">
+                        <!-- JS动态渲染非体验卡 -->
+                    </tbody>
+                </table>
+            </div>
+            <div id="non-experience-empty-state" class="hidden py-8 text-center text-gray-400 text-xs">
+                暂无分润方案，请点击右上角增加方案。
+            </div>
+        </div>
+
+    </main>
+
+    <!-- 新增方案拟真模态弹窗 (Modal) -->
+    <div id="add-modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-lg shadow-antDropdown w-full max-w-lg overflow-hidden transform scale-95 transition-transform duration-300">
+            <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                <h3 class="text-base font-bold text-gray-800" id="modal-title">关联新产品</h3>
+                <button onclick="closeAddModal()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            
+            <form id="plan-form" onsubmit="handleFormSubmit(event)" class="p-6 space-y-4">
+                <input type="hidden" id="modal-type">
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">合同编号 *</label>
+                        <input type="text" id="form-contract" required class="w-full text-xs border border-gray-300 rounded p-2 focus:border-primary focus:ring-1 focus:ring-primary/20 ant-input" placeholder="例: CON-2026-004">
+                    </div>
+                    <div id="form-name-container">
+                        <label class="block text-xs font-semibold text-gray-700 mb-1" id="form-name-label">体验卡套餐名称 *</label>
+                        <input type="text" id="form-name" required class="w-full text-xs border border-gray-300 rounded p-2 focus:border-primary focus:ring-1 focus:ring-primary/20 ant-input" placeholder="请输入名称">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div id="form-price-container">
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">套餐售价 (元) *</label>
+                        <input type="number" id="form-price" min="0" step="0.01" class="w-full text-xs border border-gray-300 rounded p-2 focus:border-primary focus:ring-1 focus:ring-primary/20 ant-input" placeholder="500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">机构固定成本 (元)</label>
+                        <input type="number" id="form-cost" min="0" step="0.01" class="w-full text-xs border border-gray-300 rounded p-2 focus:border-primary focus:ring-1 focus:ring-primary/20 ant-input" placeholder="0">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">我司承担奖励 (元/单) *</label>
+                        <input type="number" id="form-our-reward" min="0" step="0.01" class="w-full text-xs border border-gray-300 rounded p-2 focus:border-primary focus:ring-1 focus:ring-primary/20 ant-input" placeholder="请输入我司承担金额">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">机构代扣奖励 (元/单) *</label>
+                        <input type="number" id="form-partner-reward" min="0" step="0.01" class="w-full text-xs border border-gray-300 rounded p-2 focus:border-primary focus:ring-1 focus:ring-primary/20 ant-input" placeholder="请输入机构代扣金额">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">计算优先级选择 *</label>
+                        <select id="form-priority" class="w-full text-xs border border-gray-300 bg-white rounded p-2 focus:border-primary focus:ring-1 focus:ring-primary/20">
+                            <option value="A">公式A - 扣费优先</option>
+                            <option value="B">公式B - 分润优先</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1" id="share-label-left">合作方分润 *</label>
+                        <div class="relative">
+                            <input type="number" id="form-partner-share" required min="0" step="0.01" class="w-full text-xs border border-gray-300 rounded p-2 pr-8 focus:border-primary focus:ring-1 focus:ring-primary/20 ant-input" placeholder="分润值">
+                            <span class="absolute right-3 top-2.5 text-gray-400 text-xs" id="share-unit-left">元</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-4 gap-2">
+                    <div>
+                        <label class="block text-[11px] text-gray-500 mb-1" id="share-label-right">我司分润 *</label>
+                        <input type="number" id="form-our-share" required min="0" step="0.01" class="w-full text-[11px] border border-gray-300 rounded p-1.5 focus:border-primary ant-input">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] text-gray-500 mb-1">开单老师分润 *</label>
+                        <input type="number" id="form-teacher-share" required min="0" step="0.01" class="w-full text-[11px] border border-gray-300 rounded p-1.5 focus:border-primary ant-input" placeholder="0">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] text-gray-500 mb-1">店长分润 *</label>
+                        <input type="number" id="form-manager-share" required min="0" step="0.01" class="w-full text-[11px] border border-gray-300 rounded p-1.5 focus:border-primary ant-input" placeholder="0">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] text-gray-500 mb-1">手续费% *</label>
+                        <input type="number" id="form-fee" required min="0" step="0.01" class="w-full text-[11px] border border-gray-300 rounded p-1.5 focus:border-primary ant-input" placeholder="0">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">开始日期</label>
+                        <input type="date" id="form-start-date" class="w-full text-xs border border-gray-300 rounded p-2 focus:border-primary ant-input">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">结束日期</label>
+                        <input type="date" id="form-end-date" class="w-full text-xs border border-gray-300 rounded p-2 focus:border-primary ant-input">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div id="form-is-mingka-container">
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">是否明卡</label>
+                        <select id="form-is-mingka" class="w-full text-xs border border-gray-300 bg-white rounded p-2 focus:border-primary focus:ring-1 focus:ring-primary/20">
+                            <option value="是">是</option>
+                            <option value="否">否</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t border-gray-100 flex justify-end gap-2">
+                    <button type="button" onclick="closeAddModal()" class="px-4 py-2 border border-gray-300 rounded text-xs text-gray-700 bg-white hover:bg-gray-50 active:bg-gray-100">取消</button>
+                    <button type="submit" class="px-4 py-2 bg-primary rounded text-xs text-white hover:bg-primaryHover active:bg-primaryActive shadow-sm">提交保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 适用门店选择模态弹窗 (Modal) -->
+    <div id="store-modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-lg shadow-antDropdown w-full max-w-md overflow-hidden transform scale-95 transition-transform duration-300">
+            <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                <h3 class="text-sm font-bold text-gray-800">配置适用门店</h3>
+                <button onclick="closeStoreModal()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="p-6 max-h-96 overflow-y-auto space-y-2" id="store-checklist">
+                <!-- JS动态渲染门店复选框 -->
+            </div>
+            <div class="px-6 py-4 bg-gray-50 border-t border-gray-150 flex justify-end gap-2 text-xs">
+                <button onclick="closeStoreModal()" class="px-3 py-1.5 border border-gray-300 rounded text-gray-700 bg-white hover:bg-gray-100">取消</button>
+                <button onclick="saveSelectedStores()" class="px-3 py-1.5 bg-primary text-white rounded hover:bg-primaryHover">确认保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 关联实际产品选择模态弹窗 (Modal) -->
+    <div id="product-modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-lg shadow-antDropdown w-full max-w-md overflow-hidden transform scale-95 transition-transform duration-300">
+            <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                <h3 class="text-sm font-bold text-gray-800">选择关联实际产品</h3>
+                <button onclick="closeProductModal()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="p-6 max-h-96 overflow-y-auto space-y-2" id="product-checklist">
+                <!-- JS动态渲染产品复选框 -->
+            </div>
+            <div class="px-6 py-4 bg-gray-50 border-t border-gray-150 flex justify-end gap-2 text-xs">
+                <button onclick="closeProductModal()" class="px-3 py-1.5 border border-gray-300 rounded text-gray-700 bg-white hover:bg-gray-100">取消</button>
+                <button onclick="saveSelectedProducts()" class="px-3 py-1.5 bg-primary text-white rounded hover:bg-primaryHover">确认保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript 交互驱动逻辑 -->
+    <script>
+        // 1. 初始化两套数据状态，完全融合 image_5a1d89.png 紅框所需的明细属性
+        let experiencePlans = [
+            { 
+                id: 'exp-1', 
+                contract: 'CON-BJSY-01', 
+                name: '体验1', 
+                price: 100.00, 
+                cost: 20.00, 
+                ourReward: 10.00, 
+                partnerReward: 10.00, 
+                priority: 'A', 
+                partnerShare: 50.00, 
+                ourShare: 50.00, 
+                teacherShare: 10.00, 
+                managerShare: 5.00, 
+                fee: 1.2, 
+                stores: ['北京直营店', '朝阳店', '海淀店', '望京店', '三里屯店', '西直门店', '东直门店'], 
+                startDate: '2025-01-01', 
+                endDate: '2026-02-28', 
+                status: true, 
+                isMingka: '是' 
+            },
+            { 
+                id: 'exp-2', 
+                contract: 'CON-BJSY-02', 
+                name: '体验2', 
+                price: 120.00, 
+                cost: 30.00, 
+                ourReward: 15.00, 
+                partnerReward: 15.00, 
+                priority: 'B', 
+                partnerShare: 60.00, 
+                ourShare: 60.00, 
+                teacherShare: 15.00, 
+                managerShare: 6.00, 
+                fee: 1.5, 
+                stores: ['北京直营店', '朝阳店', '海淀店', '西直门店', '东直门店'], 
+                startDate: '2025-12-26', 
+                endDate: '2026-12-04', 
+                status: true, 
+                isMingka: '是' 
+            }
+        ];
+
+        let nonExperiencePlans = [
+            { 
+                id: 'non-101', 
+                contract: '001', 
+                name: '非体验1', 
+                cost: 200.00, 
+                ourReward: 50.00, 
+                partnerReward: 50.00, 
+                priority: 'A', 
+                partnerShare: 50.00, 
+                ourShare: 50.00, 
+                teacherShare: 8.00, 
+                managerShare: 2.00, 
+                fee: 1.5, 
+                stores: ['北京直营店'], 
+                products: ['超薄全瓷贴面'], 
+                startDate: '2025-12-26', 
+                endDate: '2026-12-05', 
+                status: true 
+            }
+        ];
+
+        // 可选池
+        const allStoresList = ['北京直营店', '朝阳店', '海淀店', '望京店', '三里屯店', '西直门店', '东直门店', '上海静安店', '深圳南山店'];
+        const allProductsList = ['超薄全瓷贴面', '野生真眉/羽雕眉', '钻石级美牙皓齿', '皓齿美白产品', '3D数码全瓷贴面'];
+
+        let activeEditId = null;
+        let activeEditType = ''; // 'experience' | 'non-experience'
+
+        // 2. 页面加载完毕渲染
+        window.onload = function() {
+            renderAllTables();
+        }
+
+        // 3. 渲染核心表格
+        function renderAllTables() {
+            // 渲染体验卡合作表格
+            const expBody = document.getElementById('experience-body');
+            const expEmpty = document.getElementById('experience-empty-state');
+            expBody.innerHTML = '';
+            
+            if (experiencePlans.length === 0) {
+                expEmpty.classList.remove('hidden');
+            } else {
+                expEmpty.classList.add('hidden');
+                experiencePlans.forEach(plan => {
+                    const tr = document.createElement('tr');
+                    tr.className = 'ant-table-row hover:bg-gray-50/50 transition-colors';
+                    tr.innerHTML = `
+                        <td class="p-3 pl-4 font-mono font-medium text-gray-800">${plan.contract}</td>
+                        <td class="p-3 font-semibold text-gray-900">${plan.name}</td>
+                        <td class="p-3 font-semibold">¥${plan.price.toFixed(2)}</td>
+                        <td class="p-3 bg-amber-50/10 font-bold text-amber-900">
+                            <input type="number" step="0.01" value="${plan.cost}" onchange="updateCell('${plan.id}', 'cost', this.value, 'experience')" class="w-16 border border-gray-200 rounded p-1 text-xs text-center focus:border-primary ant-input">
+                        </td>
+                        <td class="p-3 bg-amber-50/10">
+                            <input type="number" step="0.01" value="${plan.ourReward}" onchange="updateCell('${plan.id}', 'ourReward', this.value, 'experience')" class="w-16 border border-gray-200 rounded p-1 text-xs text-center focus:border-primary ant-input text-amber-700">
+                        </td>
+                        <td class="p-3 bg-amber-50/10">
+                            <input type="number" step="0.01" value="${plan.partnerReward}" onchange="updateCell('${plan.id}', 'partnerReward', this.value, 'experience')" class="w-16 border border-gray-200 rounded p-1 text-xs text-center focus:border-primary ant-input text-amber-700">
+                        </td>
+                        <td class="p-3 bg-amber-50/10">
+                            <select onchange="updateCell('${plan.id}', 'priority', this.value, 'experience')" class="border border-gray-200 rounded p-1 text-xs focus:border-primary bg-white text-gray-700">
+                                <option value="A" ${plan.priority === 'A' ? 'selected' : ''}>先扣奖励</option>
+                                <option value="B" ${plan.priority === 'B' ? 'selected' : ''}>后扣奖励</option>
+                            </select>
+                        </td>
+                        <td class="p-3 font-semibold">
+                            <input type="number" step="0.01" value="${plan.partnerShare}" onchange="updateCell('${plan.id}', 'partnerShare', this.value, 'experience')" class="w-16 border border-gray-200 rounded p-1 text-xs text-center focus:border-primary ant-input">
+                        </td>
+                        <td class="p-3 font-semibold">
+                            <input type="number" step="0.01" value="${plan.ourShare}" onchange="updateCell('${plan.id}', 'ourShare', this.value, 'experience')" class="w-16 border border-gray-200 rounded p-1 text-xs text-center focus:border-primary ant-input">
+                        </td>
+                        <!-- 红框映射字段(体验卡) -->
+                        <td class="p-3 bg-red-50/10">
+                            <input type="number" step="0.01" value="${plan.teacherShare}" onchange="updateCell('${plan.id}', 'teacherShare', this.value, 'experience')" class="w-16 border border-gray-200 rounded p-1 text-xs text-center focus:border-primary ant-input">
+                        </td>
+                        <td class="p-3 bg-red-50/10">
+                            <input type="number" step="0.01" value="${plan.managerShare}" onchange="updateCell('${plan.id}', 'managerShare', this.value, 'experience')" class="w-16 border border-gray-200 rounded p-1 text-xs text-center focus:border-primary ant-input">
+                        </td>
+                        <td class="p-3 bg-red-50/10">
+                            <input type="number" step="0.01" value="${plan.fee}" onchange="updateCell('${plan.id}', 'fee', this.value, 'experience')" class="w-14 border border-gray-200 rounded p-1 text-xs text-center focus:border-primary ant-input">%
+                        </td>
+                        <td class="p-3 bg-red-50/10">
+                            <button onclick="openStoreSelector('${plan.id}', 'experience')" class="text-primary hover:text-primaryHover underline">
+                                已选${plan.stores.length}个
+                            </button>
+                        </td>
+                        <td class="p-3 bg-red-50/10">
+                            <div class="flex items-center gap-1">
+                                <input type="date" value="${plan.startDate}" onchange="updateCell('${plan.id}', 'startDate', this.value, 'experience')" class="border border-gray-200 rounded p-1 text-[11px] w-24">
+                                <span class="text-gray-400">至</span>
+                                <input type="date" value="${plan.endDate}" onchange="updateCell('${plan.id}', 'endDate', this.value, 'experience')" class="border border-gray-200 rounded p-1 text-[11px] w-24">
+                            </div>
+                        </td>
+                        <td class="p-3 bg-red-50/10 text-center">
+                            <button onclick="toggleStatus('${plan.id}', 'experience')" class="relative inline-flex h-5 w-10 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${plan.status ? 'bg-primary' : 'bg-gray-200'}">
+                                <span class="pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${plan.status ? 'translate-x-5' : 'translate-x-0'}"></span>
+                            </button>
+                        </td>
+                        <td class="p-3 bg-red-50/10">
+                            <select onchange="updateCell('${plan.id}', 'isMingka', this.value, 'experience')" class="border border-gray-200 rounded p-1 text-xs focus:border-primary bg-white text-gray-700">
+                                <option value="是" ${plan.isMingka === '是' ? 'selected' : ''}>是</option>
+                                <option value="否" ${plan.isMingka === '否' ? 'selected' : ''}>否</option>
+                            </select>
+                        </td>
+                        <td class="p-3 bg-red-50/10 text-center">
+                            <div class="flex items-center justify-center gap-2">
+                                <button onclick="duplicatePlan('${plan.id}', 'experience')" class="text-primary hover:text-primaryHover mr-1">复制</button>
+                                <button onclick="deletePlan('${plan.id}', 'experience')" class="text-antError hover:text-red-700">删除</button>
+                            </div>
+                        </td>
+                    `;
+                    expBody.appendChild(tr);
+                });
+            }
+
+            // 渲染非体验卡合作表格
+            const nonExpBody = document.getElementById('non-experience-body');
+            const nonExpEmpty = document.getElementById('non-experience-empty-state');
+            nonExpBody.innerHTML = '';
+
+            if (nonExperiencePlans.length === 0) {
+                nonExpEmpty.classList.remove('hidden');
+            } else {
+                nonExpEmpty.classList.add('hidden');
+                nonExperiencePlans.forEach(plan => {
+                    const tr = document.createElement('tr');
+                    tr.className = 'ant-table-row hover:bg-gray-50/50 transition-colors';
+                    tr.innerHTML = `
+                        <td class="p-3 pl-4 font-mono font-medium text-gray-800">${plan.contract}</td>
+                        <td class="p-3 font-semibold text-gray-900">${plan.name}</td>
+                        <td class="p-3 bg-amber-50/10">
+                            <input type="number" step="0.01" value="${plan.cost}" onchange="updateCell('${plan.id}', 'cost', this.value, 'non-experience')" class="w-16 border border-gray-200 rounded p-1 text-xs text-center focus:border-primary ant-input font-bold text-amber-900">
+                        </td>
+                        <td class="p-3 bg-amber-50/10">
+                            <input type="number" step="0.01" value="${plan.ourReward}" onchange="updateCell('${plan.id}', 'ourReward', this.value, 'non-experience')" class="w-16 border border-gray-200 rounded p-1 text-xs text-center focus:border-primary ant-input text-amber-700">
+                        </td>
+                        <td class="p-3 bg-amber-50/10">
+                            <input type="number" step="0.01" value="${plan.partnerReward}" onchange="updateCell('${plan.id}', 'partnerReward', this.value, 'non-experience')" class="w-16 border border-gray-200 rounded p-1 text-xs text-center focus:border-primary ant-input text-amber-700">
+                        </td>
+                        <td class="p-3 bg-amber-50/10">
+                            <select onchange="updateCell('${plan.id}', 'priority', this.value, 'non-experience')" class="border border-gray-200 rounded p-1 text-xs focus:border-primary bg-white text-gray-700">
+                                <option value="A" ${plan.priority === 'A' ? 'selected' : ''}>公式A</option>
+                                <option value="B" ${plan.priority === 'B' ? 'selected' : ''}>公式B</option>
+                            </select>
+                        </td>
+                        <td class="p-3 font-semibold">
+                            <input type="number" step="0.01" value="${plan.partnerShare}" onchange="updateCell('${plan.id}', 'partnerShare', this.value, 'non-experience')" class="w-14 border border-gray-200 rounded p-1 text-xs text-center focus:border-primary ant-input">%
+                        </td>
+                        <td class="p-3 font-semibold">
+                            <input type="number" step="0.01" value="${plan.ourShare}" onchange="updateCell('${plan.id}', 'ourShare', this.value, 'non-experience')" class="w-14 border border-gray-200 rounded p-1 text-xs text-center focus:border-primary ant-input">%
+                        </td>
+                        <!-- 红框映射字段(非体验卡) -->
+                        <td class="p-3 bg-red-50/10">
+                            <input type="number" step="0.01" value="${plan.teacherShare}" onchange="updateCell('${plan.id}', 'teacherShare', this.value, 'non-experience')" class="w-14 border border-gray-200 rounded p-1 text-xs text-center focus:border-primary ant-input">%
+                        </td>
+                        <td class="p-3 bg-red-50/10">
+                            <input type="number" step="0.01" value="${plan.managerShare}" onchange="updateCell('${plan.id}', 'managerShare', this.value, 'non-experience')" class="w-14 border border-gray-200 rounded p-1 text-xs text-center focus:border-primary ant-input">%
+                        </td>
+                        <td class="p-3 bg-red-50/10">
+                            <input type="number" step="0.01" value="${plan.fee}" onchange="updateCell('${plan.id}', 'fee', this.value, 'non-experience')" class="w-14 border border-gray-200 rounded p-1 text-xs text-center focus:border-primary ant-input">%
+                        </td>
+                        <td class="p-3 bg-red-50/10">
+                            <button onclick="openStoreSelector('${plan.id}', 'non-experience')" class="text-primary hover:text-primaryHover underline">
+                                已选${plan.stores.length}个
+                            </button>
+                        </td>
+                        <td class="p-3 bg-red-50/10">
+                            <button onclick="openProductSelector('${plan.id}', 'non-experience')" class="text-primary hover:text-primaryHover underline">
+                                已选${plan.products ? plan.products.length : 0}个
+                            </button>
+                        </td>
+                        <td class="p-3 bg-red-50/10">
+                            <div class="flex items-center gap-1">
+                                <input type="date" value="${plan.startDate}" onchange="updateCell('${plan.id}', 'startDate', this.value, 'non-experience')" class="border border-gray-200 rounded p-1 text-[11px] w-24">
+                                <span class="text-gray-400">至</span>
+                                <input type="date" value="${plan.endDate}" onchange="updateCell('${plan.id}', 'endDate', this.value, 'non-experience')" class="border border-gray-200 rounded p-1 text-[11px] w-24">
+                            </div>
+                        </td>
+                        <td class="p-3 bg-red-50/10 text-center">
+                            <button onclick="toggleStatus('${plan.id}', 'non-experience')" class="relative inline-flex h-5 w-10 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${plan.status ? 'bg-primary' : 'bg-gray-200'}">
+                                <span class="pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${plan.status ? 'translate-x-5' : 'translate-x-0'}"></span>
+                            </button>
+                        </td>
+                        <td class="p-3 bg-red-50/10 text-center">
+                            <div class="flex items-center justify-center gap-2">
+                                <button onclick="duplicatePlan('${plan.id}', 'non-experience')" class="text-primary hover:text-primaryHover mr-1">复制</button>
+                                <button onclick="deletePlan('${plan.id}', 'non-experience')" class="text-antError hover:text-red-700">删除</button>
+                            </div>
+                        </td>
+                    `;
+                    nonExpBody.appendChild(tr);
+                });
+            }
+        }
+
+        // 4. 行间微调保存更新单元格逻辑
+        function updateCell(id, field, value, type) {
+            let planList = type === 'experience' ? experiencePlans : nonExperiencePlans;
+            const plan = planList.find(p => p.id === id);
+            
+            if (plan) {
+                // 部分数值字段进行转换
+                const numericFields = ['price', 'cost', 'ourReward', 'partnerReward', 'partnerShare', 'ourShare', 'teacherShare', 'managerShare', 'fee'];
+                if (numericFields.includes(field)) {
+                    plan[field] = isNaN(value) ? 0 : Number(value);
+                } else {
+                    plan[field] = value;
+                }
+
+                // 联动分润占比联动校验
+                if (type === 'non-experience') {
+                    if (field === 'partnerShare') {
+                        plan.ourShare = Math.max(0, 100 - plan.partnerShare);
+                    } else if (field === 'ourShare') {
+                        plan.partnerShare = Math.max(0, 100 - plan.ourShare);
+                    }
+                }
+
+                // 售价/成本亏损提示
+                if (type === 'experience' && (field === 'price' || field === 'cost')) {
+                    if (plan.price < plan.cost) {
+                        showToast(`⚠️ [${plan.name}] 机构成本(¥${plan.cost})已大于售价(¥${plan.price})，生成订单将产生亏损！`, 'warning');
+                    }
+                }
+            }
+            renderAllTables();
+        }
+
+        // 5. 复制合作方案逻辑 (复制后生成新合同规则)
+        function duplicatePlan(id, type) {
+            let planList = type === 'experience' ? experiencePlans : nonExperiencePlans;
+            const original = planList.find(p => p.id === id);
+            
+            if (original) {
+                // 深度复制对象
+                const replica = JSON.parse(JSON.stringify(original));
+                replica.id = type + '-' + Date.now();
+                replica.contract = original.contract + '-副本';
+                replica.name = original.name + '-副本';
+                
+                planList.push(replica);
+                renderAllTables();
+                showToast(`🎉 成功复制方案 [${original.name}]`, 'success');
+            }
+        }
+
+        // 6. 切换启用/停用合作状态
+        function toggleStatus(id, type) {
+            let planList = type === 'experience' ? experiencePlans : nonExperiencePlans;
+            const plan = planList.find(p => p.id === id);
+            if (plan) {
+                plan.status = !plan.status;
+                renderAllTables();
+                showToast(plan.status ? `已开启方案: ${plan.name}` : `已停用方案: ${plan.name}`, 'success');
+            }
+        }
+
+        // 7. 删除合作方案
+        function deletePlan(id, type) {
+            if (type === 'experience') {
+                experiencePlans = experiencePlans.filter(p => p.id !== id);
+                showToast('已移除体验卡合作规则', 'success');
+            } else {
+                nonExperiencePlans = nonExperiencePlans.filter(p => p.id !== id);
+                showToast('已移除非体验卡分润规则', 'success');
+            }
+            renderAllTables();
+        }
+
+        // 8. 门店选择器弹出及交互
+        function openStoreSelector(id, type) {
+            activeEditId = id;
+            activeEditType = type;
+            
+            let planList = type === 'experience' ? experiencePlans : nonExperiencePlans;
+            const plan = planList.find(p => p.id === id);
+            
+            if (!plan) return;
+
+            const checklistContainer = document.getElementById('store-checklist');
+            checklistContainer.innerHTML = '';
+
+            allStoresList.forEach(store => {
+                const isChecked = plan.stores.includes(store);
+                const label = document.createElement('label');
+                label.className = 'flex items-center gap-3 p-2 hover:bg-gray-50 rounded cursor-pointer text-xs';
+                label.innerHTML = `
+                    <input type="checkbox" value="${store}" ${isChecked ? 'checked' : ''} class="rounded border-gray-300 text-primary focus:ring-primary w-4 h-4">
+                    <span class="text-gray-700">${store}</span>
+                `;
+                checklistContainer.appendChild(label);
+            });
+
+            const modal = document.getElementById('store-modal');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.add('opacity-100');
+                modal.querySelector('.transform').classList.remove('scale-95');
+                modal.querySelector('.transform').classList.add('scale-100');
+            }, 10);
+        }
+
+        function closeStoreModal() {
+            const modal = document.getElementById('store-modal');
+            modal.classList.remove('opacity-100');
+            modal.querySelector('.transform').classList.add('scale-95');
+            modal.querySelector('.transform').classList.remove('scale-100');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        function saveSelectedStores() {
+            const selected = [];
+            const checkboxes = document.querySelectorAll('#store-checklist input[type="checkbox"]');
+            checkboxes.forEach(cb => {
+                if (cb.checked) {
+                    selected.push(cb.value);
+                }
+            });
+
+            let planList = activeEditType === 'experience' ? experiencePlans : nonExperiencePlans;
+            const plan = planList.find(p => p.id === activeEditId);
+            if (plan) {
+                plan.stores = selected;
+                renderAllTables();
+                showToast('门店适用范围配置已保存', 'success');
+            }
+            closeStoreModal();
+        }
+
+        // 9. 关联产品多选交互
+        function openProductSelector(id, type) {
+            activeEditId = id;
+            activeEditType = type;
+            
+            let planList = type === 'experience' ? experiencePlans : nonExperiencePlans;
+            const plan = planList.find(p => p.id === id);
+            
+            if (!plan) return;
+
+            const checklistContainer = document.getElementById('product-checklist');
+            checklistContainer.innerHTML = '';
+
+            const currentSelected = plan.products || [];
+
+            allProductsList.forEach(prod => {
+                const isChecked = currentSelected.includes(prod);
+                const label = document.createElement('label');
+                label.className = 'flex items-center gap-3 p-2 hover:bg-gray-50 rounded cursor-pointer text-xs';
+                label.innerHTML = `
+                    <input type="checkbox" value="${prod}" ${isChecked ? 'checked' : ''} class="rounded border-gray-300 text-primary focus:ring-primary w-4 h-4">
+                    <span class="text-gray-700">${prod}</span>
+                `;
+                checklistContainer.appendChild(label);
+            });
+
+            const modal = document.getElementById('product-modal');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.add('opacity-100');
+                modal.querySelector('.transform').classList.remove('scale-95');
+                modal.querySelector('.transform').classList.add('scale-100');
+            }, 10);
+        }
+
+        function closeProductModal() {
+            const modal = document.getElementById('product-modal');
+            modal.classList.remove('opacity-100');
+            modal.querySelector('.transform').classList.add('scale-95');
+            modal.querySelector('.transform').classList.remove('scale-100');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        function saveSelectedProducts() {
+            const selected = [];
+            const checkboxes = document.querySelectorAll('#product-checklist input[type="checkbox"]');
+            checkboxes.forEach(cb => {
+                if (cb.checked) {
+                    selected.push(cb.value);
+                }
+            });
+
+            let planList = activeEditType === 'experience' ? experiencePlans : nonExperiencePlans;
+            const plan = planList.find(p => p.id === activeEditId);
+            if (plan) {
+                plan.products = selected;
+                renderAllTables();
+                showToast('关联品项设置已同步', 'success');
+            }
+            closeProductModal();
+        }
+
+        // 10. 弹窗打开与关闭动作
+        function openAddModal(type) {
+            const modal = document.getElementById('add-modal');
+            const title = document.getElementById('modal-title');
+            const typeInput = document.getElementById('modal-type');
+            
+            // 重置表单
+            document.getElementById('plan-form').reset();
+            
+            typeInput.value = type;
+            
+            // 设置默认开始/结束日期
+            const today = new Date();
+            const nextYear = new Date();
+            nextYear.setFullYear(today.getFullYear() + 1);
+            document.getElementById('form-start-date').value = today.toISOString().split('T')[0];
+            document.getElementById('form-end-date').value = nextYear.toISOString().split('T')[0];
+
+            if (type === 'experience') {
+                title.textContent = '关联新体验卡产品';
+                document.getElementById('form-name-label').textContent = '体验卡套餐名称 *';
+                document.getElementById('form-name').placeholder = '例: 晶白瓷微创美牙卡';
+                document.getElementById('form-price-container').style.display = 'block';
+                document.getElementById('form-products-container').style.display = 'none';
+                document.getElementById('form-is-mingka-container').style.display = 'block';
+                
+                document.getElementById('share-label-left').textContent = '合作方分润 *';
+                document.getElementById('share-unit-left').textContent = '元';
+                document.getElementById('share-label-right').textContent = '我司分润 *';
+                document.getElementById('form-partner-share').placeholder = '例: 600';
+            } else {
+                title.textContent = '新增非体验卡分润方案';
+                document.getElementById('form-name-label').textContent = '分润备注/方案名称 *';
+                document.getElementById('form-name').placeholder = '例: 3D丝雾眉分润方案';
+                document.getElementById('form-price-container').style.display = 'none';
+                document.getElementById('form-products-container').style.display = 'block';
+                document.getElementById('form-is-mingka-container').style.display = 'none';
+                
+                document.getElementById('share-label-left').textContent = '合作方分润比例 *';
+                document.getElementById('share-unit-left').textContent = '%';
+                document.getElementById('share-label-right').textContent = '我司分润比例 *';
+                document.getElementById('form-partner-share').placeholder = '例: 60';
+            }
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.add('opacity-100');
+                modal.querySelector('.transform').classList.remove('scale-95');
+                modal.querySelector('.transform').classList.add('scale-100');
+            }, 10);
+        }
+
+        function closeAddModal() {
+            const modal = document.getElementById('add-modal');
+            modal.classList.remove('opacity-100');
+            modal.querySelector('.transform').classList.add('scale-95');
+            modal.querySelector('.transform').classList.remove('scale-100');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        // 11. 处理表单提交
+        function handleFormSubmit(event) {
+            event.preventDefault();
+            
+            const type = document.getElementById('modal-type').value;
+            const newId = String(Date.now());
+            
+            const newPlan = {
+                id: newId,
+                contract: document.getElementById('form-contract').value,
+                name: document.getElementById('form-name').value,
+                cost: Number(document.getElementById('form-cost').value) || 0,
+                ourReward: Number(document.getElementById('form-our-reward').value) || 0,
+                partnerReward: Number(document.getElementById('form-partner-reward').value) || 0,
+                priority: document.getElementById('form-priority').value,
+                partnerShare: Number(document.getElementById('form-partner-share').value) || 0,
+                ourShare: Number(document.getElementById('form-our-share').value) || 0,
+                teacherShare: Number(document.getElementById('form-teacher-share').value) || 0,
+                managerShare: Number(document.getElementById('form-manager-share').value) || 0,
+                fee: Number(document.getElementById('form-fee').value) || 0,
+                startDate: document.getElementById('form-start-date').value,
+                endDate: document.getElementById('form-end-date').value,
+                stores: ['北京直营店'], // 默认添加北京直营店
+                status: true
+            };
+
+            if (type === 'experience') {
+                newPlan.price = Number(document.getElementById('form-price').value) || 0;
+                newPlan.isMingka = document.getElementById('form-is-mingka').value;
+                experiencePlans.push(newPlan);
+                showToast(`体验卡方案 [${newPlan.name}] 成功添加`, 'success');
+            } else {
+                const prodStr = document.getElementById('form-products').value || '超薄全瓷贴面';
+                newPlan.products = prodStr.split(',').map(s => s.trim());
+                nonExperiencePlans.push(newPlan);
+                showToast(`非体验卡方案 [${newPlan.name}] 成功添加`, 'success');
+            }
+
+            closeAddModal();
+            renderAllTables();
+        }
+
+        // 12. 全局配置保存通知
+        function saveAllPlans() {
+            showToast('🔄 正在同步全部计算方案规则至财务后台...', 'success');
+            setTimeout(() => {
+                showToast('🎉 外协方案配置成功发布！已自动生成Quick BI及金蝶对账单明细流转规则', 'success');
+            }, 800);
+        }
+
+        // 13. Ant 风格全局轻量级提醒组件
+        function showToast(text, type = 'success') {
+            const container = document.getElementById('global-message-container');
+            const toast = document.createElement('div');
+            
+            let iconSvg = '';
+            let bgBorderClass = '';
+            
+            if (type === 'success') {
+                iconSvg = `<svg class="w-4 h-4 text-antSuccess" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`;
+                bgBorderClass = 'bg-white border border-gray-100 shadow-antDropdown';
+            } else if (type === 'warning') {
+                iconSvg = `<svg class="w-4 h-4 text-antWarning" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>`;
+                bgBorderClass = 'bg-amber-50 border border-amber-200 shadow-antDropdown';
+            }
+
+            toast.className = `flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-semibold ${bgBorderClass} transition-all duration-300 transform -translate-y-4 opacity-0 pointer-events-auto`;
+            toast.innerHTML = `${iconSvg} <span class="text-gray-800">${text}</span>`;
+            
+            container.appendChild(toast);
+            
+            // 进场动画
+            setTimeout(() => {
+                toast.classList.remove('-translate-y-4', 'opacity-0');
+            }, 10);
+
+            // 出场销毁
+            setTimeout(() => {
+                toast.classList.add('translate-y-4', 'opacity-0');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

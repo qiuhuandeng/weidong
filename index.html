@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>导航页面</title>
+    <style>
+        /* 这里的代码用来给网页加版权，不用管它 */
+        body { margin: 0; display: flex; flex-direction: column; height: 100vh; font-family: sans-serif; }
+        .menu { background: #333; padding: 10px; display: flex; justify-content: center; flex-wrap: wrap; }
+        .menu a { color: white; text-decoration: none; padding: 10px 20px; margin: 0 5px; background: #444; border-radius: 4px; }
+        .menu a:hover { background: #666; }
+        .menu a.active { background: #1677ff; }
+        iframe { flex: 1; border: none; width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+
+<div class="menu">
+    <a class="active" href="旧的外协配置.html" target="content">旧的外协配置</a>
+    <a href="财务核对.html" target="content">财务核对</a>
+    <a href="about:blank" target="content">更多</a>
+</div>
+
+<iframe name="content" src="旧的外协配置.html"></iframe>
+
+<script>
+    document.querySelectorAll('.menu a').forEach(function (tab) {
+        tab.addEventListener('click', function () {
+            document.querySelectorAll('.menu a').forEach(function (item) {
+                item.classList.remove('active');
+            });
+            tab.classList.add('active');
+        });
+    });
+</script>
+
+</body>
+</html>

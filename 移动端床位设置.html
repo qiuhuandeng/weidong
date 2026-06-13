@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>接待规则设置 - 极致简易版</title>
+  <!-- 引入 Tailwind CSS (快速、轻量、无其他JS依赖) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* 隐藏滚动条 */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    /* 针对手机端点击态优化 */
+    .tap-highlight-transparent {
+      -webkit-tap-highlight-color: transparent;
+    }
+    /* 隐藏 input type="number" 的上下箭头 */
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type="number"] {
+      -moz-appearance: textfield;
+    }
+    /* 自定义 select 下拉箭头隐藏（用SVG替代） */
+    select {
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 font-sans antialiased text-gray-900 tap-highlight-transparent">
+
+  <!-- 模拟手机外壳容器（PC端居中，手机端全屏） -->
+  <div class="max-w-md mx-auto min-h-screen bg-slate-50 flex flex-col shadow-2xl relative pb-28">
+    
+    <!-- 顶部导航栏 -->
+    <header class="sticky top-0 z-50 bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center space-x-2">
+        <button class="p-1 text-gray-400 hover:text-gray-600 focus:outline-none">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" /></svg>
+        </button>
+        <div>
+          <h1 class="text-lg font-bold text-gray-800">修改接待规则</h1>
+          <p class="text-xs text-gray-400">上海徐汇店</p>
+        </div>
+      </div>
+      <button onclick="resetAll()" class="text-sm font-medium text-gray-500 hover:text-blue-600 px-2.5 py-1 rounded-full hover:bg-gray-100 transition-all">
+        重置
+      </button>
+    </header>
+
+    <!-- 主体配置内容 -->
+    <main class="flex-1 p-4 space-y-4 overflow-y-auto no-scrollbar">
+      
+      <!-- 历史配置预览 -->
+      <section class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+        <details class="group" open>
+          <summary class="flex justify-between items-center text-xs text-gray-400 cursor-pointer list-none select-none">
+            <span class="text-sm font-bold text-gray-700">查看已配床位数</span>
+            <svg class="w-4 h-4 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+          </summary>
+          <div class="grid grid-cols-2 gap-2 mt-3 bg-gray-50 p-3 rounded-xl text-[11px] text-gray-500">
+            <div class="flex justify-between bg-white px-2.5 py-1.5 rounded-lg border border-gray-200">
+              <span>06-02 (周二)</span>
+              <span class="text-blue-600 font-semibold">新3 / 老3</span>
+            </div>
+            <div class="flex justify-between bg-white px-2.5 py-1.5 rounded-lg border border-gray-200">
+              <span>06-03 (周三)</span>
+              <span class="text-blue-600 font-semibold">新3 / 老3</span>
+            </div>
+            <div class="flex justify-between bg-white px-2.5 py-1.5 rounded-lg border border-gray-200">
+              <span>06-04 (周四)</span>
+              <span class="text-blue-600 font-semibold">新3 / 老3</span>
+            </div>
+            <div class="flex justify-between bg-white px-2.5 py-1.5 rounded-lg border border-gray-200">
+              <span>06-06 (周六)</span>
+              <span class="text-blue-600 font-semibold">新6 / 老6</span>
+            </div>
+            <div class="flex justify-between bg-white px-2.5 py-1.5 rounded-lg border border-gray-200">
+              <span>06-07 (周日)</span>
+              <span class="text-blue-600 font-semibold">新5 / 老5</span>
+            </div>
+            <div class="flex justify-between bg-white px-2.5 py-1.5 rounded-lg border border-gray-200">
+              <span>06-09 (周二)</span>
+              <span class="text-blue-600 font-semibold">新4 / 老4</span>
+            </div>
+          </div>
+        </details>
+      </section>
+
+      <section class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
+        <!-- 选择目标日期 -->
+        <div class="p-4 bg-slate-50/50">
+          <div class="flex justify-between items-center mb-3">
+            <div class="flex items-center space-x-1.5">
+              <span class="w-1.5 h-4 bg-blue-600 rounded-full"></span>
+              <h2 class="text-base font-bold text-gray-800">1. 选择生效日期</h2>
+            </div>
+            <span id="selected-count-badge" class="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-semibold">
+              已选 0 天
+            </span>
+          </div>
+          <div class="flex space-x-2 mb-3">
+            <button onclick="selectQuickDays(8)" class="flex-1 py-2 px-3 text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors flex items-center justify-center space-x-1.5 border border-blue-100 active:scale-95 duration-150">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+              <span>一键选下周 (8天)</span>
+            </button>
+            <button onclick="clearDateSelection()" class="py-2 px-4 text-xs font-medium text-gray-500 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors active:scale-95 duration-150">
+              清除
+            </button>
+          </div>
+          <div class="grid grid-cols-4 gap-2" id="date-grid"></div>
+        </div>
+
+        <!-- 视觉引导线 -->
+        <div class="relative flex items-center justify-center py-1 bg-white">
+          <div class="absolute inset-0 flex items-center px-4" aria-hidden="true">
+            <div class="w-full border-t border-dashed border-gray-200"></div>
+          </div>
+          <div class="relative z-10 w-8 h-8 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-500 shadow-xs">
+            <svg class="w-4 h-4 animate-bounce mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 13l-7 7-7-7m14-6l-7 7-7-7" />
+            </svg>
+          </div>
+        </div>
+
+        <!-- 配置选定日期的床位数 -->
+        <div class="p-4 bg-white transition-all duration-300" id="bed-config-container">
+          <div class="mb-3" id="bed-config-header"></div>
+          <div id="bed-config-content-wrapper" class="space-y-4 transition-opacity duration-300">
+            <div class="bg-gray-100 p-1 rounded-xl flex">
+              <button onclick="switchGuestTab('new')" id="tab-new" class="flex-1 py-2.5 text-sm font-bold rounded-lg transition-all text-blue-600 bg-white shadow-sm">
+                新客床位
+              </button>
+              <button onclick="switchGuestTab('old')" id="tab-old" class="flex-1 py-2.5 text-sm font-medium rounded-lg transition-all text-gray-500 hover:text-gray-800">
+                老客床位
+              </button>
+            </div>
+            <div class="space-y-4">
+              <!-- 总数配额卡片 -->
+              <div class="flex items-center justify-between bg-blue-50/50 p-4 rounded-xl border border-blue-100">
+                <div>
+                  <span class="text-sm font-bold text-gray-800" id="total-bed-title">新客总接待上限</span>
+                  <p class="text-xs text-gray-400 mt-0.5" id="total-bed-desc">以此总预约床位数为准</p>
+                </div>
+                <div class="flex items-center space-x-3">
+                  <button onclick="adjustTotalBed(-1)" class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-blue-600 border border-blue-200 active:scale-95 transition-transform shadow-sm">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 12H4" /></svg>
+                  </button>
+                  <span id="total-bed-value" class="text-xl font-extrabold text-blue-600 w-8 text-center">5</span>
+                  <button onclick="adjustTotalBed(1)" class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-blue-600 border border-blue-200 active:scale-95 transition-transform shadow-sm">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" /></svg>
+                  </button>
+                </div>
+              </div>
+
+              <!-- 开关 1：按科室品类细分配置 -->
+              <div class="flex items-center justify-between py-2 border-t border-gray-50">
+                <div>
+                  <span class="text-sm font-semibold text-gray-700">按科室品类细分配置</span>
+                </div>
+                <button onclick="toggleDepartmentConfig()" id="dept-toggle" class="w-12 h-6 rounded-full transition-colors duration-200 ease-in-out relative focus:outline-none bg-blue-600">
+                  <span id="dept-toggle-dot" class="translate-x-7 ease-in-out duration-200 block w-4 h-4 rounded-full bg-white shadow transform ring-0 transition"></span>
+                </button>
+              </div>
+
+              <!-- 品类动态配置面板 -->
+              <div id="dept-config-panel" class="space-y-3 transition-all duration-300">
+                <div class="flex justify-between items-center py-1 mb-1">
+                  <span class="text-[13px] font-bold text-gray-700">床位初始分配规则 <span class="text-[11px] font-normal text-gray-400">(门店可更改)</span></span>
+                  <button onclick="addDepartment()" class="text-xs font-bold text-blue-600 bg-blue-50 px-2.5 py-1.5 rounded-lg hover:bg-blue-100 flex items-center space-x-1 transition-colors border border-blue-100">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" /></svg>
+                    <span>增加床位类型</span>
+                  </button>
+                </div>
+                
+                <div class="space-y-3" id="active-depts-list"></div>
+                
+                <div class="p-3 bg-slate-50 rounded-xl border border-dashed border-slate-200 flex items-center justify-between mt-2">
+                  <div>
+                    <div class="flex items-center space-x-1.5">
+                      <span class="text-sm font-bold text-slate-700">通用床位</span>
+                      <span class="text-[9px] bg-slate-200 text-slate-600 px-1 py-0.5 rounded font-mono font-bold">自动计算</span>
+                    </div>
+                    <p class="text-[11px] text-gray-400 mt-0.5" id="universal-bed-formula">公式：总数(5) - 已分配(5)</p>
+                    <p class="text-[9px] text-amber-500 font-semibold mt-0.5">※ 未添加的品类将共享通用床位</p>
+                  </div>
+                  <div class="text-right">
+                    <span id="universal-bed-value" class="text-lg font-black text-slate-700">0</span>
+                    <span class="text-xs text-gray-400">张</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 开关 2：特定项目同段接待上限 -->
+              <div class="flex items-center justify-between py-2 border-t border-gray-50">
+                <div>
+                  <span class="text-sm font-semibold text-gray-700">特定项目同时段限流 <span class="text-xs text-blue-600 font-bold bg-blue-50 px-1.5 py-0.5 rounded ml-1">(防忙不过来)</span></span>
+                </div>
+                <button onclick="toggleProjectConfig()" id="project-toggle" class="w-12 h-6 rounded-full transition-colors duration-200 ease-in-out relative focus:outline-none bg-blue-600">
+                  <span id="project-toggle-dot" class="translate-x-7 ease-in-out duration-200 block w-4 h-4 rounded-full bg-white shadow transform ring-0 transition"></span>
+                </button>
+              </div>
+
+              <!-- 特定项目动态配置面板 -->
+              <div id="project-config-panel" class="space-y-3 transition-all duration-300">
+                <div class="flex justify-between items-center py-1 mb-1">
+                  <span class="text-[13px] font-bold text-gray-700">设置需要错峰预约的项目</span>
+                  <button onclick="addProject()" class="text-xs font-bold text-blue-600 bg-blue-50 px-2.5 py-1.5 rounded-lg hover:bg-blue-100 flex items-center space-x-1 transition-colors border border-blue-100">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" /></svg>
+                    <span>增加</span>
+                  </button>
+                </div>
+                
+                <!-- 动态项目限制卡片容器 -->
+                <div class="space-y-3" id="active-projects-list"></div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 客户接待时长间隔模块 -->
+      <section class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 space-y-4">
+        <div class="space-y-3">
+          <span class="text-sm font-bold text-gray-800 block">客户接待时长间隔</span>
+          <div class="flex space-x-2.5">
+            <button id="btn-interval-60" onclick="selectInterval(60)" class="px-5 py-2 rounded-full text-xs font-semibold bg-gray-100 text-gray-500 hover:bg-gray-200 active:scale-95 transition-all duration-150">
+              60分钟
+            </button>
+            <button id="btn-interval-90" onclick="selectInterval(90)" class="px-5 py-2 rounded-full text-xs font-bold bg-blue-600 text-white shadow-md shadow-blue-100 active:scale-95 transition-all duration-150">
+              90分钟
+            </button>
+            <button id="btn-interval-120" onclick="selectInterval(120)" class="px-5 py-2 rounded-full text-xs font-semibold bg-gray-100 text-gray-500 hover:bg-gray-200 active:scale-95 transition-all duration-150">
+              120分钟
+            </button>
+          </div>
+        </div>
+
+        <!-- 生效周期输入控件 -->
+        <div class="pt-3 border-t border-dashed border-gray-100">
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-[13px] font-bold text-gray-800">生效周期 <span class="text-red-500 ml-0.5">*</span></span>
+            <div class="text-right text-[11px] text-gray-400 leading-tight">
+              <p>上次截止</p>
+              <p>暂无</p>
+            </div>
+          </div>
+          <div class="flex items-center space-x-3">
+            <span class="text-sm text-gray-700">未来</span>
+            <input type="number" id="project-effective-days" value="7" min="1" oninput="configState.projectEffectiveDays = this.value" class="w-16 h-8 text-center border border-gray-200 rounded-md text-sm font-medium text-gray-800 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors shadow-sm bg-white" />
+            <span class="text-sm text-gray-700">天</span>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- 底部常驻保存配置条 -->
+    <footer class="absolute bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-100 p-4 flex space-x-3">
+      <button onclick="resetCurrentConfig()" class="w-1/3 py-3 px-4 rounded-xl border border-gray-200 text-sm font-semibold text-gray-500 hover:bg-gray-50 transition-colors active:scale-[0.98]">
+        返回
+      </button>
+      <button onclick="saveReceptionConfig()" class="flex-1 py-3 px-6 rounded-xl bg-blue-600 text-sm font-semibold text-white shadow-lg shadow-blue-200 hover:bg-blue-700 active:bg-blue-800 active:scale-[0.98] transition-all flex items-center justify-center space-x-2">
+        <span>保存配置</span>
+      </button>
+    </footer>
+
+    <!-- 页面操作提示框 (Toast) -->
+    <div id="toast" class="fixed top-16 left-1/2 -translate-x-1/2 z-50 bg-gray-900/95 text-white px-4 py-3 rounded-xl text-sm font-medium shadow-xl opacity-0 scale-90 pointer-events-none transition-all duration-300 flex items-center space-x-2">
+      <span id="toast-icon"></span>
+      <span id="toast-text">提示信息</span>
+    </div>
+
+  </div>
+
+  <script>
+    // 1. 初始化数据模型
+    const today = new Date('2026-06-02'); 
+    const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+    
+    // 生成未来15天数据
+    const datesData = [];
+    for (let i = 0; i < 15; i++) {
+      const current = new Date(today);
+      current.setDate(today.getDate() + i);
+      const mm = String(current.getMonth() + 1).padStart(2, '0');
+      const dd = String(current.getDate()).padStart(2, '0');
+      const formattedDate = `${mm}-${dd}`;
+      
+      let hasConfig = false;
+      let badgeText = '';
+      if ([0, 1, 2, 4, 5, 7].includes(i)) {
+        hasConfig = true;
+        badgeText = i === 4 ? '新6·老6' : i === 5 ? '新5·老5' : '新3·老3';
+      }
+
+      datesData.push({
+        id: i,
+        dateStr: formattedDate,
+        weekday: weekdays[current.getDay()],
+        hasConfig: hasConfig,
+        badgeText: badgeText,
+        selected: false
+      });
+    }
+
+    // 可选床位品类数据池
+    const allBedCategories = {
+      yimei: { name: '医美床位', desc: '用于光电皮秒、注射等医学美容，可预约品类: s10 k10' },
+      shengmei: { name: '生美床位', desc: '用于基础SPA与水分充盈护理项目，可预约品类: s11 k12' },
+      wenxiu: { name: '纹绣床位', desc: '用于半永久纹眉、漂唇美睫等' },
+      meijia: { name: '美甲美睫', desc: '用于美睫修甲等快消特色品类' },
+      liliao: { name: '理疗按摩', desc: '用于艾灸推拿、肩颈修复按摩' },
+      zhifa: { name: '植发护发', desc: '用于毛囊种植检测及深层健发' }
+    };
+
+    // 可选特定项目数据池
+    const allProjectsPool = {
+      s10: 's10项目',
+      k10: 'k10项目',
+      z10: 'z10项目',
+      a10: 'a10项目'
+    };
+
+    // 全局配置状态
+    const configState = {
+      selectedDates: [], 
+      currentTab: 'new', 
+      selectedInterval: 90, 
+      projectEffectiveDays: 7,
+
+      newGuest: {
+        totalLimit: 5,
+        useDeptConfig: true, 
+        useProjectConfig: true,
+        activeDepts: ['yimei', 'shengmei'], 
+        deptValues: { yimei: 0, shengmei: 5, wenxiu: 1, meijia: 0, liliao: 1, zhifa: 1 },
+        activeProjects: [
+          { key: 's10', limit: 2 },
+          { key: 'k10', limit: 1 }
+        ]
+      },
+      oldGuest: {
+        totalLimit: 5,
+        useDeptConfig: true,
+        useProjectConfig: true,
+        activeDepts: ['yimei', 'shengmei'],
+        deptValues: { yimei: 0, shengmei: 5, wenxiu: 1, meijia: 0, liliao: 1, zhifa: 1 },
+        activeProjects: [
+          { key: 's10', limit: 2 },
+          { key: 'k10', limit: 1 }
+        ]
+      }
+    };
+
+    // 获取当前活动 Tab 的配置对象
+    function getActiveGuestData() {
+      return configState.currentTab === 'new' ? configState.newGuest : configState.oldGuest;
+    }
+
+    // 切换接待时长间隔函数
+    function selectInterval(minutes) {
+      configState.selectedInterval = minutes;
+      const list = [60, 90, 120];
+      list.forEach(val => {
+        const btn = document.getElementById(`btn-interval-${val}`);
+        if (val === minutes) {
+          btn.className = "px-5 py-2 rounded-full text-xs font-bold bg-blue-600 text-white shadow-md shadow-blue-100 active:scale-95 transition-all duration-150";
+        } else {
+          btn.className = "px-5 py-2 rounded-full text-xs font-semibold bg-gray-100 text-gray-500 active:scale-95 transition-all duration-150 hover:bg-gray-200";
+        }
+      });
+      showToast('success', `接待时长已设为 ${minutes} 分钟`);
+    }
+
+    // 渲染日期网格
+    function renderDateGrid() {
+      const grid = document.getElementById('date-grid');
+      grid.innerHTML = '';
+      datesData.forEach(item => {
+        const isSelected = configState.selectedDates.includes(item.id);
+        const cardClass = isSelected 
+          ? 'bg-blue-50 border-2 border-blue-600 text-blue-900 shadow-xs scale-[0.98]' 
+          : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-300';
+        const badgeColor = isSelected ? 'bg-blue-200/60 text-blue-700' : 'bg-gray-100 text-gray-500';
+
+        grid.innerHTML += `
+          <div onclick="toggleDateSelect(${item.id})" class="${cardClass} rounded-xl p-2.5 text-center cursor-pointer transition-all duration-150 relative flex flex-col justify-between h-18 select-none">
+            ${isSelected ? `
+              <span class="absolute top-1 right-1 w-3.5 h-3.5 bg-blue-600 rounded-full flex items-center justify-center text-white">
+                <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" /></svg>
+              </span>
+            ` : ''}
+            <div>
+              <span class="block text-[13px] font-bold ${isSelected ? 'text-blue-700' : 'text-gray-800'}">${item.dateStr}</span>
+              <span class="block text-[10px] text-gray-400 font-medium">${item.weekday}</span>
+            </div>
+            ${item.hasConfig ? `
+              <span class="mt-1 text-[9px] px-1 py-0.5 rounded-sm scale-90 origin-center block truncate font-medium ${badgeColor}">${item.badgeText}</span>
+            ` : `
+              <span class="mt-1 text-[9px] text-gray-300 scale-90 block">未配置</span>
+            `}
+          </div>
+        `;
+      });
+      document.getElementById('selected-count-badge').innerText = `已选 ${configState.selectedDates.length} 天`;
+      updateBedConfigState();
+    }
+
+    function updateBedConfigState() {
+      const headerContainer = document.getElementById('bed-config-header');
+      const contentWrapper = document.getElementById('bed-config-content-wrapper');
+      const selectedCount = configState.selectedDates.length;
+
+      if (selectedCount > 0) {
+        headerContainer.innerHTML = `
+          <div class="flex items-center space-x-1.5">
+            <span class="w-1.5 h-4 bg-blue-600 rounded-full"></span>
+            <h2 class="text-base font-bold text-gray-800">2. 设置这 <span class="text-blue-600 font-extrabold px-1 text-lg">${selectedCount}</span> 天的床位数</h2>
+          </div>
+          <p class="text-xs text-blue-500 font-medium mt-1">您正在统一调整选定日期的床位及项目规则</p>
+        `;
+        contentWrapper.style.opacity = '1';
+        contentWrapper.style.pointerEvents = 'auto';
+      } else {
+        headerContainer.innerHTML = `
+          <div class="flex items-center space-x-2">
+            <span class="w-1.5 h-4 bg-gray-300 rounded-full"></span>
+            <h2 class="text-base font-bold text-gray-400">2. 配置接待床位数</h2>
+          </div>
+          <p class="text-xs text-amber-500 font-semibold mt-1.5 bg-amber-50 border border-amber-100 p-2 rounded-xl flex items-center space-x-1">
+            <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
+            <span>提示：请先在上方点击日期或“一键选下周”</span>
+          </p>
+        `;
+        contentWrapper.style.opacity = '0.35';
+        contentWrapper.style.pointerEvents = 'none';
+      }
+    }
+
+    function toggleDateSelect(id) {
+      const index = configState.selectedDates.indexOf(id);
+      if (index > -1) {
+        configState.selectedDates.splice(index, 1);
+      } else {
+        configState.selectedDates.push(id);
+      }
+      renderDateGrid();
+    }
+
+    function selectQuickDays(days) {
+      configState.selectedDates = [];
+      for(let i = 0; i < days; i++) {
+        configState.selectedDates.push(i);
+      }
+      renderDateGrid();
+      showToast('success', `已为您一键选定未来 ${days} 天`);
+    }
+
+    function clearDateSelection() {
+      configState.selectedDates = [];
+      renderDateGrid();
+      showToast('info', '已清除日期选择');
+    }
+
+    function switchGuestTab(type) {
+      configState.currentTab = type;
+      const tabNew = document.getElementById('tab-new');
+      const tabOld = document.getElementById('tab-old');
+      
+      if (type === 'new') {
+        tabNew.className = 'flex-1 py-2.5 text-sm font-bold rounded-lg transition-all text-blue-600 bg-white shadow-sm';
+        tabOld.className = 'flex-1 py-2.5 text-sm font-medium rounded-lg transition-all text-gray-500 hover:text-gray-800';
+        document.getElementById('total-bed-title').innerText = '新客总接待上限';
+      } else {
+        tabOld.className = 'flex-1 py-2.5 text-sm font-bold rounded-lg transition-all text-blue-600 bg-white shadow-sm';
+        tabNew.className = 'flex-1 py-2.5 text-sm font-medium rounded-lg transition-all text-gray-500 hover:text-gray-800';
+        document.getElementById('total-bed-title').innerText = '老客总接待上限';
+      }
+
+      const activeData = type === 'new' ? configState.newGuest : configState.oldGuest;
+      document.getElementById('total-bed-value').innerText = activeData.totalLimit;
+      
+      syncDeptUI(activeData);
+      syncProjectUI(activeData); 
+    }
+
+    // ================== 科室品类配置逻辑 ==================
+    function syncDeptUI(guestData) {
+      const toggle = document.getElementById('dept-toggle');
+      const dot = document.getElementById('dept-toggle-dot');
+      const panel = document.getElementById('dept-config-panel');
+
+      if (guestData.useDeptConfig) {
+        toggle.className = 'w-12 h-6 rounded-full transition-colors duration-200 ease-in-out relative focus:outline-none bg-blue-600';
+        dot.className = 'translate-x-7 ease-in-out duration-200 block w-4 h-4 rounded-full bg-white shadow transform ring-0 transition';
+        panel.classList.remove('hidden');
+        renderActiveDepartments(guestData);
+      } else {
+        toggle.className = 'w-12 h-6 rounded-full transition-colors duration-200 ease-in-out relative focus:outline-none bg-gray-200';
+        dot.className = 'translate-x-1 ease-in-out duration-200 block w-4 h-4 rounded-full bg-white shadow transform ring-0 transition';
+        panel.classList.add('hidden');
+      }
+    }
+
+    function renderActiveDepartments(guestData) {
+      const container = document.getElementById('active-depts-list');
+      container.innerHTML = '';
+
+      if (guestData.activeDepts.length === 0) {
+        container.innerHTML = `
+          <div class="py-8 text-center text-xs text-gray-400 bg-gray-50 rounded-xl border border-dashed border-gray-200 flex flex-col items-center justify-center">
+            <svg class="w-8 h-8 text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
+            <p>暂无专属科室品类</p>
+            <p class="mt-1">所有预约将共享通用床位</p>
+          </div>
+        `;
+        calculateUniversalBed(guestData);
+        return;
+      }
+
+      guestData.activeDepts.forEach((key, index) => {
+        const deptInfo = allBedCategories[key];
+        const val = guestData.deptValues[key] !== undefined ? guestData.deptValues[key] : 0;
+        const isZero = val === 0;
+
+        const availableOptions = Object.keys(allBedCategories).filter(k => !guestData.activeDepts.includes(k) || k === key);
+        const optionsHtml = availableOptions.map(k => `<option value="${k}" ${k === key ? 'selected' : ''}>${allBedCategories[k].name}</option>`).join('');
+        const cardBgClass = isZero ? 'bg-red-50/20 border-red-200' : 'bg-white border border-gray-200';
+        
+        container.innerHTML += `
+          <div class="p-3.5 rounded-2xl transition-all duration-200 ${cardBgClass} space-y-3">
+            <div class="flex items-center justify-between">
+              <div class="relative w-[130px]">
+                <select onchange="changeDepartment(${index}, this)" class="block w-full pl-3 pr-8 py-2 text-[13px] font-bold text-gray-800 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 shadow-sm cursor-pointer">
+                  ${optionsHtml}
+                </select>
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+              </div>
+
+              <div class="flex items-center space-x-3">
+                <div class="flex items-center space-x-2 bg-gray-50 px-2 py-1.5 rounded-xl border border-gray-200 shadow-2xs">
+                  <button onclick="adjustDeptBed('${key}', -1)" class="w-6 h-6 rounded-md bg-white hover:bg-gray-100 flex items-center justify-center text-gray-500 active:scale-90 transition-all border border-gray-200">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 12H4" /></svg>
+                  </button>
+                  <span class="text-sm font-extrabold w-6 text-center transition-all duration-150 ${isZero ? 'text-red-600 scale-110' : 'text-gray-800'}">${val}</span>
+                  <button onclick="adjustDeptBed('${key}', 1)" class="w-6 h-6 rounded-md bg-white hover:bg-gray-100 flex items-center justify-center text-gray-500 active:scale-90 transition-all border border-gray-200">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" /></svg>
+                  </button>
+                </div>
+                
+                <button onclick="removeDepartment(${index})" class="text-gray-300 hover:text-red-500 transition-colors p-1 active:scale-90">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                </button>
+              </div>
+            </div>
+
+            <div class="text-[11px] leading-relaxed pl-0.5">
+              ${isZero 
+                ? `
+                  <div class="flex items-start space-x-1.5 text-red-500 font-bold mb-1">
+                    <svg class="w-3.5 h-3.5 mt-[1px] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+                    <span>通用床位同时禁止预约【${deptInfo.name}】项目。</span>
+                  </div>
+                  <p class="text-gray-400 pl-5">备注：${deptInfo.desc}</p>
+                ` 
+                : `<p class="text-gray-400">${deptInfo.desc}</p>`
+              }
+            </div>
+          </div>
+        `;
+      });
+
+      calculateUniversalBed(guestData);
+    }
+
+    function addDepartment() {
+      const activeData = getActiveGuestData();
+      const availableKey = Object.keys(allBedCategories).find(k => !activeData.activeDepts.includes(k));
+      if (!availableKey) {
+        showToast('info', '已添加所有可用分类！');
+        return;
+      }
+      activeData.activeDepts.push(availableKey);
+      if (activeData.deptValues[availableKey] === undefined) {
+        activeData.deptValues[availableKey] = 0;
+      }
+      renderActiveDepartments(activeData);
+    }
+
+    function removeDepartment(index) {
+      const activeData = getActiveGuestData();
+      activeData.activeDepts.splice(index, 1);
+      renderActiveDepartments(activeData);
+    }
+
+    function changeDepartment(index, selectElement) {
+      const newKey = selectElement.value;
+      const activeData = getActiveGuestData();
+      const oldKey = activeData.activeDepts[index];
+      if (oldKey === newKey) return;
+      if (activeData.deptValues[newKey] === undefined) {
+        activeData.deptValues[newKey] = 0;
+      }
+      activeData.activeDepts[index] = newKey;
+      renderActiveDepartments(activeData);
+    }
+
+    function calculateUniversalBed(guestData) {
+      let allocatedSum = 0;
+      guestData.activeDepts.forEach(key => {
+        allocatedSum += (guestData.deptValues[key] || 0);
+      });
+      let universalValue = guestData.totalLimit - allocatedSum;
+      if (universalValue < 0) {
+        guestData.totalLimit = allocatedSum; 
+        document.getElementById('total-bed-value').innerText = allocatedSum;
+        universalValue = 0;
+        showToast('info', '各品类分配已占满，总床位数已自动调大');
+      }
+      document.getElementById('universal-bed-value').innerText = universalValue;
+      document.getElementById('universal-bed-formula').innerText = `公式：总数(${guestData.totalLimit}) - 已分配专属(${allocatedSum}) = ${universalValue}张通用`;
+    }
+
+    function toggleDepartmentConfig() {
+      const activeData = getActiveGuestData();
+      activeData.useDeptConfig = !activeData.useDeptConfig;
+      syncDeptUI(activeData);
+    }
+
+    function adjustTotalBed(amount) {
+      const activeData = getActiveGuestData();
+      let currentVal = activeData.totalLimit;
+      currentVal += amount;
+      if (currentVal < 0) currentVal = 0;
+      if (activeData.useDeptConfig) {
+        let allocatedSum = 0;
+        activeData.activeDepts.forEach(key => {
+          allocatedSum += (activeData.deptValues[key] || 0);
+        });
+        if (currentVal < allocatedSum) {
+          showToast('error', `总床位数不能少于已分品类数总和 (${allocatedSum}张)`);
+          return;
+        }
+      }
+      activeData.totalLimit = currentVal;
+      document.getElementById('total-bed-value').innerText = currentVal;
+      if (activeData.useDeptConfig) {
+        calculateUniversalBed(activeData);
+      }
+    }
+
+    function adjustDeptBed(key, amount) {
+      const activeData = getActiveGuestData();
+      let val = activeData.deptValues[key] || 0;
+      val += amount;
+      if (val < 0) val = 0;
+      activeData.deptValues[key] = val;
+      renderActiveDepartments(activeData);
+    }
+
+    // ================== STREAMING_CHUNK: 特定项目限流逻辑 ==================
+    function toggleProjectConfig() {
+      const activeData = getActiveGuestData();
+      activeData.useProjectConfig = !activeData.useProjectConfig;
+      syncProjectUI(activeData);
+    }
+
+    function syncProjectUI(guestData) {
+      const toggle = document.getElementById('project-toggle');
+      const dot = document.getElementById('project-toggle-dot');
+      const panel = document.getElementById('project-config-panel');
+
+      if (guestData.useProjectConfig) {
+        toggle.className = 'w-12 h-6 rounded-full transition-colors duration-200 ease-in-out relative focus:outline-none bg-blue-600';
+        dot.className = 'translate-x-7 ease-in-out duration-200 block w-4 h-4 rounded-full bg-white shadow transform ring-0 transition';
+        panel.classList.remove('hidden');
+        renderActiveProjects(guestData);
+      } else {
+        toggle.className = 'w-12 h-6 rounded-full transition-colors duration-200 ease-in-out relative focus:outline-none bg-gray-200';
+        dot.className = 'translate-x-1 ease-in-out duration-200 block w-4 h-4 rounded-full bg-white shadow transform ring-0 transition';
+        panel.classList.add('hidden');
+      }
+    }
+
+    function renderActiveProjects(guestData) {
+      const container = document.getElementById('active-projects-list');
+      container.innerHTML = '';
+
+      if (guestData.activeProjects.length === 0) {
+        container.innerHTML = `
+          <div class="py-8 text-center text-xs text-gray-400 bg-gray-50 rounded-xl border border-dashed border-gray-200 flex flex-col items-center justify-center">
+            <svg class="w-8 h-8 text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+            <p>暂无特定项目限制</p>
+          </div>
+        `;
+        return;
+      }
+
+      guestData.activeProjects.forEach((item, index) => {
+        const availableOptions = Object.keys(allProjectsPool).filter(k => !guestData.activeProjects.find(p => p.key === k) || k === item.key);
+        const optionsHtml = availableOptions.map(k => `<option value="${k}" ${k === item.key ? 'selected' : ''}>${allProjectsPool[k]}</option>`).join('');
+
+        container.innerHTML += `
+          <div class="p-3.5 rounded-2xl border border-gray-200 bg-white transition-all duration-200 shadow-3xs space-y-3">
+            <div class="flex items-center justify-between">
+              <!-- 左侧下拉选择框 -->
+              <div class="relative w-[130px]">
+                <select onchange="changeProject(${index}, this)" class="block w-full pl-3 pr-8 py-2 text-[13px] font-bold text-gray-800 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 shadow-sm cursor-pointer">
+                  ${optionsHtml}
+                </select>
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+              </div>
+
+              <!-- 右侧控制区及删除按钮 -->
+              <div class="flex items-center space-x-3">
+                <div class="flex items-center space-x-2 bg-gray-50 px-2 py-1.5 rounded-xl border border-gray-200 shadow-2xs">
+                  <button onclick="adjustProjectLimit(${index}, -1)" class="w-6 h-6 rounded-md bg-white hover:bg-gray-100 flex items-center justify-center text-gray-500 active:scale-90 transition-all border border-gray-200">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 12H4" /></svg>
+                  </button>
+                  <span class="text-sm font-extrabold w-6 text-center text-blue-600">${item.limit}</span>
+                  <button onclick="adjustProjectLimit(${index}, 1)" class="w-6 h-6 rounded-md bg-white hover:bg-gray-100 flex items-center justify-center text-gray-500 active:scale-90 transition-all border border-gray-200">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" /></svg>
+                  </button>
+                </div>
+                
+                <button onclick="removeProject(${index})" class="text-gray-300 hover:text-red-500 transition-colors p-1 active:scale-90">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- 下方极其微弱、轻量化的自然文字白话解释，去掉了高对比度的蓝色背景及灯泡图标 -->
+            <div class="text-[11px] text-gray-400 pl-0.5">
+              <span>同个时段最多接待 ${item.limit} 名 ${allProjectsPool[item.key]} 客户</span>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    function addProject() {
+      const activeData = getActiveGuestData();
+      const availableKey = Object.keys(allProjectsPool).find(k => !activeData.activeProjects.find(p => p.key === k));
+      if (!availableKey) {
+        showToast('info', '已添加所有可用特定项目限制！');
+        return;
+      }
+      activeData.activeProjects.push({ key: availableKey, limit: 1 });
+      renderActiveProjects(activeData);
+    }
+
+    function removeProject(index) {
+      const activeData = getActiveGuestData();
+      activeData.activeProjects.splice(index, 1);
+      renderActiveProjects(activeData);
+    }
+
+    function changeProject(index, selectElement) {
+      const newKey = selectElement.value;
+      const activeData = getActiveGuestData();
+      if (activeData.activeProjects[index].key === newKey) return;
+      activeData.activeProjects[index].key = newKey;
+      renderActiveProjects(activeData);
+    }
+
+    function adjustProjectLimit(index, amount) {
+      const activeData = getActiveGuestData();
+      let currentVal = activeData.activeProjects[index].limit;
+      currentVal += amount;
+      if (currentVal < 0) currentVal = 0;
+      activeData.activeProjects[index].limit = currentVal;
+      renderActiveProjects(activeData);
+    }
+
+    // ================== 重置与保存逻辑 ==================
+    function resetCurrentConfig() {
+      const activeData = getActiveGuestData();
+      activeData.totalLimit = 5;
+      activeData.useDeptConfig = true;
+      activeData.useProjectConfig = true;
+      activeData.activeDepts = ['yimei', 'shengmei'];
+      activeData.deptValues = { yimei: 0, shengmei: 5, wenxiu: 1, meijia: 0, liliao: 1, zhifa: 1 };
+      activeData.activeProjects = [
+        { key: 's10', limit: 2 },
+        { key: 'k10', limit: 1 }
+      ];
+      
+      document.getElementById('total-bed-value').innerText = 5;
+      syncDeptUI(activeData);
+      syncProjectUI(activeData);
+      showToast('info', '已重置当前配置数据');
+    }
+
+    function resetAll() {
+      configState.selectedDates = [];
+      configState.currentTab = 'new';
+      configState.projectEffectiveDays = 7;
+      document.getElementById('project-effective-days').value = 7;
+
+      configState.newGuest = {
+        totalLimit: 5,
+        useDeptConfig: true,
+        useProjectConfig: true,
+        activeDepts: ['yimei', 'shengmei'],
+        deptValues: { yimei: 0, shengmei: 5, wenxiu: 1, meijia: 0, liliao: 1, zhifa: 1 },
+        activeProjects: [
+          { key: 's10', limit: 2 },
+          { key: 'k10', limit: 1 }
+        ]
+      };
+      configState.oldGuest = {
+        totalLimit: 5,
+        useDeptConfig: true,
+        useProjectConfig: true,
+        activeDepts: ['yimei', 'shengmei'],
+        deptValues: { yimei: 0, shengmei: 5, wenxiu: 1, meijia: 0, liliao: 1, zhifa: 1 },
+        activeProjects: [
+          { key: 's10', limit: 2 },
+          { key: 'k10', limit: 1 }
+        ]
+      };
+
+      switchGuestTab('new');
+      renderDateGrid();
+      showToast('info', '所有接待规则已被重置');
+    }
+
+    function showToast(type, text) {
+      const toast = document.getElementById('toast');
+      const toastText = document.getElementById('toast-text');
+      const toastIcon = document.getElementById('toast-icon');
+
+      toastText.innerText = text;
+
+      if (type === 'success') {
+        toastIcon.innerHTML = `
+          <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+        `;
+      } else if (type === 'error') {
+        toastIcon.innerHTML = `
+          <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+        `;
+      } else {
+        toastIcon.innerHTML = `
+          <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+        `;
+      }
+
+      toast.classList.remove('opacity-0', 'scale-90', 'pointer-events-none');
+      toast.classList.add('opacity-100', 'scale-100');
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'scale-90', 'pointer-events-none');
+        toast.classList.remove('opacity-100', 'scale-100');
+      }, 2200);
+    }
+
+    function saveReceptionConfig() {
+      if (configState.selectedDates.length === 0) {
+        showToast('error', '请先在上方勾选生效日期！');
+        return;
+      }
+
+      const selectedDateStrings = configState.selectedDates.map(id => datesData[id].dateStr);
+      const effectiveDays = document.getElementById('project-effective-days').value || 7;
+
+      configState.selectedDates.forEach(id => {
+        datesData[id].hasConfig = true;
+        datesData[id].badgeText = `新${configState.newGuest.totalLimit}·老${configState.oldGuest.totalLimit}`;
+      });
+      
+      configState.selectedDates = [];
+      renderDateGrid();
+
+      showToast('success', `成功为 ${selectedDateStrings.length} 天保存床位规则，项目规则生效未来 ${effectiveDays} 天`);
+    }
+
+    window.onload = function() {
+      renderDateGrid();
+      switchGuestTab('new');
+    }
+  </script>
+</body>
+</html>

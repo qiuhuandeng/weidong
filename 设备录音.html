@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>录音设备管理与员工绑定系统</title>
+    <!-- 引入 Tailwind CSS 进行现代化 B 端 UI 设计 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 Vue 3 构建流畅的单页数据流与交互 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- 引入 Lucide 图标库丰富细节 -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- 引入 Google Fonts - Inter 提升英文字体质感 -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background-color: #f8fafc;
+        }
+        /* 隐藏滚动条但保留功能 */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="text-slate-700 antialiased">
+
+<div id="app" class="min-h-screen relative flex flex-col p-6 overflow-x-auto">
+    
+    <!-- 企业背景水印（高度还原 image_b956fa.png 中的 "邱焕灯 | 3592" 效果） -->
+    <div v-if="showWatermark" class="pointer-events-none fixed inset-0 z-50 overflow-hidden select-none opacity-[0.03]">
+        <div class="grid grid-cols-4 gap-x-20 gap-y-32 transform -rotate-12 translate-y-[-10%] scale-110">
+            <div v-for="n in 32" :key="n" class="text-lg font-bold text-slate-900 tracking-wider py-8">
+                邱焕灯 | 3592
+            </div>
+        </div>
+    </div>
+
+    <!-- 顶栏与核心控制台 -->
+    <div class="max-w-[1600px] w-full mx-auto bg-white rounded-xl shadow-sm border border-slate-100 p-6 mb-6">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-4 border-b border-slate-100">
+            <div>
+                <h1 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+                    <i data-lucide="pocket-knife" class="w-6 h-6 text-blue-500"></i>
+                    智能工牌/录音设备管理系统
+                </h1>
+                <p class="text-sm text-slate-500 mt-1">支持全国多大区、多区域、多门店的录音设备生命周期与员工绑定管理</p>
+            </div>
+            
+            <div class="flex items-center gap-3">
+                <button @click="showWatermark = !showWatermark" class="px-3 py-2 text-xs border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50 transition flex items-center gap-1.5">
+                    <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                    {{ showWatermark ? '隐藏水印' : '显示水印' }}
+                </button>
+                <button @click="triggerSync" class="px-4 py-2 bg-[#3b82f6] hover:bg-blue-600 active:bg-blue-700 text-white rounded-md text-sm font-medium shadow-sm transition-all duration-150 flex items-center gap-2">
+                    <i data-lucide="refresh-cw" :class="{'animate-spin': isSyncing}" class="w-4 h-4"></i>
+                    同步工牌
+                </button>
+            </div>
+        </div>
+
+        <!-- 核心多维标签筛选控制台 (还原 image_b8f8a1.jpg 样式) -->
+        <div class="mt-4 space-y-4 text-sm">
+            
+            <!-- 第一行：基础属性筛选器 -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 items-center">
+                <div class="flex items-center gap-2">
+                    <span class="text-slate-500 font-medium whitespace-nowrap shrink-0 w-20 text-right">工牌编号：</span>
+                    <input type="text" v-model="filterKeyword" placeholder="请输入工牌编号..." class="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 transition" />
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-slate-500 font-medium whitespace-nowrap shrink-0 w-20 text-right">设备状态：</span>
+                    <select v-model="filterStatus" class="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 transition bg-white">
+                        <option value="all">请选择</option>
+                        <option value="正常">正常</option>
+                        <option value="异常">异常</option>
+                    </select>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-slate-500 font-medium whitespace-nowrap shrink-0 w-20 text-right">在线状态：</span>
+                    <select v-model="filterOnline" class="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 transition bg-white">
+                        <option value="all">请选择</option>
+                        <option value="online">在线</option>
+                        <option value="offline">离线</option>
+                    </select>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-slate-500 font-medium whitespace-nowrap shrink-0 w-20 text-right">设备群组：</span>
+                    <input type="text" v-model="filterGroup" placeholder="请输入设备群组..." class="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 transition" />
+                </div>
+            </div>
+
+            <!-- 第二行：门店大区标签筛选 (包含重置、搜索按钮) -->
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pt-2 border-t border-slate-100">
+                <div class="flex items-start gap-2 flex-1">
+                    <span class="text-slate-500 font-medium whitespace-nowrap shrink-0 w-20 text-right pt-1">门店大区：</span>
+                    <div class="flex flex-wrap gap-1.5 items-center">
+                        <button 
+                            v-for="region in bigRegionsList" 
+                            :key="region"
+                            @click="selectBigRegion(region)"
+                            :class="[
+                                'px-2.5 py-0.5 rounded text-xs transition-colors',
+                                selectedBigRegion === region 
+                                    ? 'border border-blue-500 bg-blue-50 text-blue-600 font-semibold' 
+                                    : 'text-slate-600 hover:bg-slate-100 hover:text-blue-500'
+                            ]"
+                        >
+                            {{ region }}
+                        </button>
+                    </div>
+                </div>
+                <!-- 操作按钮组 -->
+                <div class="flex items-center gap-3 shrink-0 self-end lg:self-center">
+                    <button @click="resetMainFilters" class="px-4 py-1.5 border border-slate-200 text-slate-700 bg-white hover:bg-slate-50 rounded-lg text-xs font-semibold shadow-sm transition">
+                        重置
+                    </button>
+                    <button @click="executeSearch" class="px-4 py-1.5 bg-[#3b82f6] hover:bg-blue-600 text-white rounded-lg text-xs font-semibold shadow-sm flex items-center gap-1.5 transition">
+                        <i data-lucide="search" class="w-3.5 h-3.5"></i>
+                        搜索
+                    </button>
+                </div>
+            </div>
+
+            <!-- 第三行：门店区域标签筛选 (带展开折叠) -->
+            <div class="flex items-start gap-2 pt-2 border-t border-slate-100">
+                <span class="text-slate-500 font-medium whitespace-nowrap shrink-0 w-20 text-right pt-1">门店区域：</span>
+                <div class="flex-1 flex items-start justify-between gap-4">
+                    <div :class="isAreaExpanded ? 'max-h-none' : 'max-h-8 overflow-hidden'" class="flex flex-wrap gap-1.5 items-center transition-all duration-300">
+                        <button 
+                            v-for="area in areasList" 
+                            :key="area"
+                            @click="selectArea(area)"
+                            :class="[
+                                'px-2.5 py-0.5 rounded text-xs transition-colors',
+                                selectedArea === area 
+                                    ? 'border border-blue-500 bg-blue-50 text-blue-600 font-semibold' 
+                                    : 'text-slate-600 hover:bg-slate-100 hover:text-blue-500'
+                            ]"
+                        >
+                            {{ area }}
+                        </button>
+                    </div>
+                    <button @click="isAreaExpanded = !isAreaExpanded" class="text-xs text-blue-500 hover:text-blue-600 font-medium flex items-center gap-0.5 shrink-0 pt-1">
+                        {{ isAreaExpanded ? '收起' : '展开' }}
+                        <i :data-lucide="isAreaExpanded ? 'chevron-up' : 'chevron-down'" class="w-3.5 h-3.5"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 第四行：门店名称标签筛选 (带展开折叠) -->
+            <div class="flex items-start gap-2 pt-2 border-t border-slate-100">
+                <span class="text-slate-500 font-medium whitespace-nowrap shrink-0 w-20 text-right pt-1">门店名称：</span>
+                <div class="flex-1 flex items-start justify-between gap-4">
+                    <div :class="isStoreExpanded ? 'max-h-none' : 'max-h-8 overflow-hidden'" class="flex flex-wrap gap-1.5 items-center transition-all duration-300">
+                        <button 
+                            v-for="store in storesList" 
+                            :key="store"
+                            @click="selectStoreFilter(store)"
+                            :class="[
+                                'px-2.5 py-0.5 rounded text-xs transition-colors',
+                                selectedStoreFilterVal === store 
+                                    ? 'border border-blue-500 bg-blue-50 text-blue-600 font-semibold' 
+                                    : 'text-slate-600 hover:bg-slate-100 hover:text-blue-500'
+                            ]"
+                        >
+                            {{ store }}
+                        </button>
+                    </div>
+                    <button @click="isStoreExpanded = !isStoreExpanded" class="text-xs text-blue-500 hover:text-blue-600 font-medium flex items-center gap-0.5 shrink-0 pt-1">
+                        {{ isStoreExpanded ? '收起' : '展开' }}
+                        <i :data-lucide="isStoreExpanded ? 'chevron-up' : 'chevron-down'" class="w-3.5 h-3.5"></i>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- 汇总数据提示 -->
+        <div class="text-[11px] text-slate-400 mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+            <div>
+                当前多维过滤：
+                <span class="text-slate-600 font-medium">大区: </span><span class="text-blue-600 font-semibold mr-3">{{ selectedBigRegion }}</span>
+                <span class="text-slate-600 font-medium">区域: </span><span class="text-blue-600 font-semibold mr-3">{{ selectedArea }}</span>
+                <span class="text-slate-600 font-medium">门店: </span><span class="text-blue-600 font-semibold">{{ selectedStoreFilterVal }}</span>
+            </div>
+            <div>
+                检索到: <span class="font-bold text-slate-700">{{ filteredDevices.length }}</span> / {{ devices.length }} 台设备
+            </div>
+        </div>
+    </div>
+
+    <!-- 设备列表数据表格区 -->
+    <div class="max-w-[1600px] w-full mx-auto bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden mb-8">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-slate-50 border-b border-slate-100 text-[13px] font-semibold text-slate-600">
+                        <th class="py-4 px-4 text-center w-14">序号</th>
+                        <th class="py-4 px-4">工牌编号</th>
+                        <th class="py-4 px-4 text-center">设备电量</th>
+                        <th class="py-4 px-4 text-center">设备状态</th>
+                        <th class="py-4 px-4 text-center">在线状态</th>
+                        <th class="py-4 px-4">当前绑定员工</th>
+                        <th class="py-4 px-4">所属门店 / 区域</th>
+                        <th class="py-4 px-4">设备群组</th>
+                        <th class="py-4 px-4">最后上线时间</th>
+                        <th class="py-4 px-4">上次离线时间</th>
+                        <th class="py-4 px-4">流量到期时间</th>
+                        <th class="py-4 px-4 text-center w-36">操作</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 text-[13px] text-slate-600">
+                    <tr v-for="(device, index) in filteredDevices" :key="device.id" class="hover:bg-slate-50/70 transition-colors">
+                        <td class="py-4 px-4 text-center text-slate-400 font-medium">{{ index + 1 }}</td>
+                        <td class="py-4 px-4 font-mono font-medium text-slate-900">{{ device.code }}</td>
+                        <td class="py-4 px-4 text-center">
+                            <div class="inline-flex items-center gap-1.5">
+                                <div class="w-8 bg-slate-100 h-4 rounded border border-slate-200 relative overflow-hidden flex items-center justify-start p-0.5">
+                                    <div :class="[
+                                        'h-full rounded-sm',
+                                        device.battery > 50 ? 'bg-green-500' : device.battery > 20 ? 'bg-amber-500' : 'bg-rose-500'
+                                    ]" :style="{ width: device.battery + '%' }"></div>
+                                </div>
+                                <span class="text-xs text-slate-500">{{ device.battery }}%</span>
+                            </div>
+                        </td>
+                        <td class="py-4 px-4 text-center">
+                            <span :class="device.status === '正常' ? 'bg-green-50 text-green-600' : 'bg-rose-50 text-rose-600'" class="px-2.5 py-1 rounded-full text-xs font-medium">
+                                {{ device.status }}
+                            </span>
+                        </td>
+                        <td class="py-4 px-4 text-center">
+                            <span :class="device.isOnline ? 'text-green-500 font-medium' : 'text-slate-400'" class="flex items-center justify-center gap-1.5">
+                                <span :class="device.isOnline ? 'bg-green-500' : 'bg-slate-300'" class="w-1.5 h-1.5 rounded-full"></span>
+                                {{ device.isOnline ? '在线' : '离线' }}
+                            </span>
+                        </td>
+                        <td class="py-4 px-4">
+                            <div v-if="device.boundEmployee" class="flex items-center gap-2">
+                                <div class="w-7 h-7 rounded-full bg-blue-50 text-blue-600 font-bold flex items-center justify-center text-xs">
+                                    {{ device.boundEmployee.name.charAt(0) }}
+                                </div>
+                                <div>
+                                    <div class="font-medium text-slate-800">{{ device.boundEmployee.name }} <span class="text-[11px] text-slate-400 font-normal">({{ device.boundEmployee.post }})</span></div>
+                                    <div class="text-[11px] text-slate-400">ID: {{ device.boundEmployee.workId }}</div>
+                                </div>
+                            </div>
+                            <span v-else class="text-slate-400 text-xs italic">暂无绑定</span>
+                        </td>
+                        <td class="py-4 px-4">
+                            <div v-if="device.boundEmployee">
+                                <div class="text-slate-700 font-medium">{{ device.boundEmployee.store }}</div>
+                                <div class="text-[11px] text-slate-400">{{ device.boundEmployee.regionPath }}</div>
+                            </div>
+                            <span v-else class="text-slate-400">-</span>
+                        </td>
+                        <td class="py-4 px-4 text-slate-500">{{ device.group }}</td>
+                        <td class="py-4 px-4 text-slate-500 font-mono text-xs">{{ device.lastOnline }}</td>
+                        <td class="py-4 px-4 text-slate-400 font-mono text-xs">{{ device.lastOffline || '—' }}</td>
+                        <td class="py-4 px-4 text-slate-500 font-mono text-xs">{{ device.flowExpiry }}</td>
+                        <td class="py-4 px-4 text-center">
+                            <button @click="openBindModal(device)" class="px-3 py-1.5 bg-blue-50 text-blue-600 border border-blue-100 hover:bg-blue-600 hover:text-white rounded-md text-xs font-semibold shadow-sm transition-all duration-150">
+                                {{ device.boundEmployee ? '重新绑定' : '绑定员工' }}
+                            </button>
+                        </td>
+                    </tr>
+                    <tr v-if="filteredDevices.length === 0">
+                        <td colspan="12" class="py-12 text-center text-slate-400 text-sm">
+                            <div class="flex flex-col items-center justify-center gap-2">
+                                <i data-lucide="inbox" class="w-8 h-8 text-slate-300"></i>
+                                没有找到匹配的设备
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 员工绑定弹窗 (高阶双栏，左树右精细表样式，还原 image_b90045.png 布局) -->
+    <div v-if="isModalOpen" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 transition-all duration-300">
+        
+        <!-- 弹窗主体 -->
+        <div class="bg-white rounded-xl shadow-2xl border border-slate-100 w-full max-w-5xl h-[680px] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            
+            <!-- 1. 弹窗页眉 -->
+            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                <div class="flex items-center gap-3">
+                    <div class="p-2 bg-blue-100 rounded-lg text-blue-600">
+                        <i data-lucide="user-check" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-base font-bold text-slate-900">录音设备绑定员工</h2>
+                        <p class="text-xs text-slate-500 mt-0.5">当前正在为设备 <span class="font-mono font-bold text-blue-600 underline">{{ selectedDevice?.code }}</span> 配置归属员工</p>
+                    </div>
+                </div>
+                <button @click="closeModal" class="p-1 rounded-lg text-slate-400 hover:bg-slate-200 hover:text-slate-600 transition">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- 2. 当前绑定提示区 (若存在已有绑定) -->
+            <div v-if="selectedDevice?.boundEmployee" class="bg-amber-50 border-b border-amber-100 px-6 py-2.5 flex items-center justify-between text-xs text-amber-800">
+                <span class="flex items-center gap-1.5">
+                    <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-600"></i>
+                    该设备当前已绑定至 [{{ selectedDevice.boundEmployee.store }}] 的 <strong>{{ selectedDevice.boundEmployee.name }} ({{ selectedDevice.boundEmployee.workId }})</strong>。重新绑定将自动移除原绑定。
+                </span>
+                <button @click="unbindCurrent" class="text-rose-600 hover:text-rose-700 font-bold underline transition">
+                    一键解绑此人
+                </button>
+            </div>
+
+            <!-- 3. 双栏交互核心区 -->
+            <div class="flex-1 flex overflow-hidden">
+                
+                <!-- 3.1 左侧大区/区域/门店导航树 -->
+                <div class="w-1/3 border-r border-slate-100 flex flex-col bg-slate-50/50">
+                    <div class="p-3 bg-slate-100/50 border-b border-slate-100">
+                        <span class="text-xs font-bold text-slate-500 tracking-wider flex items-center gap-1">
+                            <i data-lucide="git-merge" class="w-3.5 h-3.5 text-blue-500"></i>
+                            选择所属门店
+                        </span>
+                        <div class="relative mt-2">
+                            <input 
+                                type="text"
+                                v-model="searchStoreQuery"
+                                placeholder="搜索门店 / 大区 / 区域"
+                                class="w-full pl-8 pr-8 py-1.5 bg-white border border-slate-200 rounded-lg text-xs focus:outline-none focus:border-blue-500 transition"
+                            />
+                            <i data-lucide="search" class="absolute left-2.5 top-2.5 w-3.5 h-3.5 text-slate-400"></i>
+                            <button 
+                                v-if="searchStoreQuery"
+                                @click="searchStoreQuery = ''"
+                                class="absolute right-2 top-1.5 text-slate-400 hover:text-slate-600"
+                                type="button"
+                            >
+                                <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 树形层级区 -->
+                    <div class="flex-1 overflow-y-auto p-3 space-y-2 no-scrollbar">
+                        <div v-for="bigRegion in filteredRegionsTree" :key="bigRegion.id" class="space-y-1">
+                            
+                            <!-- 一级：大区 -->
+                            <div @click="toggleNode(bigRegion)" class="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-slate-100 cursor-pointer transition">
+                                <i data-lucide="chevron-right" :class="{'rotate-90': bigRegion.expanded}" class="w-4 h-4 text-slate-400 transition-transform"></i>
+                                <i data-lucide="map" class="w-4 h-4 text-blue-500"></i>
+                                <span class="text-sm font-semibold text-slate-800">{{ bigRegion.name }}</span>
+                            </div>
+
+                            <!-- 二级：区域 (大区展开时可见) -->
+                            <div v-if="bigRegion.expanded" class="pl-6 space-y-1">
+                                <div v-for="area in bigRegion.children" :key="area.id" class="space-y-1">
+                                    <div @click="toggleNode(area)" class="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-slate-100 cursor-pointer transition">
+                                        <i data-lucide="chevron-right" :class="{'rotate-90': area.expanded}" class="w-3.5 h-3.5 text-slate-400 transition-transform"></i>
+                                        <i data-lucide="layers" class="w-3.5 h-3.5 text-emerald-500"></i>
+                                        <span class="text-xs font-medium text-slate-700">{{ area.name }}</span>
+                                    </div>
+
+                                    <!-- 三级：门店 (区域展开时可见) -->
+                                    <div v-if="area.expanded" class="pl-5 space-y-0.5">
+                                        <div 
+                                            v-for="store in area.children" 
+                                            :key="store.id"
+                                            @click="selectStore(store, [bigRegion.name, area.name])"
+                                            :class="[
+                                                'flex items-center gap-2 px-3 py-1.5 rounded-lg cursor-pointer text-xs transition-colors',
+                                                selectedStoreId === store.id 
+                                                    ? 'bg-blue-600 text-white font-semibold' 
+                                                    : 'hover:bg-slate-100 text-slate-600'
+                                            ]"
+                                        >
+                                            <i data-lucide="store" class="w-3.5 h-3.5 opacity-80"></i>
+                                            <span class="truncate flex-1">{{ store.name }}</span>
+                                            <span 
+                                                :class="selectedStoreId === store.id ? 'bg-blue-700 text-white' : 'bg-slate-200 text-slate-500'" 
+                                                class="px-1.5 py-0.5 rounded text-[10px]"
+                                            >
+                                                {{ store.employeeCount }}人
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                        </div>
+                        <div v-if="filteredRegionsTree.length === 0" class="text-center text-xs text-slate-400 py-8">
+                            未找到匹配门店
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3.2 右侧员工数据表格列表 (非卡片式，带岗位筛选) -->
+                <div class="w-2/3 flex flex-col bg-white">
+                    
+                    <!-- 搜索与岗位过滤组合导航区 -->
+                    <div class="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/30">
+                        <div class="text-xs text-slate-500 flex items-center gap-1.5">
+                            <i data-lucide="navigation-2" class="w-3.5 h-3.5 text-blue-500 fill-blue-500"></i>
+                            当前范围: 
+                            <span v-if="activeStorePath.length" class="font-bold text-slate-800">
+                                {{ activeStorePath.join(' / ') }}
+                            </span>
+                            <span v-else class="text-slate-400 italic">
+                                请选择左侧门店，或直接跨店搜索
+                            </span>
+                        </div>
+                        
+                        <!-- 岗位筛选器与快速过滤组合 -->
+                        <div class="flex items-center gap-2 w-full sm:w-auto">
+                            <!-- 岗位筛选器 -->
+                            <div class="relative w-32 shrink-0">
+                                <select 
+                                    v-model="filterRole" 
+                                    class="w-full pl-2 pr-7 py-1.5 border border-slate-200 rounded-lg text-xs font-medium focus:outline-none focus:border-blue-500 transition appearance-none bg-white cursor-pointer"
+                                >
+                                    <option value="all">全部岗位</option>
+                                    <option value="店长">店长</option>
+                                    <option value="销售顾问">销售顾问</option>
+                                    <option value="售后专员">售后专员</option>
+                                </select>
+                                <i data-lucide="chevron-down" class="absolute right-2 top-2.5 w-3 h-3 text-slate-400 pointer-events-none"></i>
+                            </div>
+
+                            <!-- 关键字检索 -->
+                            <div class="relative w-full sm:w-48">
+                                <input 
+                                    type="text" 
+                                    v-model="searchEmployeeQuery" 
+                                    placeholder="搜索姓名、工号、门店" 
+                                    class="w-full pl-8 pr-3 py-1.5 border border-slate-200 rounded-lg text-xs focus:outline-none focus:border-blue-500 transition"
+                                />
+                                <i data-lucide="search" class="absolute left-2.5 top-2.5 w-3.5 h-3.5 text-slate-400"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 员工纯列表表格区域 -->
+                    <div class="flex-1 overflow-y-auto p-4 no-scrollbar">
+                        
+                        <!-- 搜索条件提示条 -->
+                        <div v-if="searchStoreQuery || searchEmployeeQuery || filterRole !== 'all'" class="mb-3 flex items-center justify-between bg-blue-50/50 border border-blue-100/50 px-3 py-1.5 rounded-lg text-xs">
+                            <span class="text-blue-700 flex items-center gap-1">
+                                <i data-lucide="info" class="w-3.5 h-3.5"></i>
+                                <span v-if="searchStoreQuery">门店匹配 "{{ searchStoreQuery }}"</span>
+                                <span v-if="searchStoreQuery && (searchEmployeeQuery || filterRole !== 'all')"> 且 </span>
+                                <span v-if="searchEmployeeQuery">已匹配包含 "{{ searchEmployeeQuery }}" 的人员</span>
+                                <span v-if="searchEmployeeQuery && filterRole !== 'all'"> 且 </span>
+                                <span v-if="filterRole !== 'all'">岗位限定: <strong class="underline">{{ filterRole }}</strong></span>
+                            </span>
+                            <button @click="resetFilters" class="text-slate-400 hover:text-slate-600 font-bold text-[11px] hover:underline">清空过滤</button>
+                        </div>
+
+                        <!-- 扁平列表展现 (完全取代卡片样式，符合 image_b90045.png 的紧凑设计) -->
+                        <div v-if="availableEmployees.length > 0" class="border border-slate-100 rounded-lg overflow-hidden bg-white">
+                            <table class="w-full text-left text-xs border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-50 border-b border-slate-100 text-slate-500 font-semibold uppercase">
+                                        <th class="py-3 px-4 w-12 text-center">选择</th>
+                                        <th class="py-3 px-4">员工姓名</th>
+                                        <th class="py-3 px-4">工号</th>
+                                        <th class="py-3 px-4">岗位类型</th>
+                                        <th class="py-3 px-4">所属门店</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100 text-slate-600">
+                                    <tr 
+                                        v-for="emp in availableEmployees" 
+                                        :key="emp.workId"
+                                        @click="tempSelectEmployee(emp)"
+                                        :class="[
+                                            'cursor-pointer transition-colors hover:bg-slate-50/80',
+                                            tempSelectedEmployeeId === emp.workId ? 'bg-blue-50/50 hover:bg-blue-50' : ''
+                                        ]"
+                                    >
+                                        <!-- 单选框 -->
+                                        <td class="py-3 px-4 text-center">
+                                            <div :class="[
+                                                'w-4.5 h-4.5 rounded-full border flex items-center justify-center transition-all mx-auto',
+                                                tempSelectedEmployeeId === emp.workId 
+                                                    ? 'border-blue-600 bg-blue-600 text-white scale-105' 
+                                                    : 'border-slate-300 bg-white hover:border-slate-400'
+                                            ]">
+                                                <div v-if="tempSelectedEmployeeId === emp.workId" class="w-1.5 h-1.5 rounded-full bg-white"></div>
+                                            </div>
+                                        </td>
+                                        
+                                        <!-- 姓名 -->
+                                        <td class="py-3 px-4">
+                                            <div class="flex items-center gap-2.5">
+                                                <div class="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-600 text-xs shrink-0">
+                                                    {{ emp.name.charAt(0) }}
+                                                </div>
+                                                <span class="font-bold text-slate-800 text-[13px]">{{ emp.name }}</span>
+                                            </div>
+                                        </td>
+
+                                        <!-- 工号 -->
+                                        <td class="py-3 px-4 font-mono text-slate-500">{{ emp.workId }}</td>
+
+                                        <!-- 岗位标签 -->
+                                        <td class="py-3 px-4">
+                                            <span 
+                                                :class="[
+                                                    'px-2 py-0.5 rounded text-[10px] font-medium border',
+                                                    emp.post === '店长' ? 'bg-blue-50 text-blue-700 border-blue-100' : 
+                                                    emp.post === '销售顾问' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 
+                                                    'bg-amber-50 text-amber-700 border-amber-100'
+                                                ]"
+                                            >
+                                                {{ emp.post }}
+                                            </span>
+                                        </td>
+
+                                        <!-- 所属门店 -->
+                                        <td class="py-3 px-4 text-slate-500 font-medium">
+                                            {{ emp.store }}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- 缺省兜底 -->
+                        <div v-else class="h-full flex flex-col items-center justify-center text-slate-400 py-24">
+                            <i data-lucide="users-round" class="w-12 h-12 text-slate-300 mb-2"></i>
+                            <div class="text-sm font-medium">当前检索条件未找到员工</div>
+                            <div class="text-xs text-slate-400 mt-1">您可以尝试更改左侧门店目录、清除岗位类型，或搜索其他关键词</div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- 4. 弹窗脚部 -->
+            <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div class="text-xs text-slate-500">
+                    <span v-if="selectedEmpObject">
+                        准备将设备绑定给: <strong class="text-blue-600">{{ selectedEmpObject.name }} ({{ selectedEmpObject.workId }})</strong>
+                        <span class="mx-1 text-slate-300">|</span> 岗位: <span class="font-semibold text-slate-700">{{ selectedEmpObject.post }}</span>
+                        <span class="mx-1 text-slate-300">|</span> 门店: <strong>{{ selectedEmpObject.store }}</strong>
+                    </span>
+                    <span v-else class="text-slate-400">
+                        * 请选择列表中的一名员工，点击对应的单选框或整行进行绑定
+                    </span>
+                </div>
+                
+                <div class="flex items-center gap-3">
+                    <button @click="closeModal" class="px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 transition">
+                        取消
+                    </button>
+                    <button 
+                        @click="confirmBind" 
+                        :disabled="!tempSelectedEmployeeId"
+                        :class="[
+                            'px-5 py-2 rounded-lg text-sm font-medium transition-all duration-150',
+                            tempSelectedEmployeeId 
+                                ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-500/10' 
+                                : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                        ]"
+                    >
+                        确认绑定
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- 全局轻提示 (Toast) -->
+    <div v-if="toast.show" class="fixed bottom-6 right-6 z-[120] animate-bounce-in bg-slate-900 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 max-w-sm">
+        <div :class="toast.type === 'success' ? 'text-green-400' : 'text-blue-400'">
+            <i v-if="toast.type === 'success'" data-lucide="check-circle-2" class="w-5 h-5"></i>
+            <i v-else data-lucide="info" class="w-5 h-5"></i>
+        </div>
+        <div>
+            <div class="text-xs font-semibold">{{ toast.title }}</div>
+            <div class="text-[11px] text-slate-300 mt-0.5">{{ toast.message }}</div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    const { createApp, ref, computed, nextTick, onMounted } = Vue;
+
+    createApp({
+        setup() {
+            // 水印控制
+            const showWatermark = ref(true);
+            const isSyncing = ref(false);
+            
+            // 折叠面板展开收起状态 (对应门店区域与门店名称列表)
+            const isAreaExpanded = ref(false);
+            const isStoreExpanded = ref(false);
+
+            // 全局反馈 Toast 状态
+            const toast = ref({
+                show: false,
+                type: 'success',
+                title: '',
+                message: ''
+            });
+
+            const showToast = (title, message, type = 'success') => {
+                toast.value = { show: true, type, title, message };
+                nextTick(() => { lucide.createIcons(); });
+                setTimeout(() => {
+                    toast.value.show = false;
+                }, 3000);
+            };
+
+            // 还原 image_b8f8a1.jpg 中的全部大区
+            const bigRegionsList = [
+                '全部', '慧娟大区', '顾伟大区', '琳琳大区', '娟琴大区', '弃用集合', '春丽大区', '多项目组', '双美事业部', '大麦区'
+            ];
+
+            // 还原 门店区域 标签列表
+            const areasList = [
+                '全部', '华东区域', '文莉区域', '韩春区域', '云凤区域', '梅梅区域', '全威区域', '桂珠区域', '腾峰区域', '甜甜区域', '顾伟区域', '陈蕾区域', '滕亚区域'
+            ];
+
+            // 还原 门店名称 标签列表
+            const storesList = [
+                '全部', '南京浦口店', '昆山玉山店', '扬州邗江店', '常州天宁店', '徐州云龙店', '上海徐汇店', '上海静安店', '上海松江店', '上海宝山店', '上海嘉定店'
+            ];
+
+            // 弹窗内的层级树
+            const regionsTree = ref([
+                {
+                    id: 'r1',
+                    name: '慧娟大区',
+                    expanded: true,
+                    children: [
+                        {
+                            id: 'r1-a1',
+                            name: '华东区域',
+                            expanded: true,
+                            children: [
+                                { id: 's1', name: '南京浦口店', employeeCount: 4 },
+                                { id: 's2', name: '昆山玉山店', employeeCount: 3 },
+                                { id: 's3', name: '扬州邗江店', employeeCount: 2 }
+                            ]
+                        },
+                        {
+                            id: 'r1-a2',
+                            name: '梅梅区域',
+                            expanded: false,
+                            children: [
+                                { id: 's4', name: '常州天宁店', employeeCount: 3 },
+                                { id: 's5', name: '徐州云龙店', employeeCount: 2 }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    id: 'r2',
+                    name: '顾伟大区',
+                    expanded: false,
+                    children: [
+                        {
+                            id: 'r2-a1',
+                            name: '腾峰区域',
+                            expanded: false,
+                            children: [
+                                { id: 's6', name: '上海徐汇店', employeeCount: 4 },
+                                { id: 's7', name: '上海静安店', employeeCount: 3 }
+                            ]
+                        }
+                    ]
+                }
+            ]);
+
+            // 员工模拟数据库
+            const employeesDatabase = [
+                // 南京浦口店 (s1)
+                { workId: 'EMP001', name: '陈国强', post: '店长', store: '南京浦口店', regionPath: '慧娟大区 / 华东区域', storeId: 's1' },
+                { workId: 'EMP002', name: '林静芳', post: '销售顾问', store: '南京浦口店', regionPath: '慧娟大区 / 华东区域', storeId: 's1' },
+                { workId: 'EMP003', name: '王俊杰', post: '销售顾问', store: '南京浦口店', regionPath: '慧娟大区 / 华东区域', storeId: 's1' },
+                { workId: 'EMP004', name: '张舒婷', post: '售后专员', store: '南京浦口店', regionPath: '慧娟大区 / 华东区域', storeId: 's1' },
+                
+                // 昆山玉山店 (s2)
+                { workId: 'EMP005', name: '李瑞', post: '店长', store: '昆山玉山店', regionPath: '慧娟大区 / 华东区域', storeId: 's2' },
+                { workId: 'EMP006', name: '赵雅琪', post: '销售顾问', store: '昆山玉山店', regionPath: '慧娟大区 / 华东区域', storeId: 's2' },
+                { workId: 'EMP007', name: '刘洋', post: '销售顾问', store: '昆山玉山店', regionPath: '慧娟大区 / 华东区域', storeId: 's2' },
+                
+                // 扬州邗江店 (s3)
+                { workId: 'EMP008', name: '徐志豪', post: '销售顾问', store: '扬州邗江店', regionPath: '慧娟大区 / 华东区域', storeId: 's3' },
+                { workId: 'EMP009', name: '孙美玲', post: '售后专员', store: '扬州邗江店', regionPath: '慧娟大区 / 华东区域', storeId: 's3' },
+                
+                // 常州天宁店 (s4)
+                { workId: 'EMP010', name: '郭凯', post: '店长', store: '常州天宁店', regionPath: '慧娟大区 / 梅梅区域', storeId: 's4' },
+                { workId: 'EMP011', name: '高敏', post: '销售顾问', store: '常州天宁店', regionPath: '慧娟大区 / 梅梅区域', storeId: 's4' },
+                
+                // 上海徐汇店 (s6)
+                { workId: 'EMP013', name: '黄伟健', post: '店长', store: '上海徐汇店', regionPath: '顾伟大区 / 腾峰区域', storeId: 's6' },
+                { workId: 'EMP014', name: '梁淑芬', post: '销售顾问', store: '上海徐汇店', regionPath: '顾伟大区 / 腾峰区域', storeId: 's6' }
+            ];
+
+            // 设备主列表数据 (结合 image_b956fa.png 列表设计)
+            const devices = ref([
+                {
+                    id: 1,
+                    code: 'SSYX42049107',
+                    battery: 100,
+                    status: '正常',
+                    isOnline: false,
+                    group: '测试组',
+                    lastOnline: '2026-04-23 11:24:40',
+                    lastOffline: '2026-04-23 11:23:41',
+                    lastRecord: '2026-04-23 11:23:41',
+                    flowExpiry: '2027-05',
+                    boundEmployee: null,
+                    bigRegion: '慧娟大区',
+                    area: '华东区域',
+                    store: '南京浦口店'
+                },
+                {
+                    id: 2,
+                    code: 'SSYX42048792',
+                    battery: 100,
+                    status: '正常',
+                    isOnline: false,
+                    group: '测试组',
+                    lastOnline: '2026-04-23 11:24:28',
+                    lastOffline: '',
+                    lastRecord: '2026-04-23 11:23:39',
+                    flowExpiry: '2027-05',
+                    boundEmployee: {
+                        workId: 'EMP001',
+                        name: '陈国强',
+                        post: '店长',
+                        store: '南京浦口店',
+                        regionPath: '慧娟大区 / 华东区域'
+                    },
+                    bigRegion: '慧娟大区',
+                    area: '华东区域',
+                    store: '南京浦口店'
+                },
+                {
+                    id: 3,
+                    code: 'SSYX42049060',
+                    battery: 43,
+                    status: '正常',
+                    isOnline: true,
+                    group: '研发组',
+                    lastOnline: '2026-06-01 18:46:08',
+                    lastOffline: '',
+                    lastRecord: '2026-06-01 18:45:39',
+                    flowExpiry: '2027-05',
+                    boundEmployee: null,
+                    bigRegion: '顾伟大区',
+                    area: '腾峰区域',
+                    store: '上海徐汇店'
+                },
+                {
+                    id: 4,
+                    code: 'SSYX42049162',
+                    battery: 80,
+                    status: '正常',
+                    isOnline: false,
+                    group: '测试组',
+                    lastOnline: '2026-04-23 11:24:33',
+                    lastOffline: '',
+                    lastRecord: '2026-04-23 11:23:39',
+                    flowExpiry: '2027-05',
+                    boundEmployee: null,
+                    bigRegion: '慧娟大区',
+                    area: '梅梅区域',
+                    store: '常州天宁店'
+                },
+                {
+                    id: 5,
+                    code: 'SSYX42048774',
+                    battery: 100,
+                    status: '异常',
+                    isOnline: false,
+                    group: '测试组',
+                    lastOnline: '2026-04-23 11:24:35',
+                    lastOffline: '',
+                    lastRecord: '2026-04-23 11:23:40',
+                    flowExpiry: '2027-05',
+                    boundEmployee: {
+                        workId: 'EMP013',
+                        name: '黄伟健',
+                        post: '店长',
+                        store: '上海徐汇店',
+                        regionPath: '顾伟大区 / 腾峰区域'
+                    },
+                    bigRegion: '顾伟大区',
+                    area: '腾峰区域',
+                    store: '上海徐汇店'
+                }
+            ]);
+
+            // 主页筛选绑定值 (实时变更，点击“搜索”或改变直接触发)
+            const filterKeyword = ref('');
+            const filterStatus = ref('all');
+            const filterOnline = ref('all');
+            const filterGroup = ref('');
+
+            const selectedBigRegion = ref('全部');
+            const selectedArea = ref('全部');
+            const selectedStoreFilterVal = ref('全部');
+
+            // 搜索触发状态 (为了能让“搜索”和“重置”按钮产生明显的交互反馈)
+            const searchTriggerToken = ref(0);
+
+            // 选择大区
+            const selectBigRegion = (region) => {
+                selectedBigRegion.value = region;
+            };
+
+            // 选择区域
+            const selectArea = (area) => {
+                selectedArea.value = area;
+            };
+
+            // 选择门店
+            const selectStoreFilter = (store) => {
+                selectedStoreFilterVal.value = store;
+            };
+
+            // 多维合并联动过滤核心逻辑
+            const filteredDevices = computed(() => {
+                // 观察 searchTriggerToken 改变，响应搜索点击
+                const _ = searchTriggerToken.value;
+
+                return devices.value.filter(device => {
+                    // 1. 工牌编号
+                    const matchKeyword = device.code.toLowerCase().includes(filterKeyword.value.trim().toLowerCase());
+                    
+                    // 2. 设备状态
+                    const matchStatus = filterStatus.value === 'all' ? true : device.status === filterStatus.value;
+                    
+                    // 3. 在线状态
+                    let matchOnline = true;
+                    if (filterOnline.value === 'online') {
+                        matchOnline = device.isOnline === true;
+                    } else if (filterOnline.value === 'offline') {
+                        matchOnline = device.isOnline === false;
+                    }
+
+                    // 4. 设备群组
+                    const matchGroup = filterGroup.value.trim() === '' ? true : device.group.toLowerCase().includes(filterGroup.value.trim().toLowerCase());
+
+                    // 5. 门店大区标签筛选
+                    const matchBigRegion = selectedBigRegion.value === '全部' ? true : device.bigRegion === selectedBigRegion.value;
+
+                    // 6. 门店区域标签筛选
+                    const matchArea = selectedArea.value === '全部' ? true : device.area === selectedArea.value;
+
+                    // 7. 门店名称标签筛选
+                    const matchStore = selectedStoreFilterVal.value === '全部' ? true : device.store === selectedStoreFilterVal.value;
+
+                    return matchKeyword && matchStatus && matchOnline && matchGroup && matchBigRegion && matchArea && matchStore;
+                });
+            });
+
+            // 点击搜索动作
+            const executeSearch = () => {
+                searchTriggerToken.value++;
+                showToast('查询成功', '列表已根据多维筛选面板刷新。', 'info');
+            };
+
+            // 重置所有筛选条件
+            const resetMainFilters = () => {
+                filterKeyword.value = '';
+                filterStatus.value = 'all';
+                filterOnline.value = 'all';
+                filterGroup.value = '';
+                selectedBigRegion.value = '全部';
+                selectedArea.value = '全部';
+                selectedStoreFilterVal.value = '全部';
+                searchTriggerToken.value++;
+                showToast('重置成功', '所有筛选标签与输入条件已清空。', 'success');
+            };
+
+            // 弹窗状态
+            const isModalOpen = ref(false);
+            const selectedDevice = ref(null);
+            
+            // 弹窗选中的门店、路径、过滤字词、岗位选择
+            const selectedStoreId = ref('s1'); 
+            const activeStorePath = ref(['慧娟大区', '华东区域', '南京浦口店']);
+            const searchStoreQuery = ref('');
+            const searchEmployeeQuery = ref('');
+            const filterRole = ref('all'); 
+            const tempSelectedEmployeeId = ref('');
+
+            const textIncludes = (source, query) => String(source || '').toLowerCase().includes(query);
+
+            const filteredRegionsTree = computed(() => {
+                const query = searchStoreQuery.value.trim().toLowerCase();
+                if (!query) return regionsTree.value;
+
+                return regionsTree.value.reduce((bigAcc, bigRegion) => {
+                    const bigMatch = textIncludes(bigRegion.name, query);
+                    const children = bigRegion.children.reduce((areaAcc, area) => {
+                        const areaMatch = textIncludes(area.name, query);
+                        const stores = area.children.filter(store => 
+                            bigMatch || areaMatch || textIncludes(store.name, query)
+                        );
+                        if (areaMatch || stores.length) {
+                            areaAcc.push({ ...area, expanded: true, children: stores });
+                        }
+                        return areaAcc;
+                    }, []);
+                    if (bigMatch || children.length) {
+                        bigAcc.push({ ...bigRegion, expanded: true, children });
+                    }
+                    return bigAcc;
+                }, []);
+            });
+
+            // 打开弹窗
+            const openBindModal = (device) => {
+                selectedDevice.value = device;
+                tempSelectedEmployeeId.value = device.boundEmployee ? device.boundEmployee.workId : '';
+                searchStoreQuery.value = '';
+                filterRole.value = 'all'; 
+                
+                if (device.boundEmployee) {
+                    const emp = employeesDatabase.find(e => e.workId === device.boundEmployee.workId);
+                    if (emp) {
+                        selectedStoreId.value = emp.storeId;
+                        activeStorePath.value = [
+                            ...emp.regionPath.split(' / '),
+                            emp.store
+                        ];
+                    }
+                }
+                
+                isModalOpen.value = true;
+                nextTick(() => {
+                    lucide.createIcons();
+                });
+            };
+
+            const closeModal = () => {
+                isModalOpen.value = false;
+                selectedDevice.value = null;
+                searchEmployeeQuery.value = '';
+                searchStoreQuery.value = '';
+                filterRole.value = 'all';
+                tempSelectedEmployeeId.value = '';
+            };
+
+            const toggleNode = (node) => {
+                node.expanded = !node.expanded;
+            };
+
+            const selectStore = (store, pathArray) => {
+                selectedStoreId.value = store.id;
+                activeStorePath.value = [...pathArray, store.name];
+                searchEmployeeQuery.value = '';
+                searchStoreQuery.value = '';
+            };
+
+            const tempSelectEmployee = (employee) => {
+                if (tempSelectedEmployeeId.value === employee.workId) {
+                    tempSelectedEmployeeId.value = ''; 
+                } else {
+                    tempSelectedEmployeeId.value = employee.workId;
+                }
+            };
+
+            const resetFilters = () => {
+                searchEmployeeQuery.value = '';
+                searchStoreQuery.value = '';
+                filterRole.value = 'all';
+            };
+
+            // 过滤弹窗里的可用员工
+            const availableEmployees = computed(() => {
+                const employeeQuery = searchEmployeeQuery.value.trim().toLowerCase();
+                const storeQuery = searchStoreQuery.value.trim().toLowerCase();
+                const role = filterRole.value;
+
+                return employeesDatabase.filter(emp => {
+                    const matchSelectedStore = employeeQuery || storeQuery ? true : emp.storeId === selectedStoreId.value;
+                    const matchEmployeeQuery = employeeQuery 
+                        ? (textIncludes(emp.name, employeeQuery) || 
+                           textIncludes(emp.workId, employeeQuery) ||
+                           textIncludes(emp.store, employeeQuery))
+                        : true;
+                    const matchStoreQuery = storeQuery
+                        ? (textIncludes(emp.store, storeQuery) || textIncludes(emp.regionPath, storeQuery))
+                        : true;
+                    const matchRole = role === 'all' ? true : emp.post === role;
+
+                    return matchSelectedStore && matchEmployeeQuery && matchStoreQuery && matchRole;
+                });
+            });
+
+            const selectedEmpObject = computed(() => {
+                return employeesDatabase.find(e => e.workId === tempSelectedEmployeeId.value);
+            });
+
+            const unbindCurrent = () => {
+                if (!selectedDevice.value) return;
+                const oldEmpName = selectedDevice.value.boundEmployee?.name;
+                selectedDevice.value.boundEmployee = null;
+                tempSelectedEmployeeId.value = '';
+                showToast('解绑成功', `已移除与员工 [${oldEmpName}] 的绑定关系`, 'info');
+            };
+
+            // 确认绑定
+            const confirmBind = () => {
+                if (!selectedDevice.value || !selectedEmpObject.value) return;
+                
+                selectedDevice.value.boundEmployee = {
+                    workId: selectedEmpObject.value.workId,
+                    name: selectedEmpObject.value.name,
+                    post: selectedEmpObject.value.post,
+                    store: selectedEmpObject.value.store,
+                    regionPath: selectedEmpObject.value.regionPath
+                };
+
+                showToast(
+                    '绑定成功', 
+                    `设备 ${selectedDevice.value.code} 已成功绑定至 [${selectedEmpObject.value.store}] 的 ${selectedEmpObject.value.name} (${selectedEmpObject.value.post})`, 
+                    'success'
+                );
+
+                closeModal();
+            };
+
+            const triggerSync = () => {
+                if (isSyncing.value) return;
+                isSyncing.value = true;
+                setTimeout(() => {
+                    isSyncing.value = false;
+                    showToast('同步成功', '已成功连接云端同步最新工牌配置信息及员工资料。', 'success');
+                }, 1500);
+            };
+
+            onMounted(() => {
+                lucide.createIcons();
+            });
+
+            return {
+                showWatermark,
+                isSyncing,
+                isAreaExpanded,
+                isStoreExpanded,
+                toast,
+                bigRegionsList,
+                areasList,
+                storesList,
+                selectedBigRegion,
+                selectedArea,
+                selectedStoreFilterVal,
+                devices,
+                filterKeyword,
+                filterStatus,
+                filterOnline,
+                filterGroup,
+                filteredDevices,
+                executeSearch,
+                resetMainFilters,
+                selectBigRegion,
+                selectArea,
+                selectStoreFilter,
+                
+                // Modal
+                isModalOpen,
+                selectedDevice,
+                regionsTree,
+                filteredRegionsTree,
+                selectedStoreId,
+                activeStorePath,
+                searchStoreQuery,
+                searchEmployeeQuery,
+                filterRole,
+                tempSelectedEmployeeId,
+                availableEmployees,
+                selectedEmpObject,
+                
+                openBindModal,
+                closeModal,
+                toggleNode,
+                selectStore,
+                tempSelectEmployee,
+                resetFilters,
+                unbindCurrent,
+                confirmBind,
+                triggerSync
+            };
+        }
+    }).mount('#app');
+</script>
+
+</body>
+</html>

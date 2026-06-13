@@ -1,0 +1,1837 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>平台运营端</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif;background:#f0f2f5;display:flex;flex-direction:column;height:100vh;overflow:hidden;color:#1a1a2e}
+.topbar{position:fixed;top:0;left:0;right:0;height:56px;background:#1a1a2e;color:#fff;display:flex;align-items:center;padding:0 24px;z-index:1000;gap:16px}
+.topbar .logo{font-size:18px;font-weight:700;color:#7c8cff;flex-shrink:0}
+.topbar .sys-tag{font-size:12px;background:rgba(124,140,255,0.18);color:#7c8cff;padding:3px 10px;border-radius:4px;font-weight:600}
+.topbar .spacer{flex:1}
+.topbar .user-info{display:flex;align-items:center;gap:8px;font-size:13px;color:#c0c4d6}
+.topbar .avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#7c8cff,#a78bfa);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff}
+
+.layout{display:flex;margin-top:56px;height:calc(100vh - 56px);overflow:hidden}
+
+/* 侧边栏 */
+.sidebar{width:220px;background:#1e2235;color:#c0c4d6;display:flex;flex-direction:column;overflow-y:auto;flex-shrink:0}
+.sidebar::-webkit-scrollbar{width:4px}
+.sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px}
+.nav-group{padding:20px 0 4px}
+.nav-group-title{font-size:11px;color:#5a6080;padding:0 20px 6px;text-transform:uppercase;letter-spacing:1px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;cursor:pointer;font-size:13px;color:#9aa0bc;transition:all .15s;border-left:3px solid transparent}
+.nav-item:hover{background:rgba(124,140,255,0.08);color:#e0e4f4}
+.nav-item.active{background:rgba(124,140,255,0.15);color:#7c8cff;border-left-color:#7c8cff;font-weight:600}
+.nav-icon{width:16px;height:16px;opacity:.7;flex-shrink:0}
+.nav-item.active .nav-icon{opacity:1}
+
+/* 主内容区 */
+.main{flex:1;overflow-y:auto;display:flex;flex-direction:column}
+.main::-webkit-scrollbar{width:6px}
+.main::-webkit-scrollbar-thumb{background:#d0d4e0;border-radius:3px}
+.content-header{padding:20px 28px 0;flex-shrink:0}
+.breadcrumb{font-size:12px;color:#8c8fa3;margin-bottom:8px}
+.breadcrumb span{color:#1a1a2e;font-weight:600}
+.page-title{font-size:22px;font-weight:700;color:#1a1a2e}
+.page-desc{font-size:13px;color:#8c8fa3;margin-top:4px}
+.content{padding:20px 28px 28px;flex:1}
+
+/* 页面显示控制 */
+.page{display:none}
+.page.active{display:block}
+
+/* 统计卡 */
+.stats-grid{display:grid;gap:16px;margin-bottom:20px}
+.stats-grid-4{grid-template-columns:repeat(4,1fr)}
+.stats-grid-3{grid-template-columns:repeat(3,1fr)}
+.stats-grid-2{grid-template-columns:repeat(2,1fr)}
+.stat-card{background:#fff;border-radius:10px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.stat-label{font-size:12px;color:#8c8fa3;margin-bottom:8px}
+.stat-value{font-size:26px;font-weight:700;color:#1a1a2e;line-height:1}
+.stat-sub{font-size:12px;color:#8c8fa3;margin-top:6px;display:flex;align-items:center;gap:4px}
+.stat-up{color:#52c41a}.stat-down{color:#ff4d4f}.stat-warn{color:#fa8c16}
+
+/* 卡片 */
+.card{background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.06);margin-bottom:16px;overflow:hidden}
+.card-header{padding:16px 20px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between}
+.card-title{font-size:15px;font-weight:600;color:#1a1a2e}
+.card-actions{display:flex;gap:8px;align-items:center}
+.card-body{padding:20px}
+
+/* 按钮 */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 16px;border-radius:6px;font-size:13px;cursor:pointer;border:1px solid transparent;font-weight:500;transition:all .15s;white-space:nowrap}
+.btn-primary{background:#1677ff;color:#fff;border-color:#1677ff}.btn-primary:hover{background:#0958d9}
+.btn-default{background:#fff;color:#374151;border-color:#d9d9d9}.btn-default:hover{border-color:#1677ff;color:#1677ff}
+.btn-success{background:#52c41a;color:#fff;border-color:#52c41a}.btn-success:hover{background:#389e0d}
+.btn-warning{background:#fa8c16;color:#fff;border-color:#fa8c16}.btn-warning:hover{background:#d46b08}
+.btn-danger{background:#fff;color:#ff4d4f;border-color:#ff4d4f}.btn-danger:hover{background:#ff4d4f;color:#fff}
+.btn-sm{padding:4px 10px;font-size:12px}
+.btn-link{background:none;border:none;color:#1677ff;padding:4px 6px;font-size:13px;cursor:pointer}
+
+/* 徽章 */
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;white-space:nowrap}
+.badge-success{background:#f6ffed;color:#52c41a;border:1px solid #b7eb8f}
+.badge-warning{background:#fff7e6;color:#fa8c16;border:1px solid #ffd591}
+.badge-danger{background:#fff2f0;color:#ff4d4f;border:1px solid #ffccc7}
+.badge-default{background:#f5f5f5;color:#8c8fa3;border:1px solid #e0e0e0}
+.badge-blue{background:#e6f4ff;color:#1677ff;border:1px solid #91caff}
+.badge-purple{background:#f9f0ff;color:#722ed1;border:1px solid #d3adf7}
+
+/* 标签 */
+.tag{display:inline-flex;align-items:center;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:500}
+.tag-blue{background:#e6f4ff;color:#1677ff}.tag-orange{background:#fff7e6;color:#fa8c16}
+.tag-green{background:#f6ffed;color:#52c41a}.tag-red{background:#fff2f0;color:#ff4d4f}
+.tag-purple{background:#f9f0ff;color:#722ed1}.tag-gray{background:#f5f5f5;color:#8c8fa3}
+
+/* 表格 */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:#fafafa;padding:10px 14px;text-align:left;font-weight:600;color:#374151;border-bottom:1px solid #f0f0f0;white-space:nowrap}
+td{padding:12px 14px;border-bottom:1px solid #f7f7f7;color:#374151;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#fafcff}
+
+/* 筛选栏 */
+.filter-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.filter-input{height:34px;padding:0 12px;border:1px solid #d9d9d9;border-radius:6px;font-size:13px;outline:none;min-width:200px;color:#374151}
+.filter-input:focus{border-color:#1677ff}
+.filter-select{height:34px;padding:0 10px;border:1px solid #d9d9d9;border-radius:6px;font-size:13px;outline:none;color:#374151;background:#fff}
+.filter-select:focus{border-color:#1677ff}
+
+/* 分页 */
+.pagination{display:flex;align-items:center;justify-content:space-between;padding:16px 0 0;font-size:13px;color:#8c8fa3}
+.page-btns{display:flex;gap:4px}
+.page-btn{height:28px;min-width:28px;padding:0 8px;border:1px solid #d9d9d9;border-radius:4px;background:#fff;cursor:pointer;font-size:12px;display:inline-flex;align-items:center;justify-content:center}
+.page-btn.active{background:#1677ff;color:#fff;border-color:#1677ff}
+.page-btn:hover:not(.active){border-color:#1677ff;color:#1677ff}
+
+/* 弹窗 */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:2000;display:none;align-items:center;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal{background:#fff;border-radius:12px;width:520px;max-width:92vw;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 8px 40px rgba(0,0,0,.18)}
+.modal-lg{width:720px}
+.modal-xl{width:900px}
+.modal-header{padding:18px 20px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.modal-title{font-size:16px;font-weight:700;color:#1a1a2e}
+.modal-close{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;color:#8c8fa3;background:#f5f5f5}
+.modal-close:hover{background:#e0e0e0}
+.modal-body{padding:20px;overflow-y:auto;flex:1}
+.modal-footer{padding:14px 20px;border-top:1px solid #f0f0f0;display:flex;justify-content:flex-end;gap:10px;flex-shrink:0}
+
+/* 表单 */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.form-item{margin-bottom:16px}
+.form-label{font-size:13px;font-weight:500;color:#374151;display:block;margin-bottom:6px}
+.required{color:#ff4d4f;margin-left:2px}
+.form-input,.form-select,.form-textarea{width:100%;padding:8px 12px;border:1px solid #d9d9d9;border-radius:6px;font-size:13px;outline:none;color:#374151;transition:border-color .15s;font-family:inherit}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:#1677ff;box-shadow:0 0 0 2px rgba(22,119,255,.1)}
+.form-textarea{resize:vertical;min-height:80px}
+.form-hint{font-size:12px;color:#8c8fa3;margin-top:4px}
+.form-divider{border:none;border-top:1px solid #f0f0f0;margin:16px 0}
+.section-title{font-size:13px;font-weight:600;color:#374151;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid #f5f5f5}
+
+/* Tab */
+.tabs{display:flex;gap:0;border-bottom:1px solid #f0f0f0;margin-bottom:20px}
+.tab{padding:10px 20px;font-size:13px;cursor:pointer;color:#8c8fa3;border-bottom:2px solid transparent;margin-bottom:-1px;font-weight:500;transition:all .15s}
+.tab:hover{color:#1677ff}
+.tab.active{color:#1677ff;border-bottom-color:#1677ff;font-weight:600}
+.tab-pane{display:none}.tab-pane.active{display:block}
+
+/* 信息面板 */
+.detail-panel{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.detail-item{display:flex;flex-direction:column;gap:3px}
+.detail-label{font-size:11px;color:#8c8fa3;font-weight:500}
+.detail-value{font-size:13px;color:#1a1a2e;font-weight:500}
+
+/* Alert提示 */
+.alert{display:flex;align-items:flex-start;gap:10px;padding:12px 16px;border-radius:8px;font-size:13px;margin-bottom:16px}
+.alert svg{width:16px;height:16px;flex-shrink:0;margin-top:1px}
+.alert-warning{background:#fff7e6;color:#ad6800;border:1px solid #ffe58f}
+.alert-warning svg{stroke:#fa8c16}
+.alert-info{background:#e6f4ff;color:#0958d9;border:1px solid #91caff}
+.alert-info svg{stroke:#1677ff}
+.alert-success{background:#f6ffed;color:#389e0d;border:1px solid #b7eb8f}
+.alert-success svg{stroke:#52c41a}
+.alert-danger{background:#fff2f0;color:#cf1322;border:1px solid #ffccc7}
+.alert-danger svg{stroke:#ff4d4f}
+
+/* 步骤条 */
+.steps{display:flex;align-items:center;margin-bottom:28px}
+.step-item{display:flex;align-items:center;gap:8px;flex:1}
+.step-item:last-child{flex:none}
+.step-circle{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;transition:all .2s}
+.step-circle.active{background:#1677ff;color:#fff}
+.step-circle.done{background:#52c41a;color:#fff}
+.step-circle.pending{background:#f0f0f0;color:#8c8fa3}
+.step-label{font-size:12px;font-weight:500}
+.step-label.active{color:#1677ff}
+.step-label.done{color:#52c41a}
+.step-label.pending{color:#8c8fa3}
+.step-line{flex:1;height:2px;background:#f0f0f0;margin:0 8px;transition:all .2s}
+.step-line.done{background:#52c41a}
+.step-panel{display:none}
+.step-panel.active{display:block}
+
+/* Toast */
+#toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(20px);background:#1a1a2e;color:#fff;padding:10px 22px;border-radius:8px;font-size:13px;z-index:9999;opacity:0;transition:all .3s;pointer-events:none}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* AI产品卡 */
+.ai-card-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px}
+.ai-card{background:#fff;border-radius:10px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,.06);border:2px solid transparent;transition:all .2s;cursor:pointer}
+.ai-card:hover{border-color:#1677ff;box-shadow:0 4px 16px rgba(22,119,255,.12)}
+.ai-card-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px}
+.ai-card-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.ai-card-name{font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:3px}
+.ai-card-code{font-size:11px;color:#8c8fa3;font-family:monospace}
+.ai-card-desc{font-size:12px;color:#8c8fa3;line-height:1.5;margin-bottom:12px}
+.ai-card-footer{display:flex;align-items:center;justify-content:space-between;font-size:12px;color:#8c8fa3}
+
+/* 内部角色权限矩阵 */
+.perm-table th:first-child{width:180px}
+.perm-table td:first-child{font-weight:600;background:#fafafa}
+.perm-check{text-align:center;font-size:16px}
+.perm-yes{color:#52c41a}.perm-no{color:#e0e0e0}
+
+/* 租户详情 */
+.tenant-meta{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:16px}
+</style>
+</head>
+<body>
+
+<!-- Toast -->
+<div id="toast"><span id="toast-msg">操作成功</span></div>
+
+<!-- 顶部栏 -->
+<div class="topbar">
+  <div class="logo">🌟 美业云</div>
+  <div class="sys-tag">平台运营端</div>
+  <div class="spacer"></div>
+  <div class="user-info">
+    <div class="avatar">运</div>
+    <span>超级管理员</span>
+    <span style="color:#5a6080">｜</span>
+    <span style="color:#5a6080;cursor:pointer">退出</span>
+  </div>
+</div>
+
+<!-- 主布局 -->
+<div class="layout">
+
+<!-- 侧边栏 -->
+<div class="sidebar">
+  <div class="nav-group">
+    <div class="nav-group-title">租户管理</div>
+    <div class="nav-item active" id="nav-tenant-list" onclick="switchPage('page-tenant-list',this)">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+      租户列表
+    </div>
+    <div class="nav-item" id="nav-tenant-apply" onclick="switchPage('page-tenant-apply',this)">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"/><path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg>
+      开通申请审批
+    </div>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-title">AI产品管理</div>
+    <div class="nav-item" id="nav-product-catalog" onclick="switchPage('page-product-catalog',this)">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      AI产品目录
+    </div>
+    <div class="nav-item" id="nav-product-api" onclick="switchPage('page-product-api',this)">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 20l4-16M7 19l-5-7 5-7M17 5l5 7-5 7"/></svg>
+      接口参数配置
+    </div>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-title">套餐与配额</div>
+    <div class="nav-item" id="nav-package" onclick="switchPage('page-package',this)">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+      套餐管理
+    </div>
+    <div class="nav-item" id="nav-quota" onclick="switchPage('page-quota',this)">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+      配额管理
+    </div>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-title">系统集成</div>
+    <div class="nav-item" id="nav-integration-platform" onclick="switchPage('page-integration-platform',this)">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+      第三方平台配置
+    </div>
+    <div class="nav-item" id="nav-integration-crm" onclick="switchPage('page-integration-crm',this)">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+      CRM适配器
+    </div>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-title">内部管理</div>
+    <div class="nav-item" id="nav-staff" onclick="switchPage('page-staff',this)">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      内部账号
+    </div>
+    <div class="nav-item" id="nav-inner-role" onclick="switchPage('page-inner-role',this)">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      内部角色权限
+    </div>
+    <div class="nav-item" id="nav-audit" onclick="switchPage('page-audit',this)">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      操作审计日志
+    </div>
+  </div>
+</div><!-- /sidebar -->
+
+<!-- 内容区 -->
+<div class="main">
+<div class="content-header">
+  <div class="breadcrumb" id="breadcrumb">平台运营端 / <span>租户列表</span></div>
+</div>
+<div class="content">
+<!-- ══════════════════════════════════════════
+     页面：租户列表
+══════════════════════════════════════════ -->
+<div class="page active" id="page-tenant-list">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+    <div>
+      <div class="page-title">租户列表</div>
+      <div class="page-desc">管理全平台所有入驻租户，共 <strong>128</strong> 家</div>
+    </div>
+    <button class="btn btn-primary" onclick="openModal('modal-new-tenant')">＋ 新建租户</button>
+  </div>
+
+  <div class="stats-grid stats-grid-4" style="margin-bottom:20px">
+    <div class="stat-card">
+      <div class="stat-label">租户总数</div>
+      <div class="stat-value">128</div>
+      <div class="stat-sub"><span class="stat-up">↑ 本月新增 6</span></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">正式签约</div>
+      <div class="stat-value" style="color:#52c41a">89</div>
+      <div class="stat-sub">占比 69.5%</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">试用中</div>
+      <div class="stat-value" style="color:#1677ff">24</div>
+      <div class="stat-sub"><span class="stat-warn">↑ 本月新增 4</span></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">冻结 / 到期</div>
+      <div class="stat-value" style="color:#ff4d4f">15</div>
+      <div class="stat-sub">需跟进续签</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">全部租户</div>
+      <div class="card-actions">
+        <input class="filter-input" placeholder="🔍 搜索品牌名称 / 联系人" style="width:220px">
+        <select class="filter-select">
+          <option>全部行业</option><option>美容美体</option><option>美发</option>
+          <option>纤体塑形</option><option>教育培训</option><option>餐饮</option>
+        </select>
+        <select class="filter-select">
+          <option>全部合同状态</option><option>正式签约</option><option>试用中</option>
+          <option>已到期</option><option>已冻结</option>
+        </select>
+        <select class="filter-select">
+          <option>全部活跃度</option><option>高活跃</option><option>中活跃</option>
+          <option>低活跃</option><option>沉睡</option>
+        </select>
+      </div>
+    </div>
+    <div class="card-body" style="padding:0">
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>品牌名称</th><th>行业</th><th>合同状态</th>
+            <th>开通产品</th><th>门店数</th><th>账号数</th>
+            <th>本月API调用</th><th>最后活跃</th><th>操作</th>
+          </tr></thead>
+          <tbody>
+            <tr>
+              <td><strong>美丽星球</strong><br><span style="font-size:11px;color:#8c8fa3">T-00124</span></td>
+              <td>美容美体</td>
+              <td><span class="badge badge-success">正式签约</span></td>
+              <td><span class="badge badge-blue">7 项</span></td>
+              <td>217</td><td>1,843</td>
+              <td>128,450 <span style="font-size:11px;color:#52c41a">↑14%</span></td>
+              <td>2026-06-09 10:22</td>
+              <td>
+                <button class="btn btn-link btn-sm" onclick="openModal('modal-tenant-detail')">详情</button>
+                <button class="btn btn-link btn-sm" onclick="openModal('modal-edit-tenant')">编辑</button>
+                <button class="btn btn-link btn-sm" style="color:#fa8c16" onclick="openModal('modal-adjust-quota')">扩容</button>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>纤体工坊</strong><br><span style="font-size:11px;color:#8c8fa3">T-00118</span></td>
+              <td>纤体塑形</td>
+              <td><span class="badge badge-success">正式签约</span></td>
+              <td><span class="badge badge-blue">5 项</span></td>
+              <td>48</td><td>326</td>
+              <td>546,000 <span style="font-size:11px;color:#ff4d4f">91%配额</span></td>
+              <td>2026-06-09 09:15</td>
+              <td>
+                <button class="btn btn-link btn-sm" onclick="openModal('modal-tenant-detail')">详情</button>
+                <button class="btn btn-link btn-sm" onclick="openModal('modal-edit-tenant')">编辑</button>
+                <button class="btn btn-link btn-sm" style="color:#fa8c16" onclick="openModal('modal-adjust-quota')">扩容</button>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>青禾美发</strong><br><span style="font-size:11px;color:#8c8fa3">T-00112</span></td>
+              <td>美发</td>
+              <td><span class="badge badge-warning">试用中</span></td>
+              <td><span class="badge badge-blue">3 项</span></td>
+              <td>12</td><td>89</td>
+              <td>8,240</td>
+              <td>2026-06-08 17:30</td>
+              <td>
+                <button class="btn btn-link btn-sm" onclick="openModal('modal-tenant-detail')">详情</button>
+                <button class="btn btn-link btn-sm" onclick="openModal('modal-edit-tenant')">编辑</button>
+                <button class="btn btn-link btn-sm" style="color:#ff4d4f">冻结</button>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>玉颜堂</strong><br><span style="font-size:11px;color:#8c8fa3">T-00097</span></td>
+              <td>美容美体</td>
+              <td><span class="badge badge-danger">已到期</span></td>
+              <td><span class="badge badge-default">暂停中</span></td>
+              <td>35</td><td>214</td>
+              <td>0</td>
+              <td>2026-05-31 11:00</td>
+              <td>
+                <button class="btn btn-link btn-sm" onclick="openModal('modal-tenant-detail')">详情</button>
+                <button class="btn btn-link btn-sm" style="color:#52c41a">恢复</button>
+                <button class="btn btn-link btn-sm" style="color:#ff4d4f">注销</button>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>蓝海教育</strong><br><span style="font-size:11px;color:#8c8fa3">T-00088</span></td>
+              <td>教育培训</td>
+              <td><span class="badge badge-default">已冻结</span></td>
+              <td><span class="badge badge-default">暂停中</span></td>
+              <td>6</td><td>43</td>
+              <td>0</td>
+              <td>2026-04-22 09:00</td>
+              <td>
+                <button class="btn btn-link btn-sm" onclick="openModal('modal-tenant-detail')">详情</button>
+                <button class="btn btn-link btn-sm" style="color:#52c41a">解冻</button>
+                <button class="btn btn-link btn-sm" style="color:#ff4d4f">注销</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination" style="padding:12px 20px">
+        <span>共 128 条记录，每页 20 条</span>
+        <div class="page-btns">
+          <div class="page-btn active">1</div>
+          <div class="page-btn">2</div>
+          <div class="page-btn">3</div>
+          <div class="page-btn">···</div>
+          <div class="page-btn">7</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     页面：开通申请审批
+══════════════════════════════════════════ -->
+<div class="page" id="page-tenant-apply">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+    <div>
+      <div class="page-title">开通申请审批</div>
+      <div class="page-desc">待处理申请 <strong style="color:#fa8c16">7</strong> 条</div>
+    </div>
+  </div>
+  <div class="stats-grid stats-grid-3" style="margin-bottom:20px">
+    <div class="stat-card"><div class="stat-label">待审批</div><div class="stat-value" style="color:#fa8c16">7</div></div>
+    <div class="stat-card"><div class="stat-label">本月已通过</div><div class="stat-value" style="color:#52c41a">18</div></div>
+    <div class="stat-card"><div class="stat-label">本月已拒绝</div><div class="stat-value" style="color:#ff4d4f">2</div></div>
+  </div>
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">申请列表</div>
+      <div class="card-actions">
+        <select class="filter-select"><option>全部状态</option><option>待审批</option><option>已通过</option><option>已拒绝</option></select>
+        <select class="filter-select"><option>全部产品</option><option>AI销冠</option><option>AI店长</option><option>AI客服</option></select>
+      </div>
+    </div>
+    <div class="card-body" style="padding:0">
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>申请租户</th><th>申请产品</th><th>申请时间</th><th>申请说明</th><th>状态</th><th>操作</th>
+          </tr></thead>
+          <tbody>
+            <tr>
+              <td><strong>美丽星球</strong></td>
+              <td><span class="tag tag-purple">员工游戏化激励</span></td>
+              <td>2026-06-09 09:30</td>
+              <td style="max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">门店激励活动需要，预计用于200家门店</td>
+              <td><span class="badge badge-warning">待审批</span></td>
+              <td>
+                <button class="btn btn-success btn-sm" onclick="showToast('已通过申请')">通过</button>
+                <button class="btn btn-danger btn-sm" onclick="showToast('已拒绝申请')">拒绝</button>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>纤体工坊</strong></td>
+              <td><span class="tag tag-purple">视频自动剪辑</span></td>
+              <td>2026-06-08 16:20</td>
+              <td style="max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">用于门店短视频营销内容生产</td>
+              <td><span class="badge badge-warning">待审批</span></td>
+              <td>
+                <button class="btn btn-success btn-sm" onclick="showToast('已通过申请')">通过</button>
+                <button class="btn btn-danger btn-sm" onclick="showToast('已拒绝申请')">拒绝</button>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>青禾美发</strong></td>
+              <td><span class="tag tag-purple">AI销冠</span></td>
+              <td>2026-06-07 11:05</td>
+              <td style="max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">试用期间追加申请AI销冠产品</td>
+              <td><span class="badge badge-success">已通过</span></td>
+              <td><button class="btn btn-link btn-sm">查看详情</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     页面：AI产品目录
+══════════════════════════════════════════ -->
+<div class="page" id="page-product-catalog">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+    <div>
+      <div class="page-title">AI产品目录</div>
+      <div class="page-desc">平台全部AI产品，共 9 项</div>
+    </div>
+    <button class="btn btn-primary" onclick="openModal('modal-add-product')">＋ 新增产品</button>
+  </div>
+  <div class="ai-card-grid">
+    <div class="ai-card" onclick="openModal('modal-product-detail')">
+      <div class="ai-card-header">
+        <div><div class="ai-card-name">🤖 AI销冠</div><div class="ai-card-code">ai-sales-champion</div></div>
+        <span class="badge badge-success">已上架</span>
+      </div>
+      <div class="ai-card-desc">智能销售话术推荐，实时助力一线销售顾问提升转化率与客单价。</div>
+      <div class="ai-card-footer"><span>启用租户：<strong>78</strong></span><span>版本 v2.1.0</span></div>
+    </div>
+    <div class="ai-card" onclick="openModal('modal-product-detail')">
+      <div class="ai-card-header">
+        <div><div class="ai-card-name">🏪 AI店长</div><div class="ai-card-code">ai-store-manager</div></div>
+        <span class="badge badge-success">已上架</span>
+      </div>
+      <div class="ai-card-desc">门店经营智能分析，自动生成日报/周报，识别经营风险并给出建议。</div>
+      <div class="ai-card-footer"><span>启用租户：<strong>65</strong></span><span>版本 v1.8.2</span></div>
+    </div>
+    <div class="ai-card" onclick="openModal('modal-product-detail')">
+      <div class="ai-card-header">
+        <div><div class="ai-card-name">💬 AI客服</div><div class="ai-card-code">ai-customer-service</div></div>
+        <span class="badge badge-success">已上架</span>
+      </div>
+      <div class="ai-card-desc">智能客服机器人，7×24小时自动响应客户咨询、预约与投诉。</div>
+      <div class="ai-card-footer"><span>启用租户：<strong>92</strong></span><span>版本 v3.0.1</span></div>
+    </div>
+    <div class="ai-card" onclick="openModal('modal-product-detail')">
+      <div class="ai-card-header">
+        <div><div class="ai-card-name">📞 AI自动回访</div><div class="ai-card-code">ai-auto-followup</div></div>
+        <span class="badge badge-success">已上架</span>
+      </div>
+      <div class="ai-card-desc">服务后自动触发AI外呼，收集满意度，识别流失风险客户。</div>
+      <div class="ai-card-footer"><span>启用租户：<strong>54</strong></span><span>版本 v1.4.0</span></div>
+    </div>
+    <div class="ai-card" onclick="openModal('modal-product-detail')">
+      <div class="ai-card-header">
+        <div><div class="ai-card-name">🎓 考培陪练</div><div class="ai-card-code">ai-training-coach</div></div>
+        <span class="badge badge-success">已上架</span>
+      </div>
+      <div class="ai-card-desc">AI角色扮演模拟考核，员工随时随地进行销售话术与服务礼仪培训。</div>
+      <div class="ai-card-footer"><span>启用租户：<strong>41</strong></span><span>版本 v1.2.3</span></div>
+    </div>
+    <div class="ai-card" onclick="openModal('modal-product-detail')">
+      <div class="ai-card-header">
+        <div><div class="ai-card-name">🎯 自动化招聘</div><div class="ai-card-code">ai-recruitment</div></div>
+        <span class="badge badge-success">已上架</span>
+      </div>
+      <div class="ai-card-desc">AI简历筛选+初轮面试，大幅降低美业门店招聘人力成本。</div>
+      <div class="ai-card-footer"><span>启用租户：<strong>38</strong></span><span>版本 v1.0.5</span></div>
+    </div>
+    <div class="ai-card" onclick="openModal('modal-product-detail')">
+      <div class="ai-card-header">
+        <div><div class="ai-card-name">🎮 员工激励</div><div class="ai-card-code">ai-gamification</div></div>
+        <span class="badge badge-blue">Beta</span>
+      </div>
+      <div class="ai-card-desc">游戏化积分体系与排行榜，持续激励员工保持高绩效。</div>
+      <div class="ai-card-footer"><span>启用租户：<strong>12</strong></span><span>版本 v0.9.1</span></div>
+    </div>
+    <div class="ai-card" onclick="openModal('modal-product-detail')">
+      <div class="ai-card-header">
+        <div><div class="ai-card-name">🎬 视频剪辑</div><div class="ai-card-code">ai-video-editor</div></div>
+        <span class="badge badge-blue">Beta</span>
+      </div>
+      <div class="ai-card-desc">门店宣传素材自动生成，AI剪辑短视频用于抖音/小红书营销。</div>
+      <div class="ai-card-footer"><span>启用租户：<strong>8</strong></span><span>版本 v0.7.0</span></div>
+    </div>
+    <div class="ai-card" onclick="openModal('modal-product-detail')">
+      <div class="ai-card-header">
+        <div><div class="ai-card-name">🎤 AI面试</div><div class="ai-card-code">ai-interview</div></div>
+        <span class="badge badge-warning">开发中</span>
+      </div>
+      <div class="ai-card-desc">全程AI视频面试，结构化评估候选人，输出能力画像报告。</div>
+      <div class="ai-card-footer"><span>预计上线：2026 Q3</span><span>版本 v0.3.0</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     页面：接口参数配置
+══════════════════════════════════════════ -->
+<div class="page" id="page-product-api">
+  <div style="margin-bottom:20px">
+    <div class="page-title">接口参数配置</div>
+    <div class="page-desc">配置各AI产品的API对接参数，修改将即时生效</div>
+  </div>
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">产品接口配置列表</div>
+      <div class="card-actions">
+        <select class="filter-select"><option>全部产品</option><option>AI销冠</option><option>AI店长</option><option>AI客服</option></select>
+      </div>
+    </div>
+    <div class="card-body" style="padding:0">
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>AI产品</th><th>API基础地址</th><th>鉴权方式</th><th>超时(ms)</th><th>重试次数</th><th>Token有效期</th><th>状态</th><th>操作</th>
+          </tr></thead>
+          <tbody>
+            <tr>
+              <td><strong>AI销冠</strong></td>
+              <td><span style="font-size:12px;font-family:monospace">https://api.ai.meiye.com/sales</span></td>
+              <td>Bearer Token</td><td>5,000</td><td>3</td><td>24h</td>
+              <td><span class="badge badge-success">正常</span></td>
+              <td><button class="btn btn-link btn-sm" onclick="openModal('modal-edit-api')">编辑</button></td>
+            </tr>
+            <tr>
+              <td><strong>AI店长</strong></td>
+              <td><span style="font-size:12px;font-family:monospace">https://api.ai.meiye.com/manager</span></td>
+              <td>Bearer Token</td><td>8,000</td><td>2</td><td>12h</td>
+              <td><span class="badge badge-success">正常</span></td>
+              <td><button class="btn btn-link btn-sm" onclick="openModal('modal-edit-api')">编辑</button></td>
+            </tr>
+            <tr>
+              <td><strong>AI客服</strong></td>
+              <td><span style="font-size:12px;font-family:monospace">https://api.ai.meiye.com/service</span></td>
+              <td>API Key</td><td>3,000</td><td>5</td><td>永久</td>
+              <td><span class="badge badge-success">正常</span></td>
+              <td><button class="btn btn-link btn-sm" onclick="openModal('modal-edit-api')">编辑</button></td>
+            </tr>
+            <tr>
+              <td><strong>AI自动回访</strong></td>
+              <td><span style="font-size:12px;font-family:monospace">https://api.ai.meiye.com/followup</span></td>
+              <td>Bearer Token</td><td>10,000</td><td>3</td><td>6h</td>
+              <td><span class="badge badge-warning">响应慢</span></td>
+              <td><button class="btn btn-link btn-sm" onclick="openModal('modal-edit-api')">编辑</button></td>
+            </tr>
+            <tr>
+              <td><strong>考培陪练</strong></td>
+              <td><span style="font-size:12px;font-family:monospace">https://api.ai.meiye.com/training</span></td>
+              <td>Bearer Token</td><td>5,000</td><td>3</td><td>24h</td>
+              <td><span class="badge badge-success">正常</span></td>
+              <td><button class="btn btn-link btn-sm" onclick="openModal('modal-edit-api')">编辑</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     页面：套餐管理
+══════════════════════════════════════════ -->
+<div class="page" id="page-package">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+    <div>
+      <div class="page-title">套餐管理</div>
+      <div class="page-desc">定义并维护面向租户的订阅套餐，当前共 4 个套餐</div>
+    </div>
+    <button class="btn btn-primary" onclick="openModal('modal-add-package')">＋ 新建套餐</button>
+  </div>
+  <div class="stats-grid stats-grid-4" style="margin-bottom:20px">
+    <div class="stat-card"><div class="stat-label">套餐总数</div><div class="stat-value">4</div></div>
+    <div class="stat-card"><div class="stat-label">使用最多</div><div class="stat-value" style="font-size:18px">专业版</div><div class="stat-sub">68 家租户</div></div>
+    <div class="stat-card"><div class="stat-label">本月升级套餐</div><div class="stat-value" style="color:#52c41a">9</div></div>
+    <div class="stat-card"><div class="stat-label">超额发生租户</div><div class="stat-value" style="color:#fa8c16">11</div></div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px">
+    <div class="card" style="margin-bottom:0;border-top:4px solid #52c41a">
+      <div class="card-body">
+        <div style="font-size:16px;font-weight:700;margin-bottom:4px">入门版</div>
+        <div style="font-size:12px;color:#8c8fa3;margin-bottom:16px">适合初创门店（1-10家）</div>
+        <div style="font-size:12px;color:#374151;line-height:2">
+          门店上限：<strong>10</strong><br>账号上限：<strong>50</strong><br>
+          月API：<strong>50,000次</strong><br>AI产品：<strong>3项</strong>
+        </div>
+        <div style="margin-top:16px;display:flex;gap:8px">
+          <button class="btn btn-default btn-sm" onclick="openModal('modal-package-detail')">查看详情</button>
+          <span class="badge badge-success" style="align-self:center">在售</span>
+        </div>
+        <div style="margin-top:8px;font-size:12px;color:#8c8fa3">当前 <strong>12</strong> 家租户</div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:0;border-top:4px solid #1677ff">
+      <div class="card-body">
+        <div style="font-size:16px;font-weight:700;margin-bottom:4px">标准版</div>
+        <div style="font-size:12px;color:#8c8fa3;margin-bottom:16px">适合成长期连锁（10-50家）</div>
+        <div style="font-size:12px;color:#374151;line-height:2">
+          门店上限：<strong>50</strong><br>账号上限：<strong>300</strong><br>
+          月API：<strong>200,000次</strong><br>AI产品：<strong>5项</strong>
+        </div>
+        <div style="margin-top:16px;display:flex;gap:8px">
+          <button class="btn btn-default btn-sm" onclick="openModal('modal-package-detail')">查看详情</button>
+          <span class="badge badge-success" style="align-self:center">在售</span>
+        </div>
+        <div style="margin-top:8px;font-size:12px;color:#8c8fa3">当前 <strong>39</strong> 家租户</div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:0;border-top:4px solid #7c8cff">
+      <div class="card-body">
+        <div style="font-size:16px;font-weight:700;margin-bottom:4px">专业版</div>
+        <div style="font-size:12px;color:#8c8fa3;margin-bottom:16px">适合中大型连锁（50-200家）</div>
+        <div style="font-size:12px;color:#374151;line-height:2">
+          门店上限：<strong>200</strong><br>账号上限：<strong>1,200</strong><br>
+          月API：<strong>600,000次</strong><br>AI产品：<strong>6项</strong>
+        </div>
+        <div style="margin-top:16px;display:flex;gap:8px">
+          <button class="btn btn-default btn-sm" onclick="openModal('modal-package-detail')">查看详情</button>
+          <span class="badge badge-success" style="align-self:center">在售</span>
+        </div>
+        <div style="margin-top:8px;font-size:12px;color:#8c8fa3">当前 <strong>68</strong> 家租户</div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:0;border-top:4px solid #faad14">
+      <div class="card-body">
+        <div style="font-size:16px;font-weight:700;margin-bottom:4px">旗舰版</div>
+        <div style="font-size:12px;color:#8c8fa3;margin-bottom:16px">适合大型全国连锁（200家以上）</div>
+        <div style="font-size:12px;color:#374151;line-height:2">
+          门店上限：<strong>不限</strong><br>账号上限：<strong>不限</strong><br>
+          月API：<strong>2,000,000次</strong><br>AI产品：<strong>全部9项</strong>
+        </div>
+        <div style="margin-top:16px;display:flex;gap:8px">
+          <button class="btn btn-default btn-sm" onclick="openModal('modal-package-detail')">查看详情</button>
+          <span class="badge badge-success" style="align-self:center">在售</span>
+        </div>
+        <div style="margin-top:8px;font-size:12px;color:#8c8fa3">当前 <strong>9</strong> 家租户</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     页面：配额管理
+══════════════════════════════════════════ -->
+<div class="page" id="page-quota">
+  <div style="margin-bottom:20px">
+    <div class="page-title">配额管理</div>
+    <div class="page-desc">查看所有租户的配额使用情况，并进行临时或永久调整</div>
+  </div>
+  <div class="stats-grid stats-grid-4" style="margin-bottom:20px">
+    <div class="stat-card"><div class="stat-label">超额租户数</div><div class="stat-value" style="color:#ff4d4f">11</div><div class="stat-sub">需立即处理</div></div>
+    <div class="stat-card"><div class="stat-label">配额使用率＞80%</div><div class="stat-value" style="color:#fa8c16">24</div><div class="stat-sub">预警状态</div></div>
+    <div class="stat-card"><div class="stat-label">本月调整次数</div><div class="stat-value">18</div></div>
+    <div class="stat-card"><div class="stat-label">临时扩容中</div><div class="stat-value" style="color:#1677ff">7</div></div>
+  </div>
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">租户配额详情</div>
+      <div class="card-actions">
+        <input class="filter-input" placeholder="🔍 搜索租户名称" style="width:200px">
+        <select class="filter-select"><option>全部状态</option><option>正常</option><option>预警(>80%)</option><option>超额</option></select>
+      </div>
+    </div>
+    <div class="card-body" style="padding:0">
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>租户</th><th>套餐</th><th>月API配额</th><th>已用</th><th>使用率</th><th>存储(GB)</th><th>状态</th><th>操作</th>
+          </tr></thead>
+          <tbody>
+            <tr>
+              <td><strong>美丽星球</strong></td><td>旗舰版</td>
+              <td>2,000,000</td><td>128,450</td>
+              <td>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <div style="flex:1;height:6px;background:#f0f0f0;border-radius:3px"><div style="width:6.4%;height:100%;background:#52c41a;border-radius:3px"></div></div>
+                  <span style="font-size:12px;white-space:nowrap">6.4%</span>
+                </div>
+              </td>
+              <td>204/1000</td>
+              <td><span class="badge badge-success">正常</span></td>
+              <td><button class="btn btn-link btn-sm" onclick="openModal('modal-adjust-quota')">调整配额</button></td>
+            </tr>
+            <tr>
+              <td><strong>纤体工坊</strong></td><td>专业版</td>
+              <td>600,000</td><td>546,000</td>
+              <td>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <div style="flex:1;height:6px;background:#f0f0f0;border-radius:3px"><div style="width:91%;height:100%;background:#ff4d4f;border-radius:3px"></div></div>
+                  <span style="font-size:12px;white-space:nowrap;color:#ff4d4f">91%</span>
+                </div>
+              </td>
+              <td>178/200</td>
+              <td><span class="badge badge-danger">超额预警</span></td>
+              <td><button class="btn btn-warning btn-sm" onclick="openModal('modal-adjust-quota')">立即扩容</button></td>
+            </tr>
+            <tr>
+              <td><strong>青禾美发</strong></td><td>入门版</td>
+              <td>50,000</td><td>8,240</td>
+              <td>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <div style="flex:1;height:6px;background:#f0f0f0;border-radius:3px"><div style="width:16.5%;height:100%;background:#52c41a;border-radius:3px"></div></div>
+                  <span style="font-size:12px;white-space:nowrap">16.5%</span>
+                </div>
+              </td>
+              <td>12/50</td>
+              <td><span class="badge badge-success">正常</span></td>
+              <td><button class="btn btn-link btn-sm" onclick="openModal('modal-adjust-quota')">调整配额</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     页面：第三方平台配置
+══════════════════════════════════════════ -->
+<div class="page" id="page-integration-platform">
+  <div style="margin-bottom:20px">
+    <div class="page-title">第三方平台配置</div>
+    <div class="page-desc">平台级统一的第三方身份认证配置，供所有租户共用</div>
+  </div>
+  <div class="alert alert-warning">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+    此页面的配置直接影响所有租户的第三方登录功能，修改前请确认已通知相关租户，所有修改操作均会记录至审计日志。
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+    <div class="card" style="margin-bottom:0">
+      <div class="card-header">
+        <div class="card-title">🔔 钉钉平台配置</div>
+        <div class="card-actions">
+          <span class="badge badge-success">已连接</span>
+          <button class="btn btn-default btn-sm" onclick="openModal('modal-edit-dingtalk')">编辑</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="detail-panel">
+          <div class="detail-item"><div class="detail-label">应用名称</div><div class="detail-value">美业SaaS平台</div></div>
+          <div class="detail-item"><div class="detail-label">AppKey</div><div class="detail-value" style="font-family:monospace">dingoa****4b8c</div></div>
+          <div class="detail-item"><div class="detail-label">OAuth回调</div><div class="detail-value" style="font-size:11px;font-family:monospace">…/auth/dingtalk/callback</div></div>
+          <div class="detail-item"><div class="detail-label">已关联租户</div><div class="detail-value" style="color:#1677ff;font-weight:700">89 家</div></div>
+          <div class="detail-item"><div class="detail-label">今日登录次数</div><div class="detail-value">14,238</div></div>
+          <div class="detail-item"><div class="detail-label">最后验证</div><div class="detail-value">2026-06-09 08:00</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:0">
+      <div class="card-header">
+        <div class="card-title">💬 企业微信平台配置</div>
+        <div class="card-actions">
+          <span class="badge badge-success">已连接</span>
+          <button class="btn btn-default btn-sm" onclick="openModal('modal-edit-wecom')">编辑</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="detail-panel">
+          <div class="detail-item"><div class="detail-label">平台CorpID</div><div class="detail-value" style="font-family:monospace">ww****a2d8</div></div>
+          <div class="detail-item"><div class="detail-label">AgentID</div><div class="detail-value" style="font-family:monospace">1000026</div></div>
+          <div class="detail-item"><div class="detail-label">OAuth回调</div><div class="detail-value" style="font-size:11px;font-family:monospace">…/auth/wecom/callback</div></div>
+          <div class="detail-item"><div class="detail-label">已关联租户</div><div class="detail-value" style="color:#1677ff;font-weight:700">34 家</div></div>
+          <div class="detail-item"><div class="detail-label">今日登录次数</div><div class="detail-value">5,620</div></div>
+          <div class="detail-item"><div class="detail-label">最后验证</div><div class="detail-value">2026-06-09 08:00</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     页面：CRM适配器
+══════════════════════════════════════════ -->
+<div class="page" id="page-integration-crm">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+    <div>
+      <div class="page-title">CRM适配器管理</div>
+      <div class="page-desc">维护各主流旧CRM系统的数据同步适配器</div>
+    </div>
+    <button class="btn btn-primary" onclick="openModal('modal-add-adapter')">＋ 发布新适配器</button>
+  </div>
+  <div class="card">
+    <div class="card-body" style="padding:0">
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>适配器名称</th><th>适配CRM</th><th>版本</th><th>支持同步类型</th><th>使用租户数</th><th>状态</th><th>发布时间</th><th>操作</th>
+          </tr></thead>
+          <tbody>
+            <tr>
+              <td><strong>管店系统适配器</strong></td>
+              <td>管店 V6.x ~ V8.x</td><td>v2.3.1</td>
+              <td><span class="tag tag-blue" style="margin-right:4px">客户</span><span class="tag tag-blue" style="margin-right:4px">消费</span><span class="tag tag-blue">服务项目</span></td>
+              <td>48</td>
+              <td><span class="badge badge-success">正式版</span></td>
+              <td>2025-11-20</td>
+              <td><button class="btn btn-link btn-sm" onclick="openModal('modal-edit-adapter')">编辑</button></td>
+            </tr>
+            <tr>
+              <td><strong>思迅收银适配器</strong></td>
+              <td>思迅 V5.x ~ V7.x</td><td>v1.8.0</td>
+              <td><span class="tag tag-blue" style="margin-right:4px">客户</span><span class="tag tag-blue">消费</span></td>
+              <td>22</td>
+              <td><span class="badge badge-success">正式版</span></td>
+              <td>2025-09-05</td>
+              <td><button class="btn btn-link btn-sm" onclick="openModal('modal-edit-adapter')">编辑</button></td>
+            </tr>
+            <tr>
+              <td><strong>喜柚系统适配器</strong></td>
+              <td>喜柚 V3.x</td><td>v1.2.0</td>
+              <td><span class="tag tag-blue" style="margin-right:4px">客户</span><span class="tag tag-blue">预约</span></td>
+              <td>9</td>
+              <td><span class="badge badge-blue">Beta版</span></td>
+              <td>2026-02-18</td>
+              <td><button class="btn btn-link btn-sm" onclick="openModal('modal-edit-adapter')">编辑</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     页面：内部账号
+══════════════════════════════════════════ -->
+<div class="page" id="page-staff">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+    <div>
+      <div class="page-title">内部账号管理</div>
+      <div class="page-desc">管理平台运营团队成员账号，共 <strong>18</strong> 人</div>
+    </div>
+    <button class="btn btn-primary" onclick="openModal('modal-add-staff')">＋ 新增成员</button>
+  </div>
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">全部成员</div>
+      <div class="card-actions">
+        <input class="filter-input" placeholder="🔍 搜索姓名 / 邮箱" style="width:200px">
+        <select class="filter-select"><option>全部角色</option><option>超级管理员</option><option>客户成功经理</option><option>产品经理</option><option>技术运维</option><option>商务</option><option>财务</option></select>
+      </div>
+    </div>
+    <div class="card-body" style="padding:0">
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>姓名</th><th>工号</th><th>登录邮箱</th><th>内部角色</th><th>负责范围</th><th>状态</th><th>最后登录</th><th>操作</th>
+          </tr></thead>
+          <tbody>
+            <tr>
+              <td><strong>张建国</strong></td><td>OP-001</td>
+              <td>zhang.jg@meiye.com</td>
+              <td><span class="badge badge-purple">超级管理员</span></td>
+              <td>全部租户</td>
+              <td><span class="badge badge-success">正常</span></td>
+              <td>2026-06-09 10:10</td>
+              <td>
+                <button class="btn btn-link btn-sm" onclick="openModal('modal-edit-staff')">编辑</button>
+                <button class="btn btn-link btn-sm" style="color:#ff4d4f">禁用</button>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>刘倩</strong></td><td>OP-002</td>
+              <td>liu.q@meiye.com</td>
+              <td><span class="badge badge-blue">客户成功经理</span></td>
+              <td>华南区</td>
+              <td><span class="badge badge-success">正常</span></td>
+              <td>2026-06-09 09:42</td>
+              <td>
+                <button class="btn btn-link btn-sm" onclick="openModal('modal-edit-staff')">编辑</button>
+                <button class="btn btn-link btn-sm" style="color:#ff4d4f">禁用</button>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>王磊</strong></td><td>OP-003</td>
+              <td>wang.l@meiye.com</td>
+              <td><span class="badge badge-default">技术运维</span></td>
+              <td>全部</td>
+              <td><span class="badge badge-success">正常</span></td>
+              <td>2026-06-09 08:30</td>
+              <td>
+                <button class="btn btn-link btn-sm" onclick="openModal('modal-edit-staff')">编辑</button>
+                <button class="btn btn-link btn-sm" style="color:#ff4d4f">禁用</button>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>陈美丽</strong></td><td>OP-004</td>
+              <td>chen.ml@meiye.com</td>
+              <td><span class="badge badge-default">商务</span></td>
+              <td>华东区</td>
+              <td><span class="badge badge-default">已禁用</span></td>
+              <td>2026-05-20 15:00</td>
+              <td>
+                <button class="btn btn-link btn-sm" onclick="openModal('modal-edit-staff')">编辑</button>
+                <button class="btn btn-link btn-sm" style="color:#52c41a">启用</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     页面：内部角色权限
+══════════════════════════════════════════ -->
+<div class="page" id="page-inner-role">
+  <div style="margin-bottom:20px">
+    <div class="page-title">内部角色权限</div>
+    <div class="page-desc">平台运营团队各角色的功能访问权限一览</div>
+  </div>
+  <div class="card">
+    <div class="card-body" style="padding:0">
+      <div class="table-wrap">
+        <table class="perm-table">
+          <thead><tr>
+            <th>功能模块</th>
+            <th style="text-align:center">超级管理员</th>
+            <th style="text-align:center">客户成功</th>
+            <th style="text-align:center">产品经理</th>
+            <th style="text-align:center">技术运维</th>
+            <th style="text-align:center">商务</th>
+            <th style="text-align:center">财务</th>
+          </tr></thead>
+          <tbody>
+            <tr><td>租户列表（查看）</td><td class="perm-check perm-yes">✓</td><td class="perm-check perm-yes">✓</td><td class="perm-check perm-yes">✓</td><td class="perm-check perm-yes">✓</td><td class="perm-check perm-yes">✓</td><td class="perm-check perm-no">—</td></tr>
+            <tr><td>新建 / 编辑租户</td><td class="perm-check perm-yes">✓</td><td class="perm-check perm-yes">✓</td><td class="perm-check perm-no">—</td><td class="perm-check perm-no">—</td><td class="perm-check perm-yes">✓</td><td class="perm-check perm-no">—</td></tr>
+            <tr><td>冻结 / 注销租户</td><td class="perm-check perm-yes">✓</td><td class="perm-check perm-no">—</td><td class="perm-check perm-no">—</td><td class="perm-check perm-no">—</td><td class="perm-check perm-no">—</td><td class="perm-check perm-no">—</td></tr>
+            <tr><td>开通申请审批</td><td class="perm-check perm-yes">✓</td><td class="perm-check perm-yes">✓</td><td class="perm-check perm-yes">✓</td><td class="perm-check perm-no">—</td><td class="perm-check perm-no">—</td><td class="perm-check perm-no">—</td></tr>
+            <tr><td>AI产品目录管理</td><td class="perm-check perm-yes">✓</td><td class="perm-check perm-no">—</td><td class="perm-check perm-yes">✓</td><td class="perm-check perm-no">—</td><td class="perm-check perm-no">—</td><td class="perm-check perm-no">—</td></tr>
+            <tr><td>接口参数配置</td><td class="perm-check perm-yes">✓</td><td class="perm-check perm-no">—</td><td class="perm-check perm-no">—</td><td class="perm-check perm-yes">✓</td><td class="perm-check perm-no">—</td><td class="perm-check perm-no">—</td></tr>
+            <tr><td>套餐管理</td><td class="perm-check perm-yes">✓</td><td class="perm-check perm-no">—</td><td class="perm-check perm-yes">✓</td><td class="perm-check perm-no">—</td><td class="perm-check perm-yes">✓</td><td class="perm-check perm-yes">✓</td></tr>
+            <tr><td>配额调整</td><td class="perm-check perm-yes">✓</td><td class="perm-check perm-yes">✓</td><td class="perm-check perm-no">—</td><td class="perm-check perm-no">—</td><td class="perm-check perm-no">—</td><td class="perm-check perm-no">—</td></tr>
+            <tr><td>第三方平台配置</td><td class="perm-check perm-yes">✓</td><td class="perm-check perm-no">—</td><td class="perm-check perm-no">—</td><td class="perm-check perm-yes">✓</td><td class="perm-check perm-no">—</td><td class="perm-check perm-no">—</td></tr>
+            <tr><td>内部账号管理</td><td class="perm-check perm-yes">✓</td><td class="perm-check perm-no">—</td><td class="perm-check perm-no">—</td><td class="perm-check perm-no">—</td><td class="perm-check perm-no">—</td><td class="perm-check perm-no">—</td></tr>
+            <tr><td>操作审计日志</td><td class="perm-check perm-yes">✓</td><td class="perm-check perm-no">—</td><td class="perm-check perm-no">—</td><td class="perm-check perm-yes">✓</td><td class="perm-check perm-no">—</td><td class="perm-check perm-no">—</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     页面：操作审计日志
+══════════════════════════════════════════ -->
+<div class="page" id="page-audit">
+  <div style="margin-bottom:20px">
+    <div class="page-title">操作审计日志</div>
+    <div class="page-desc">记录所有敏感操作，确保可追溯</div>
+  </div>
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">审计记录</div>
+      <div class="card-actions">
+        <input class="filter-input" placeholder="🔍 搜索操作人 / 操作内容" style="width:220px">
+        <select class="filter-select"><option>全部操作类型</option><option>配额修改</option><option>租户创建</option><option>租户冻结</option><option>接口配置</option><option>账号管理</option></select>
+        <input class="filter-input" type="date" style="width:140px">
+      </div>
+    </div>
+    <div class="card-body" style="padding:0">
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>操作时间</th><th>操作人</th><th>操作类型</th><th>操作对象</th><th>操作内容</th><th>IP地址</th><th>结果</th>
+          </tr></thead>
+          <tbody>
+            <tr>
+              <td style="white-space:nowrap">2026-06-09 10:22</td>
+              <td>张建国</td>
+              <td><span class="tag tag-orange">配额修改</span></td>
+              <td>纤体工坊 T-00118</td>
+              <td>API月调用配额 600,000 → 800,000（临时至月底）</td>
+              <td style="font-family:monospace;font-size:12px">192.168.1.5</td>
+              <td><span class="badge badge-success">成功</span></td>
+            </tr>
+            <tr>
+              <td style="white-space:nowrap">2026-06-09 09:30</td>
+              <td>刘倩</td>
+              <td><span class="tag tag-green">租户创建</span></td>
+              <td>新租户 T-00128</td>
+              <td>创建租户"星辰连锁"，绑定专业版套餐，初始化超管账号</td>
+              <td style="font-family:monospace;font-size:12px">192.168.1.12</td>
+              <td><span class="badge badge-success">成功</span></td>
+            </tr>
+            <tr>
+              <td style="white-space:nowrap">2026-06-08 17:45</td>
+              <td>张建国</td>
+              <td><span class="tag tag-red">租户冻结</span></td>
+              <td>蓝海教育 T-00088</td>
+              <td>合同到期未续签，执行账号冻结操作</td>
+              <td style="font-family:monospace;font-size:12px">192.168.1.5</td>
+              <td><span class="badge badge-success">成功</span></td>
+            </tr>
+            <tr>
+              <td style="white-space:nowrap">2026-06-08 16:10</td>
+              <td>王磊</td>
+              <td><span class="tag tag-blue">接口配置</span></td>
+              <td>AI自动回访 接口</td>
+              <td>更新 API 超时时间 5000ms → 10000ms，新增重试次数 3 次</td>
+              <td style="font-family:monospace;font-size:12px">192.168.1.8</td>
+              <td><span class="badge badge-success">成功</span></td>
+            </tr>
+            <tr>
+              <td style="white-space:nowrap">2026-06-07 11:00</td>
+              <td>张建国</td>
+              <td><span class="tag tag-purple">平台配置</span></td>
+              <td>钉钉平台凭证</td>
+              <td>更新钉钉 AppSecret（原因：密钥轮换周期到期）</td>
+              <td style="font-family:monospace;font-size:12px">192.168.1.5</td>
+              <td><span class="badge badge-success">成功</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination" style="padding:12px 20px">
+        <span>共 1,284 条记录</span>
+        <div class="page-btns">
+          <div class="page-btn active">1</div>
+          <div class="page-btn">2</div>
+          <div class="page-btn">3</div>
+          <div class="page-btn">···</div>
+          <div class="page-btn">65</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- ══════════════════════════════════════════
+     所有弹窗
+══════════════════════════════════════════ -->
+
+<!-- 新建租户向导 -->
+<div class="modal-overlay" id="modal-new-tenant">
+  <div class="modal modal-lg">
+    <div class="modal-header"><div class="modal-title">新建租户向导</div><div class="modal-close" onclick="closeModal('modal-new-tenant')">✕</div></div>
+    <div class="modal-body">
+      <div class="steps">
+        <div class="step-item">
+          <div class="step-circle active" id="step-circle-1">1</div>
+          <div class="step-label active" id="step-label-1">品牌信息</div>
+          <div class="step-line" id="step-line-1"></div>
+        </div>
+        <div class="step-item">
+          <div class="step-circle pending" id="step-circle-2">2</div>
+          <div class="step-label pending" id="step-label-2">套餐方案</div>
+          <div class="step-line" id="step-line-2"></div>
+        </div>
+        <div class="step-item">
+          <div class="step-circle pending" id="step-circle-3">3</div>
+          <div class="step-label pending" id="step-label-3">合同信息</div>
+          <div class="step-line" id="step-line-3"></div>
+        </div>
+        <div class="step-item" style="flex:none">
+          <div class="step-circle pending" id="step-circle-4">4</div>
+          <div class="step-label pending" id="step-label-4">完成创建</div>
+        </div>
+      </div>
+      <!-- Step 1 -->
+      <div class="step-panel active" id="tenant-step-1">
+        <div class="form-row">
+          <div class="form-item"><label class="form-label">品牌名称<span class="required">*</span></label><input class="form-input" placeholder="例：美丽星球"></div>
+          <div class="form-item"><label class="form-label">所属行业<span class="required">*</span></label>
+            <select class="form-select"><option>请选择</option><option>美容美体</option><option>美发</option><option>纤体塑形</option><option>教育培训</option><option>餐饮</option></select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-item"><label class="form-label">联系人<span class="required">*</span></label><input class="form-input" placeholder="负责人姓名"></div>
+          <div class="form-item"><label class="form-label">联系电话<span class="required">*</span></label><input class="form-input" placeholder="手机号"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-item"><label class="form-label">城市</label><input class="form-input" placeholder="总部所在城市"></div>
+          <div class="form-item"><label class="form-label">联系邮箱</label><input class="form-input" placeholder="用于接收激活邮件"></div>
+        </div>
+      </div>
+      <!-- Step 2 -->
+      <div class="step-panel" id="tenant-step-2">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div onclick="selectPackage(this)" style="border:1px solid #d9d9d9;border-radius:8px;padding:16px;cursor:pointer;transition:all .15s">
+            <div style="font-size:14px;font-weight:700;margin-bottom:6px">入门版</div>
+            <div style="font-size:12px;color:#8c8fa3;line-height:1.8">门店≤10 · 账号≤50<br>月API 50,000次 · 3个AI产品</div>
+          </div>
+          <div onclick="selectPackage(this)" style="border:2px solid #1677ff;border-radius:8px;padding:16px;cursor:pointer;background:#e6f4ff;transition:all .15s">
+            <div style="font-size:14px;font-weight:700;margin-bottom:6px;color:#1677ff">标准版（推荐）</div>
+            <div style="font-size:12px;color:#8c8fa3;line-height:1.8">门店≤50 · 账号≤300<br>月API 200,000次 · 5个AI产品</div>
+          </div>
+          <div onclick="selectPackage(this)" style="border:1px solid #d9d9d9;border-radius:8px;padding:16px;cursor:pointer;transition:all .15s">
+            <div style="font-size:14px;font-weight:700;margin-bottom:6px">专业版</div>
+            <div style="font-size:12px;color:#8c8fa3;line-height:1.8">门店≤200 · 账号≤1,200<br>月API 600,000次 · 6个AI产品</div>
+          </div>
+          <div onclick="selectPackage(this)" style="border:1px solid #d9d9d9;border-radius:8px;padding:16px;cursor:pointer;transition:all .15s">
+            <div style="font-size:14px;font-weight:700;margin-bottom:6px">旗舰版</div>
+            <div style="font-size:12px;color:#8c8fa3;line-height:1.8">门店不限 · 账号不限<br>月API 200万次 · 全部9个AI产品</div>
+          </div>
+        </div>
+      </div>
+      <!-- Step 3 -->
+      <div class="step-panel" id="tenant-step-3">
+        <div class="form-row">
+          <div class="form-item"><label class="form-label">合同编号<span class="required">*</span></label><input class="form-input" placeholder="例：CT-2026-0089"></div>
+          <div class="form-item"><label class="form-label">合同类型</label><select class="form-select"><option>正式合同</option><option>试用协议（30天）</option><option>试用协议（60天）</option></select></div>
+        </div>
+        <div class="form-row">
+          <div class="form-item"><label class="form-label">生效日期<span class="required">*</span></label><input class="form-input" type="date" value="2026-06-09"></div>
+          <div class="form-item"><label class="form-label">到期日期<span class="required">*</span></label><input class="form-input" type="date" value="2027-06-08"></div>
+        </div>
+        <div class="form-item"><label class="form-label">备注</label><textarea class="form-textarea" placeholder="合同附加说明或特殊约定"></textarea></div>
+      </div>
+      <!-- Step 4 -->
+      <div class="step-panel" id="tenant-step-4">
+        <div class="alert alert-success">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"/><path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg>
+          租户信息已填写完毕，点击"完成"后系统将自动创建超级管理员账号并发送激活短信/邮件。
+        </div>
+        <div class="detail-panel" style="grid-template-columns:1fr 1fr;gap:12px">
+          <div class="detail-item"><div class="detail-label">超管账号</div><div class="detail-value" style="font-family:monospace">admin@tenant-new.com</div></div>
+          <div class="detail-item"><div class="detail-label">初始密码</div><div class="detail-value" style="font-family:monospace">随机生成，短信告知</div></div>
+          <div class="detail-item"><div class="detail-label">激活方式</div><div class="detail-value">短信 + 邮件双通道</div></div>
+          <div class="detail-item"><div class="detail-label">有效期</div><div class="detail-value">激活链接 48h 内有效</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="closeModal('modal-new-tenant');resetTenantWizard()">取消</button>
+      <button class="btn btn-default" id="tenant-prev-btn" onclick="tenantPrev()" style="display:none">上一步</button>
+      <button class="btn btn-primary" id="tenant-next-btn" onclick="tenantNext()">下一步</button>
+    </div>
+  </div>
+</div>
+
+<!-- 租户详情 -->
+<div class="modal-overlay" id="modal-tenant-detail">
+  <div class="modal modal-xl">
+    <div class="modal-header"><div class="modal-title">租户详情 — 美丽星球</div><div class="modal-close" onclick="closeModal('modal-tenant-detail')">✕</div></div>
+    <div class="modal-body">
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab(this,'td-basic')">基础信息</div>
+        <div class="tab" onclick="switchTab(this,'td-quota')">配额用量</div>
+        <div class="tab" onclick="switchTab(this,'td-product')">已开通产品</div>
+        <div class="tab" onclick="switchTab(this,'td-log')">操作日志</div>
+      </div>
+      <div class="tab-pane active" id="td-basic">
+        <div class="detail-panel" style="grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px">
+          <div class="detail-item"><div class="detail-label">品牌名称</div><div class="detail-value">美丽星球</div></div>
+          <div class="detail-item"><div class="detail-label">租户ID</div><div class="detail-value" style="font-family:monospace">T-00124</div></div>
+          <div class="detail-item"><div class="detail-label">所属行业</div><div class="detail-value">美容美体</div></div>
+          <div class="detail-item"><div class="detail-label">联系人</div><div class="detail-value">李总监</div></div>
+          <div class="detail-item"><div class="detail-label">联系电话</div><div class="detail-value">138****5678</div></div>
+          <div class="detail-item"><div class="detail-label">总部城市</div><div class="detail-value">上海</div></div>
+          <div class="detail-item"><div class="detail-label">当前套餐</div><div class="detail-value"><span class="badge badge-purple">旗舰版</span></div></div>
+          <div class="detail-item"><div class="detail-label">合同状态</div><div class="detail-value"><span class="badge badge-success">正式签约</span></div></div>
+          <div class="detail-item"><div class="detail-label">合同到期</div><div class="detail-value">2027-03-31</div></div>
+          <div class="detail-item"><div class="detail-label">门店总数</div><div class="detail-value" style="color:#1677ff;font-weight:700">217</div></div>
+          <div class="detail-item"><div class="detail-label">账号总数</div><div class="detail-value" style="color:#1677ff;font-weight:700">1,843</div></div>
+          <div class="detail-item"><div class="detail-label">创建时间</div><div class="detail-value">2024-04-01</div></div>
+        </div>
+      </div>
+      <div class="tab-pane" id="td-quota">
+        <div class="stats-grid stats-grid-4" style="margin-bottom:16px">
+          <div class="stat-card"><div class="stat-label">月API用量</div><div class="stat-value" style="font-size:20px">128,450</div><div class="stat-sub">/ 2,000,000 (6.4%)</div></div>
+          <div class="stat-card"><div class="stat-label">存储用量</div><div class="stat-value" style="font-size:20px">204 GB</div><div class="stat-sub">/ 1,000 GB (20.4%)</div></div>
+          <div class="stat-card"><div class="stat-label">门店占用</div><div class="stat-value" style="font-size:20px">217</div><div class="stat-sub">/ 不限制</div></div>
+          <div class="stat-card"><div class="stat-label">账号占用</div><div class="stat-value" style="font-size:20px">1,843</div><div class="stat-sub">/ 不限制</div></div>
+        </div>
+      </div>
+      <div class="tab-pane" id="td-product">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>AI产品</th><th>开通时间</th><th>本月调用</th><th>成功率</th><th>状态</th></tr></thead>
+            <tbody>
+              <tr><td>AI销冠</td><td>2024-04-15</td><td>32,450</td><td>99.3%</td><td><span class="badge badge-success">运行中</span></td></tr>
+              <tr><td>AI店长</td><td>2024-04-15</td><td>18,240</td><td>98.9%</td><td><span class="badge badge-success">运行中</span></td></tr>
+              <tr><td>AI客服</td><td>2024-05-01</td><td>56,234</td><td>99.4%</td><td><span class="badge badge-success">运行中</span></td></tr>
+              <tr><td>考培陪练</td><td>2024-06-10</td><td>12,840</td><td>99.1%</td><td><span class="badge badge-success">运行中</span></td></tr>
+              <tr><td>自动化招聘</td><td>2024-08-01</td><td>5,220</td><td>97.8%</td><td><span class="badge badge-success">运行中</span></td></tr>
+              <tr><td>AI自动回访</td><td>2025-01-20</td><td>3,466</td><td>96.5%</td><td><span class="badge badge-success">运行中</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="tab-pane" id="td-log">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>时间</th><th>操作人</th><th>操作内容</th><th>结果</th></tr></thead>
+            <tbody>
+              <tr><td>2026-06-09 09:30</td><td>刘倩（CSM）</td><td>查看租户详情</td><td><span class="badge badge-success">成功</span></td></tr>
+              <tr><td>2026-06-01 10:00</td><td>张建国（超管）</td><td>套餐从专业版升级至旗舰版</td><td><span class="badge badge-success">成功</span></td></tr>
+              <tr><td>2026-05-15 14:20</td><td>系统自动</td><td>合同到期预警通知（距到期 320 天）</td><td><span class="badge badge-success">已发送</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="closeModal('modal-tenant-detail')">关闭</button>
+      <button class="btn btn-warning" onclick="openModal('modal-adjust-quota');closeModal('modal-tenant-detail')">调整配额</button>
+      <button class="btn btn-primary" onclick="openModal('modal-edit-tenant');closeModal('modal-tenant-detail')">编辑租户</button>
+    </div>
+  </div>
+</div>
+
+<!-- 编辑租户 -->
+<div class="modal-overlay" id="modal-edit-tenant">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">编辑租户 — 美丽星球</div><div class="modal-close" onclick="closeModal('modal-edit-tenant')">✕</div></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-item"><label class="form-label">品牌名称</label><input class="form-input" value="美丽星球"></div>
+        <div class="form-item"><label class="form-label">联系人</label><input class="form-input" value="李总监"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-item"><label class="form-label">联系电话</label><input class="form-input" value="138****5678"></div>
+        <div class="form-item"><label class="form-label">合同到期日</label><input class="form-input" type="date" value="2027-03-31"></div>
+      </div>
+      <div class="form-item"><label class="form-label">备注</label><textarea class="form-textarea">旗舰版VIP客户，优先响应支持。</textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="closeModal('modal-edit-tenant')">取消</button>
+      <button class="btn btn-primary" onclick="saveAndClose('modal-edit-tenant')">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 调整配额 -->
+<div class="modal-overlay" id="modal-adjust-quota">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">调整配额</div><div class="modal-close" onclick="closeModal('modal-adjust-quota')">✕</div></div>
+    <div class="modal-body">
+      <div class="alert alert-warning">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+        配额调整操作将自动记录至操作审计日志，不可撤销，请谨慎操作。
+      </div>
+      <div class="form-row">
+        <div class="form-item"><label class="form-label">调整类型<span class="required">*</span></label>
+          <select class="form-select"><option>临时扩容（有效期至月底）</option><option>临时扩容（自定义有效期）</option><option>永久调整（需关联合同变更）</option></select>
+        </div>
+        <div class="form-item"><label class="form-label">扩容维度<span class="required">*</span></label>
+          <select class="form-select"><option>API调用量</option><option>存储空间</option><option>门店席位</option><option>账号席位</option></select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-item"><label class="form-label">当前额度</label><input class="form-input" value="600,000 次/月" readonly style="background:#f5f5f5"></div>
+        <div class="form-item"><label class="form-label">追加额度<span class="required">*</span></label><input class="form-input" placeholder="例：200000"></div>
+      </div>
+      <div class="form-item"><label class="form-label">扩容原因 / 备注<span class="required">*</span></label><textarea class="form-textarea" placeholder="说明扩容原因，将记录在审计日志中"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="closeModal('modal-adjust-quota')">取消</button>
+      <button class="btn btn-warning" onclick="saveAndClose('modal-adjust-quota','配额已调整，操作已记录审计日志')">确认调整</button>
+    </div>
+  </div>
+</div>
+
+<!-- 新增AI产品 -->
+<div class="modal-overlay" id="modal-add-product">
+  <div class="modal modal-lg">
+    <div class="modal-header"><div class="modal-title">新增AI产品</div><div class="modal-close" onclick="closeModal('modal-add-product')">✕</div></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-item"><label class="form-label">产品名称<span class="required">*</span></label><input class="form-input" placeholder="例：AI销冠"></div>
+        <div class="form-item"><label class="form-label">产品代码<span class="required">*</span></label><input class="form-input" placeholder="例：ai-sales-champion"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-item"><label class="form-label">上架状态</label>
+          <select class="form-select"><option>已上架</option><option>Beta</option><option>开发中</option><option>下架</option></select>
+        </div>
+        <div class="form-item"><label class="form-label">行业标签</label>
+          <select class="form-select"><option>通用</option><option>美容美体</option><option>美发</option><option>教育</option></select>
+        </div>
+      </div>
+      <div class="form-item"><label class="form-label">产品描述</label><textarea class="form-textarea" placeholder="简要描述产品功能与适用场景"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="closeModal('modal-add-product')">取消</button>
+      <button class="btn btn-primary" onclick="saveAndClose('modal-add-product','AI产品已创建')">创建产品</button>
+    </div>
+  </div>
+</div>
+
+<!-- AI产品详情 -->
+<div class="modal-overlay" id="modal-product-detail">
+  <div class="modal modal-lg">
+    <div class="modal-header"><div class="modal-title">AI产品详情 — AI销冠</div><div class="modal-close" onclick="closeModal('modal-product-detail')">✕</div></div>
+    <div class="modal-body">
+      <div class="detail-panel" style="grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px">
+        <div class="detail-item"><div class="detail-label">产品代码</div><div class="detail-value" style="font-family:monospace">ai-sales-champion</div></div>
+        <div class="detail-item"><div class="detail-label">当前版本</div><div class="detail-value">v2.1.0</div></div>
+        <div class="detail-item"><div class="detail-label">上架状态</div><div class="detail-value"><span class="badge badge-success">已上架</span></div></div>
+        <div class="detail-item"><div class="detail-label">启用租户数</div><div class="detail-value" style="color:#1677ff;font-weight:700">78 家</div></div>
+        <div class="detail-item"><div class="detail-label">本月总调用</div><div class="detail-value">2,456,820</div></div>
+        <div class="detail-item"><div class="detail-label">平均成功率</div><div class="detail-value" style="color:#52c41a">99.3%</div></div>
+      </div>
+      <div class="form-item"><label class="form-label">产品描述</label>
+        <div style="font-size:13px;color:#374151;line-height:1.7;padding:12px;background:#fafafa;border-radius:6px">智能销售话术推荐，实时助力一线销售顾问提升转化率与客单价。支持美业多场景话术定制，内置200+行业话术模板。</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="closeModal('modal-product-detail')">关闭</button>
+      <button class="btn btn-primary" onclick="showToast('已跳转至接口配置');closeModal('modal-product-detail')">配置接口参数</button>
+    </div>
+  </div>
+</div>
+
+<!-- 编辑接口参数 -->
+<div class="modal-overlay" id="modal-edit-api">
+  <div class="modal modal-lg">
+    <div class="modal-header"><div class="modal-title">编辑接口参数 — AI销冠</div><div class="modal-close" onclick="closeModal('modal-edit-api')">✕</div></div>
+    <div class="modal-body">
+      <div class="form-item"><label class="form-label">API基础地址<span class="required">*</span></label><input class="form-input" value="https://api.ai.meiye.com/sales"></div>
+      <div class="form-row">
+        <div class="form-item"><label class="form-label">鉴权方式</label>
+          <select class="form-select"><option selected>Bearer Token</option><option>API Key</option><option>OAuth 2.0</option></select>
+        </div>
+        <div class="form-item"><label class="form-label">Token有效期</label>
+          <select class="form-select"><option selected>24小时</option><option>12小时</option><option>6小时</option><option>永久</option></select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-item"><label class="form-label">请求超时 (ms)</label><input class="form-input" value="5000"></div>
+        <div class="form-item"><label class="form-label">最大重试次数</label><input class="form-input" value="3"></div>
+      </div>
+      <div class="form-item"><label class="form-label">Webhook回调地址</label><input class="form-input" placeholder="（可选）异步回调地址"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="closeModal('modal-edit-api')">取消</button>
+      <button class="btn btn-primary" onclick="saveAndClose('modal-edit-api','接口配置已保存，操作已记录审计日志')">保存（记录审计日志）</button>
+    </div>
+  </div>
+</div>
+
+<!-- 新建套餐 -->
+<div class="modal-overlay" id="modal-add-package">
+  <div class="modal modal-lg">
+    <div class="modal-header"><div class="modal-title">新建套餐</div><div class="modal-close" onclick="closeModal('modal-add-package')">✕</div></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-item"><label class="form-label">套餐名称<span class="required">*</span></label><input class="form-input" placeholder="例：旗舰版"></div>
+        <div class="form-item"><label class="form-label">面向规模</label><input class="form-input" placeholder="例：200家以上大型连锁"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-item"><label class="form-label">门店上限</label><input class="form-input" placeholder="0 表示不限制"></div>
+        <div class="form-item"><label class="form-label">账号上限</label><input class="form-input" placeholder="0 表示不限制"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-item"><label class="form-label">月度API调用量</label><input class="form-input" placeholder="次/月"></div>
+        <div class="form-item"><label class="form-label">存储空间 (GB)</label><input class="form-input" placeholder="GB"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-item"><label class="form-label">API超额单价（元/次）</label><input class="form-input" placeholder="例：0.006"></div>
+        <div class="form-item"><label class="form-label">存储超额单价（元/GB）</label><input class="form-input" placeholder="例：0.4"></div>
+      </div>
+      <hr class="form-divider">
+      <div class="section-title">可用AI产品清单</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer"><input type="checkbox" checked> AI销冠</label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer"><input type="checkbox" checked> AI店长</label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer"><input type="checkbox" checked> AI客服</label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer"><input type="checkbox" checked> AI自动回访</label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer"><input type="checkbox" checked> 考培陪练</label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer"><input type="checkbox"> 自动化招聘</label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer"><input type="checkbox"> 员工游戏化激励</label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer"><input type="checkbox"> 视频自动剪辑</label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer"><input type="checkbox"> AI面试小程序</label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="closeModal('modal-add-package')">取消</button>
+      <button class="btn btn-primary" onclick="saveAndClose('modal-add-package','套餐已创建')">创建套餐</button>
+    </div>
+  </div>
+</div>
+
+<!-- 套餐详情 -->
+<div class="modal-overlay" id="modal-package-detail">
+  <div class="modal modal-lg">
+    <div class="modal-header"><div class="modal-title">套餐详情 — 专业版</div><div class="modal-close" onclick="closeModal('modal-package-detail')">✕</div></div>
+    <div class="modal-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+        <div class="card" style="margin-bottom:0">
+          <div class="card-header"><div class="card-title">配额规格</div></div>
+          <div class="card-body">
+            <div class="detail-panel">
+              <div class="detail-item"><div class="detail-label">门店上限</div><div class="detail-value">200 家</div></div>
+              <div class="detail-item"><div class="detail-label">账号上限</div><div class="detail-value">1,200 个</div></div>
+              <div class="detail-item"><div class="detail-label">月度API调用</div><div class="detail-value">600,000 次</div></div>
+              <div class="detail-item"><div class="detail-label">存储空间</div><div class="detail-value">200 GB</div></div>
+              <div class="detail-item"><div class="detail-label">API超额单价</div><div class="detail-value">¥ 0.006 / 次</div></div>
+              <div class="detail-item"><div class="detail-label">存储超额单价</div><div class="detail-value">¥ 0.4 / GB</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:0">
+          <div class="card-header"><div class="card-title">使用情况</div></div>
+          <div class="card-body">
+            <div class="detail-panel">
+              <div class="detail-item"><div class="detail-label">当前使用租户数</div><div class="detail-value" style="color:#1677ff;font-size:18px;font-weight:700">68 家</div></div>
+              <div class="detail-item"><div class="detail-label">本月累计调用量</div><div class="detail-value">28,420,000 次</div></div>
+              <div class="detail-item"><div class="detail-label">平均使用率</div><div class="detail-value" style="color:#52c41a">54.3%</div></div>
+              <div class="detail-item"><div class="detail-label">超额发生租户数</div><div class="detail-value" style="color:#fa8c16">3 家</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:0">
+        <div class="card-header"><div class="card-title">包含AI产品（6项）</div></div>
+        <div class="card-body">
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            <span class="tag tag-blue">AI销冠</span><span class="tag tag-blue">AI店长</span>
+            <span class="tag tag-blue">AI客服</span><span class="tag tag-blue">AI自动回访</span>
+            <span class="tag tag-blue">考培陪练</span><span class="tag tag-blue">自动化招聘</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="closeModal('modal-package-detail')">关闭</button>
+      <button class="btn btn-primary" onclick="saveAndClose('modal-package-detail')">编辑套餐</button>
+    </div>
+  </div>
+</div>
+
+<!-- 编辑钉钉配置 -->
+<div class="modal-overlay" id="modal-edit-dingtalk">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">编辑钉钉平台级配置</div><div class="modal-close" onclick="closeModal('modal-edit-dingtalk')">✕</div></div>
+    <div class="modal-body">
+      <div class="alert alert-warning">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+        此处为平台统一应用凭证，修改将影响所有通过钉钉登录的租户，请务必谨慎操作。
+      </div>
+      <div class="form-row">
+        <div class="form-item"><label class="form-label">应用名称</label><input class="form-input" value="美业SaaS平台"></div>
+        <div class="form-item"><label class="form-label">AppKey<span class="required">*</span></label><input class="form-input" value="dingoa****4b8c"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-item"><label class="form-label">AppSecret<span class="required">*</span></label><input class="form-input" type="password" value="placeholder_secret"></div>
+        <div class="form-item"><label class="form-label">OAuth回调地址</label><input class="form-input" value="https://ai.meiye.com/auth/dingtalk/callback"></div>
+      </div>
+      <div class="form-item"><label class="form-label">事件订阅Token</label><input class="form-input" placeholder="用于钉钉事件推送验证"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="closeModal('modal-edit-dingtalk')">取消</button>
+      <button class="btn btn-primary" onclick="saveAndClose('modal-edit-dingtalk','钉钉配置已保存，操作已记录审计日志')">保存（记录审计日志）</button>
+    </div>
+  </div>
+</div>
+
+<!-- 编辑企微配置 -->
+<div class="modal-overlay" id="modal-edit-wecom">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">编辑企业微信平台级配置</div><div class="modal-close" onclick="closeModal('modal-edit-wecom')">✕</div></div>
+    <div class="modal-body">
+      <div class="alert alert-warning">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+        此处为平台统一应用凭证，修改将影响所有通过企业微信登录的租户。
+      </div>
+      <div class="form-row">
+        <div class="form-item"><label class="form-label">平台CorpID<span class="required">*</span></label><input class="form-input" value="ww****a2d8"></div>
+        <div class="form-item"><label class="form-label">AgentID<span class="required">*</span></label><input class="form-input" value="1000026"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-item"><label class="form-label">Secret<span class="required">*</span></label><input class="form-input" type="password" value="placeholder_secret"></div>
+        <div class="form-item"><label class="form-label">OAuth回调地址</label><input class="form-input" value="https://ai.meiye.com/auth/wecom/callback"></div>
+      </div>
+      <div class="form-item"><label class="form-label">消息推送Token</label><input class="form-input" placeholder="用于企业微信消息事件验证"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="closeModal('modal-edit-wecom')">取消</button>
+      <button class="btn btn-primary" onclick="saveAndClose('modal-edit-wecom','企微配置已保存，操作已记录审计日志')">保存（记录审计日志）</button>
+    </div>
+  </div>
+</div>
+
+<!-- 发布新适配器 -->
+<div class="modal-overlay" id="modal-add-adapter">
+  <div class="modal modal-lg">
+    <div class="modal-header"><div class="modal-title">发布新CRM适配器</div><div class="modal-close" onclick="closeModal('modal-add-adapter')">✕</div></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-item"><label class="form-label">适配器名称<span class="required">*</span></label><input class="form-input" placeholder="例：思迅收银适配器"></div>
+        <div class="form-item"><label class="form-label">版本号<span class="required">*</span></label><input class="form-input" placeholder="例：v1.0.0"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-item"><label class="form-label">适配CRM版本</label><input class="form-input" placeholder="例：思迅 V5.x ~ V7.x"></div>
+        <div class="form-item"><label class="form-label">发布状态</label>
+          <select class="form-select"><option>Beta版（仅内测租户）</option><option>正式版</option></select>
+        </div>
+      </div>
+      <div class="form-item"><label class="form-label">支持同步的数据类型</label>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" checked> 客户数据</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" checked> 消费记录</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox"> 员工档案</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox"> 服务项目</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox"> 预约记录</label>
+        </div>
+      </div>
+      <div class="form-item"><label class="form-label">适配器描述</label><textarea class="form-textarea" placeholder="描述适配器的兼容性、限制条件、字段覆盖率等"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="closeModal('modal-add-adapter')">取消</button>
+      <button class="btn btn-primary" onclick="saveAndClose('modal-add-adapter','适配器已发布')">发布适配器</button>
+    </div>
+  </div>
+</div>
+
+<!-- 编辑适配器 -->
+<div class="modal-overlay" id="modal-edit-adapter">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">编辑适配器 — 管店系统适配器</div><div class="modal-close" onclick="closeModal('modal-edit-adapter')">✕</div></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-item"><label class="form-label">适配器名称</label><input class="form-input" value="管店系统适配器"></div>
+        <div class="form-item"><label class="form-label">版本号</label><input class="form-input" value="v2.3.1"></div>
+      </div>
+      <div class="form-item"><label class="form-label">发布状态</label>
+        <select class="form-select"><option selected>正式版</option><option>Beta版</option><option>已下架</option></select>
+      </div>
+      <div class="form-item"><label class="form-label">描述</label><textarea class="form-textarea">适配管店 SaaS V6.x ~ V8.x，支持客户、消费、服务项目数据同步。字段映射覆盖率 94%。</textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="closeModal('modal-edit-adapter')">取消</button>
+      <button class="btn btn-primary" onclick="saveAndClose('modal-edit-adapter')">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 新增内部成员 -->
+<div class="modal-overlay" id="modal-add-staff">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">新增内部成员</div><div class="modal-close" onclick="closeModal('modal-add-staff')">✕</div></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-item"><label class="form-label">姓名<span class="required">*</span></label><input class="form-input" placeholder="真实姓名"></div>
+        <div class="form-item"><label class="form-label">工号</label><input class="form-input" placeholder="例：OP-006"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-item"><label class="form-label">登录邮箱<span class="required">*</span></label><input class="form-input" placeholder="xxx@meiye.com"></div>
+        <div class="form-item"><label class="form-label">内部角色<span class="required">*</span></label>
+          <select class="form-select"><option>请选择</option><option>超级管理员</option><option>客户成功经理</option><option>产品经理</option><option>技术运维</option><option>商务</option><option>财务</option></select>
+        </div>
+      </div>
+      <div class="form-item"><label class="form-label">负责租户范围</label>
+        <select class="form-select"><option>全部租户</option><option>华南区</option><option>华东区</option><option>西南区</option><option>华北区</option></select>
+      </div>
+      <div class="form-item"><label class="form-label">初始密码</label>
+        <input class="form-input" value="Meiye@Ops2026!" readonly style="background:#f5f5f5">
+        <div class="form-hint">系统自动生成，首次登录后强制修改</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="closeModal('modal-add-staff')">取消</button>
+      <button class="btn btn-primary" onclick="saveAndClose('modal-add-staff','成员已创建，激活邮件已发送')">创建账号</button>
+    </div>
+  </div>
+</div>
+
+<!-- 编辑内部成员 -->
+<div class="modal-overlay" id="modal-edit-staff">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">编辑成员信息</div><div class="modal-close" onclick="closeModal('modal-edit-staff')">✕</div></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-item"><label class="form-label">姓名</label><input class="form-input" value="刘倩"></div>
+        <div class="form-item"><label class="form-label">内部角色</label>
+          <select class="form-select"><option selected>客户成功经理</option><option>超级管理员</option><option>产品经理</option><option>技术运维</option></select>
+        </div>
+      </div>
+      <div class="form-item"><label class="form-label">负责租户范围</label>
+        <select class="form-select"><option selected>华南区</option><option>华东区</option><option>全部租户</option></select>
+      </div>
+      <div class="form-item"><label class="form-label">账号状态</label>
+        <select class="form-select"><option selected>正常</option><option>已禁用</option></select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="closeModal('modal-edit-staff')">取消</button>
+      <button class="btn btn-primary" onclick="saveAndClose('modal-edit-staff')">保存</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+</div><!-- /layout -->
+
+<script>
+var breadcrumbMap = {
+  'page-tenant-list':'租户列表',
+  'page-tenant-apply':'开通申请审批',
+  'page-product-catalog':'AI产品目录',
+  'page-product-api':'接口参数配置',
+  'page-package':'套餐管理',
+  'page-quota':'配额管理',
+  'page-integration-platform':'第三方平台配置',
+  'page-integration-crm':'CRM适配器',
+  'page-staff':'内部账号',
+  'page-inner-role':'内部角色权限',
+  'page-audit':'操作审计日志'
+};
+
+function switchPage(pageId, navEl) {
+  document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
+  var target = document.getElementById(pageId);
+  if (target) target.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('active'); });
+  if (navEl) navEl.classList.add('active');
+  var bc = document.getElementById('breadcrumb');
+  if (bc && breadcrumbMap[pageId]) {
+    bc.innerHTML = '平台运营端 / <span>' + breadcrumbMap[pageId] + '</span>';
+  }
+}
+
+function openModal(id) {
+  var m = document.getElementById(id);
+  if (m) m.classList.add('show');
+}
+function closeModal(id) {
+  var m = document.getElementById(id);
+  if (m) m.classList.remove('show');
+}
+document.addEventListener('click', function(e) {
+  if (e.target.classList.contains('modal-overlay')) e.target.classList.remove('show');
+});
+
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  var tm = document.getElementById('toast-msg');
+  if (!t || !tm) return;
+  tm.textContent = msg || '操作成功';
+  t.classList.add('show');
+  setTimeout(function() { t.classList.remove('show'); }, 2500);
+}
+function saveAndClose(modalId, msg) {
+  closeModal(modalId);
+  showToast(msg || '保存成功');
+}
+
+function switchTab(tabEl, paneId) {
+  tabEl.parentElement.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
+  tabEl.classList.add('active');
+  var container = tabEl.parentElement.parentElement;
+  container.querySelectorAll('.tab-pane').forEach(function(p){ p.classList.remove('active'); });
+  var target = document.getElementById(paneId);
+  if (target) target.classList.add('active');
+}
+
+var tenantCurrentStep = 1;
+var tenantTotalSteps = 4;
+function tenantNext() {
+  if (tenantCurrentStep < tenantTotalSteps) {
+    var circle = document.getElementById('step-circle-' + tenantCurrentStep);
+    var label  = document.getElementById('step-label-' + tenantCurrentStep);
+    var line   = document.getElementById('step-line-' + tenantCurrentStep);
+    if (circle) { circle.classList.remove('active'); circle.classList.add('done'); circle.textContent = '✓'; }
+    if (label)  { label.classList.remove('active'); label.classList.add('done'); }
+    if (line)   { line.classList.add('done'); }
+    var cur = document.getElementById('tenant-step-' + tenantCurrentStep);
+    if (cur) cur.classList.remove('active');
+    tenantCurrentStep++;
+    var nc = document.getElementById('step-circle-' + tenantCurrentStep);
+    var nl = document.getElementById('step-label-' + tenantCurrentStep);
+    if (nc) { nc.classList.remove('pending'); nc.classList.add('active'); }
+    if (nl) { nl.classList.remove('pending'); nl.classList.add('active'); }
+    var np = document.getElementById('tenant-step-' + tenantCurrentStep);
+    if (np) np.classList.add('active');
+  }
+  var prevBtn = document.getElementById('tenant-prev-btn');
+  var nextBtn = document.getElementById('tenant-next-btn');
+  if (prevBtn) prevBtn.style.display = tenantCurrentStep > 1 ? 'inline-flex' : 'none';
+  if (nextBtn) nextBtn.textContent = tenantCurrentStep === tenantTotalSteps ? '完成' : '下一步';
+  if (tenantCurrentStep === tenantTotalSteps && nextBtn) {
+    nextBtn.onclick = function() { closeModal('modal-new-tenant'); showToast('租户创建成功！'); resetTenantWizard(); };
+  }
+}
+function tenantPrev() {
+  if (tenantCurrentStep > 1) {
+    var cur = document.getElementById('tenant-step-' + tenantCurrentStep);
+    if (cur) cur.classList.remove('active');
+    var cc = document.getElementById('step-circle-' + tenantCurrentStep);
+    var cl = document.getElementById('step-label-' + tenantCurrentStep);
+    if (cc) { cc.classList.remove('active'); cc.classList.add('pending'); }
+    if (cl) { cl.classList.remove('active'); cl.classList.add('pending'); }
+    tenantCurrentStep--;
+    var pc = document.getElementById('step-circle-' + tenantCurrentStep);
+    var pl = document.getElementById('step-label-' + tenantCurrentStep);
+    var pln = document.getElementById('step-line-' + tenantCurrentStep);
+    if (pc) { pc.classList.remove('done'); pc.classList.add('active'); pc.textContent = tenantCurrentStep; }
+    if (pl) { pl.classList.remove('done'); pl.classList.add('active'); }
+    if (pln) pln.classList.remove('done');
+    var pp = document.getElementById('tenant-step-' + tenantCurrentStep);
+    if (pp) pp.classList.add('active');
+  }
+  var prevBtn = document.getElementById('tenant-prev-btn');
+  var nextBtn = document.getElementById('tenant-next-btn');
+  if (prevBtn) prevBtn.style.display = tenantCurrentStep > 1 ? 'inline-flex' : 'none';
+  if (nextBtn) { nextBtn.textContent = '下一步'; nextBtn.onclick = tenantNext; }
+}
+function resetTenantWizard() {
+  tenantCurrentStep = 1;
+  for (var i = 1; i <= tenantTotalSteps; i++) {
+    var c = document.getElementById('step-circle-' + i);
+    var l = document.getElementById('step-label-' + i);
+    var ln = document.getElementById('step-line-' + i);
+    var p = document.getElementById('tenant-step-' + i);
+    if (c) { c.className = 'step-circle ' + (i===1?'active':'pending'); c.textContent = i; }
+    if (l) { l.className = 'step-label ' + (i===1?'active':'pending'); }
+    if (ln) ln.classList.remove('done');
+    if (p) { p.classList.remove('active'); if(i===1) p.classList.add('active'); }
+  }
+  var prevBtn = document.getElementById('tenant-prev-btn');
+  var nextBtn = document.getElementById('tenant-next-btn');
+  if (prevBtn) prevBtn.style.display = 'none';
+  if (nextBtn) { nextBtn.textContent = '下一步'; nextBtn.onclick = tenantNext; }
+}
+
+function selectPackage(el) {
+  var parent = el.parentElement;
+  var children = parent.children;
+  for (var i = 0; i < children.length; i++) {
+    children[i].style.border = '1px solid #d9d9d9';
+    children[i].style.background = '';
+    var t = children[i].querySelector('div');
+    if (t) t.style.color = '';
+  }
+  el.style.border = '2px solid #1677ff';
+  el.style.background = '#e6f4ff';
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  var first = document.getElementById('page-tenant-list');
+  if (first) first.classList.add('active');
+});
+</script>
+</body>
+</html>

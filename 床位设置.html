@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>智能床位规则配置 - 双端融合预览(体验优化版)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* 自定义美化滚动条 */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #c1c1c1;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #a8a8a8;
+    }
+    /* 隐藏滚动条 */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    /* 针对手机端点击态优化 */
+    .tap-highlight-transparent {
+      -webkit-tap-highlight-color: transparent;
+    }
+    /* 隐藏 input type="number" 的上下箭头 */
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type="number"] {
+      -moz-appearance: textfield;
+    }
+    /* 自定义 select 下拉箭头隐藏 */
+    select {
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 font-sans antialiased text-gray-900 tap-highlight-transparent min-h-screen">
+
+  <div class="flex min-h-screen">
+    
+    <aside class="w-64 bg-[#1e222d] text-slate-300 flex-shrink-0 flex flex-col border-r border-slate-900">
+      
+      <div class="px-6 py-5 border-b border-slate-800 flex items-center justify-between flex-shrink-0">
+        <div class="flex items-center space-x-2">
+          <span class="text-white font-black text-xl tracking-wider">WEID</span>
+          <span class="bg-blue-600 text-white text-[10px] px-1.5 py-0.5 rounded font-bold font-mono">微动</span>
+        </div>
+      </div>
+      
+      <div class="px-4 py-4 border-b border-slate-800 bg-[#161922] flex-shrink-0">
+        <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2 px-2">当前预览视图</p>
+        <div class="bg-[#282d3d] p-1 rounded-xl flex flex-col space-y-1">
+          <button onclick="switchGlobalView('pc')" id="global-btn-pc" class="w-full text-left px-3 py-2 text-xs font-bold rounded-lg transition-all bg-blue-600 text-white shadow-sm flex items-center space-x-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-green-400"></span>
+            <span>PC端后台管理</span>
+          </button>
+          <button onclick="switchGlobalView('mobile')" id="global-btn-mobile" class="w-full text-left px-3 py-2 text-xs font-medium rounded-lg transition-all text-slate-400 hover:text-slate-200 flex items-center space-x-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-transparent"></span>
+            <span>移动端小程序</span>
+          </button>
+        </div>
+      </div>
+      
+      <nav id="left-functional-nav" class="flex-1 py-4 space-y-1 overflow-y-auto">
+        <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1 px-6">功能菜单</p>
+        <a href="#" class="flex items-center px-6 py-3 text-sm hover:bg-slate-800 hover:text-white transition-colors">
+          <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+          首页
+        </a>
+        <a href="#" class="flex items-center px-6 py-3 text-sm hover:bg-slate-800 hover:text-white transition-colors">
+          <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+          客户
+        </a>
+        <a href="#" class="flex items-center px-6 py-3 text-sm hover:bg-slate-800 hover:text-white transition-colors">
+          <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" /></svg>
+          订单
+        </a>
+        <div class="space-y-1">
+          <a href="#" class="flex items-center px-6 py-3 text-sm bg-blue-600 text-white font-medium">
+            <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+            门店管理
+          </a>
+          <div class="bg-[#151821] py-1 pl-12 pr-4 space-y-1 text-xs">
+            <a href="#" class="block py-2 text-slate-400 hover:text-white transition-colors">门店列表</a>
+            <a href="#" class="block py-2 text-blue-400 font-bold transition-colors">智能床位</a>
+            <a href="#" class="block py-2 text-slate-400 hover:text-white transition-colors">老师排班</a>
+          </div>
+        </div>
+      </nav>
+    </aside>
+
+
+    <div class="flex-1 flex flex-col overflow-hidden bg-[#f5f7fa]">
+      
+      <header class="bg-white border-b border-slate-200 px-8 py-4 flex items-center justify-between flex-shrink-0">
+        <div class="flex items-center space-x-2 text-xs text-slate-400">
+          <span>首页</span><span>/</span><span>门店管理</span><span>/</span><span id="breadcrumb-current" class="text-slate-600 font-semibold">智能床位 (PC后台视图)</span>
+        </div>
+        <div class="flex items-center space-x-3">
+          <span class="text-sm font-semibold text-slate-600">徐汇旗舰店配置员</span>
+          <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xs">店</div>
+        </div>
+      </header>
+
+      <main id="view-pc-container" class="flex-1 p-8 overflow-y-auto space-y-6">
+        <div class="bg-white rounded-xl shadow-xs border border-slate-200 p-6">
+          <div class="flex justify-between items-center pb-5 border-b border-slate-100">
+            <div class="flex space-x-8">
+              <button class="text-base font-bold text-blue-600 border-b-2 border-blue-600 pb-4">床位规则</button>
+              <button class="text-base font-medium text-slate-400 pb-4 hover:text-slate-600">床位类型</button>
+            </div>
+            <button onclick="openModal('add')" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-bold transition-colors flex items-center space-x-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" /></svg>
+              <span>添加规则</span>
+            </button>
+          </div>
+
+          <div class="overflow-x-auto mt-6">
+            <table class="w-full text-left text-sm text-slate-500">
+              <thead class="text-xs text-slate-400 bg-slate-50 uppercase font-bold">
+                <tr>
+                  <th scope="col" class="px-6 py-4">序号</th>
+                  <th scope="col" class="px-6 py-4">床位规则名称</th>
+                  <th scope="col" class="px-6 py-4">新客规则</th>
+                  <th scope="col" class="px-6 py-4">老客规则</th>
+                  <th scope="col" class="px-6 py-4">创建时间</th>
+                  <th scope="col" class="px-6 py-4 text-right">操作</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                <tr class="hover:bg-slate-50/50 transition-colors">
+                  <td class="px-6 py-4 font-medium text-slate-900">1</td>
+                  <td class="px-6 py-4 font-semibold text-slate-800">新客体验店长定制规则-0602</td>
+                  <td class="px-6 py-4"><span class="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded">已定义专属品类（去数量化）</span></td>
+                  <td class="px-6 py-4"><span class="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded">未定义专属科室</span></td>
+                  <td class="px-6 py-4">2026-06-02 10:21</td>
+                  <td class="px-6 py-4 text-right space-x-3 text-xs">
+                    <button onclick="openModal('edit')" class="text-blue-600 hover:text-blue-800 font-bold">编辑</button>
+                    <button class="text-slate-400 hover:text-slate-600">复制</button>
+                    <button class="text-red-500 hover:text-red-700">删除</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+
+      <main id="view-mobile-container" class="hidden flex-1 py-6 overflow-y-auto items-center justify-center bg-gray-200">
+        <div class="w-full max-w-md h-[820px] bg-slate-50 flex flex-col shadow-2xl relative pb-28 rounded-[40px] overflow-hidden border-[10px] border-gray-800 shadow-slate-400 flex-shrink-0 animate-fadeIn">
+          
+          <div class="bg-white px-6 pt-2 pb-1 flex justify-between items-center text-[10px] font-bold text-gray-400 select-none flex-shrink-0">
+            <span>16:30</span>
+            <div class="w-16 h-4 bg-gray-900 rounded-full mx-auto hidden sm:block"></div>
+            <div class="flex space-x-1"><span>📶</span><span>🔋</span></div>
+          </div>
+
+          <header class="bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between flex-shrink-0">
+            <div class="flex items-center space-x-2">
+              <button class="p-1 text-gray-400 hover:text-gray-600 focus:outline-none">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" /></svg>
+              </button>
+              <div>
+                <h1 class="text-base font-bold text-gray-800">修改接待规则</h1>
+                <p class="text-[10px] text-gray-400">上海徐汇店</p>
+              </div>
+            </div>
+            <button onclick="resetAll()" class="text-xs font-semibold text-gray-500 hover:text-blue-600 bg-gray-100 px-2.5 py-1 rounded-full transition-all">重置</button>
+          </header>
+
+          <div class="flex-1 p-4 space-y-4 overflow-y-auto no-scrollbar bg-slate-50">
+            <section class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+              <details class="group" open>
+                <summary class="flex justify-between items-center text-xs text-gray-400 cursor-pointer list-none select-none">
+                  <span class="text-sm font-bold text-gray-700">查看已配床位数</span>
+                  <svg class="w-4 h-4 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                </summary>
+                <div class="grid grid-cols-2 gap-2 mt-3 bg-gray-50 p-3 rounded-xl text-[11px] text-gray-500">
+                  <div class="flex justify-between bg-white px-2.5 py-1.5 rounded-lg border border-gray-200"><span>06-02 (周二)</span><span class="text-blue-600 font-semibold">新3 / 老3</span></div>
+                  <div class="flex justify-between bg-white px-2.5 py-1.5 rounded-lg border border-gray-200"><span>06-03 (周三)</span><span class="text-blue-600 font-semibold">新3 / 老3</span></div>
+                  <div class="flex justify-between bg-white px-2.5 py-1.5 rounded-lg border border-gray-200"><span>06-04 (周4)</span><span class="text-blue-600 font-semibold">新3 / 老3</span></div>
+                  <div class="flex justify-between bg-white px-2.5 py-1.5 rounded-lg border border-gray-200"><span>06-06 (周六)</span><span class="text-blue-600 font-semibold">新6 / 老6</span></div>
+                  <div class="flex justify-between bg-white px-2.5 py-1.5 rounded-lg border border-gray-200"><span>06-07 (周日)</span><span class="text-blue-600 font-semibold">新5 / 老5</span></div>
+                  <div class="flex justify-between bg-white px-2.5 py-1.5 rounded-lg border border-gray-200"><span>06-09 (周二)</span><span class="text-blue-600 font-semibold">新4 / 老4</span></div>
+                </div>
+              </details>
+            </section>
+
+            <section class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
+              <div class="p-4 bg-slate-50/50">
+                <div class="flex justify-between items-center mb-3">
+                  <div class="flex items-center space-x-1.5"><span class="w-1.5 h-4 bg-blue-600 rounded-full"></span><h2 class="text-base font-bold text-gray-800">1. 选择生效日期</h2></div>
+                  <span id="selected-count-badge" class="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-semibold">已选 0 天</span>
+                </div>
+                <div class="flex space-x-2 mb-3">
+                  <button onclick="selectQuickDays(8)" class="flex-1 py-2 px-3 text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors flex items-center justify-center space-x-1.5 border border-blue-100">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+                    <span>一键选下周 (8天)</span>
+                  </button>
+                  <button onclick="clearDateSelection()" class="py-2 px-4 text-xs font-medium text-gray-500 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors">清除</button>
+                </div>
+                <div class="grid grid-cols-4 gap-2" id="date-grid"></div>
+              </div>
+
+              <div class="relative flex items-center justify-center py-1 bg-white">
+                <div class="absolute inset-0 flex items-center px-4" aria-hidden="true"><div class="w-full border-t border-dashed border-gray-200"></div></div>
+                <div class="relative z-10 w-8 h-8 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-500 shadow-xs">
+                  <svg class="w-4 h-4 animate-bounce mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 13l-7 7-7-7m14-6l-7 7-7-7" /></svg>
+                </div>
+              </div>
+
+              <div class="p-4 bg-white transition-all duration-300">
+                <div class="mb-3" id="bed-config-header"></div>
+                <div id="bed-config-content-wrapper" class="space-y-4 transition-opacity duration-300">
+                  <div class="bg-gray-100 p-1 rounded-xl flex">
+                    <button onclick="switchGuestTab('new')" id="tab-new" class="flex-1 py-2 text-xs font-bold rounded-lg transition-all text-blue-600 bg-white shadow-sm">新客床位</button>
+                    <button onclick="switchGuestTab('old')" id="tab-old" class="flex-1 py-2 text-xs font-medium rounded-lg transition-all text-gray-500">老客床位</button>
+                  </div>
+                  
+                  <div class="space-y-4">
+                    <div class="flex items-center justify-between bg-blue-50/50 p-4 rounded-xl border border-blue-100">
+                      <div>
+                        <span class="text-sm font-bold text-gray-800" id="total-bed-title">新客总接待上限</span>
+                        <p class="text-xs text-gray-400 mt-0.5" id="total-bed-desc">以此总预约床位数为准</p>
+                      </div>
+                      <div class="flex items-center space-x-3">
+                        <button onclick="adjustTotalBed(-1)" class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-blue-600 border border-blue-200 font-bold">-</button>
+                        <span id="total-bed-value" class="text-xl font-extrabold text-blue-600 w-8 text-center">5</span>
+                        <button onclick="adjustTotalBed(1)" class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-blue-600 border border-blue-200 font-bold">+</button>
+                      </div>
+                    </div>
+
+                    <div class="flex items-center justify-between py-2 border-t border-gray-50">
+                      <div><span class="text-sm font-semibold text-gray-700">按科室品类细分配置</span></div>
+                      <button onclick="toggleDepartmentConfig()" id="dept-toggle" class="w-12 h-6 rounded-full transition-colors duration-200 relative bg-blue-600">
+                        <span id="dept-toggle-dot" class="translate-x-7 block w-4 h-4 rounded-full bg-white shadow transform transition"></span>
+                      </button>
+                    </div>
+
+                    <div id="dept-config-panel" class="space-y-3">
+                      <div class="flex justify-between items-center py-1">
+                        <span class="text-[13px] font-bold text-gray-700">床位初始分配规则</span>
+                        <button onclick="addDepartment()" class="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-lg border">+</button>
+                      </div>
+                      <div class="space-y-3" id="active-depts-list"></div>
+                      <div class="p-3 bg-slate-50 rounded-xl border border-dashed border-slate-200 flex items-center justify-between">
+                        <div>
+                          <span class="text-sm font-bold text-slate-700 block">通用床位</span>
+                          <p class="text-[11px] text-gray-400" id="universal-bed-formula">自动计算中</p>
+                        </div>
+                        <span id="universal-bed-value" class="text-lg font-black text-slate-700">0</span>
+                      </div>
+                    </div>
+
+                    <div class="flex items-center justify-between py-2 border-t border-gray-50">
+                      <div><span class="text-sm font-semibold text-gray-700">特定项目同时段限流</span></div>
+                      <button onclick="toggleProjectConfig()" id="project-toggle" class="w-12 h-6 rounded-full transition-colors duration-200 relative bg-blue-600">
+                        <span id="project-toggle-dot" class="translate-x-7 block w-4 h-4 rounded-full bg-white shadow transform transition"></span>
+                      </button>
+                    </div>
+                    <div id="project-config-panel" class="space-y-3 hidden">
+                      <div class="space-y-3" id="active-projects-list"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 space-y-4">
+              <span class="text-sm font-bold text-gray-800 block">客户接待时长间隔</span>
+              <div class="flex space-x-2.5">
+                <button id="btn-interval-60" onclick="selectInterval(60)" class="px-5 py-2 rounded-full text-xs font-semibold bg-gray-100 text-gray-500">60分钟</button>
+                <button id="btn-interval-90" onclick="selectInterval(90)" class="px-5 py-2 rounded-full text-xs font-bold bg-blue-600 text-white">90分钟</button>
+                <button id="btn-interval-120" onclick="selectInterval(120)" class="px-5 py-2 rounded-full text-xs font-semibold bg-gray-100 text-gray-500">120分钟</button>
+              </div>
+            </section>
+          </div>
+
+          <footer class="absolute bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-100 p-4 flex space-x-3 rounded-b-[40px] z-10">
+            <button onclick="resetCurrentConfig()" class="w-1/3 py-3 border border-gray-200 text-sm font-semibold text-gray-500 bg-white rounded-xl">返回</button>
+            <button onclick="saveReceptionConfig()" class="flex-1 py-3 bg-blue-600 text-sm font-semibold text-white rounded-xl shadow-lg shadow-blue-200">保存配置</button>
+          </footer>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <div id="modal-overlay" class="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 overflow-y-auto transition-opacity duration-300 opacity-100">
+    <div id="modal-card" class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl transform transition-all duration-300 scale-100 my-8 flex flex-col overflow-hidden">
+      <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/80">
+        <h3 class="text-base font-bold text-slate-800 flex items-center space-x-2"><span id="modal-action-title">添加规则</span></h3>
+        <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-200/50"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
+      </div>
+
+      <div class="p-6 overflow-y-auto space-y-6 max-h-[75vh]">
+        <div class="space-y-2">
+          <label class="text-sm font-semibold text-slate-600 flex items-center"><span class="text-red-500 mr-1">*</span>床位规则名称：</label>
+          <input type="text" id="rule-name-input" value="新客体验店长定制规则-0602" placeholder="请输入规则名称" class="w-full border border-slate-200 outline-none rounded-lg px-4 py-2.5 text-sm">
+        </div>
+
+        <div class="border-b border-slate-200">
+          <div class="flex space-x-6 text-sm">
+            <button onclick="switchModalTab('new')" id="modal-tab-new" class="font-bold text-blue-600 border-b-2 border-blue-600 pb-3.5 outline-none">新客床位</button>
+            <button onclick="switchModalTab('old')" id="modal-tab-old" class="font-medium text-slate-400 hover:text-slate-600 pb-3.5 outline-none">老客床位</button>
+          </div>
+        </div>
+
+        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+          <div class="flex items-center justify-between">
+            <div>
+              <span class="text-sm font-bold text-slate-800 flex items-center">定义专属床位类型<span class="text-red-500 ml-1">*</span></span>
+              <p class="text-xs text-slate-400 mt-1">仅指定可释放的专属项目大类标签，未定义的品类将统一流入通用床位进行承接。</p>
+            </div>
+            <button onclick="toggleAllocateByDept()" id="dept-switch-btn" class="w-12 h-6 rounded-full transition-colors relative bg-blue-600 border border-blue-600">
+              <span class="absolute inset-0 flex"><span class="w-1/2 bg-white rounded-l-full"></span><span class="w-1/2 bg-blue-600 rounded-r-full"></span></span>
+              <span id="dept-switch-dot" class="translate-x-6 block w-4.5 h-4.5 rounded-full bg-white shadow transform transition"></span>
+            </button>
+          </div>
+
+          <div id="bed-ratio-panel" class="pt-4 border-t border-slate-200/60 space-y-4">
+            <div class="flex justify-between items-center">
+              <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">专属床位品类标签定义</span>
+              <button onclick="addCategoryRow()" id="add-row-btn" class="text-xs font-semibold text-blue-600 bg-blue-50/50 px-2.5 py-1.5 rounded-lg border border-blue-100">
+                <span>+ 增加床位类型</span>
+              </button>
+            </div>
+            <div id="categories-list-container" class="space-y-3.5"></div>
+          </div>
+        </div>
+
+        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+          <div class="flex items-center justify-between">
+            <div>
+              <span class="text-sm font-bold text-slate-800">床位定时自动释放</span>
+              <p class="text-xs text-slate-400 mt-1">开启后专属未约完资源会在到点时流转回通用池。</p>
+            </div>
+            <button onclick="toggleTimedRelease()" id="release-switch-btn" class="w-12 h-6 rounded-full transition-colors relative bg-blue-600 border border-blue-600">
+              <span class="absolute inset-0 flex"><span class="w-1/2 bg-white rounded-l-full"></span><span class="w-1/2 bg-blue-600 rounded-r-full"></span></span>
+              <span id="release-switch-dot" class="translate-x-6 block w-4.5 h-4.5 rounded-full bg-white shadow transform transition"></span>
+            </button>
+          </div>
+          <div id="release-rules-panel" class="pt-4 border-t border-slate-200/60 space-y-3">
+            <label class="flex items-start space-x-3 p-3 bg-white rounded-lg border border-slate-200 cursor-pointer">
+              <input type="radio" name="releaseType" id="release-type-day" value="day" checked class="mt-1 text-blue-600">
+              <span class="text-sm text-slate-600">预约当天 <input type="time" value="10:00" class="border rounded px-1 text-xs"> 将剩余专属床位全部释放为通用床位</span>
+            </label>
+            <label class="flex items-start space-x-3 p-3 bg-white rounded-lg border border-slate-200 cursor-pointer">
+              <input type="radio" name="releaseType" id="release-type-before" value="before" class="mt-1 text-blue-600">
+              <span class="text-sm text-slate-600">床位到期前 <input type="number" value="2" class="w-8 text-center border rounded text-xs"> 小时，将剩余专属床位全部释放为通用</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="px-6 py-4 border-t border-slate-100 flex items-center justify-end space-x-3 bg-slate-50/50">
+        <button onclick="closeModal()" class="px-5 py-2 border border-slate-200 text-slate-500 rounded-lg text-sm font-semibold">取消</button>
+        <button onclick="saveRuleConfig()" class="px-6 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="fixed top-16 left-1/2 -translate-x-1/2 z-[200] bg-slate-900/95 text-white px-5 py-3.5 rounded-xl text-sm font-semibold shadow-2xl opacity-0 scale-90 pointer-events-none transition-all duration-300 flex items-center space-x-2">
+    <span id="toast-text">提示信息</span>
+  </div>
+
+
+  <script>
+    // 【双端视图与左侧菜单的强联动机制】
+    function switchGlobalView(target) {
+      const pcContainer = document.getElementById('view-pc-container');
+      const mobileContainer = document.getElementById('view-mobile-container');
+      const btnPc = document.getElementById('global-btn-pc');
+      const btnMobile = document.getElementById('global-btn-mobile');
+      const breadcrumb = document.getElementById('breadcrumb-current');
+      const functionalNav = document.getElementById('left-functional-nav'); // 获取下方功能菜单
+
+      if (target === 'pc') {
+        // 展示 PC
+        pcContainer.classList.remove('hidden');
+        mobileContainer.classList.remove('flex');
+        mobileContainer.classList.add('hidden');
+        functionalNav.classList.remove('hidden'); // 【联动核心：显示系统菜单】
+        
+        breadcrumb.innerText = "智能床位 (PC后台视图)";
+        btnPc.className = "w-full text-left px-3 py-2 text-xs font-bold rounded-lg transition-all bg-blue-600 text-white shadow-sm flex items-center space-x-2";
+        btnPc.querySelector('span').className = "w-1.5 h-1.5 rounded-full bg-green-400";
+        btnMobile.className = "w-full text-left px-3 py-2 text-xs font-medium rounded-lg transition-all text-slate-400 hover:text-slate-200 flex items-center space-x-2";
+        btnMobile.querySelector('span').className = "w-1.5 h-1.5 rounded-full bg-transparent";
+      } else {
+        // 展示 移动小程序
+        pcContainer.classList.add('hidden');
+        mobileContainer.classList.remove('hidden');
+        mobileContainer.classList.add('flex');
+        functionalNav.classList.add('hidden'); // 【联动核心：隐藏系统菜单】
+        
+        breadcrumb.innerText = "智能床位 (移动小程序视图)";
+        btnMobile.className = "w-full text-left px-3 py-2 text-xs font-bold rounded-lg transition-all bg-blue-600 text-white shadow-sm flex items-center space-x-2";
+        btnMobile.querySelector('span').className = "w-1.5 h-1.5 rounded-full bg-green-400";
+        btnPc.className = "w-full text-left px-3 py-2 text-xs font-medium rounded-lg transition-all text-slate-400 hover:text-slate-200 flex items-center space-x-2";
+        btnPc.querySelector('span').className = "w-1.5 h-1.5 rounded-full bg-transparent";
+        renderDateGrid();
+      }
+    }
+
+    // ================= PC 后台无百分比定义逻辑 =================
+    const categoryOptions = {
+      yimei: { name: '医美床位', desc: '用于徐汇店祛斑、注射等专属项目', scope: '可预约品类：s10 k10' },
+      shengmei: { name: '生美床位', desc: '用于门店基础SPA、身体深层护理', scope: '可预约品类：s11 k12' },
+      wenxiu: { name: '纹绣床位', desc: '用于半永久纹眉、漂唇精细间配置', scope: '可预约品类：w01 w02' },
+      meijia: { name: '美甲美睫', desc: '用于快消修指甲、美睫特色功能区', scope: '可预约品类：m01 m02' }
+    };
+
+    const modalState = {
+      currentTab: 'new', allocateByDept: true, timedRelease: true,
+      newConfig: { categories: [{ key: 'yimei' }, { key: 'shengmei' }] },
+      oldConfig: { categories: [{ key: 'yimei' }] }
+    };
+
+    function openModal(actionType) {
+      document.getElementById('modal-overlay').classList.remove('hidden', 'opacity-0', 'pointer-events-none');
+      renderCategoryList();
+    }
+    function closeModal() { document.getElementById('modal-overlay').classList.add('hidden'); }
+
+    function renderCategoryList() {
+      const container = document.getElementById('categories-list-container'); container.innerHTML = '';
+      const activeConfig = modalState.currentTab === 'new' ? modalState.newConfig : modalState.oldConfig;
+      if (activeConfig.categories.length === 0) {
+        container.innerHTML = `<div class="py-4 text-center text-xs text-slate-400 bg-white rounded-lg border border-dashed">暂未添加专属类型</div>`;
+        return;
+      }
+      activeConfig.categories.forEach((item, index) => {
+        const details = categoryOptions[item.key];
+        container.innerHTML += `
+          <div class="p-4 rounded-xl border bg-white border-slate-200 flex items-center justify-between relative shadow-2xs">
+            <div class="flex-1 max-w-[340px] relative">
+              <button onclick="toggleCustomDropdown(event, ${index})" class="bg-slate-50 border border-gray-200 rounded-lg text-xs px-3 py-2 w-full text-left font-bold text-slate-800 flex justify-between items-center">
+                <span>${details.name}</span> <span>▼</span>
+              </button>
+              <div id="dropdown-menu-${index}" class="hidden absolute left-0 right-0 mt-1 bg-white border rounded-xl shadow-xl z-50 divide-y">
+                ${Object.keys(categoryOptions).map(k => `
+                  <div onclick="selectRowCategory(${index}, '${k}')" class="p-2.5 text-xs hover:bg-slate-50 cursor-pointer">
+                    <p class="font-bold text-slate-800">${categoryOptions[k].name}</p>
+                  </div>
+                `).join('')}
+              </div>
+              <p class="text-[10px] text-gray-400 mt-1">${details.desc}</p>
+            </div>
+            <button onclick="deleteCategoryRow(${index})" class="text-red-400 hover:text-red-600 text-xs font-semibold">移除</button>
+          </div>
+        `;
+      });
+    }
+
+    function toggleCustomDropdown(e, index) { e.stopPropagation(); document.getElementById(`dropdown-menu-${index}`).classList.toggle('hidden'); }
+    function selectRowCategory(index, key) {
+      const activeConfig = modalState.currentTab === 'new' ? modalState.newConfig : modalState.oldConfig;
+      activeConfig.categories[index].key = key; renderCategoryList();
+    }
+    function addCategoryRow() {
+      const activeConfig = modalState.currentTab === 'new' ? modalState.newConfig : modalState.oldConfig;
+      activeConfig.categories.push({ key: 'yimei' }); renderCategoryList();
+    }
+    function deleteCategoryRow(index) {
+      const activeConfig = modalState.currentTab === 'new' ? modalState.newConfig : modalState.oldConfig;
+      activeConfig.categories.splice(index, 1); renderCategoryList();
+    }
+    function switchModalTab(tabType) {
+      modalState.currentTab = tabType;
+      document.getElementById('modal-tab-new').className = tabType === 'new' ? "font-bold text-blue-600 border-b-2 border-blue-600 pb-3.5" : "font-medium text-slate-400 pb-3.5";
+      document.getElementById('modal-tab-old').className = tabType === 'old' ? "font-bold text-blue-600 border-b-2 border-blue-600 pb-3.5" : "font-medium text-slate-400 pb-3.5";
+      renderCategoryList();
+    }
+    function toggleAllocateByDept() { modalState.allocateByDept = !modalState.allocateByDept; syncFormUI(); }
+    function toggleTimedRelease() { modalState.timedRelease = !modalState.timedRelease; syncFormUI(); }
+    function syncFormUI() {
+      document.getElementById('bed-ratio-panel').style.display = modalState.allocateByDept ? 'block' : 'none';
+      document.getElementById('release-rules-panel').style.display = modalState.timedRelease ? 'block' : 'none';
+    }
+    function saveRuleConfig() { showToast('success', '配置保存成功！'); closeModal(); }
+
+    // ================= 移动端小程序核心业务逻辑 (1:1 原装无改动) =================
+    const datesData = [];
+    for (let i = 0; i < 15; i++) {
+      const c = new Date('2026-06-02'); c.setDate(c.getDate() + i);
+      datesData.push({ id: i, dateStr: `${String(c.getMonth()+1).padStart(2,'0')}-${String(c.getDate()).padStart(2,'0')}`, weekday: ['周日','周一','周二','周三','周四','周五','周六'][c.getDay()], hasConfig: [0,1,2,4,5,7].includes(i), badgeText: i===4?'新6·老6':i===5?'新5·老5':'新3·老3' });
+    }
+    const configState = {
+      selectedDates: [], currentTab: 'new', selectedInterval: 90,
+      newGuest: { totalLimit: 5, useDeptConfig: true, useProjectConfig: false, activeDepts: ['yimei','shengmei'], deptValues: { yimei: 2, shengmei: 3 }, activeProjects: [] },
+      oldGuest: { totalLimit: 5, useDeptConfig: true, useProjectConfig: false, activeDepts: ['yimei'], deptValues: { yimei: 4 }, activeProjects: [] }
+    };
+    function getActiveGuestData() { return configState.currentTab === 'new' ? configState.newGuest : configState.oldGuest; }
+    function renderDateGrid() {
+      const grid = document.getElementById('date-grid'); if(!grid) return; grid.innerHTML = '';
+      datesData.forEach(item => {
+        const isSel = configState.selectedDates.includes(item.id);
+        grid.innerHTML += `<div onclick="toggleDateSelect(${item.id})" class="${isSel ? 'bg-blue-50 border-2 border-blue-600 text-blue-900':'bg-white border text-gray-700'} rounded-xl p-2 text-center cursor-pointer h-16 flex flex-col justify-between"><div><span class="block text-xs font-bold">${item.dateStr}</span><span class="block text-[10px] text-gray-400">${item.weekday}</span></div><span class="text-[9px] truncate">${item.hasConfig?item.badgeText:'未配置'}</span></div>`;
+      });
+      document.getElementById('selected-count-badge').innerText = `已选 ${configState.selectedDates.length} 天`;
+      updateBedConfigState();
+    }
+    function toggleDateSelect(id) {
+      const idx = configState.selectedDates.indexOf(id);
+      if(idx > -1) configState.selectedDates.splice(idx, 1); else configState.selectedDates.push(id);
+      renderDateGrid();
+    }
+    function selectQuickDays(d) { configState.selectedDates = []; for(let i=0; i<d; i++) configState.selectedDates.push(i); renderDateGrid(); }
+    function clearDateSelection() { configState.selectedDates = []; renderDateGrid(); }
+    function updateBedConfigState() {
+      const wrapper = document.getElementById('bed-config-content-wrapper');
+      document.getElementById('bed-config-header').innerHTML = configState.selectedDates.length > 0 ? `<h2 class="text-sm font-bold text-gray-800">2. 设置统一接待规则 (${configState.selectedDates.length}天已选)</h2>` : `<p class="text-xs text-amber-600 bg-amber-50 p-2 rounded-lg">提示：请先在上方勾选日期生效范围</p>`;
+      wrapper.style.opacity = configState.selectedDates.length > 0 ? '1' : '0.35';
+      wrapper.style.pointerEvents = configState.selectedDates.length > 0 ? 'auto' : 'none';
+    }
+    function switchGuestTab(t) {
+      configState.currentTab = t;
+      document.getElementById('tab-new').className = t==='new'?'flex-1 py-2 text-xs font-bold rounded-lg text-blue-600 bg-white shadow-sm':'flex-1 py-2 text-xs text-gray-500';
+      document.getElementById('tab-old').className = t==='old'?'flex-1 py-2 text-xs font-bold rounded-lg text-blue-600 bg-white shadow-sm':'flex-1 py-2 text-xs text-gray-500';
+      const data = getActiveGuestData(); document.getElementById('total-bed-value').innerText = data.totalLimit;
+      renderActiveDepartments(data);
+    }
+    function adjustTotalBed(a) { const d = getActiveGuestData(); d.totalLimit = Math.max(0, d.totalLimit+a); document.getElementById('total-bed-value').innerText = d.totalLimit; calculateUniversalBed(d); }
+    function toggleDepartmentConfig() { const d = getActiveGuestData(); d.useDeptConfig = !d.useDeptConfig; renderActiveDepartments(d); }
+    function renderActiveDepartments(d) {
+      const container = document.getElementById('active-depts-list'); if(!container) return; container.innerHTML = '';
+      d.activeDepts.forEach(k => {
+        container.innerHTML += `<div class="flex justify-between items-center text-xs p-2 bg-slate-50 rounded-lg"><span>${k==='yimei'?'医美':'生美'}床位</span><span>配额: ${d.deptValues[k]||0}张</span></div>`;
+      });
+      calculateUniversalBed(d);
+    }
+    function calculateUniversalBed(d) {
+      let s = 0; d.activeDepts.forEach(k => s += (d.deptValues[k]||0));
+      document.getElementById('universal-bed-value').innerText = Math.max(0, d.totalLimit - s);
+      document.getElementById('universal-bed-formula').innerText = `公式：总数(${d.totalLimit}) - 已分专属(${s}) = ${Math.max(0, d.totalLimit - s)}张通用`;
+    }
+    function selectInterval(m) { showToast('info', `接待间隔已变更为 ${m}分钟`); }
+    function resetAll() { showToast('info', '重置成功'); }
+    function resetCurrentConfig() {}
+    function saveReceptionConfig() { showToast('success', '移动端配置保存成功！'); }
+
+    function showToast(type, text) {
+      const el = document.getElementById('toast'); document.getElementById('toast-text').innerText = text;
+      el.classList.remove('opacity-0', 'scale-90', 'pointer-events-none');
+      setTimeout(() => { el.classList.add('opacity-0', 'scale-90', 'pointer-events-none'); }, 2000);
+    }
+
+    document.addEventListener('click', () => { document.querySelectorAll('[id^="dropdown-menu-"]').forEach(m => m.classList.add('hidden')); });
+  </script>
+</body>
+</html>

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>目标推演</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --blue:#1677ff;--blue2:#e6f4ff;--green:#16a34a;--green2:#ecfdf3;
+  --orange:#f97316;--orange2:#fff7ed;--red:#ef4444;--red2:#fef2f2;
+  --purple:#7c3aed;--purple2:#f5f3ff;--text:#172033;--sub:#738096;
+  --line:#e8edf3;--bg:#f5f7fb;--card:#fff;--shadow:0 8px 24px rgba(22,32,51,.08);
+}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
+.app{max-width:760px;margin:0 auto;min-height:100vh;padding-bottom:92px}
+.top{position:sticky;top:0;z-index:10;height:56px;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:center;border-bottom:1px solid var(--line)}
+.back{position:absolute;left:14px;border:0;background:none;font-size:15px;color:#344054}
+.top h1{font-size:18px}
+.section{padding:14px}
+.base{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.base .item,.card{background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow)}
+.base .item{padding:12px 10px}.label{font-size:12px;color:var(--sub)}.value{font-size:18px;font-weight:800;margin-top:2px}.value.blue{color:var(--blue)}.value.red{color:var(--red)}
+.step-title{font-size:14px;font-weight:800;margin:8px 0 10px;display:flex;align-items:center;gap:6px}.step-title span{width:22px;height:22px;border-radius:50%;background:var(--blue);color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center}
+.target-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.target{padding:14px;border:1.5px solid var(--line);border-radius:12px;background:#fff;text-align:left;cursor:pointer}.target.active{border-color:var(--blue);background:var(--blue2)}.target b{display:block;font-size:16px}.target small{display:block;color:var(--sub);margin-top:5px}
+.form{padding:14px}.field{display:flex;align-items:center;gap:8px;background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:10px 12px}.field input{flex:1;border:0;background:transparent;font-size:24px;font-weight:800;outline:none;min-width:0}.quick{display:flex;gap:8px;margin-top:10px;overflow:auto}.quick button{border:1px solid var(--line);background:#fff;border-radius:18px;padding:7px 12px;color:#475467;white-space:nowrap}.quick button.active{border-color:var(--blue);background:var(--blue2);color:var(--blue);font-weight:700}
+.hint{font-size:12px;color:var(--sub);margin-top:9px}
+.result-head{padding:14px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:10px}.score{font-size:24px;font-weight:900;color:var(--green)}.score small{font-size:12px;color:var(--sub);font-weight:500}
+.metrics{padding:4px 14px 12px}.metric{padding:12px 0;border-bottom:1px solid var(--line)}.metric:last-child{border-bottom:0}.metric-top{display:flex;justify-content:space-between;align-items:center}.metric-name{font-weight:800}.tag{font-size:12px;border-radius:12px;padding:3px 8px}.tag.low{color:var(--green);background:var(--green2)}.tag.mid{color:var(--orange);background:var(--orange2)}.tag.high{color:var(--red);background:var(--red2)}
+.metric-data{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:9px}.mini{background:#f8fafc;border-radius:8px;padding:8px}.mini b{display:block;font-size:15px}.mini span{font-size:11px;color:var(--sub)}
+.bar{height:7px;background:#edf2f7;border-radius:8px;margin-top:10px;overflow:hidden}.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--blue),#36cfc9);border-radius:8px}
+.insight{padding:12px 14px;background:#fbfdff;border-top:1px solid var(--line)}.insight p{font-size:13px;color:#344054;margin:5px 0}
+.adjust{padding:14px}.slider-row{margin-bottom:16px}.slider-row label{display:flex;justify-content:space-between;font-size:13px;font-weight:700}.slider-row output{color:var(--blue)}input[type=range]{width:100%;accent-color:var(--blue);margin-top:8px}
+.partner{display:none}.partner.show{display:block}.income.hide{display:none}.progress{height:12px;background:#eef2f7;border-radius:12px;overflow:hidden}.progress i{display:block;height:100%;background:linear-gradient(90deg,var(--purple),var(--blue))}
+.plan{display:grid;gap:8px}.plan-item{display:flex;align-items:center;gap:9px;padding:10px;border-radius:10px;background:#f8fafc}.plan-item i{width:24px;height:24px;border-radius:50%;background:var(--blue2);color:var(--blue);display:flex;align-items:center;justify-content:center;font-style:normal;font-weight:800}
+.footer{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);padding:10px 14px 18px;display:flex;gap:10px;max-width:760px;margin:0 auto}.btn{flex:1;border:0;border-radius:10px;height:44px;font-size:15px;font-weight:800}.btn.primary{background:var(--blue);color:#fff}.btn.ghost{background:#eef2f7;color:#344054}
+@media(min-width:720px){.section{padding:18px}.metric-data{grid-template-columns:repeat(3,160px)}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top"><button class="back">← 返回</button><h1>目标推演</h1></header>
+
+  <section class="section">
+    <div class="base">
+      <div class="item"><div class="label">当前收入</div><div class="value" id="currentIncome">¥32,800</div></div>
+      <div class="item"><div class="label">预测收入</div><div class="value blue" id="forecastIncome">¥38,600</div></div>
+      <div class="item"><div class="label">距目标差额</div><div class="value red" id="gapIncome">¥11,400</div></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="step-title"><span>1</span>选择目标类型</div>
+    <div class="target-grid">
+      <button class="target active" data-type="income"><b>收入目标</b><small>我想赚多少钱</small></button>
+      <button class="target" data-type="partner"><b>合伙人目标</b><small>我想成为合伙人</small></button>
+    </div>
+  </section>
+
+  <section class="section income" id="incomePanel">
+    <div class="step-title"><span>2</span>设定目标值</div>
+    <div class="card form">
+      <div class="label">本月目标收入</div>
+      <div class="field"><input id="targetInput" type="number" value="50000" min="30000" step="1000"><strong>元</strong></div>
+      <div class="quick">
+        <button data-v="42000">稳健目标 42,000</button>
+        <button class="active" data-v="50000">挑战目标 50,000</button>
+        <button data-v="60000">冲刺目标 60,000</button>
+      </div>
+      <div class="hint">基于近3个月门店数据，建议目标区间：42,000 - 56,000 元</div>
+    </div>
+  </section>
+
+  <section class="section income" id="resultPanel">
+    <div class="step-title"><span>3</span>系统拆解结果</div>
+    <div class="card">
+      <div class="result-head">
+        <div><b id="resultTitle">要达成 ¥50,000 收入，你需要：</b><div class="hint">系统按历史转化率和业务结构自动推算</div></div>
+        <div class="score"><span id="score">78</span><small>% 可达成</small></div>
+      </div>
+      <div class="metrics" id="metrics"></div>
+      <div class="insight" id="insight"></div>
+    </div>
+  </section>
+
+  <section class="section income">
+    <div class="step-title"><span>4</span>手动调整</div>
+    <div class="card adjust">
+      <div class="slider-row"><label>医美业绩 <output id="medicalOut">70万</output></label><input id="medicalSlider" type="range" min="45" max="90" value="70"></div>
+      <div class="slider-row"><label>新客单价 <output id="priceOut">3007元</output></label><input id="priceSlider" type="range" min="2194" max="3600" value="3007"></div>
+      <div class="slider-row"><label>老客复购率 <output id="repurchaseOut">35%</output></label><input id="repurchaseSlider" type="range" min="28" max="45" value="35"></div>
+    </div>
+  </section>
+
+  <section class="section partner" id="partnerPanel">
+    <div class="step-title"><span>2</span>合伙人达成度</div>
+    <div class="card form">
+      <div class="label">当前合伙人达成度</div>
+      <div class="value blue">72%</div>
+      <div class="progress"><i style="width:72%"></i></div>
+      <div class="hint">距离合伙人标准，还差月收入、团队人效、老客复购率 3 项关键指标。</div>
+    </div>
+  </section>
+
+  <section class="section partner" id="partnerMetrics">
+    <div class="step-title"><span>3</span>合伙人指标拆解</div>
+    <div class="card"><div class="metrics" id="partnerList"></div></div>
+  </section>
+
+  <section class="section">
+    <div class="step-title"><span>5</span>行动建议</div>
+    <div class="card adjust plan" id="plan"></div>
+  </section>
+</div>
+
+<div class="footer"><button class="btn ghost" id="resetBtn">重新推演</button><button class="btn primary">确认目标</button></div>
+
+<script>
+const base={income:32800,forecast:38600,newCustomers:256,price:2194,medical:45,repurchase:28};
+const metricsEl=document.getElementById('metrics');
+const targetInput=document.getElementById('targetInput');
+const medicalSlider=document.getElementById('medicalSlider');
+const priceSlider=document.getElementById('priceSlider');
+const repurchaseSlider=document.getElementById('repurchaseSlider');
+const fmt=n=>'¥'+Math.round(n).toLocaleString();
+function diffTag(rate){return rate<12?'low':rate<35?'mid':'high'}
+function diffText(rate){return rate<12?'难度较低':rate<35?'难度中等':'难度较高'}
+function renderIncome(){
+  const target=Number(targetInput.value)||50000;
+  const medical=Number(medicalSlider.value);
+  const price=Number(priceSlider.value);
+  const rep=Number(repurchaseSlider.value);
+  const newCustomers=Math.max(220,Math.round((target*18.8)/(price*(medical/45)*(rep/28))));
+  const rows=[
+    ['新客数',base.newCustomers+'人',newCustomers+'人',((newCustomers/base.newCustomers-1)*100)],
+    ['新客单价',fmt(base.price),fmt(price),((price/base.price-1)*100)],
+    ['医美业绩',base.medical+'万',medical+'万',((medical/base.medical-1)*100)],
+    ['老客复购率',base.repurchase+'%',rep+'%',(rep-base.repurchase)]
+  ];
+  document.getElementById('gapIncome').textContent=fmt(Math.max(0,target-base.income));
+  document.getElementById('resultTitle').textContent=`要达成 ${fmt(target)} 收入，你需要：`;
+  document.getElementById('medicalOut').textContent=medical+'万';
+  document.getElementById('priceOut').textContent=Math.round(price)+'元';
+  document.getElementById('repurchaseOut').textContent=rep+'%';
+  const score=Math.max(42,Math.min(95,Math.round(102-(target-base.forecast)/900-(newCustomers-base.newCustomers)/12+(medical-45)*.5+(rep-28)*.8)));
+  document.getElementById('score').textContent=score;
+  metricsEl.innerHTML=rows.map(r=>{
+    const rate=Math.max(0,r[3]);
+    return `<div class="metric">
+      <div class="metric-top"><div class="metric-name">${r[0]}</div><span class="tag ${diffTag(rate)}">${diffText(rate)}</span></div>
+      <div class="metric-data"><div class="mini"><span>当前</span><b>${r[1]}</b></div><div class="mini"><span>目标</span><b>${r[2]}</b></div><div class="mini"><span>提升</span><b>${rate.toFixed(0)}%</b></div></div>
+      <div class="bar"><i style="width:${Math.min(100,rate+18)}%"></i></div>
+    </div>`
+  }).join('');
+  document.getElementById('insight').innerHTML=`<p>新客压力会随医美业绩和客单价提升而下降。</p><p>当前建议：优先抓医美项目成交和新客单价，避免单纯压高新客数。</p>`;
+}
+function renderPartner(){
+  const data=[['月收入','¥32,800','¥50,000','未达成','high'],['医美业绩','45万','60万','接近','mid'],['团队人效','¥18,000/人','¥22,000/人','未达成','mid'],['老客复购率','28%','35%','未达成','mid'],['客诉率','1.2%','≤2%','已达成','low'],['员工稳定率','92%','≥90%','已达成','low']];
+  document.getElementById('partnerList').innerHTML=data.map(d=>`<div class="metric"><div class="metric-top"><div class="metric-name">${d[0]}</div><span class="tag ${d[4]}">${d[3]}</span></div><div class="metric-data"><div class="mini"><span>当前</span><b>${d[1]}</b></div><div class="mini"><span>标准</span><b>${d[2]}</b></div><div class="mini"><span>状态</span><b>${d[3]}</b></div></div></div>`).join('');
+}
+function renderPlan(type='income'){
+  const list=type==='income'?['本周锁定高客单项目成交目标','每日跟进新客成交与预约到店','针对沉默老客做复购唤醒','每周复盘医美业绩完成率']:['补齐月收入与团队人效短板','设置顾问医美加项目标','提高老客复购跟进频次','保持客诉率和员工稳定率优势'];
+  document.getElementById('plan').innerHTML=list.map((t,i)=>`<div class="plan-item"><i>${i+1}</i><span>${t}</span></div>`).join('');
+}
+document.querySelectorAll('.target').forEach(btn=>btn.onclick=()=>{
+  document.querySelectorAll('.target').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
+  const partner=btn.dataset.type==='partner';
+  document.querySelectorAll('.income').forEach(e=>e.classList.toggle('hide',partner));
+  document.querySelectorAll('.partner').forEach(e=>e.classList.toggle('show',partner));
+  renderPlan(partner?'partner':'income');
+});
+document.querySelectorAll('.quick button').forEach(b=>b.onclick=()=>{targetInput.value=b.dataset.v;document.querySelectorAll('.quick button').forEach(x=>x.classList.remove('active'));b.classList.add('active');renderIncome()});
+[targetInput,medicalSlider,priceSlider,repurchaseSlider].forEach(el=>el.addEventListener('input',renderIncome));
+document.getElementById('resetBtn').onclick=()=>{targetInput.value=50000;medicalSlider.value=70;priceSlider.value=3007;repurchaseSlider.value=35;renderIncome();renderPlan()};
+renderIncome();renderPartner();renderPlan();
+</script>
+</body>
+</html>

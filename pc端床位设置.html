@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>微动后台管理系统 - 智能床位规则配置</title>
+  <!-- 引入 Tailwind CSS 提供极致的后台视觉表现力 -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* 自定义美化滚动条 */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #c1c1c1;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #a8a8a8;
+    }
+  </style>
+</head>
+<body class="bg-[#f5f7fa] text-slate-700 font-sans min-h-screen overflow-x-hidden">
+
+  <!-- PC 后台主体网格结构 -->
+  <div class="flex min-h-screen">
+    
+    <!-- ================= 1. 左侧大导航栏 (微动后台经典暗色系) ================= -->
+    <aside class="w-60 bg-[#1e222d] text-slate-300 flex-shrink-0 flex flex-col">
+      <div class="px-6 py-5 border-b border-slate-800 flex items-center space-x-2">
+        <span class="text-white font-black text-xl tracking-wider">WEID</span>
+        <span class="bg-blue-600 text-white text-[10px] px-1.5 py-0.5 rounded font-bold font-mono">微动</span>
+      </div>
+      
+      <!-- 菜单项 -->
+      <nav class="flex-1 py-4 space-y-1">
+        <a href="#" class="flex items-center px-6 py-3 text-sm hover:bg-slate-800 hover:text-white transition-colors">
+          <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+          首页
+        </a>
+        <a href="#" class="flex items-center px-6 py-3 text-sm hover:bg-slate-800 hover:text-white transition-colors">
+          <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+          客户
+        </a>
+        <a href="#" class="flex items-center px-6 py-3 text-sm hover:bg-slate-800 hover:text-white transition-colors">
+          <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" /></svg>
+          订单
+        </a>
+        <a href="#" class="flex items-center px-6 py-3 text-sm hover:bg-slate-800 hover:text-white transition-colors">
+          <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" /></svg>
+          推广
+        </a>
+        
+        <!-- 门店大菜单高亮 -->
+        <div class="space-y-1">
+          <a href="#" class="flex items-center px-6 py-3 text-sm bg-blue-600 text-white font-medium">
+            <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+            门店管理
+          </a>
+          <!-- 子菜单项 -->
+          <div class="bg-[#151821] py-1 pl-12 pr-4 space-y-1 text-xs">
+            <a href="#" class="block py-2 text-slate-400 hover:text-white transition-colors">门店列表</a>
+            <a href="#" class="block py-2 text-blue-400 font-bold transition-colors">智能床位</a>
+            <a href="#" class="block py-2 text-slate-400 hover:text-white transition-colors">老师排班</a>
+          </div>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- ================= 2. 右侧核心工作区 ================= -->
+    <div class="flex-1 flex flex-col overflow-hidden">
+      
+      <!-- 顶部头部信息 -->
+      <header class="bg-white border-b border-slate-200 px-8 py-4 flex items-center justify-between">
+        <div class="flex items-center space-x-2 text-xs text-slate-400">
+          <span>首页</span>
+          <span>/</span>
+          <span>门店管理</span>
+          <span>/</span>
+          <span class="text-slate-600 font-semibold">智能床位</span>
+        </div>
+        <div class="flex items-center space-x-3">
+          <span class="text-sm font-semibold text-slate-600">徐汇旗舰店后台配置员</span>
+          <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xs">
+            店
+          </div>
+        </div>
+      </header>
+
+      <!-- 主要内容区域 -->
+      <main class="flex-1 p-8 overflow-y-auto space-y-6">
+        
+        <!-- 选项卡与操作区 -->
+        <div class="bg-white rounded-xl shadow-xs border border-slate-200 p-6">
+          <div class="flex justify-between items-center pb-5 border-b border-slate-100">
+            <div class="flex space-x-8">
+              <button class="text-base font-bold text-blue-600 border-b-2 border-blue-600 pb-4">床位规则</button>
+              <button class="text-base font-medium text-slate-400 pb-4 hover:text-slate-600">床位类型</button>
+            </div>
+            <!-- 主添加按钮：触发弹窗 -->
+            <button onclick="openModal('add')" class="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white px-5 py-2 rounded-lg text-sm font-bold shadow-xs transition-colors flex items-center space-x-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" /></svg>
+              <span>添加规则</span>
+            </button>
+          </div>
+
+          <!-- MOCK 数据列表 table -->
+          <div class="overflow-x-auto mt-6">
+            <table class="w-full text-left text-sm text-slate-500">
+              <thead class="text-xs text-slate-400 bg-slate-50 uppercase font-bold">
+                <tr>
+                  <th scope="col" class="px-6 py-4">序号</th>
+                  <th scope="col" class="px-6 py-4">床位规则名称</th>
+                  <th scope="col" class="px-6 py-4">新客规则</th>
+                  <th scope="col" class="px-6 py-4">老客规则</th>
+                  <th scope="col" class="px-6 py-4">创建时间</th>
+                  <th scope="col" class="px-6 py-4 text-right">操作</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                <tr class="hover:bg-slate-50/50 transition-colors">
+                  <td class="px-6 py-4 font-medium text-slate-900">1</td>
+                  <td class="px-6 py-4 font-semibold text-slate-800">新客体验店长定制规则-0602</td>
+                  <td class="px-6 py-4"><span class="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded">医美0% / 生美50% / 美甲20% / 通用30%</span></td>
+                  <td class="px-6 py-4"><span class="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded">通用 100%</span></td>
+                  <td class="px-6 py-4">2026-06-02 10:21</td>
+                  <td class="px-6 py-4 text-right space-x-3 text-xs">
+                    <button onclick="openModal('edit')" class="text-blue-600 hover:text-blue-800 font-bold">编辑</button>
+                    <button class="text-slate-400 hover:text-slate-600">复制</button>
+                    <button class="text-red-500 hover:text-red-700">删除</button>
+                  </td>
+                </tr>
+                <tr class="hover:bg-slate-50/50 transition-colors">
+                  <td class="px-6 py-4 font-medium text-slate-900">2</td>
+                  <td class="px-6 py-4 font-semibold text-slate-800">周末客流高峰统筹规则</td>
+                  <td class="px-6 py-4"><span class="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded">生美 100%</span></td>
+                  <td class="px-6 py-4"><span class="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded">纹绣 30% / 通用 70%</span></td>
+                  <td class="px-6 py-4">2026-04-17 14:06</td>
+                  <td class="px-6 py-4 text-right space-x-3 text-xs">
+                    <button onclick="openModal('edit')" class="text-blue-600 hover:text-blue-800 font-bold">编辑</button>
+                    <button class="text-slate-400 hover:text-slate-600">复制</button>
+                    <button class="text-red-500 hover:text-red-700">删除</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- ==========================================================
+       3. 核心：添加/编辑规则配置 PC 端弹窗（按需开启/交互）
+       ========================================================== -->
+  <!-- 遮罩层 (默认显示，方便直接预览与调试) -->
+  <div id="modal-overlay" class="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 overflow-y-auto transition-opacity duration-300 opacity-100">
+    
+    <!-- 弹窗卡片容器 -->
+    <div id="modal-card" class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl transform transition-all duration-300 scale-100 my-8 flex flex-col overflow-hidden">
+      
+      <!-- 弹窗头部 -->
+      <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/80">
+        <h3 class="text-base font-bold text-slate-800 flex items-center space-x-2">
+          <span id="modal-action-title">添加规则</span>
+        </h3>
+        <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-200/50 transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
+      </div>
+
+      <!-- 弹窗主体表单 -->
+      <div class="p-6 overflow-y-auto space-y-6 max-h-[75vh]">
+        
+        <!-- 规则名称输入 -->
+        <div class="space-y-2">
+          <label class="text-sm font-semibold text-slate-600 flex items-center">
+            <span class="text-red-500 mr-1">*</span>
+            床位规则名称：
+          </label>
+          <input type="text" id="rule-name-input" value="新客体验店长定制规则-0602" placeholder="请输入规则名称" class="w-full border border-slate-200 hover:border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none rounded-lg px-4 py-2.5 text-sm transition-all">
+        </div>
+
+        <!-- 新客/老客选择 TAB -->
+        <div class="border-b border-slate-200">
+          <div class="flex space-x-6 text-sm">
+            <button onclick="switchModalTab('new')" id="modal-tab-new" class="font-bold text-blue-600 border-b-2 border-blue-600 pb-3.5 transition-all outline-none">
+              新客床位
+            </button>
+            <button onclick="switchModalTab('old')" id="modal-tab-old" class="font-medium text-slate-400 hover:text-slate-600 pb-3.5 transition-all outline-none">
+              老客床位
+            </button>
+          </div>
+        </div>
+
+        <!-- 核心控制 1：按科室分配床位开关 -->
+        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+          <div class="flex items-center justify-between">
+            <div>
+              <span class="text-sm font-bold text-slate-800 flex items-center">
+                按科室分配床位
+                <span class="text-red-500 ml-1">*</span>
+              </span>
+              <p class="text-xs text-slate-400 mt-1">针对百星门店按科室释放床位才会开启，贝颜门店默认不开启。</p>
+            </div>
+            
+            <!-- 自定义一半白一半蓝的直观滑动开关 (参考 image_99895b.png 风格) -->
+            <button onclick="toggleAllocateByDept()" id="dept-switch-btn" class="w-12 h-6 rounded-full transition-colors duration-200 relative focus:outline-none bg-blue-600 border border-blue-600">
+              <!-- 左侧和右侧的遮罩背景色拼合实现一半白一半蓝效果 -->
+              <span class="absolute inset-0 flex">
+                <span class="w-1/2 bg-white rounded-l-full"></span>
+                <span class="w-1/2 bg-blue-600 rounded-r-full"></span>
+              </span>
+              <span id="dept-switch-dot" class="translate-x-6 block w-4.5 h-4.5 rounded-full bg-white shadow-md transform transition-transform relative z-10 mt-px ml-0.5"></span>
+            </button>
+          </div>
+
+          <!-- 床位占比分配规则大面板 (当开关开启时可见) -->
+          <div id="bed-ratio-panel" class="pt-4 border-t border-slate-200/60 space-y-4">
+            
+            <div class="flex justify-between items-center">
+              <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">床位初始分配规则（门店可更改）</span>
+              <!-- 品类追加动作 -->
+              <button onclick="addCategoryRow()" id="add-row-btn" class="text-xs font-semibold text-blue-600 hover:text-blue-800 flex items-center space-x-1.5 bg-blue-50/50 px-2.5 py-1.5 rounded-lg border border-blue-100 hover:bg-blue-50 transition-all">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" /></svg>
+                <span>增加床位类型</span>
+              </button>
+            </div>
+
+            <!-- 品类列表动态挂载容器 -->
+            <div id="categories-list-container" class="space-y-3.5">
+              <!-- JS 动态渲染各科室配置行 -->
+            </div>
+
+            <!-- 通用床位占比自动计算 (置底不可更改) -->
+            <div class="p-3.5 bg-slate-50 rounded-xl border border-dashed border-slate-200 flex items-center justify-between">
+              <div>
+                <div class="flex items-center space-x-1.5">
+                  <span class="text-sm font-bold text-slate-700">通用床位</span>
+                  <span class="text-[9px] bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">自动计算</span>
+                </div>
+                <p class="text-[11px] text-slate-400 mt-1" id="universal-calc-label">公式：100% - 已分配专属(50%) = 50%</p>
+              </div>
+              <div class="flex items-center space-x-2">
+                <span id="universal-percent-val" class="text-lg font-black text-slate-800">50</span>
+                <span class="text-sm font-semibold text-slate-400">%</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- 核心控制 2：床位定点释放开关 -->
+        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+          <div class="flex items-center justify-between">
+            <div>
+              <span class="text-sm font-bold text-slate-800">床位定点释放</span>
+              <p class="text-xs text-slate-400 mt-1">为防止专属床位浪费，定时将专属床位释放。</p>
+            </div>
+            
+            <!-- 自定义一半白一半蓝滑动开关 -->
+            <button onclick="toggleTimedRelease()" id="release-switch-btn" class="w-12 h-6 rounded-full transition-colors duration-200 relative focus:outline-none bg-blue-600 border border-blue-600">
+              <span class="absolute inset-0 flex">
+                <span class="w-1/2 bg-white rounded-l-full"></span>
+                <span class="w-1/2 bg-blue-600 rounded-r-full"></span>
+              </span>
+              <span id="release-switch-dot" class="translate-x-6 block w-4.5 h-4.5 rounded-full bg-white shadow-md transform transition-transform relative z-10 mt-px ml-0.5"></span>
+            </button>
+          </div>
+
+          <!-- 定时定点释放条件选择器 (滑出展开) -->
+          <div id="release-rules-panel" class="pt-4 border-t border-slate-200/60 space-y-3">
+            
+            <!-- 释放方式 1：预约当天释放 -->
+            <label class="flex items-start space-x-3 p-3 bg-white rounded-lg border border-slate-200 hover:border-slate-300 transition-colors cursor-pointer">
+              <input type="radio" name="releaseType" id="release-type-day" value="day" checked onchange="handleReleaseRadioChange()" class="mt-1 text-blue-600 focus:ring-blue-500">
+              <div class="text-sm text-slate-600 flex flex-wrap items-center gap-2">
+                <span>预约当天</span>
+                <input type="time" id="release-day-time" value="10:00" class="border border-slate-200 px-2 py-1 rounded text-xs focus:ring-1 focus:ring-blue-500 outline-none">
+                <span>将剩余床位的</span>
+                <div class="flex items-center border border-slate-200 rounded px-2 bg-slate-50">
+                  <input type="number" id="release-day-percent" value="100" min="0" max="100" class="w-12 text-center text-xs bg-transparent outline-none py-1 font-bold">
+                  <span class="text-[10px] text-slate-400">%</span>
+                </div>
+                <span>释放为通用床位</span>
+              </div>
+            </label>
+
+            <!-- 释放方式 2：到期前倒计时释放 -->
+            <label class="flex items-start space-x-3 p-3 bg-white rounded-lg border border-slate-200 hover:border-slate-300 transition-colors cursor-pointer">
+              <input type="radio" name="releaseType" id="release-type-before" value="before" onchange="handleReleaseRadioChange()" class="mt-1 text-blue-600 focus:ring-blue-500">
+              <div class="text-sm text-slate-600 flex flex-wrap items-center gap-2">
+                <span>床位到期前</span>
+                <div class="flex items-center border border-slate-200 rounded px-2 bg-slate-50">
+                  <input type="number" id="release-before-hours" value="2" min="1" max="72" class="w-10 text-center text-xs bg-transparent outline-none py-1 font-bold">
+                  <span class="text-[10px] text-slate-400">小时</span>
+                </div>
+                <span>将剩余床位的</span>
+                <div class="flex items-center border border-slate-200 rounded px-2 bg-slate-50">
+                  <input type="number" id="release-before-percent" value="50" min="0" max="100" class="w-12 text-center text-xs bg-transparent outline-none py-1 font-bold">
+                  <span class="text-[10px] text-slate-400">%</span>
+                </div>
+                <span>释放为通用床位</span>
+              </div>
+            </label>
+
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 弹窗底部操作按钮 -->
+      <div class="px-6 py-4 border-t border-slate-100 flex items-center justify-end space-x-3 bg-slate-50/50">
+        <button onclick="closeModal()" class="px-5 py-2 border border-slate-200 hover:border-slate-300 text-slate-500 rounded-lg text-sm font-semibold active:scale-95 transition-all">
+          取消
+        </button>
+        <button onclick="saveRuleConfig()" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white rounded-lg text-sm font-bold shadow-md shadow-blue-100 active:scale-95 transition-all">
+          确定
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 页面操作提示框 (Toast) -->
+  <div id="toast" class="fixed top-16 left-1/2 -translate-x-1/2 z-[100] bg-slate-900/95 text-white px-5 py-3.5 rounded-xl text-sm font-semibold shadow-2xl opacity-0 scale-90 pointer-events-none transition-all duration-300 flex items-center space-x-2">
+    <span id="toast-icon"></span>
+    <span id="toast-text">提示信息</span>
+  </div>
+
+  <script>
+    // 1. 全局配置科室属性池、备注说明及对应的品类细分说明 (高保真 1:1 还原 image_1df6c2.png 样式)
+    const categoryOptions = {
+      yimei: { 
+        name: '医美床位', 
+        desc: '用于厦门思明店的祛斑专属项目配置', 
+        scope: '可预约品类：s10 k10' 
+      },
+      shengmei: { 
+        name: '生美床位', 
+        desc: '用于厦门思明店的基础SPA与水分充盈护理项目', 
+        scope: '可预约品类：s11 k12' 
+      },
+      wenxiu: { 
+        name: '纹绣床位', 
+        desc: '用于半永久精细化纹眉、纹唇操作间配置', 
+        scope: '可预约品类：w01 w02' 
+      },
+      meijia: { 
+        name: '美甲美睫', 
+        desc: '用于美美快消、修指甲、美睫等特色功能区域', 
+        scope: '可预约品类：m01 m02' 
+      },
+      liliao: { 
+        name: '理疗按摩', 
+        desc: '用于传统中式推拿、肩颈舒缓与熏艾养生', 
+        scope: '可预约品类：l05 l08' 
+      },
+      zhifa: { 
+        name: '植发护发', 
+        desc: '用于高精微发际线种植、头皮深层生态清洁理疗', 
+        scope: '可预约品类：z03 z04' 
+      }
+    };
+
+    // 2. PC 弹窗核心响应式数据模型
+    const modalState = {
+      ruleName: '新客体验店长定制规则-0602',
+      currentTab: 'new', // 'new' 新客 | 'old' 老客
+      allocateByDept: true, // 对应开关 按科室分配床位
+      timedRelease: true, // 对应开关 床位定点释放
+      
+      // 新客页签独占数据
+      newConfig: {
+        categories: [
+          { key: 'yimei', percent: 0 },
+          { key: 'shengmei', percent: 50 },
+          { key: 'meijia', percent: 20 }
+        ],
+        releaseType: 'day', // 'day' | 'before'
+        releaseDayTime: '10:00',
+        releaseDayPercent: 100,
+        releaseBeforeHours: 2,
+        releaseBeforePercent: 50
+      },
+
+      // 老客页签独占数据
+      oldConfig: {
+        categories: [
+          { key: 'yimei', percent: 20 },
+          { key: 'shengmei', percent: 40 }
+        ],
+        releaseType: 'before',
+        releaseDayTime: '12:00',
+        releaseDayPercent: 80,
+        releaseBeforeHours: 4,
+        releaseBeforePercent: 50
+      }
+    };
+
+    // 3. 页面初始化
+    window.onload = function() {
+      renderCategoryList();
+      syncFormUI();
+      
+      // 全局添加点击关闭下拉框菜单事件
+      document.addEventListener('click', function(e) {
+        const dropdowns = document.querySelectorAll('[id^="dropdown-menu-"]');
+        dropdowns.forEach(menu => {
+          if (!menu.classList.contains('hidden') && !menu.parentNode.contains(e.target)) {
+            menu.classList.add('hidden');
+          }
+        });
+      });
+    };
+
+    // 打开/关闭弹窗控制
+    function openModal(actionType) {
+      const title = document.getElementById('modal-action-title');
+      const overlay = document.getElementById('modal-overlay');
+      const card = document.getElementById('modal-card');
+
+      if (actionType === 'edit') {
+        title.innerText = '编辑规则';
+        document.getElementById('rule-name-input').value = '新客体验店长定制规则-0602';
+      } else {
+        title.innerText = '添加规则';
+        document.getElementById('rule-name-input').value = '';
+      }
+
+      overlay.classList.remove('hidden', 'opacity-0', 'pointer-events-none');
+      overlay.classList.add('opacity-100');
+      card.classList.remove('scale-95');
+      card.classList.add('scale-100');
+    }
+
+    function closeModal() {
+      const overlay = document.getElementById('modal-overlay');
+      const card = document.getElementById('modal-card');
+
+      overlay.classList.add('opacity-0', 'pointer-events-none');
+      card.classList.remove('scale-100');
+      card.classList.add('scale-95');
+      
+      setTimeout(() => {
+        overlay.classList.add('hidden');
+      }, 300);
+    }
+
+    // 4. 渲染已配置科室列表：完全采用自定义富文本悬浮列表，高保真还原 image_1df6c2.png 
+    function renderCategoryList() {
+      const container = document.getElementById('categories-list-container');
+      container.innerHTML = '';
+
+      const activeConfig = modalState.currentTab === 'new' ? modalState.newConfig : modalState.oldConfig;
+
+      if (activeConfig.categories.length === 0) {
+        container.innerHTML = `
+          <div class="py-6 text-center text-xs text-slate-400 bg-white rounded-lg border border-dashed border-slate-200">
+            暂未添加科室，当前全部为通用床位占比 (100%)
+          </div>
+        `;
+        calculateUniversalPercent(activeConfig);
+        return;
+      }
+
+      activeConfig.categories.forEach((item, index) => {
+        const optionDetails = categoryOptions[item.key];
+        const optionName = optionDetails.name;
+        const optionDesc = optionDetails.desc;
+        const optionScope = optionDetails.scope;
+        const isZero = item.percent === 0;
+
+        // 背景卡样式
+        const cardBgClass = isZero ? 'bg-red-50/40 border-red-200' : 'bg-white border-slate-200 hover:border-slate-300 shadow-2xs';
+        
+        container.innerHTML += `
+          <div class="p-4 rounded-xl border transition-all duration-200 ${cardBgClass} relative">
+            <div class="flex items-center justify-between">
+              
+              <!-- 核心交互：自定义富文本下拉选择器 (完全替代原生 select) -->
+              <div class="flex-1 max-w-[260px] relative">
+                
+                <!-- 选中项触发按钮 -->
+                <button onclick="toggleCustomDropdown(event, ${index})" class="bg-slate-50 border border-slate-200 rounded-lg text-sm px-3 py-2 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none w-full text-left font-bold text-slate-800 flex justify-between items-center transition-all">
+                  <span>${optionName}</span>
+                  <svg class="w-4 h-4 text-slate-400 transition-transform duration-150" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+
+                <!-- 自定义富下拉卡片 (1:1 还原 image_1df6c2.png 富文本详情) -->
+                <div id="dropdown-menu-${index}" class="hidden absolute left-0 right-0 mt-1.5 bg-white border border-slate-200 rounded-xl shadow-xl z-50 max-h-72 overflow-y-auto divide-y divide-slate-100">
+                  ${generateCustomDropdownOptions(index, item.key)}
+                </div>
+
+                <!-- 选中的品类项目备注说明 -->
+                <div class="mt-1.5 pl-1 ${isZero ? 'hidden' : 'block'}">
+                  <p class="text-[11px] text-slate-400">${optionDesc}</p>
+                  <p class="text-[11px] text-slate-500 font-semibold mt-0.5">${optionScope}</p>
+                </div>
+              </div>
+
+              <!-- 右侧：占比输入调节组 -->
+              <div class="flex items-center space-x-3 pr-1">
+                <span class="text-xs text-slate-400 font-semibold">占比</span>
+                <div class="flex items-center border border-slate-200 rounded-lg px-2.5 bg-slate-50 shadow-2xs">
+                  <input type="number" value="${item.percent}" min="0" max="100" oninput="updateRowPercent(${index}, this.value)" class="w-14 text-center text-sm font-extrabold text-slate-800 bg-transparent outline-none py-1.5 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
+                  <span class="text-xs text-slate-400 font-bold">%</span>
+                </div>
+
+                <!-- 行删除图标 -->
+                <button onclick="deleteCategoryRow(${index})" class="text-slate-400 hover:text-red-500 p-1.5 rounded-lg hover:bg-red-50 transition-colors">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- 核心：0% 动态禁用红字及项目禁止警示 -->
+            ${isZero ? `
+              <div class="mt-2.5 pt-2 border-t border-red-100 flex flex-col space-y-1 text-xs text-red-500 font-bold transition-all animate-fadeIn">
+                <div class="flex items-center space-x-1.5">
+                  <svg class="w-4 h-4 text-red-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+                  <span>通用床位同时禁止预约【${optionName}】项目。</span>
+                </div>
+                <div class="pl-5 text-[10px] text-slate-400 font-medium">
+                  备注：${optionDesc} | ${optionScope}
+                </div>
+              </div>
+            ` : ''}
+          </div>
+        `;
+      });
+
+      calculateUniversalPercent(activeConfig);
+    }
+
+    // 切换自定义下拉框的显示隐藏状态
+    function toggleCustomDropdown(event, index) {
+      event.stopPropagation(); // 阻止冒泡到 document
+
+      // 先隐藏所有其他下拉框
+      const menus = document.querySelectorAll('[id^="dropdown-menu-"]');
+      menus.forEach(menu => {
+        if (menu.id !== `dropdown-menu-${index}`) {
+          menu.classList.add('hidden');
+        }
+      });
+
+      const currentMenu = document.getElementById(`dropdown-menu-${index}`);
+      currentMenu.classList.toggle('hidden');
+    }
+
+    // 组装并输出富文本可选项列表 HTML
+    function generateCustomDropdownOptions(rowIndex, currentKey) {
+      let optionsHtml = '';
+      
+      Object.keys(categoryOptions).forEach(key => {
+        const item = categoryOptions[key];
+        const isSelected = key === currentKey;
+        
+        const activeBg = isSelected ? 'bg-blue-50/70 border-l-4 border-blue-600' : 'hover:bg-slate-50/80';
+
+        optionsHtml += `
+          <div onclick="selectRowCategory(${rowIndex}, '${key}')" class="p-3.5 cursor-pointer transition-all flex flex-col text-left ${activeBg}">
+            <div class="flex items-center justify-between">
+              <span class="text-sm font-extrabold text-slate-800">${item.name}</span>
+              ${isSelected ? `
+                <span class="text-[10px] text-blue-600 bg-blue-100/50 px-1.5 py-0.5 rounded-md font-bold">已选</span>
+              ` : ''}
+            </div>
+            <!-- 用于厦门思明店的祛斑 -->
+            <span class="text-[11px] text-slate-400 mt-1">${item.desc}</span>
+            <!-- 可预约品类：s10 k10 -->
+            <span class="text-[11px] text-slate-500 font-semibold mt-0.5">${item.scope}</span>
+          </div>
+        `;
+      });
+
+      return optionsHtml;
+    }
+
+    // 选中自定义下拉品类动作
+    function selectRowCategory(index, newKey) {
+      const activeConfig = modalState.currentTab === 'new' ? modalState.newConfig : modalState.oldConfig;
+      
+      // 检查是否有排重冲突
+      const exists = activeConfig.categories.some((item, idx) => item.key === newKey && idx !== index);
+      if (exists) {
+        showToast('error', `此规则内已添加了【${categoryOptions[newKey].name}】，不能重复添加`);
+        return;
+      }
+
+      activeConfig.categories[index].key = newKey;
+      
+      // 关闭菜单
+      document.getElementById(`dropdown-menu-${index}`).classList.add('hidden');
+      
+      // 刷新列表
+      renderCategoryList();
+    }
+
+    // 修改特定行的百分比值
+    function updateRowPercent(index, rawVal) {
+      let val = parseInt(rawVal);
+      if (isNaN(val) || val < 0) val = 0;
+      if (val > 100) val = 100;
+
+      const activeConfig = modalState.currentTab === 'new' ? modalState.newConfig : modalState.oldConfig;
+      
+      activeConfig.categories[index].percent = val;
+
+      // 累加占比比例校验
+      let sum = 0;
+      activeConfig.categories.forEach(item => {
+        sum += item.percent;
+      });
+
+      if (sum > 100) {
+        const allowedMax = 100 - (sum - val);
+        activeConfig.categories[index].percent = allowedMax;
+        showToast('error', `分配比例总和不能超过 100%！已自动托底限制最大设为 ${allowedMax}%`);
+      }
+
+      renderCategoryList();
+    }
+
+    // 计算并渲染置底通用占比
+    function calculateUniversalPercent(activeConfig) {
+      let sum = 0;
+      activeConfig.categories.forEach(item => {
+        sum += item.percent;
+      });
+
+      const remaining = 100 - sum;
+      document.getElementById('universal-percent-val').innerText = remaining;
+      document.getElementById('universal-calc-label').innerText = `公式：100% - 已分配专属(${sum}%) = ${remaining}% 通用占比`;
+    }
+
+    // 动态添加科室行 (默认配额比例为 0% 启用红字禁用指示器)
+    function addCategoryRow() {
+      const activeConfig = modalState.currentTab === 'new' ? modalState.newConfig : modalState.oldConfig;
+
+      const availableKeys = Object.keys(categoryOptions).filter(key => {
+        return !activeConfig.categories.some(item => item.key === key);
+      });
+
+      if (availableKeys.length === 0) {
+        showToast('error', '全部预设品类已添加完毕，无法继续添加');
+        return;
+      }
+
+      activeConfig.categories.push({ key: availableKeys[0], percent: 0 });
+      renderCategoryList();
+      showToast('success', `已成功添加【${categoryOptions[availableKeys[0]].name}】占比配置`);
+    }
+
+    // 删除科室行
+    function deleteCategoryRow(index) {
+      const activeConfig = modalState.currentTab === 'new' ? modalState.newConfig : modalState.oldConfig;
+      const removedKey = activeConfig.categories[index].key;
+      
+      activeConfig.categories.splice(index, 1);
+      renderCategoryList();
+      showToast('info', `已移除了【${categoryOptions[removedKey].name}】占比配置`);
+    }
+
+    // 5. 选项卡 Tab 切换
+    function switchModalTab(tabType) {
+      modalState.currentTab = tabType;
+
+      const btnNew = document.getElementById('modal-tab-new');
+      const btnOld = document.getElementById('modal-tab-old');
+
+      if (tabType === 'new') {
+        btnNew.className = "font-bold text-blue-600 border-b-2 border-blue-600 pb-3.5 transition-all outline-none";
+        btnOld.className = "font-medium text-slate-400 hover:text-slate-600 pb-3.5 transition-all outline-none";
+      } else {
+        btnOld.className = "font-bold text-blue-600 border-b-2 border-blue-600 pb-3.5 transition-all outline-none";
+        btnNew.className = "font-medium text-slate-400 hover:text-slate-600 pb-3.5 transition-all outline-none";
+      }
+
+      renderCategoryList();
+      syncFormUI();
+    }
+
+    // 开关一：按科室分配床位
+    function toggleAllocateByDept() {
+      modalState.allocateByDept = !modalState.allocateByDept;
+      syncFormUI();
+    }
+
+    // 开关二：床位定点释放
+    function toggleTimedRelease() {
+      modalState.timedRelease = !modalState.timedRelease;
+      syncFormUI();
+    }
+
+    // 同步控制项表单展示 (支持更美观的一半白一半蓝开关切换)
+    function syncFormUI() {
+      const activeConfig = modalState.currentTab === 'new' ? modalState.newConfig : modalState.oldConfig;
+
+      // 同步科室细分配件 (按科室分配床位)
+      const deptBtn = document.getElementById('dept-switch-btn');
+      const deptDot = document.getElementById('dept-switch-dot');
+      const deptPanel = document.getElementById('bed-ratio-panel');
+
+      if (modalState.allocateByDept) {
+        deptBtn.className = "w-12 h-6 rounded-full transition-colors duration-200 relative focus:outline-none bg-blue-600 border border-blue-600";
+        deptDot.className = "translate-x-6 block w-4.5 h-4.5 rounded-full bg-white shadow-md transform transition-transform relative z-10 mt-px ml-0.5";
+        deptPanel.style.display = 'block';
+      } else {
+        deptBtn.className = "w-12 h-6 rounded-full transition-colors duration-200 relative focus:outline-none bg-slate-200 border border-slate-300";
+        deptDot.className = "translate-x-0 block w-4.5 h-4.5 rounded-full bg-white shadow-md transform transition-transform relative z-10 mt-px ml-0.5";
+        deptPanel.style.display = 'none';
+      }
+
+      // 同步定点释放分配
+      const relBtn = document.getElementById('release-switch-btn');
+      const relDot = document.getElementById('release-switch-dot');
+      const relPanel = document.getElementById('release-rules-panel');
+
+      if (modalState.timedRelease) {
+        relBtn.className = "w-12 h-6 rounded-full transition-colors duration-200 relative focus:outline-none bg-blue-600 border border-blue-600";
+        relDot.className = "translate-x-6 block w-4.5 h-4.5 rounded-full bg-white shadow-md transform transition-transform relative z-10 mt-px ml-0.5";
+        relPanel.style.display = 'block';
+
+        // 同步子输入数据值
+        document.getElementById(`release-type-${activeConfig.releaseType}`).checked = true;
+        document.getElementById('release-day-time').value = activeConfig.releaseDayTime;
+        document.getElementById('release-day-percent').value = activeConfig.releaseDayPercent;
+        document.getElementById('release-before-hours').value = activeConfig.releaseBeforeHours;
+        document.getElementById('release-before-percent').value = activeConfig.releaseBeforePercent;
+      } else {
+        relBtn.className = "w-12 h-6 rounded-full transition-colors duration-200 relative focus:outline-none bg-slate-200 border border-slate-300";
+        relDot.className = "translate-x-0 block w-4.5 h-4.5 rounded-full bg-white shadow-md transform transition-transform relative z-10 mt-px ml-0.5";
+        relPanel.style.display = 'none';
+      }
+    }
+
+    // 床位释放单选逻辑联动
+    function handleReleaseRadioChange() {
+      const activeConfig = modalState.currentTab === 'new' ? modalState.newConfig : modalState.oldConfig;
+      
+      const isDayChecked = document.getElementById('release-type-day').checked;
+      activeConfig.releaseType = isDayChecked ? 'day' : 'before';
+    }
+
+    // 保存弹窗配置并渲染保存动作反馈
+    function saveRuleConfig() {
+      const ruleName = document.getElementById('rule-name-input').value.trim();
+      if (!ruleName) {
+        showToast('error', '请输入床位规则名称');
+        return;
+      }
+
+      const activeConfig = modalState.currentTab === 'new' ? modalState.newConfig : modalState.oldConfig;
+      activeConfig.releaseDayTime = document.getElementById('release-day-time').value;
+      activeConfig.releaseDayPercent = parseInt(document.getElementById('release-day-percent').value) || 100;
+      activeConfig.releaseBeforeHours = parseInt(document.getElementById('release-before-hours').value) || 2;
+      activeConfig.releaseBeforePercent = parseInt(document.getElementById('release-before-percent').value) || 50;
+
+      showToast('success', `床位规则「${ruleName}」已成功配置并保存至云端数据库`);
+      closeModal();
+    }
+
+    // Toast 气泡消息提示器
+    function showToast(type, text) {
+      const toast = document.getElementById('toast');
+      const toastText = document.getElementById('toast-text');
+      const toastIcon = document.getElementById('toast-icon');
+
+      if (!toast || !toastText || !toastIcon) return; // 防御性保护
+
+      toastText.innerText = text;
+
+      if (type === 'success') {
+        toastIcon.innerHTML = `
+          <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+        `;
+      } else if (type === 'error') {
+        toastIcon.innerHTML = `
+          <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+        `;
+      } else {
+        toastIcon.innerHTML = `
+          <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+        `;
+      }
+
+      toast.classList.remove('opacity-0', 'scale-90', 'pointer-events-none');
+      toast.classList.add('opacity-100', 'scale-100');
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'scale-90', 'pointer-events-none');
+        toast.classList.remove('opacity-100', 'scale-100');
+      }, 3000);
+    }
+  </script>
+</body>
+</html>

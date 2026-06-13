@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+  />
+  <title>店长工作台 · 贝颜/百星</title>
+  <style>
+    *,*::before,*::after{box-sizing:border-box}
+    :root{
+      --bg:#f2f5fb;
+      --text:#0f172a;
+      --muted:#64748b;
+      --line:#dbeafe;
+      --brand:#2563eb;
+      --brand2:#0891b2;
+      --ok:#22c55e;
+      --warn:#f59e0b;
+      --risk:#f43f5e;
+      --card:#ffffffcc;
+    }
+    html,body{
+      margin:0;
+      padding:0;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",Roboto,Helvetica,Arial,sans-serif;
+      background:radial-gradient(1200px 800px at 20% 5%,#dbeafe 0%,transparent 55%),
+      radial-gradient(900px 600px at 90% 5%,#dbeafe 0%,transparent 46%),
+      var(--bg);
+      color:var(--text);
+    }
+    body{min-height:100vh}
+    .phone-wrap{
+      width:100%;
+      max-width:420px;
+      margin:0 auto;
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+      padding:.7rem .7rem 4.2rem;
+      gap:.7rem;
+      position:relative;
+    }
+    .card{
+      background:linear-gradient(180deg,var(--card),#fff);
+      backdrop-filter:blur(6px);
+      border:1px solid #e2e8f0;
+      border-radius:18px;
+      box-shadow:0 10px 24px rgba(15,23,42,.06);
+      padding:1rem;
+    }
+    .topbar{
+      background:#fff;
+      border-radius:18px;
+      padding:.9rem 1rem;
+      border:1px solid var(--line);
+      display:flex;
+      flex-direction:column;
+      gap:.65rem;
+    }
+    .top-row{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:.75rem;
+    }
+    .tag{
+      background:#e0edff;
+      color:#1d4ed8;
+      border-radius:999px;
+      padding:.2rem .65rem;
+      font-size:12px;
+      font-weight:700;
+      white-space:nowrap;
+    }
+    h1{
+      margin:0;
+      font-size:1.12rem;
+      line-height:1.15;
+      font-weight:800;
+    }
+    .muted{color:var(--muted)}
+    .time-strip{
+      display:flex;
+      gap:.45rem;
+      overflow:auto;
+      scrollbar-width:none;
+    }
+    .time-strip::-webkit-scrollbar{display:none}
+    .time-btn{
+      padding:.35rem .75rem;
+      border-radius:999px;
+      font-size:12px;
+      background:#f1f5ff;
+      border:1px solid #dbeafe;
+      color:#3b82f6;
+      white-space:nowrap;
+      cursor:pointer;
+    }
+    .time-btn.active{
+      background:linear-gradient(135deg,#3b82f6,#2563eb);
+      color:#fff;
+      border-color:transparent;
+    }
+    .metric-grid{
+      display:grid;
+      grid-template-columns:1.25fr .75fr;
+      gap:.7rem;
+    }
+    .big-kpi{
+      display:flex;
+      justify-content:space-between;
+      gap:.7rem;
+      align-items:flex-end;
+    }
+    .big-kpi .num{
+      font-size:1.56rem;
+      font-weight:900;
+      line-height:1.1;
+    }
+    .pill{
+      padding:.2rem .45rem;
+      border-radius:999px;
+      font-size:11px;
+      background:#ecfeff;
+      color:#0f766e;
+      border:1px solid #99f6e4;
+      margin-left:.35rem;
+    }
+    .small-label{font-size:11px;margin:.35rem 0 .15rem}
+    .progress-wrap{margin-top:.6rem}
+    .progress{
+      height:10px;border-radius:999px;
+      background:#e2e8f0;
+      overflow:hidden;
+      position:relative;
+    }
+    .progress>i{
+      height:100%; display:block;
+      background:linear-gradient(90deg,var(--brand),var(--brand2));
+      width:0;
+      transition:width .5s ease;
+    }
+    .small-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:.55rem;
+      margin-top:.7rem;
+    }
+    .metric-mini{
+      background:#f8fafc;
+      border-radius:14px;
+      padding:.55rem;
+      border:1px solid #e2e8f0;
+    }
+    .metric-mini .name{font-size:10px;color:var(--muted)}
+    .metric-mini .value{font-size:18px;font-weight:800;margin-top:.2rem}
+    .flex-row{
+      display:flex;
+      gap:.55rem;
+      align-items:center;
+      flex-wrap:wrap;
+      margin-top:.55rem;
+    }
+    .input-row{
+      display:flex;
+      gap:.55rem;
+      align-items:center;
+      flex-wrap:wrap;
+      margin-top:.55rem;
+    }
+    input[type="number"]{
+      flex:1;
+      min-width:0;
+      border:1px solid #cbd5e1;
+      background:#fff;
+      color:#0f172a;
+      border-radius:10px;
+      padding:.48rem .6rem;
+      font-size:14px;
+      outline:none;
+      appearance:textfield;
+    }
+    .btn{
+      border:1px solid #bfdbfe;
+      background:linear-gradient(135deg,#e0f2fe,#dbeafe);
+      color:#1d4ed8;
+      font-weight:700;
+      border-radius:10px;
+      padding:.45rem .8rem;
+      font-size:12px;
+      cursor:pointer;
+      white-space:nowrap;
+      transition:all .2s ease;
+    }
+    .btn:hover{
+      transform:translateY(-1px);
+      box-shadow:0 6px 16px rgba(37,99,235,.18);
+    }
+    .section-title{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-end;
+      gap:.55rem;
+      margin-bottom:.45rem;
+    }
+    .section-title h2{
+      margin:0;
+      font-size:1rem;
+      line-height:1.25;
+    }
+    .section-title .sub{
+      font-size:11px;color:var(--muted);
+      white-space:nowrap;
+    }
+    .quest-list{display:flex;flex-direction:column;gap:.55rem}
+    .quest{
+      border:1px solid #e2e8f0;
+      border-radius:14px;
+      padding:.7rem;
+      background:#fff;
+    }
+    .quest-top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:.6rem;
+    }
+    .quest-title{
+      display:flex;
+      align-items:center;
+      gap:.45rem;
+      font-weight:700;
+      font-size:.92rem;
+      line-height:1.3;
+    }
+    .level{
+      font-size:10px;
+      border-radius:8px;
+      padding:.15rem .42rem;
+      background:#ecfccb;
+      color:#365314;
+      border:1px solid #bef264;
+      font-weight:700;
+    }
+    .xp{
+      font-size:11px;
+      color:#0f766e;
+      background:#cffafe;
+      border:1px solid #99f6e4;
+      border-radius:999px;
+      padding:.12rem .45rem;
+      white-space:nowrap;
+    }
+    .quest-meta{
+      margin-top:.38rem;
+      font-size:11px;
+      color:var(--muted);
+      display:grid;
+      gap:.15rem;
+    }
+    .quest-meta span{white-space:pre-line}
+    .quest-row{
+      margin-top:.52rem;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:.5rem;
+    }
+    .quest-note{
+      color:#0f766e;
+      background:#ecfeff;
+      border:1px solid #a5f3fc;
+      border-radius:10px;
+      padding:.45rem .55rem;
+      font-size:11px;
+      margin-top:.45rem;
+    }
+    .check{
+      display:flex;
+      align-items:center;
+      gap:.35rem;
+      font-size:12px;
+      color:#334155;
+      cursor:pointer;
+      user-select:none;
+    }
+    .check input{accent-color:var(--brand)}
+    .role-switch{
+      display:flex;
+      border-radius:12px;
+      overflow:hidden;
+      background:#f1f5f9;
+      border:1px solid #dbeafe;
+    }
+    .role-switch button{
+      flex:1;
+      border:none;
+      background:#fff0;
+      color:#334155;
+      padding:.5rem .55rem;
+      font-size:12px;
+      font-weight:700;
+      border-right:1px solid #e2e8f0;
+      cursor:pointer;
+    }
+    .role-switch button:last-child{border-right:none}
+    .role-switch .active{
+      background:#2563eb;
+      color:#fff;
+      box-shadow:0 2px 8px rgba(37,99,235,.25);
+    }
+    .path-wrap{
+      display:grid;
+      gap:.65rem;
+    }
+    .path-card{
+      border-radius:14px;
+      padding:.72rem;
+      border:1px solid #e2e8f0;
+      background:linear-gradient(180deg,#fff,#f8fbff);
+    }
+    .path-card h3{
+      margin:.1rem 0 .45rem;
+      font-size:.96rem;
+    }
+    .path-card ul{
+      margin:0;
+      padding-left:1rem;
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.6;
+    }
+    .path-card li{margin:.16rem 0}
+    .path-card .tagline{
+      margin-top:.45rem;
+      font-size:11px;
+      color:#0f766e;
+      display:flex;
+      gap:.32rem;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    .module-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:.55rem;
+    }
+    .module{
+      border-radius:14px;
+      padding:.62rem;
+      border:1px solid #dbeafe;
+      background:#f8fbff;
+      min-height:96px;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+      gap:.4rem;
+    }
+    .module .top{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:.45rem;
+    }
+    .module .name{font-weight:800;font-size:13px}
+    .module .state{
+      font-size:10px;
+      color:#1d4ed8;
+      border:1px solid #bfdbfe;
+      background:#eff6ff;
+      border-radius:999px;
+      padding:.05rem .36rem;
+      white-space:nowrap;
+    }
+    .module .link{font-size:11px;color:#64748b}
+    .module .link strong{color:#334155}
+    .module .mini-btn{
+      align-self:flex-start;
+      margin-top:.12rem;
+      border:none;
+      border-radius:999px;
+      padding:.2rem .55rem;
+      font-size:11px;
+      background:#fff;
+      color:#0ea5e9;
+      border:1px solid #bae6fd;
+      cursor:pointer;
+    }
+    .alert{
+      border-left:4px solid #f59e0b;
+      border-radius:10px;
+      padding:.52rem .7rem;
+      background:#fff7ed;
+      font-size:11px;
+      color:#92400e;
+    }
+    .footer{
+      position:fixed;
+      left:0;
+      right:0;
+      bottom:0;
+      max-width:420px;
+      margin:0 auto;
+      background:#fffefc;
+      border-top:1px solid #e2e8f0;
+      padding:.55rem .7rem env(safe-area-inset-bottom);
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:.45rem;
+      z-index:40;
+    }
+    .f-item{
+      background:#fff;
+      border:1px solid #e2e8f0;
+      border-radius:12px;
+      padding:.45rem .35rem;
+      text-align:center;
+      font-size:10px;
+      color:#334155;
+    }
+    .f-item.active{
+      border-color:#93c5fd;
+      color:#1d4ed8;
+      font-weight:700;
+      background:#eff6ff;
+    }
+    @media (min-width:520px){
+      .phone-wrap{padding-bottom:1rem}
+      .footer{max-width:720px;position:relative;padding:.55rem}
+      .module-grid{grid-template-columns:repeat(3,1fr)}
+      .metric-grid{grid-template-columns:2fr 1fr}
+      .small-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+      .footer{display:none}
+    }
+  </style>
+</head>
+<body>
+  <div class="phone-wrap">
+    <header class="topbar">
+      <div class="top-row">
+        <div>
+          <div class="tag">店长工作台 v1.0</div>
+          <h1>贝颜/百星连锁 · 店长升级打怪中心</h1>
+        </div>
+        <div class="tag">店长 / 运营指挥位</div>
+      </div>
+      <div class="time-strip">
+        <button class="time-btn active">今天</button>
+        <button class="time-btn">本周</button>
+        <button class="time-btn">本月</button>
+        <button class="time-btn">本月上旬复盘</button>
+      </div>
+      <div class="muted">
+        目标思路：让系统不再是找功能，而是“告诉你今天该打哪个指标，打完就看到收入变化”
+      </div>
+    </header>
+
+    <section class="card">
+      <div class="section-title">
+        <h2>1. 先定目标，再做事</h2>
+        <div class="sub">当前日期：<strong id="todayDate">—</strong></div>
+      </div>
+      <div class="metric-grid">
+        <div>
+          <div class="small-label">本月目标（按月结算）</div>
+          <div class="big-kpi">
+            <div>
+              <div class="num" id="monthlyGoal">¥1,500,000</div>
+            </div>
+            <div class="pill">完成度 <span id="monthFinish">--</span></div>
+          </div>
+          <div class="progress-wrap">
+            <div class="progress"><i id="monthBar"></i></div>
+          </div>
+          <div class="flex-row">
+            <span class="muted">当前累计：<span id="monthReal">¥0</span></span>
+            <span class="muted">差额：<span id="monthGap">¥0</span></span>
+          </div>
+          <div class="input-row">
+            <input id="goalInput" type="number" value="1500000" min="0" step="10000" />
+            <button class="btn" id="recalcBtn">重新计算今日任务</button>
+          </div>
+        </div>
+        <div>
+          <div class="metric-mini">
+            <div class="name">今日目标人均新客单（优先）</div>
+            <div class="value" id="targetOrder">¥1,700</div>
+          </div>
+          <div class="metric-mini">
+            <div class="name">今日目标均客单（优先）</div>
+            <div class="value" id="targetAvg">¥1,300</div>
+          </div>
+          <div class="metric-mini">
+            <div class="name">剩余天数（含今天）</div>
+            <div class="value" id="remainDays">18天</div>
+          </div>
+          <div class="metric-mini">
+            <div class="name">今日目标新客数（智能拆解）</div>
+            <div class="value" id="needNewCust">-</div>
+          </div>
+        </div>
+      </div>
+      <div class="small-grid">
+        <div class="metric-mini">
+          <div class="name">新客业绩占比</div>
+          <div class="value" id="newRatio">70%</div>
+        </div>
+        <div class="metric-mini">
+          <div class="name">均客单</div>
+          <div class="value" id="avgTicket">¥1,650</div>
+        </div>
+        <div class="metric-mini">
+          <div class="name">新客到店成交</div>
+          <div class="value" id="arrivalRate">78%</div>
+        </div>
+        <div class="metric-mini">
+          <div class="name">外协回流</div>
+          <div class="value" id="external">6.8%</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-title">
+        <h2>2. 升级打怪：今天任务树</h2>
+        <div class="sub">你完成，系统给积分；积分直接映射本月提成阶梯</div>
+      </div>
+      <div class="quest-list" id="questList"></div>
+    </section>
+
+    <section class="card">
+      <div class="section-title">
+        <h2>3. 岗位任务路径（按岗位展开）</h2>
+        <div class="sub">同一目标，不同岗位执行不同动作</div>
+      </div>
+      <div class="role-switch" id="roleSwitch">
+        <button class="active" data-role="manager">店长</button>
+        <button data-role="consult">顾问</button>
+        <button data-role="tech">技师</button>
+      </div>
+      <div class="path-wrap" id="rolePath"></div>
+    </section>
+
+    <section class="card">
+      <div class="section-title">
+        <h2>4. AI 项目底座：统一入口</h2>
+        <div class="sub">保留原有系统开单与库存，外层只做串联</div>
+      </div>
+      <div class="module-grid" id="moduleGrid"></div>
+    </section>
+
+    <section class="card">
+      <div class="section-title">
+        <h2>5. AI 店长：当日提醒与复盘钩子</h2>
+        <div class="sub">把早会、晚会、周复盘都接在工作台</div>
+      </div>
+      <div class="alert">
+        今日重点关注：若“新客咨询数”连续2小时低于目标20%，则触发“AI客服放量模板+顾问加派”动作；若“签单转化”连续2次未达标，触发“跟单陪跑模板”。
+      </div>
+    </section>
+  </div>
+
+  <nav class="footer">
+    <div class="f-item active">工作台</div>
+    <div class="f-item">预约&开单</div>
+    <div class="f-item">AI入口</div>
+    <div class="f-item">复盘</div>
+  </nav>
+
+  <script>
+    const base = {
+      monthGoal: 1500000,
+      monthReal: 915000,
+      newOrderTicket: 1700,
+      avgTicket: 1650,
+      arrivalRate: 0.78,
+      newOrderRate: 0.7,
+      closeRate: 0.22,
+      oldBackfillNeed: 0.8,
+      newCustCount: 438,
+      totalCustomersTodayNeed: 58
+    };
+
+    const roleTasksMap = {
+      manager: [
+        '把“今天目标”拆给员工：先发“今日新客转化目标”和“顾问签约清单”。',
+        '巡店检查 2 次：前2小时和下班前各一次，检查前台接待、咨询接入、回访执行状态。',
+        '安排“当日人效分配”：主任今日接待2-3个新客优先保证咨询接起链路闭环。',
+        '把明日外部人效缺口（如缺技师）生成任务：打开“自动化招聘”，同步到区经。'
+      ],
+      consult: [
+        '今日新客目标：按系统建议完成 >= 8 次有效咨询的推进动作，目标签单3单。',
+        '每条咨询至少发1次AI话术 +1次图文确认，避免失速。',
+        '新客到店后，按顾问-设计师流程固定输出《需求确认》与《项目建议》。',
+        '重点关注高意向客户：对A类客户在3小时内完成首次回访动作。'
+      ],
+      tech: [
+        '按既有到店客户，启动“复购提醒闭环”：每位老客必须有30天内触达记录。',
+        '对昨日到店老客优先排期，完成当日2-3个高价值跟进点。',
+        '把技师建议与服务执行记录录入系统（不做重复录入、只做关键节点）。',
+        '协助顾问做体验反馈复盘：把满意点和异议点同步给咨询岗。'
+      ]
+    };
+
+    const moduleDefs = [
+      {name:'AI客服聊天',state:'推荐开',goal:'提升咨询接起率',tag:'产客'},
+      {name:'AI自动化回访',state:'开启中',goal:'拉动老客复购',tag:'回访'},
+      {name:'AI销售中枢',state:'重点',goal:'提高新客成交率',tag:'签单'},
+      {name:'考培陪练',state:'建议做',goal:'新员工上手',tag:'训练'},
+      {name:'AI店长会议',state:'固定',goal:'日报会自动生成',tag:'管理'},
+      {name:'视频自动剪辑',state:'按周',goal:'获客素材供给',tag:'内容'},
+      {name:'自动化招聘',state:'未开始',goal:'补齐人效缺口',tag:'招聘'},
+      {name:'AI面试小程序',state:'推荐',goal:'快速筛选',tag:'招聘'}
+    ];
+
+    const questTemplate = [
+      {title:'开启咨询漏斗', role:'店长/顾问', xp:20, risk:'high'},
+      {title:'顾问新客签单', role:'顾问', xp:30, risk:'high'},
+      {title:'技师老客复购', role:'技师', xp:16, risk:'medium'},
+      {title:'店内排班与接待核验', role:'店长', xp:12, risk:'low'},
+      {title:'AI回访任务分发', role:'店长', xp:12, risk:'medium'}
+    ];
+
+    function currency(v){
+      return `¥${Math.max(0, v || 0).toLocaleString()}`;
+    }
+    function pct(v){
+      return `${Math.round((v || 0) * 100)}%`;
+    }
+    function formatDate(d){
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    }
+
+    function calcPlan(state){
+      const today = new Date();
+      const daysTotal = new Date(today.getFullYear(), today.getMonth()+1, 0).getDate();
+      const remainDays = daysTotal - today.getDate() + 1;
+      const gap = Math.max(state.monthGoal - state.monthReal, 0);
+      const dailyNeed = Math.max(Math.ceil(gap / remainDays), 0);
+      const needNewCust = Math.max(Math.ceil(dailyNeed / state.newOrderTicket), 0);
+      const needLeads = Math.max(Math.ceil(needNewCust / Math.max(state.closeRate, 0.01)), 0);
+      const needCards = Math.max(Math.ceil(needNewCust * 1.2), 0);
+      return {remainDays, gap, dailyNeed, needNewCust, needLeads, needCards};
+    }
+
+    function updateHeader(){
+      const todayEl = document.getElementById('todayDate');
+      todayEl.textContent = formatDate(new Date());
+      const plan = calcPlan(base);
+      const monthGoalInput = document.getElementById('goalInput');
+      if (!monthGoalInput.dataset.inited){
+        monthGoalInput.value = base.monthGoal;
+        monthGoalInput.dataset.inited = '1';
+      }
+      const progress = Math.min(1, base.monthReal / base.monthGoal);
+
+      document.getElementById('monthlyGoal').textContent = currency(base.monthGoal);
+      document.getElementById('monthReal').textContent = currency(base.monthReal);
+      document.getElementById('monthGap').textContent = currency(plan.gap);
+      document.getElementById('monthFinish').textContent = pct(progress);
+      document.getElementById('monthBar').style.width = `${Math.round(progress * 100)}%`;
+      document.getElementById('remainDays').textContent = `${plan.remainDays}天`;
+      document.getElementById('needNewCust').textContent = `${plan.needNewCust}单`;
+      document.getElementById('targetOrder').textContent = currency(base.newOrderTicket);
+      document.getElementById('targetAvg').textContent = currency(base.avgTicket);
+      document.getElementById('newRatio').textContent = '70%';
+      document.getElementById('avgTicket').textContent = currency(base.avgTicket);
+      document.getElementById('arrivalRate').textContent = pct(base.arrivalRate);
+      document.getElementById('external').textContent = '6.8%';
+
+      renderQuests(plan);
+      renderRolePath('manager', plan);
+    }
+
+    function makeQuestNode(q, plan, idx){
+      const mapText = {
+        high: {label:'高优先', color:'#fee2e2', text:'#991b1b'},
+        medium: {label:'中优先', color:'#fef9c3', text:'#854d0e'},
+        low: {label:'常规', color:'#dcfce7', text:'#166534'}
+      }[q.risk];
+
+      const wrap = document.createElement('div');
+      wrap.className = 'quest';
+      const targetText = {
+        0: `今日至少争取 ${plan.needLeads} 条可推进咨询，并在 4 小时内分配给咨询顾问`,
+        1: `签单目标建议：今天新增新客 ${plan.needNewCust} 单，偏重客单≥${currency(base.newOrderTicket)}`,
+        2: `完成老客回访动作 ${Math.max(Math.round(base.newCustCount * 0.12), 4)} 人`,
+        3: `检查员工业绩看板 2 次，偏离值>15%立即做辅导`,
+        4: `触发 AI 回访任务，重点跟进沉默客户 ${plan.needCards} 人`
+      }[idx] || '按店内实际动态补充';
+
+      wrap.innerHTML = `
+        <div class="quest-top">
+          <div class="quest-title">
+            <span class="level">${mapText.label}</span>
+            <span>${q.title}</span>
+          </div>
+          <span class="xp">+${q.xp}积分</span>
+        </div>
+        <div class="quest-meta">
+          <span>岗位：${q.role}；指标关系：${q.role.includes('店长') ? '新客单/到店率/均客单' : q.role.includes('顾问') ? '新客成交/签单率' : '老客复购/回访率'}</span>
+          <span>目标动作：${targetText}</span>
+        </div>
+        <div class="quest-row">
+          <label class="check">
+            <input type="checkbox" data-quest="${idx}">
+            已完成
+          </label>
+          <button class="btn" style="padding:.34rem .58rem">打卡</button>
+        </div>
+        <div class="quest-note">
+          说明：完成此任务后，系统会自动在“岗位路径”里给相关员工加“今日目标任务单”。
+        </div>
+      `;
+      return wrap;
+    }
+
+    function renderQuests(plan){
+      const box = document.getElementById('questList');
+      box.innerHTML = '';
+      questTemplate.forEach((q, idx) => {
+        box.appendChild(makeQuestNode(q, plan, idx));
+      });
+    }
+
+    function renderRolePath(role, plan){
+      const roleBox = document.getElementById('rolePath');
+      const arr = roleTasksMap[role] || [];
+      roleBox.innerHTML = '';
+      arr.forEach((text, idx) => {
+        const card = document.createElement('div');
+        card.className = 'path-card';
+        const badge = role === 'manager' ? '今日优先' : role === 'consult' ? '签单主线' : '复购主线';
+        const goalText = idx === 0
+          ? `今日KPI支点：${role === 'manager' ? '新客签成效率/客流到店率' : role === 'consult' ? '新增新客/签约转化' : '老客复购与续约率'}`
+          : '与上条动作形成闭环';
+        card.innerHTML = `
+          <div class="tagline">
+            <span class="level">${badge}</span>
+            <span class="muted">任务#${idx + 1}</span>
+            <span class="muted">今日量化：${role === 'manager' ? '执行卡齐' : role === 'consult' ? `${plan.needNewCust}新客` : `${plan.needCards}老客点'} </span>
+          </div>
+          <h3>${text}</h3>
+          <ul><li>${goalText}</li><li>${role === 'manager' ? '完成后在系统中自动回填给个人/团队看板' : '完成后点击“打卡”同步店长AI建议'}</li></ul>
+        `;
+        roleBox.appendChild(card);
+      });
+    }
+
+    function renderModules(){
+      const grid = document.getElementById('moduleGrid');
+      moduleDefs.forEach(m => {
+        const d = document.createElement('div');
+        d.className = 'module';
+        d.innerHTML = `
+          <div>
+            <div class="top">
+              <div class="name">${m.name}</div>
+              <div class="state">${m.state}</div>
+            </div>
+            <div class="link">目标：<strong>${m.goal}</strong></div>
+            <div class="muted" style="font-size:11px;">模块标签：${m.tag}</div>
+          </div>
+          <button class="mini-btn">打开入口</button>
+        `;
+        grid.appendChild(d);
+      });
+    }
+
+    function bindRoleSwitch(){
+      const switcher = document.getElementById('roleSwitch');
+      switcher.addEventListener('click', (e) => {
+        const btn = e.target.closest('button');
+        if (!btn) return;
+        Array.from(switcher.children).forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+        renderRolePath(btn.dataset.role, calcPlan(base));
+      });
+    }
+
+    function bindRecalc(){
+      document.getElementById('recalcBtn').addEventListener('click', () => {
+        const v = Number(document.getElementById('goalInput').value || 0);
+        base.monthGoal = Math.max(v, base.monthReal);
+        updateHeader();
+      });
+      document.getElementById('goalInput').addEventListener('change', (e) => {
+        const v = Number(e.target.value || 0);
+        if (v >= 0){
+          base.monthGoal = Math.max(v, base.monthReal);
+          updateHeader();
+        }
+      });
+    }
+
+    function init(){
+      renderModules();
+      bindRoleSwitch();
+      bindRecalc();
+      updateHeader();
+    }
+    init();
+  </script>
+</body>
+</html>

@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能排客规则配置 - 弹窗重构版</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- React & Babel -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f5f7fa;
+        }
+        /* Enterprise PC scrollbar inside modal body */
+        .modal-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .modal-scroll::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+        .modal-scroll::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 3px;
+        }
+        .modal-scroll::-webkit-scrollbar-thumb:hover {
+            background: #b6b6b6;
+        }
+    </style>
+</head>
+<body class="text-slate-700 antialiased text-xs">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const Icons = {
+            Close: () => (
+                <svg className="w-4 h-4 text-slate-400 hover:text-slate-600 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            ),
+            Info: ({ className = "w-3.5 h-3.5 text-blue-500" }) => (
+                <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            ),
+            Check: () => (
+                <svg className="w-3.5 h-3.5 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                    <polyline points="20 6 9 17 4 12" />
+                </svg>
+            ),
+            Plus: () => (
+                <svg className="w-3.5 h-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                </svg>
+            ),
+            Delete: () => (
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+            )
+        };
+
+        function App() {
+            // 1. 基础信息状态
+            const [ruleName, setRuleName] = React.useState("标准智能排客规则_V2");
+            const [description, setDescription] = React.useState("本规则设立以减轻前线前台业务流表流程，保证就诊在时间内纳准客群精准能力匹配与平准。");
+
+            // 2. 员工基础能力分配配置状态 (三维指标拆分：核算新客单、排客客单、均客单)
+            const [modelPreset, setModelPreset] = React.useState("optimal"); // optimal | balance | mature
+            const [evalCycle, setEvalCycle] = React.useState("90");
+            const [dealWeight, setDealWeight] = React.useState(40);
+            const [priceWeight, setPriceWeight] = React.useState(30);
+            const [avgPriceWeight, setAvgPriceWeight] = React.useState(30);
+
+            // 3. 排客模式状态
+            const [schedMode, setSchedMode] = React.useState("smart"); // smart | fair
+
+            // 4. 智能排客附属高级策略状态
+            const [trimTime, setTrimTime] = React.useState(15);
+            const [waitTime, setWaitTime] = React.useState(10);
+            const [preferIdle, setPreferIdle] = React.useState(true);
+
+            // 接单上限与级别控制表格状态数据
+            const [penaltyRules, setPenaltyRules] = React.useState([
+                { id: 1, min: 0, max: 2, coeff: 1.00 },
+                { id: 2, min: 3, max: 5, coeff: 0.80 },
+                { id: 3, min: 6, max: 99, coeff: 0.60 }
+            ]);
+
+            // 同分完排打平规则状态
+            const [tieBreaker, setTieBreaker] = React.useState("collab"); // collab | wait
+
+            // 员工品项擅长系数配置状态
+            const [enableStreak, setEnableStreak] = React.useState(true);
+            const [streakCycle, setStreakCycle] = React.useState("90");
+            const [baseStreakLimit, setBaseStreakLimit] = React.useState(1.00);
+            const [deviationStreakCoeff, setDeviationStreakCoeff] = React.useState(0.70);
+
+            // 熟客工项对应与两规保护状态
+            const [protectDays, setProtectDays] = React.useState(30);
+            const [protectOrders, setProtectOrders] = React.useState(30);
+            const [baseProtect, setBaseProtect] = React.useState(0.30);
+            const [factorProtect, setFactorProtect] = React.useState(0.92);
+            const [transitionMode, setTransitionMode] = React.useState("smooth"); // direct | smooth
+
+            // 弹窗显隐模拟和 Toast 提示框状态
+            const [isModalOpen, setIsModalOpen] = React.useState(true);
+            const [toastMessage, setToastMessage] = React.useState(null);
+
+            const addRuleRow = () => {
+                const newId = penaltyRules.length > 0 ? Math.max(...penaltyRules.map(r => r.id)) + 1 : 1;
+                setPenaltyRules([...penaltyRules, { id: newId, min: 0, max: 0, coeff: 1.00 }]);
+            };
+
+            const removeRuleRow = (id) => {
+                setPenaltyRules(penaltyRules.filter(r => r.id !== id));
+            };
+
+            const updateRuleRow = (id, key, val) => {
+                setPenaltyRules(penaltyRules.map(r => r.id === id ? { ...r, [key]: Number(val) } : r));
+            };
+
+            const handleSave = () => {
+                setToastMessage("配置保存成功！排产机制已重新分发部署。");
+                setTimeout(() => setToastMessage(null), 3000);
+            };
+
+            const weightSum = Number(dealWeight) + Number(priceWeight) + Number(avgPriceWeight);
+
+            return (
+                <div className="w-screen h-screen bg-[#f0f2f5] overflow-hidden relative flex flex-col">
+                    
+                    {/* PC-style Background Mock Dashboard */}
+                    <header className="bg-white border-b border-slate-200 px-6 py-3 flex items-center justify-between shrink-0">
+                        <div className="flex items-center space-x-3">
+                            <span className="font-semibold text-slate-800 text-sm tracking-wide">WEID 微动</span>
+                            <span className="text-slate-300">/</span>
+                            <span className="text-slate-500">门诊管理</span>
+                            <span className="text-slate-300">/</span>
+                            <span className="text-slate-800 font-medium">智能排班配置</span>
+                        </div>
+                        <div className="flex items-center space-x-3">
+                            <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                            <span className="text-slate-600">系统管理员</span>
+                        </div>
+                    </header>
+
+                    <main className="flex-1 p-6 relative bg-slate-100 overflow-y-auto">
+                        <div className="bg-white p-6 rounded shadow-sm max-w-6xl mx-auto space-y-4 opacity-50 pointer-events-none">
+                            <div className="flex justify-between items-center pb-4 border-b">
+                                <h2 className="text-base font-semibold">排客分配规则版本列表</h2>
+                                <button className="px-3 py-1.5 bg-blue-600 text-white rounded font-medium text-xs">新建规则</button>
+                            </div>
+                            <table className="w-full text-left text-xs border">
+                                <thead>
+                                    <tr className="bg-slate-50 border-b">
+                                        <th className="p-3 font-semibold">序号</th>
+                                        <th className="p-3 font-semibold">规则名称</th>
+                                        <th className="p-3 font-semibold">适用门店</th>
+                                        <th className="p-3 font-semibold">更新时间</th>
+                                        <th className="p-3 font-semibold">状态</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr className="border-b">
+                                        <td className="p-3">1</td>
+                                        <td className="p-3">标准智能排客规则_V2</td>
+                                        <td className="p-3">全门店通用</td>
+                                        <td className="p-3">2026-06-02</td>
+                                        <td className="p-3 text-emerald-600">生效中</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {!isModalOpen && (
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <button 
+                                    onClick={() => setIsModalOpen(true)}
+                                    className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded shadow-md font-semibold text-xs tracking-wide transition-all"
+                                >
+                                    重新打开新建规则弹窗 (Modal)
+                                </button>
+                            </div>
+                        )}
+                    </main>
+
+                    {/* ======================================================== */}
+                    {/* MODAL CONFIG DIALOG (CENTERED PC BACKDROP)               */}
+                    {/* ======================================================== */}
+                    {isModalOpen && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-[1px] animate-fade-in">
+                            
+                            <div className="bg-white rounded-lg shadow-2xl w-full max-w-[720px] max-h-[90vh] flex flex-col overflow-hidden border border-slate-200">
+                                
+                                {/* Modal Header */}
+                                <div className="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between shrink-0 bg-white">
+                                    <h3 className="text-sm font-semibold text-slate-800">新建规则</h3>
+                                    <button onClick={() => setIsModalOpen(false)} className="p-1 hover:bg-slate-100 rounded-full transition-colors">
+                                        <Icons.Close />
+                                    </button>
+                                </div>
+
+                                {/* Modal Body (Scrollable Panel) */}
+                                <div className="modal-scroll flex-1 overflow-y-auto p-5 space-y-5 bg-[#fafbfd]">
+                                    
+                                    {/* -------------------------------------------------------- */}
+                                    {/* SECTION 1: 基础信息                                       */}
+                                    {/* -------------------------------------------------------- */}
+                                    <div className="bg-white rounded border border-slate-200/80 p-4 space-y-3.5 shadow-sm">
+                                        <div className="flex items-center space-x-1.5 pb-2 border-b border-slate-100">
+                                            <span className="w-1.5 h-3 bg-blue-600 rounded-sm"></span>
+                                            <h4 className="text-xs font-semibold text-slate-800">基础信息</h4>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 gap-3.5 text-xs">
+                                            <div className="space-y-1">
+                                                <label className="text-slate-600 font-medium flex items-center">
+                                                    <span className="text-rose-500 mr-1">*</span> 规则名称
+                                                </label>
+                                                <input 
+                                                    type="text" 
+                                                    value={ruleName}
+                                                    onChange={(e) => setRuleName(e.target.value)}
+                                                    className="w-full h-8 px-2.5 border border-slate-200 rounded text-slate-800 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition-all bg-slate-50/50"
+                                                    placeholder="请输入规则名称"
+                                                />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-slate-600 font-medium">说明</label>
+                                                <textarea 
+                                                    rows="2"
+                                                    value={description}
+                                                    onChange={(e) => setDescription(e.target.value)}
+                                                    className="w-full p-2 border border-slate-200 rounded text-slate-800 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition-all bg-slate-50/50 text-xs leading-relaxed resize-none"
+                                                    placeholder="请输入说明细节描述"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* -------------------------------------------------------- */}
+                                    {/* SECTION 2: 员工基础能力分配配置                            */}
+                                    {/* -------------------------------------------------------- */}
+                                    <div className="bg-white rounded border border-slate-200/80 p-4 space-y-4 shadow-sm">
+                                        <div className="flex items-center space-x-1.5 pb-2 border-b border-slate-100">
+                                            <span className="w-1.5 h-3 bg-blue-600 rounded-sm"></span>
+                                            <h4 className="text-xs font-semibold text-slate-800">员工基础能力分配配置</h4>
+                                        </div>
+
+                                        {/* Preset Selection Cards */}
+                                        <div className="space-y-1.5">
+                                            <label className="text-slate-600 font-medium block">评分模型预设 <span className="text-slate-400 font-normal">（选定最偏向分配标准）</span></label>
+                                            <div className="grid grid-cols-3 gap-2.5">
+                                                {[
+                                                    { id: 'optimal', title: '冲击最优型', desc: '狼性模式', formula: '模型最高分 100，最低分 10' },
+                                                    { id: 'balance', title: '团队平衡', desc: '大调店/新店模式', formula: '模型最高分 100，最低分 50' },
+                                                    { id: 'mature', title: '成熟门店', desc: '建议模式', formula: '模型最高分 100，最低分 20' }
+                                                ].map((preset) => (
+                                                    <div 
+                                                        key={preset.id}
+                                                        onClick={() => setModelPreset(preset.id)}
+                                                        className={`relative p-3 border rounded cursor-pointer transition-all flex flex-col justify-between h-[90px] select-none ${
+                                                            modelPreset === preset.id 
+                                                            ? 'border-blue-500 bg-blue-50/20 ring-1 ring-blue-500/10' 
+                                                            : 'border-slate-200 bg-white hover:border-slate-300'
+                                                        }`}
+                                                    >
+                                                        <div className="space-y-1">
+                                                            <div className="flex items-center justify-between">
+                                                                <span className="font-semibold text-slate-800">{preset.title}</span>
+                                                                {modelPreset === preset.id && <Icons.Check />}
+                                                            </div>
+                                                            <p className="text-[10px] text-slate-400 leading-normal">{preset.desc}</p>
+                                                        </div>
+                                                        <p className="text-[9px] text-slate-400 font-mono mt-1 border-t border-slate-100 pt-1">{preset.formula}</p>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-4">
+                                            {/* Overall Eval Period Selector */}
+                                            <div className="space-y-1.5">
+                                                <label className="text-slate-600 font-medium block">评估周期</label>
+                                                <select 
+                                                    value={evalCycle}
+                                                    onChange={(e) => setEvalCycle(e.target.value)}
+                                                    className="w-full h-8 px-2 border border-slate-200 rounded bg-white text-slate-700 outline-none focus:border-blue-500 cursor-pointer"
+                                                >
+                                                    <option value="30">近 30 天</option>
+                                                    <option value="90">近 90 天</option>
+                                                    <option value="180">近 180 天</option>
+                                                </select>
+                                            </div>
+
+                                            {/* Weights Slider/Ratio Configuration (3-Column Layout for Three Indicators) */}
+                                            <div className="space-y-1.5">
+                                                <div className="flex justify-between items-center">
+                                                    <label className="text-slate-600 font-medium">评估指标</label>
+                                                    <span className={`text-[10px] font-bold ${weightSum === 100 ? 'text-emerald-600' : 'text-amber-500'}`}>
+                                                        当前权重总和: {weightSum}% {weightSum !== 100 && "(标准到达 100%)"}
+                                                    </span>
+                                                </div>
+                                                <div className="grid grid-cols-3 gap-1.5">
+                                                    <div className="flex items-center h-8 border border-slate-200 rounded overflow-hidden bg-white px-1.5 focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500/20">
+                                                        <input 
+                                                            type="checkbox" 
+                                                            checked={true} 
+                                                            readOnly
+                                                            className="rounded border-slate-300 text-blue-600 mr-1 focus:ring-0 cursor-default shrink-0"
+                                                        />
+                                                        <span className="text-slate-500 shrink-0 text-[10px] mr-0.5">新客单:</span>
+                                                        <input 
+                                                            type="number" 
+                                                            value={dealWeight} 
+                                                            onChange={(e) => setDealWeight(Number(e.target.value))}
+                                                            className="w-full text-right outline-none font-medium text-slate-800 text-[10px]"
+                                                        />
+                                                        <span className="text-slate-400 pl-0.5 text-[9px] shrink-0">%</span>
+                                                    </div>
+                                                    <div className="flex items-center h-8 border border-slate-200 rounded overflow-hidden bg-white px-1.5 focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500/20">
+                                                        <input 
+                                                            type="checkbox" 
+                                                            checked={true} 
+                                                            readOnly
+                                                            className="rounded border-slate-300 text-blue-600 mr-1 focus:ring-0 cursor-default shrink-0"
+                                                        />
+                                                        <span className="text-slate-500 shrink-0 text-[10px] mr-0.5">客单:</span>
+                                                        <input 
+                                                            type="number" 
+                                                            value={priceWeight} 
+                                                            onChange={(e) => setPriceWeight(Number(e.target.value))}
+                                                            className="w-full text-right outline-none font-medium text-slate-800 text-[10px]"
+                                                        />
+                                                        <span className="text-slate-400 pl-0.5 text-[9px] shrink-0">%</span>
+                                                    </div>
+                                                    <div className="flex items-center h-8 border border-slate-200 rounded overflow-hidden bg-white px-1.5 focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500/20">
+                                                        <input 
+                                                            type="checkbox" 
+                                                            checked={true} 
+                                                            readOnly
+                                                            className="rounded border-slate-300 text-blue-600 mr-1 focus:ring-0 cursor-default shrink-0"
+                                                        />
+                                                        <span className="text-slate-500 shrink-0 text-[10px] mr-0.5">均客单:</span>
+                                                        <input 
+                                                            type="number" 
+                                                            value={avgPriceWeight} 
+                                                            onChange={(e) => setAvgPriceWeight(Number(e.target.value))}
+                                                            className="w-full text-right outline-none font-medium text-slate-800 text-[10px]"
+                                                        />
+                                                        <span className="text-slate-400 pl-0.5 text-[9px] shrink-0">%</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* -------------------------------------------------------- */}
+                                    {/* SECTION 3: 排客模式的选择                                 */}
+                                    {/* -------------------------------------------------------- */}
+                                    <div className="bg-white rounded border border-slate-200/80 p-4 space-y-3.5 shadow-sm">
+                                        <div className="flex items-center space-x-1.5 pb-2 border-b border-slate-100">
+                                            <span className="w-1.5 h-3 bg-blue-600 rounded-sm"></span>
+                                            <h4 className="text-xs font-semibold text-slate-800">排客模式</h4>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div 
+                                                onClick={() => setSchedMode('smart')}
+                                                className={`p-3 border rounded cursor-pointer transition-all flex items-start gap-2.5 ${
+                                                    schedMode === 'smart' 
+                                                    ? 'border-blue-500 bg-blue-50/10' 
+                                                    : 'border-slate-200 bg-white hover:border-slate-300'
+                                                }`}
+                                            >
+                                                <div className="mt-0.5">
+                                                    <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${schedMode === 'smart' ? 'border-blue-500 text-blue-500' : 'border-slate-300'}`}>
+                                                        {schedMode === 'smart' && <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>}
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-0.5">
+                                                    <span className="font-semibold text-slate-800 block text-[11px]">智能排客</span>
+                                                    <span className="text-[10px] text-slate-400 leading-relaxed block">基于中台智能算法，综合评估员工能力与忙闲状态，实现门店业绩与客户体验最大化</span>
+                                                </div>
+                                            </div>
+
+                                            <div 
+                                                onClick={() => setSchedMode('fair')}
+                                                className={`p-3 border rounded cursor-pointer transition-all flex items-start gap-2.5 ${
+                                                    schedMode === 'fair' 
+                                                    ? 'border-blue-500 bg-blue-50/10' 
+                                                    : 'border-slate-200 bg-white hover:border-slate-300'
+                                                }`}
+                                            >
+                                                <div className="mt-0.5">
+                                                    <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${schedMode === 'fair' ? 'border-blue-500 text-blue-500' : 'border-slate-300'}`}>
+                                                        {schedMode === 'fair' && <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>}
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-0.5">
+                                                    <span className="font-semibold text-slate-800 block text-[11px]">公平轮排</span>
+                                                    <span className="text-[10px] text-slate-400 leading-relaxed block">按员工上次接待时间依次循环分配，适合客流平稳、注重绝对平均的场景</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* -------------------------------------------------------- */}
+                                    {/* SECTION 4: 智能排客高级附属配置 (CONDITIONAL RENDERING)    */}
+                                    {/* -------------------------------------------------------- */}
+                                    {schedMode === 'fair' ? (
+                                        <div className="bg-amber-50/60 border border-amber-200/80 p-4 rounded flex gap-2.5 shadow-sm animate-fade-in">
+                                            <div className="shrink-0 mt-0.5"><Icons.Info className="w-4 h-4 text-amber-500" /></div>
+                                            <div className="space-y-1">
+                                                <h5 className="font-semibold text-amber-800 text-xs">已启用“公平轮排”分配策略</h5>
+                                                <p className="text-[11px] text-slate-500 leading-relaxed">
+                                                    在该模式下，系统将自动挂起所有复杂的“床位提前释放”、“负荷限制”、“打平规则”以及“熟客保护”等智能分配加权项，以确保每位就绪医生均能获得最直观、无差异的均等轮候。
+                                                </p>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-5 animate-fade-in">
+                                            
+                                            {/* 4.1 床位提前释放与等待时效 */}
+                                            <div className="bg-white rounded border border-slate-200/80 p-4 space-y-4 shadow-sm">
+                                                <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                                                    <div className="flex items-center space-x-1.5">
+                                                        <span className="w-1.5 h-3 bg-blue-600 rounded-sm"></span>
+                                                        <h4 className="text-xs font-semibold text-slate-800">空闲与等待时长</h4>
+                                                    </div>
+                                                </div>
+
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    {/* Spatial Clipping Time Input */}
+                                                    <div className="space-y-1">
+                                                        <label className="text-slate-600 font-medium block">床位提前释放</label>
+                                                        <div className="flex items-center">
+                                                            <div className="flex items-center w-full h-8 border border-slate-200 rounded overflow-hidden bg-white">
+                                                                <button 
+                                                                    onClick={() => setTrimTime(Math.max(0, trimTime - 1))}
+                                                                    className="w-8 h-full bg-slate-50 hover:bg-slate-100 border-r border-slate-200 font-semibold text-sm text-slate-500 active:bg-slate-200 select-none"
+                                                                >
+                                                                    -
+                                                                </button>
+                                                                <input 
+                                                                    type="number" 
+                                                                    value={trimTime} 
+                                                                    onChange={(e) => setTrimTime(Number(e.target.value))}
+                                                                    className="flex-1 text-center outline-none font-medium font-mono text-slate-800 h-full"
+                                                                />
+                                                                <button 
+                                                                    onClick={() => setTrimTime(trimTime + 1)}
+                                                                    className="w-8 h-full bg-slate-50 hover:bg-slate-100 border-l border-slate-200 font-semibold text-sm text-slate-500 active:bg-slate-200 select-none"
+                                                                >
+                                                                    +
+                                                                </button>
+                                                            </div>
+                                                            <span className="text-slate-400 pl-2 shrink-0">分钟</span>
+                                                        </div>
+                                                        <p className="text-[10px] text-slate-400 leading-normal mt-1">员工服务快结束前几分钟，视为“空闲”并开始派下一单。</p>
+                                                    </div>
+
+                                                    {/* Customer Wait Time Input */}
+                                                    <div className="space-y-1">
+                                                        <label className="text-slate-600 font-medium block">客户愿意等待时间</label>
+                                                        <div className="flex items-center">
+                                                            <div className="flex items-center w-full h-8 border border-slate-200 rounded overflow-hidden bg-white">
+                                                                <button 
+                                                                    onClick={() => setWaitTime(Math.max(0, waitTime - 1))}
+                                                                    className="w-8 h-full bg-slate-50 hover:bg-slate-100 border-r border-slate-200 font-semibold text-sm text-slate-500 active:bg-slate-200 select-none"
+                                                                >
+                                                                    -
+                                                                </button>
+                                                                <input 
+                                                                    type="number" 
+                                                                    value={waitTime} 
+                                                                    onChange={(e) => setWaitTime(Number(e.target.value))}
+                                                                    className="flex-1 text-center outline-none font-medium font-mono text-slate-800 h-full"
+                                                                />
+                                                                <button 
+                                                                    onClick={() => setWaitTime(waitTime + 1)}
+                                                                    className="w-8 h-full bg-slate-50 hover:bg-slate-100 border-l border-slate-200 font-semibold text-sm text-slate-500 active:bg-slate-200 select-none"
+                                                                >
+                                                                    +
+                                                                </button>
+                                                            </div>
+                                                            <span className="text-slate-400 pl-2 shrink-0">分钟</span>
+                                                        </div>
+                                                        <p className="text-[10px] text-slate-400 leading-normal mt-1">当出现排队时，客户能排队等待的极限时间</p>
+                                                    </div>
+                                                </div>
+
+                                                {/* Prioritize Idle Switch */}
+                                                <div className="border-t border-slate-100 pt-3.5 flex items-center justify-between">
+                                                    <div className="space-y-0.5 pr-4">
+                                                        <span className="font-semibold text-slate-700 text-[11px] block">优先排空闲员工连接</span>
+                                                    </div>
+                                                    <button 
+                                                        onClick={() => setPreferIdle(!preferIdle)}
+                                                        className={`relative inline-flex h-4 w-8 shrink-0 cursor-pointer rounded-full transition-colors duration-200 focus:outline-none ${preferIdle ? 'bg-blue-600' : 'bg-slate-200'}`}
+                                                    >
+                                                        <span className={`pointer-events-none inline-block h-3 w-3 transform rounded-full bg-white shadow-sm transition duration-200 ${preferIdle ? 'translate-x-4.5' : 'translate-x-0.5'} mt-0.5`} />
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            {/* 4.2 接单上限与级别控制 */}
+                                            <div className="bg-white rounded border border-slate-200/80 p-4 space-y-3 shadow-sm">
+                                                <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                                                    <div className="flex items-center space-x-1.5">
+                                                        <span className="w-1.5 h-3 bg-blue-600 rounded-sm"></span>
+                                                        <h4 className="text-xs font-semibold text-slate-800">接单上限与级别控制</h4>
+                                                    </div>
+                                                    <button 
+                                                        onClick={addRuleRow}
+                                                        className="text-[10px] text-blue-600 hover:text-blue-700 font-medium flex items-center hover:underline"
+                                                    >
+                                                        <Icons.Plus /> 添加阶梯限制
+                                                    </button>
+                                                </div>
+                                                <p className="text-[10px] text-slate-400 leading-none">防止员工接单太累，系数低接单越少</p>
+
+                                                {/* Clean Flat Grid Table (PC element UI Style) */}
+                                                <div className="border border-slate-100 rounded overflow-hidden">
+                                                    <table className="w-full text-left text-xs border-collapse">
+                                                        <thead>
+                                                            <tr className="bg-slate-50 text-slate-500 font-medium border-b border-slate-100 text-[10px]">
+                                                                <th className="px-3 py-2 border-r border-slate-100">起止单量 (单)</th>
+                                                                <th className="px-3 py-2 border-r border-slate-100">惩罚系数</th>
+                                                                <th className="px-3 py-2 text-center w-16">操作</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody className="divide-y divide-slate-100 text-slate-600">
+                                                            {penaltyRules.map((rule, idx) => (
+                                                                <tr key={rule.id} className="hover:bg-slate-50/30">
+                                                                    <td className="px-3 py-1.5 border-r border-slate-100">
+                                                                        <div className="flex items-center space-x-2">
+                                                                            <input 
+                                                                                type="number" 
+                                                                                value={rule.min}
+                                                                                onChange={(e) => updateRuleRow(rule.id, 'min', e.target.value)}
+                                                                                className="w-14 h-7 border border-slate-200 rounded px-1 text-center bg-white" 
+                                                                            />
+                                                                            <span className="text-slate-400 text-[10px]">至</span>
+                                                                            {idx === penaltyRules.length - 1 ? (
+                                                                                <span className="text-slate-500 text-[10px] pl-1 font-semibold">及以上</span>
+                                                                            ) : (
+                                                                                <input 
+                                                                                    type="number" 
+                                                                                    value={rule.max}
+                                                                                    onChange={(e) => updateRuleRow(rule.id, 'max', e.target.value)}
+                                                                                    className="w-14 h-7 border border-slate-200 rounded px-1 text-center bg-white" 
+                                                                                />
+                                                                            )}
+                                                                        </div>
+                                                                    </td>
+                                                                    <td className="px-3 py-1.5 border-r border-slate-100">
+                                                                        <div className="flex items-center w-32 h-7 border border-slate-200 rounded overflow-hidden bg-white">
+                                                                            <button 
+                                                                                onClick={() => updateRuleRow(rule.id, 'coeff', Math.max(0, rule.coeff - 0.05).toFixed(2))}
+                                                                                className="w-6 h-full bg-slate-50 hover:bg-slate-100 font-semibold text-xs text-slate-500 active:bg-slate-100"
+                                                                            >
+                                                                                -
+                                                                            </button>
+                                                                            <input 
+                                                                                type="number" 
+                                                                                step="0.05"
+                                                                                value={rule.coeff}
+                                                                                onChange={(e) => updateRuleRow(rule.id, 'coeff', e.target.value)}
+                                                                                className="flex-1 text-center outline-none font-semibold font-mono text-slate-800 text-[11px]" 
+                                                                            />
+                                                                            <button 
+                                                                                onClick={() => updateRuleRow(rule.id, 'coeff', (Number(rule.coeff) + 0.05).toFixed(2))}
+                                                                                className="w-6 h-full bg-slate-50 hover:bg-slate-100 font-semibold text-xs text-slate-500 active:bg-slate-100"
+                                                                            >
+                                                                                +
+                                                                            </button>
+                                                                        </div>
+                                                                    </td>
+                                                                    <td className="px-3 py-1.5 text-center">
+                                                                        <button 
+                                                                            onClick={() => removeRuleRow(rule.id)}
+                                                                            className="text-slate-400 hover:text-rose-600 transition p-1 rounded hover:bg-rose-50"
+                                                                        >
+                                                                            <Icons.Delete />
+                                                                        </button>
+                                                                    </td>
+                                                                </tr>
+                                                            ))}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+
+                                            {/* 4.3 同分完排打平规则 */}
+                                            <div className="bg-white rounded border border-slate-200/80 p-4 space-y-3 shadow-sm">
+                                                <div className="flex items-center justify-between pb-1 border-b border-slate-100">
+                                                    <div className="flex items-center space-x-1.5">
+                                                        <span className="w-1.5 h-3 bg-blue-600 rounded-sm"></span>
+                                                        <h4 className="text-xs font-semibold text-slate-800">同分完排打平规则</h4>
+                                                    </div>
+                                                </div>
+                                                <p className="text-[10px] text-slate-400 leading-none">当多位员工最终综合评分相同时，系统将执行以下备选抉择模式：</p>
+
+                                                <div className="grid grid-cols-2 gap-3 pt-1">
+                                                    <div 
+                                                        onClick={() => setTieBreaker('collab')}
+                                                        className={`p-3 border rounded cursor-pointer transition-all flex items-start gap-2.5 ${
+                                                            tieBreaker === 'collab' 
+                                                            ? 'border-blue-500 bg-blue-50/10' 
+                                                            : 'border-slate-200 bg-white hover:border-slate-300'
+                                                        }`}
+                                                    >
+                                                        <div className="mt-0.5">
+                                                            <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${tieBreaker === 'collab' ? 'border-blue-500 text-blue-500' : 'border-slate-300'}`}>
+                                                                {tieBreaker === 'collab' && <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>}
+                                                            </div>
+                                                        </div>
+                                                        <div className="space-y-0.5">
+                                                            <span className="font-semibold text-slate-800 block text-[11px]">当日分配最少者</span>
+                                                            <span className="text-[10px] text-slate-400 leading-relaxed block">优先分发给当日接单最少的员工。</span>
+                                                        </div>
+                                                    </div>
+
+                                                    <div 
+                                                        onClick={() => setTieBreaker('wait')}
+                                                        className={`p-3 border rounded cursor-pointer transition-all flex items-start gap-2.5 ${
+                                                            tieBreaker === 'wait' 
+                                                            ? 'border-blue-500 bg-blue-50/10' 
+                                                            : 'border-slate-200 bg-white hover:border-slate-300'
+                                                        }`}
+                                                    >
+                                                        <div className="mt-0.5">
+                                                            <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${tieBreaker === 'wait' ? 'border-blue-500 text-blue-500' : 'border-slate-300'}`}>
+                                                                {tieBreaker === 'wait' && <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>}
+                                                            </div>
+                                                        </div>
+                                                        <div className="space-y-0.5">
+                                                            <span className="font-semibold text-slate-800 block text-[11px]">客户等待最少</span>
+                                                            <span className="text-[10px] text-slate-400 leading-relaxed block">优先分发给在最先空闲的员工。</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* 4.4 员工品项擅长系数配置 (连铁配置) */}
+                                            <div className="bg-white rounded border border-slate-200/80 p-4 space-y-4 shadow-sm">
+                                                <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                                                    <div className="flex items-center space-x-1.5">
+                                                        <span className="w-1.5 h-3 bg-blue-600 rounded-sm"></span>
+                                                        <h4 className="text-xs font-semibold text-slate-800">员工品项擅长系数配置</h4>
+                                                    </div>
+                                                    <button 
+                                                        onClick={() => setEnableStreak(!enableStreak)}
+                                                        className={`relative inline-flex h-4 w-8 shrink-0 cursor-pointer rounded-full transition-colors duration-200 focus:outline-none ${enableStreak ? 'bg-blue-600' : 'bg-slate-200'}`}
+                                                    >
+                                                        <span className={`pointer-events-none inline-block h-3 w-3 transform rounded-full bg-white shadow-sm transition duration-200 ${enableStreak ? 'translate-x-4.5' : 'translate-x-0.5'} mt-0.5`} />
+                                                    </button>
+                                                </div>
+
+                                                {enableStreak && (
+                                                    <div className="grid grid-cols-2 gap-4 pt-1 animate-fade-in">
+                                                        {/* Filter Cycle */}
+                                                        <div className="space-y-1">
+                                                            <label className="text-slate-600 font-medium block">品项数据历史周期</label>
+                                                            <select 
+                                                                value={streakCycle}
+                                                                onChange={(e) => setStreakCycle(e.target.value)}
+                                                                className="w-full h-8 px-2 border border-slate-200 rounded bg-white text-slate-700 outline-none focus:border-blue-500 cursor-pointer"
+                                                            >
+                                                                <option value="30">滚动 30 天</option>
+                                                                <option value="90">滚动 90 天</option>
+                                                                <option value="180">滚动 180 天</option>
+                                                            </select>
+                                                        </div>
+
+                                                        {/* Parameters Coeff Limits */}
+                                                        <div className="space-y-1.5">
+                                                            <label className="text-slate-600 font-medium block">系数设定</label>
+                                                            <div className="space-y-2">
+                                                                {/* Base Limit */}
+                                                                <div className="flex items-center justify-between">
+                                                                    <span className="text-slate-500 text-[11px]">最高系数上限:</span>
+                                                                    <div className="flex items-center w-28 h-7 border border-slate-200 rounded overflow-hidden bg-white">
+                                                                        <button 
+                                                                            onClick={() => setBaseStreakLimit(Math.max(0, baseStreakLimit - 0.05).toFixed(2))}
+                                                                            className="w-6 h-full bg-slate-50 hover:bg-slate-100 font-semibold text-xs text-slate-500 active:bg-slate-100"
+                                                                        >
+                                                                            -
+                                                                        </button>
+                                                                        <input 
+                                                                            type="number" 
+                                                                            step="0.05"
+                                                                            value={baseStreakLimit}
+                                                                            onChange={(e) => setBaseStreakLimit(Number(e.target.value))}
+                                                                            className="flex-1 text-center outline-none font-semibold font-mono text-slate-800 text-[11px]" 
+                                                                        />
+                                                                        <button 
+                                                                            onClick={() => setBaseStreakLimit((Number(baseStreakLimit) + 0.05).toFixed(2))}
+                                                                            className="w-6 h-full bg-slate-50 hover:bg-slate-100 font-semibold text-xs text-slate-500 active:bg-slate-100"
+                                                                        >
+                                                                            +
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                                {/* Deviation Coeff */}
+                                                                <div className="flex items-center justify-between">
+                                                                    <span className="text-slate-500 text-[11px]">最低保底系数:</span>
+                                                                    <div className="flex items-center w-28 h-7 border border-slate-200 rounded overflow-hidden bg-white">
+                                                                        <button 
+                                                                            onClick={() => setDeviationStreakCoeff(Math.max(0, deviationStreakCoeff - 0.05).toFixed(2))}
+                                                                            className="w-6 h-full bg-slate-50 hover:bg-slate-100 font-semibold text-xs text-slate-500 active:bg-slate-100"
+                                                                        >
+                                                                            -
+                                                                        </button>
+                                                                        <input 
+                                                                            type="number" 
+                                                                            step="0.05"
+                                                                            value={deviationStreakCoeff}
+                                                                            onChange={(e) => setDeviationStreakCoeff(Number(e.target.value))}
+                                                                            className="flex-1 text-center outline-none font-semibold font-mono text-slate-800 text-[11px]" 
+                                                                        />
+                                                                        <button 
+                                                                            onClick={() => setDeviationStreakCoeff((Number(deviationStreakCoeff) + 0.05).toFixed(2))}
+                                                                            className="w-6 h-full bg-slate-50 hover:bg-slate-100 font-semibold text-xs text-slate-500 active:bg-slate-100"
+                                                                        >
+                                                                            +
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* 4.5 熟客工项对应与两规保护 */}
+                                            <div className="bg-white rounded border border-slate-200/80 p-4 space-y-4 shadow-sm relative overflow-hidden">
+                                                {/* Advanced Tag */}
+                                                <div className="absolute top-0 right-0 bg-blue-500 text-white text-[8px] font-bold px-2 py-0.5 rounded-bl">
+                                                    进阶
+                                                </div>
+
+                                                <div className="flex items-center space-x-1.5 pb-2 border-b border-slate-100">
+                                                    <span className="w-1.5 h-3 bg-blue-600 rounded-sm"></span>
+                                                    <h4 className="text-xs font-semibold text-slate-800">熟客工项对应与两规保护</h4>
+                                                </div>
+
+                                                {/* Protect definition triggers */}
+                                                <div className="space-y-2">
+                                                    <label className="text-slate-600 font-medium block">新员工排客保护</label>
+                                                    <div className="flex items-center gap-2 bg-slate-50 p-2.5 rounded border border-slate-100 text-slate-600">
+                                                        <span>近 </span>
+                                                        <input 
+                                                            type="number" 
+                                                            value={protectDays}
+                                                            onChange={(e) => setProtectDays(Number(e.target.value))}
+                                                            className="w-12 h-6 border border-slate-200 rounded text-center font-mono focus:border-blue-500 outline-none"
+                                                        />
+                                                        <span> 天内 累计接单少于 </span>
+                                                        <input 
+                                                            type="number" 
+                                                            value={protectOrders}
+                                                            onChange={(e) => setProtectOrders(Number(e.target.value))}
+                                                            className="w-12 h-6 border border-slate-200 rounded text-center font-mono focus:border-blue-500 outline-none"
+                                                        />
+                                                        <span> 单。</span>
+                                                    </div>
+                                                </div>
+
+                                                {/* Protection Coefficients inputs */}
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div className="space-y-1">
+                                                        <label className="text-slate-600 font-medium block">基础能力保护等分</label>
+                                                        <input 
+                                                            type="number" 
+                                                            step="0.05"
+                                                            value={baseProtect} 
+                                                            onChange={(e) => setBaseProtect(Number(e.target.value))}
+                                                            className="w-full h-8 px-2.5 border border-slate-200 rounded bg-white text-slate-800 font-mono text-[11px] outline-none focus:border-blue-500"
+                                                            placeholder="例如 0.30"
+                                                        />
+                                                    </div>
+
+                                                    <div className="space-y-1">
+                                                        <label className="text-slate-600 font-medium block">品项系数默认值</label>
+                                                        <input 
+                                                            type="number" 
+                                                            step="0.01"
+                                                            value={factorProtect} 
+                                                            onChange={(e) => setFactorProtect(Number(e.target.value))}
+                                                            className="w-full h-8 px-2.5 border border-slate-200 rounded bg-white text-slate-800 font-mono text-[11px] outline-none focus:border-blue-500"
+                                                            placeholder="例如 0.92"
+                                                        />
+                                                    </div>
+                                                </div>
+
+                                                {/* Exit/Transition Selection */}
+                                                <div className="space-y-1.5 border-t border-slate-100 pt-3.5">
+                                                    <label className="text-slate-600 font-medium block">过度方式</label>
+                                                    <div className="grid grid-cols-2 gap-3">
+                                                        <div 
+                                                            onClick={() => setTransitionMode('direct')}
+                                                            className={`p-2.5 border rounded cursor-pointer transition-all flex items-start gap-2 ${
+                                                                transitionMode === 'direct' 
+                                                                ? 'border-blue-500 bg-blue-50/10' 
+                                                                : 'border-slate-200 bg-white hover:border-slate-300'
+                                                            }`}
+                                                        >
+                                                            <div className="mt-0.5">
+                                                                <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${transitionMode === 'direct' ? 'border-blue-500 text-blue-500' : 'border-slate-300'}`}>
+                                                                    {transitionMode === 'direct' && <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>}
+                                                                </div>
+                                                            </div>
+                                                            <div className="space-y-0.5">
+                                                                <div className="flex items-center gap-1.5">
+                                                                    <span className="font-semibold text-slate-800 text-[11px]">直接切换</span>
+                                                                    <span className="bg-rose-50 text-rose-500 text-[8px] px-1 py-0.2 border border-rose-100 rounded">硬割离时效</span>
+                                                                </div>
+                                                                <span className="text-[10px] text-slate-400 leading-relaxed block">保护期截止后直接恢复订单评分。</span>
+                                                            </div>
+                                                        </div>
+
+                                                        <div 
+                                                            onClick={() => setTransitionMode('smooth')}
+                                                            className={`p-2.5 border rounded cursor-pointer transition-all flex items-start gap-2 ${
+                                                                transitionMode === 'smooth' 
+                                                                ? 'border-blue-500 bg-blue-50/10' 
+                                                                : 'border-slate-200 bg-white hover:border-slate-300'
+                                                            }`}
+                                                        >
+                                                            <div className="mt-0.5">
+                                                                <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${transitionMode === 'smooth' ? 'border-blue-500 text-blue-500' : 'border-slate-300'}`}>
+                                                                    {transitionMode === 'smooth' && <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>}
+                                                                </div>
+                                                            </div>
+                                                            <div className="space-y-0.5">
+                                                                <div className="flex items-center gap-1.5">
+                                                                    <span className="font-semibold text-slate-800 text-[11px]">数据平滑过渡</span>
+                                                                    <span className="bg-emerald-50 text-emerald-500 text-[8px] px-1 py-0.2 border border-emerald-100 rounded">推荐</span>
+                                                                </div>
+                                                                <span className="text-[10px] text-slate-400 leading-relaxed block">随着单量增加，逐步降低保护分值，订单评分权重加大。</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    )}
+
+                                </div>
+
+                                {/* Modal Footer */}
+                                <div className="px-5 py-3 border-t border-slate-100 flex items-center justify-end space-x-2.5 bg-white shrink-0">
+                                    <button 
+                                        onClick={() => setIsModalOpen(false)}
+                                        className="h-8 px-4 border border-slate-200 hover:border-slate-300 text-slate-600 rounded bg-white hover:bg-slate-50 transition-all font-medium text-xs select-none"
+                                    >
+                                        取消
+                                    </button>
+                                    <button 
+                                        onClick={handleSave}
+                                        className="h-8 px-4 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white rounded transition-all font-semibold text-xs shadow-sm hover:shadow select-none"
+                                    >
+                                        保存配置
+                                    </button>
+                                </div>
+
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Classic Enterprise Toast Alert */}
+                    {toastMessage && (
+                        <div className="fixed bottom-6 right-6 bg-slate-900/95 text-white text-xs px-4 py-3 rounded shadow-xl flex items-center gap-3 z-[60] border border-slate-700 animate-slide-in">
+                            <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-ping"></div>
+                            <div>
+                                <p className="font-semibold text-slate-100">{toastMessage}</p>
+                                <p className="text-[10px] text-slate-400 mt-0.5">智能排客因子已无缝分发至微动智能前线控制台</p>
+                            </div>
+                        </div>
+                    )}
+
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

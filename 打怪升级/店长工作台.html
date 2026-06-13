@@ -1,0 +1,2268 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>店长工作台</title>
+<style>
+:root {
+  --primary: #2B5AED;
+  --primary-light: #EEF2FF;
+  --primary-mid: #6B8FF5;
+  --danger: #F04438;
+  --danger-light: #FEF3F2;
+  --warning: #F79009;
+  --warning-light: #FFFAEB;
+  --success: #12B76A;
+  --success-light: #ECFDF3;
+  --gray-50: #F9FAFB;
+  --gray-100: #F2F4F7;
+  --gray-200: #EAECF0;
+  --gray-300: #D0D5DD;
+  --gray-400: #98A2B3;
+  --gray-500: #667085;
+  --gray-600: #475467;
+  --gray-700: #344054;
+  --gray-800: #1D2939;
+  --gray-900: #101828;
+  --white: #FFFFFF;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --shadow-sm: 0 1px 3px rgba(16,24,40,0.08);
+  --shadow-md: 0 4px 16px rgba(16,24,40,0.10);
+  --bottom-nav-h: 60px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', sans-serif;
+  background: var(--gray-50);
+  color: var(--gray-900);
+  font-size: 14px;
+  overflow-x: hidden;
+}
+
+.app { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+.page-wrapper { flex: 1; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; padding-bottom: calc(var(--bottom-nav-h) + 16px); }
+.page-wrapper::-webkit-scrollbar { display: none; }
+
+.page { display: none; }
+.page.active { display: block; }
+.sub-page { display: none; }
+.sub-page.active { display: block; }
+
+.nav-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px 10px;
+  background: var(--white);
+  border-bottom: 1px solid var(--gray-100);
+  position: sticky; top: 0; z-index: 10;
+}
+.back-btn {
+  width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+  background: var(--gray-100); border-radius: 50%; border: none; cursor: pointer; font-size: 18px;
+}
+.page-title { font-size: 16px; font-weight: 600; color: var(--gray-900); }
+.header-action { font-size: 13px; color: var(--primary); font-weight: 500; cursor: pointer; padding: 4px 8px; }
+
+.bottom-nav {
+  height: var(--bottom-nav-h);
+  background: var(--white);
+  border-top: 1px solid var(--gray-100);
+  display: flex; align-items: center;
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+  box-shadow: 0 -2px 12px rgba(16,24,40,0.06);
+}
+.nav-item {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 2px; cursor: pointer; padding: 6px 0;
+}
+.nav-item .nav-icon { font-size: 20px; line-height: 1; }
+.nav-item .nav-label { font-size: 10px; color: var(--gray-400); font-weight: 500; }
+.nav-item.active .nav-label { color: var(--primary); font-weight: 600; }
+
+.section-card {
+  background: var(--white); border-radius: var(--radius-md);
+  margin: 12px 16px 0; padding: 16px; box-shadow: var(--shadow-sm);
+  border: 1px solid var(--gray-100);
+}
+.section-title {
+  font-size: 14px; font-weight: 600; color: var(--gray-800);
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;
+}
+.section-title-left { display: flex; align-items: center; gap: 6px; }
+.section-more { font-size: 12px; color: var(--primary); cursor: pointer; }
+
+.tag { display: inline-flex; align-items: center; gap: 3px; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 500; }
+.tag-danger { background: var(--danger-light); color: var(--danger); }
+.tag-warning { background: var(--warning-light); color: var(--warning); }
+.tag-success { background: var(--success-light); color: var(--success); }
+.tag-blue { background: var(--primary-light); color: var(--primary); }
+.tag-gray { background: var(--gray-100); color: var(--gray-500); }
+
+.progress-wrap-bar { height: 6px; background: var(--gray-100); border-radius: 20px; overflow: hidden; }
+.progress-fill-bar { height: 100%; border-radius: 20px; transition: width 0.5s ease; }
+.fill-primary { background: var(--primary); }
+.fill-warning { background: var(--warning); }
+.fill-danger { background: var(--danger); }
+.fill-success { background: var(--success); }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: 4px; border: none; cursor: pointer; font-weight: 500;
+  border-radius: var(--radius-sm); transition: opacity 0.15s;
+  font-family: inherit;
+}
+.btn:active { opacity: 0.75; }
+.btn-primary { background: var(--primary); color: var(--white); }
+.btn-outline { background: transparent; color: var(--primary); border: 1px solid var(--primary); }
+.btn-gray { background: var(--gray-100); color: var(--gray-700); }
+.btn-sm { height: 30px; padding: 0 12px; font-size: 12px; }
+.btn-md { height: 38px; padding: 0 16px; font-size: 13px; }
+.btn-lg { height: 44px; padding: 0 20px; font-size: 14px; width: 100%; border-radius: var(--radius-md); }
+
+/* ===== HOME ===== */
+.home-header {
+  background: linear-gradient(135deg, #1E40AF 0%, #2B5AED 60%, #4F7CF5 100%);
+  padding: 20px 16px 24px; color: white;
+}
+.home-header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.home-greeting { font-size: 18px; font-weight: 700; }
+.home-store { font-size: 12px; opacity: 0.8; margin-top: 2px; }
+.home-avatar { width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 18px; }
+
+.commission-banner { background: rgba(255,255,255,0.15); border-radius: var(--radius-md); padding: 14px; cursor: pointer; border: 1px solid rgba(255,255,255,0.2); }
+.commission-banner-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px; }
+.commission-earned { font-size: 13px; opacity: 0.9; }
+.commission-earned span { font-size: 22px; font-weight: 700; margin: 0 4px; }
+.commission-next { font-size: 12px; opacity: 0.8; margin-top: 3px; display: flex; align-items: center; gap: 4px; }
+.commission-diff { background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 20px; font-weight: 600; }
+.commission-metrics { display: flex; gap: 12px; }
+.c-metric { flex: 1; }
+.c-metric-label { font-size: 11px; opacity: 0.75; margin-bottom: 5px; display: flex; justify-content: space-between; }
+.c-metric-label span { opacity: 1; font-weight: 600; }
+.c-progress { height: 4px; background: rgba(255,255,255,0.2); border-radius: 20px; overflow: hidden; }
+.c-progress-fill { height: 100%; border-radius: 20px; background: white; }
+.commission-cta { font-size: 11px; opacity: 0.8; margin-top: 10px; display: flex; align-items: center; justify-content: space-between; }
+.calc-link { background: rgba(255,255,255,0.25); padding: 3px 10px; border-radius: 20px; font-weight: 500; }
+
+.weekly-banner { margin: 12px 16px 0; background: linear-gradient(135deg, #F0F4FF, #E8EFFE); border: 1px solid #C7D7FD; border-radius: var(--radius-md); padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
+.weekly-banner-icon { width: 36px; height: 36px; background: var(--primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+.weekly-banner-text .title { font-size: 13px; font-weight: 600; color: var(--primary); }
+.weekly-banner-text .sub { font-size: 11px; color: var(--gray-500); margin-top: 2px; }
+
+/* ===== AI预警卡片 ===== */
+.alert-card { border-radius: 14px; padding: 14px; margin-bottom: 10px; cursor: pointer; transition: transform 0.15s; border-left: 3px solid transparent; }
+.alert-card:last-child { margin-bottom: 0; }
+.alert-card:active { transform: scale(0.98); }
+.alert-card.red { background: linear-gradient(135deg, #fff5f5, #ffe0e0); border-left-color: var(--danger); }
+.alert-card.yellow { background: linear-gradient(135deg, #fffdf0, #fff3c4); border-left-color: var(--warning); }
+.alert-card.blue { background: linear-gradient(135deg, #f0f4ff, #dce8ff); border-left-color: var(--primary); }
+.alert-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.alert-badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
+.alert-card.red .alert-badge { background: var(--danger); color: #fff; }
+.alert-card.yellow .alert-badge { background: var(--warning); color: #fff; }
+.alert-card.blue .alert-badge { background: var(--primary); color: #fff; }
+.alert-title { font-size: 13px; font-weight: 700; color: var(--gray-900); }
+.alert-desc { font-size: 12px; color: var(--gray-600); line-height: 1.6; margin-bottom: 10px; }
+.alert-btn { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; padding: 5px 12px; border-radius: 20px; cursor: pointer; border: none; }
+.alert-card.red .alert-btn { background: var(--danger); color: #fff; }
+.alert-card.yellow .alert-btn { background: var(--warning); color: #fff; }
+.alert-card.blue .alert-btn { background: var(--primary); color: #fff; }
+
+/* ===== 今日预约总览卡片 ===== */
+.appt-overview-stats { display: flex; gap: 0; margin-bottom: 12px; }
+.appt-stat-col { flex: 1; text-align: center; padding: 8px 4px; }
+.appt-stat-col + .appt-stat-col { border-left: 1px solid var(--gray-100); }
+.appt-stat-num { font-size: 20px; font-weight: 800; color: var(--gray-900); line-height: 1; }
+.appt-stat-num.num-primary { color: var(--primary); }
+.appt-stat-num.num-success { color: var(--success); }
+.appt-stat-num.num-warning { color: var(--warning); }
+.appt-stat-num.num-danger { color: var(--danger); }
+.appt-stat-num.num-gray { color: var(--gray-400); }
+.appt-stat-label { font-size: 10px; color: var(--gray-400); margin-top: 4px; }
+.appt-reminder { background: var(--primary-light); border-radius: var(--radius-sm); padding: 9px 12px; display: flex; align-items: center; gap: 6px; }
+.appt-reminder-text { font-size: 11px; color: var(--primary); line-height: 1.5; }
+
+/* ===== 员工状态 ===== */
+.staff-row-home { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 4px; }
+.staff-row-home::-webkit-scrollbar { display: none; }
+.staff-item-home { display: flex; flex-direction: column; align-items: center; gap: 6px; flex-shrink: 0; cursor: pointer; }
+.staff-avatar-home { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: #fff; position: relative; }
+.staff-status-dot { position: absolute; bottom: 1px; right: 1px; width: 10px; height: 10px; border-radius: 50%; border: 2px solid #fff; }
+.status-online { background: var(--success); }
+.status-busy { background: var(--warning); }
+.status-off { background: var(--gray-300); }
+.status-absent { background: var(--danger); }
+.staff-name-home { font-size: 10px; color: var(--gray-600); }
+.staff-tag-home { font-size: 9px; padding: 1px 6px; border-radius: 10px; font-weight: 600; }
+.tag-home-green { background: var(--success-light); color: var(--success); }
+.tag-home-blue { background: var(--primary-light); color: var(--primary); }
+.tag-home-gray { background: var(--gray-100); color: var(--gray-400); }
+.tag-home-red { background: var(--danger-light); color: var(--danger); }
+
+/* ===== 工具箱 ===== */
+.toolbox-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; }
+.tool-item { display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; position: relative; }
+.tool-icon { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 22px; transition: transform 0.15s; }
+.tool-item:active .tool-icon { transform: scale(0.92); }
+.tool-name { font-size: 10px; color: var(--gray-500); text-align: center; }
+.tool-badge { position: absolute; top: -2px; right: 6px; background: var(--danger); color: white; font-size: 9px; font-weight: 700; min-width: 16px; height: 16px; border-radius: 8px; display: flex; align-items: center; justify-content: center; padding: 0 4px; }
+.t1{background:linear-gradient(135deg,#2B5AED,#6B8FF5);}
+.t2{background:linear-gradient(135deg,#F04438,#FDA29B);}
+.t3{background:linear-gradient(135deg,#12B76A,#6CE9A6);}
+.t4{background:linear-gradient(135deg,#F79009,#FEC84B);}
+.t5{background:linear-gradient(135deg,#0BA5EC,#7CD4FD);}
+.t6{background:linear-gradient(135deg,#7A5AF8,#BDB4FE);}
+.t7{background:linear-gradient(135deg,#EE46BC,#FAA7E0);}
+.t8{background:linear-gradient(135deg,#667085,#98A2B3);}
+
+.meeting-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.meeting-btn { padding: 14px; border-radius: var(--radius-md); display: flex; align-items: center; gap: 10px; cursor: pointer; transition: opacity 0.15s; }
+.meeting-btn:active { opacity: 0.8; }
+.morning-btn { background: linear-gradient(135deg, #FFFAEB, #FEF0C7); border: 1px solid #FEE685; }
+.evening-btn { background: linear-gradient(135deg, var(--gray-100), var(--gray-200)); border: 1px solid var(--gray-200); }
+.meeting-btn .btn-icon { font-size: 24px; }
+.meeting-btn .btn-title { font-size: 13px; font-weight: 700; color: var(--gray-800); }
+.meeting-btn .btn-sub { font-size: 10px; color: var(--gray-500); margin-top: 2px; }
+
+/* ===== PAGE 2 STORE ===== */
+.tab-bar { display: flex; background: var(--gray-100); border-radius: var(--radius-sm); padding: 3px; margin-bottom: 14px; }
+.tab-item { flex: 1; text-align: center; padding: 7px 4px; font-size: 12px; font-weight: 500; color: var(--gray-500); border-radius: 6px; cursor: pointer; transition: all 0.2s; }
+.tab-item.active { background: white; color: var(--gray-900); font-weight: 600; box-shadow: var(--shadow-sm); }
+
+.metric-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+.metric-card { background: var(--white); border-radius: var(--radius-sm); padding: 14px; border: 1px solid var(--gray-100); cursor: pointer; }
+.metric-card:active { background: var(--gray-50); }
+.metric-label { font-size: 11px; color: var(--gray-500); margin-bottom: 6px; }
+.metric-val { font-size: 22px; font-weight: 800; color: var(--gray-900); line-height: 1; }
+.metric-val .unit { font-size: 12px; font-weight: 500; color: var(--gray-400); }
+.metric-sub { font-size: 10px; margin-top: 6px; }
+.metric-progress { height: 4px; background: var(--gray-100); border-radius: 2px; margin-top: 8px; overflow: hidden; }
+.metric-progress-fill { height: 100%; border-radius: 2px; }
+
+.funnel-wrap { padding: 4px 0; }
+.funnel-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.funnel-label { font-size: 12px; color: var(--gray-600); width: 70px; flex-shrink: 0; }
+.funnel-bar-wrap { flex: 1; }
+.funnel-bar { height: 24px; border-radius: var(--radius-sm); display: flex; align-items: center; padding-left: 10px; font-size: 11px; font-weight: 600; color: white; }
+.funnel-rate { font-size: 11px; color: var(--gray-400); width: 36px; text-align: right; flex-shrink: 0; }
+.funnel-arrow-row { font-size: 10px; color: var(--gray-300); padding-left: 78px; margin-bottom: 4px; }
+
+.rank-list-store { display: flex; flex-direction: column; gap: 6px; }
+.rank-row-store { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: var(--gray-50); border-radius: var(--radius-sm); cursor: pointer; transition: background 0.15s; }
+.rank-row-store:active { background: var(--primary-light); }
+.rank-num-badge { width: 22px; height: 22px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; flex-shrink: 0; }
+.rank-num-gold { background: #FEF0C7; color: #B54708; }
+.rank-num-silver { background: var(--gray-200); color: var(--gray-600); }
+.rank-num-bronze { background: #FDE8CC; color: #93370D; }
+.rank-num-normal { background: var(--gray-100); color: var(--gray-500); }
+.rank-name-store { flex: 1; font-size: 13px; font-weight: 600; color: var(--gray-800); }
+.rank-pct-store { font-size: 15px; font-weight: 800; color: var(--primary); }
+.rank-bar-mini { height: 3px; background: var(--gray-200); border-radius: 2px; margin-top: 4px; overflow: hidden; }
+.rank-bar-mini-fill { height: 100%; background: var(--primary); border-radius: 2px; }
+
+.rank-national-card { background: linear-gradient(135deg, #F0F4FF, #E8EFFE); border: 1px solid #C7D7FD; border-radius: var(--radius-md); padding: 16px; text-align: center; cursor: pointer; }
+.rank-national-num { font-size: 40px; font-weight: 800; color: var(--primary); line-height: 1; }
+.rank-national-label { font-size: 12px; color: var(--gray-500); margin-top: 4px; }
+.rank-national-detail { display: grid; grid-template-columns: repeat(2,1fr); gap: 8px; margin-top: 14px; }
+.rank-dim { background: white; border-radius: var(--radius-sm); padding: 8px; text-align: center; }
+.rank-dim-val { font-size: 14px; font-weight: 700; color: var(--primary); }
+.rank-dim-label { font-size: 10px; color: var(--gray-400); margin-top: 2px; }
+
+/* ===== PAGE 3 TEAM ===== */
+.staff-tabs { display: flex; background: var(--gray-100); border-radius: var(--radius-sm); padding: 3px; margin-bottom: 14px; }
+.staff-tab { flex: 1; text-align: center; padding: 7px 4px; font-size: 12px; font-weight: 500; color: var(--gray-500); border-radius: 6px; cursor: pointer; transition: all 0.2s; }
+.staff-tab.active { background: white; color: var(--gray-900); font-weight: 600; box-shadow: var(--shadow-sm); }
+
+.staff-card { background: var(--white); border-radius: var(--radius-md); padding: 14px; margin-bottom: 10px; border: 1px solid var(--gray-100); cursor: pointer; box-shadow: var(--shadow-sm); }
+.staff-card:active { background: var(--gray-50); }
+.staff-card-top { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; }
+.staff-avatar-md { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+.staff-info { flex: 1; }
+.staff-name-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.staff-name { font-size: 14px; font-weight: 600; color: var(--gray-900); }
+.staff-sub { font-size: 11px; color: var(--gray-400); margin-top: 3px; }
+.staff-metrics-row { display: flex; gap: 12px; margin-bottom: 10px; }
+.staff-metric { flex: 1; text-align: center; }
+.staff-metric .val { font-size: 16px; font-weight: 700; }
+.staff-metric .lbl { font-size: 10px; color: var(--gray-400); margin-top: 2px; }
+.staff-progress-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.staff-progress-label { font-size: 11px; color: var(--gray-500); width: 55px; flex-shrink: 0; }
+.staff-progress-num { font-size: 11px; font-weight: 600; color: var(--gray-700); width: 50px; text-align: right; flex-shrink: 0; }
+.staff-income-hint { font-size: 11px; color: var(--gray-400); margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--gray-100); display: flex; align-items: center; justify-content: space-between; }
+.staff-income-hint span { color: var(--primary); font-weight: 600; }
+
+.radar-container { width: 100%; max-width: 260px; margin: 0 auto; }
+.ability-issues { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; }
+.ability-issue { display: flex; align-items: flex-start; gap: 8px; padding: 10px; background: var(--warning-light); border-radius: var(--radius-sm); border: 1px solid #FEE685; }
+.issue-icon { font-size: 15px; flex-shrink: 0; }
+.issue-text { flex: 1; font-size: 12px; color: var(--gray-700); line-height: 1.5; }
+.issue-action { font-size: 11px; color: var(--primary); font-weight: 600; cursor: pointer; flex-shrink: 0; white-space: nowrap; }
+
+.trend-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--gray-100); }
+.trend-label { font-size: 12px; color: var(--gray-500); width: 72px; flex-shrink: 0; }
+.trend-val { font-size: 14px; font-weight: 700; color: var(--gray-900); flex: 1; }
+.trend-change { font-size: 12px; font-weight: 600; }
+
+.history-item { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--gray-100); }
+.history-date { font-size: 11px; color: var(--gray-400); width: 52px; flex-shrink: 0; padding-top: 2px; }
+.history-content { flex: 1; font-size: 12px; color: var(--gray-700); line-height: 1.6; }
+
+.diag-card { background: var(--danger-light); border-radius: var(--radius-md); padding: 14px; border: 1px solid #FECDD3; margin-bottom: 12px; }
+.diag-card.warning { background: var(--warning-light); border-color: #FEE685; }
+.diag-title { font-size: 13px; font-weight: 700; color: var(--danger); margin-bottom: 8px; }
+.diag-title.warning-text { color: var(--warning); }
+.diag-root { font-size: 12px; color: var(--gray-700); margin-bottom: 10px; line-height: 1.6; }
+.diag-actions { display: flex; flex-direction: column; gap: 6px; }
+.diag-action-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; background: white; border-radius: var(--radius-sm); }
+.diag-action-text { font-size: 12px; color: var(--gray-700); flex: 1; }
+.diag-action-btn { font-size: 11px; color: var(--primary); font-weight: 600; border: none; background: transparent; cursor: pointer; }
+
+/* ===== PAGE 4 客户 ===== */
+.client-stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 12px; }
+.client-stat-card { border-radius: 14px; padding: 12px 10px; text-align: center; cursor: pointer; transition: transform 0.15s; }
+.client-stat-card:active { transform: scale(0.96); }
+.client-stat-card.fire { background: linear-gradient(135deg, #ff7675, #fd79a8); }
+.client-stat-card.warn { background: linear-gradient(135deg, #fdcb6e, #e17055); }
+.client-stat-card.sleep { background: linear-gradient(135deg, #636e72, #b2bec3); }
+.client-stat-num { font-size: 26px; font-weight: 800; color: #fff; line-height: 1; }
+.client-stat-label { font-size: 10px; color: rgba(255,255,255,0.85); margin-top: 4px; line-height: 1.4; }
+
+/* 客户列表二级页面 */
+.client-list-item { display: flex; align-items: center; gap: 10px; padding: 11px 16px; border-bottom: 1px solid var(--gray-100); cursor: pointer; background: var(--white); transition: background 0.15s; }
+.client-list-item:active { background: var(--gray-50); }
+.client-list-item:last-child { border-bottom: none; }
+.client-list-avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: #fff; flex-shrink: 0; }
+.client-list-main { flex: 1; min-width: 0; }
+.client-list-name-row { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; }
+.client-list-name { font-size: 13px; font-weight: 600; color: var(--gray-900); }
+.client-list-meta { font-size: 11px; color: var(--gray-400); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.client-list-ai { font-size: 11px; color: var(--gray-500); margin-top: 3px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+.client-list-right { text-align: right; flex-shrink: 0; }
+.client-list-consume { font-size: 12px; font-weight: 700; color: var(--gray-800); }
+.client-list-days { font-size: 10px; color: var(--gray-400); margin-top: 2px; }
+
+.client-filter-bar { display: flex; gap: 8px; padding: 10px 16px; background: var(--white); border-bottom: 1px solid var(--gray-100); overflow-x: auto; }
+.client-filter-bar::-webkit-scrollbar { display: none; }
+.client-filter-tag { padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; cursor: pointer; flex-shrink: 0; border: 1.5px solid var(--gray-200); color: var(--gray-500); background: var(--white); transition: all 0.15s; }
+.client-filter-tag.active { background: var(--primary-light); border-color: var(--primary); color: var(--primary); }
+
+.client-list-action-bar { position: sticky; bottom: calc(var(--bottom-nav-h)); left: 0; right: 0; padding: 12px 16px; background: var(--white); border-top: 1px solid var(--gray-100); }
+
+.follow-card { background: #fff; border-radius: 14px; padding: 14px; margin-bottom: 10px; cursor: pointer; box-shadow: 0 1px 8px rgba(0,0,0,0.05); transition: transform 0.15s; }
+.follow-card:active { transform: scale(0.98); }
+.follow-card-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 8px; }
+.follow-name { font-size: 14px; font-weight: 700; color: #1a1a2e; }
+.follow-time { font-size: 10px; color: #aaa; margin-top: 2px; }
+.reason-badge { font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
+.badge-red { background: #fff0f0; color: #ff4757; }
+.badge-orange { background: #fff8ee; color: #e17055; }
+.badge-purple { background: #f0edff; color: #6c5ce7; }
+.badge-green { background: #e8fff6; color: #00b894; }
+.follow-ai-tip { background: #f8f8ff; border-radius: 10px; padding: 10px 12px; font-size: 12px; color: #555; line-height: 1.6; border-left: 3px solid #6c5ce7; }
+.follow-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; }
+.follow-staff { font-size: 11px; color: #888; display: flex; align-items: center; gap: 4px; }
+.assign-btn-purple { font-size: 11px; font-weight: 600; color: #6c5ce7; background: #f0edff; padding: 5px 12px; border-radius: 20px; cursor: pointer; }
+
+.unconverted-card { background: #fff; border-radius: 14px; padding: 14px; margin-bottom: 10px; cursor: pointer; box-shadow: 0 1px 8px rgba(0,0,0,0.05); }
+.uc-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.uc-name { font-size: 14px; font-weight: 700; color: #1a1a2e; }
+.uc-window { font-size: 10px; padding: 3px 8px; border-radius: 10px; font-weight: 600; }
+.window-urgent { background: #fff0f0; color: #ff4757; }
+.window-normal { background: #fff8ee; color: #e17055; }
+.uc-info { display: flex; gap: 12px; margin-bottom: 8px; }
+.uc-info-item { font-size: 11px; color: #888; display: flex; flex-direction: column; gap: 2px; }
+.uc-info-item strong { font-size: 13px; color: #1a1a2e; font-weight: 600; }
+.uc-ai { background: #f0edff; border-radius: 10px; padding: 8px 12px; font-size: 11px; color: #6c5ce7; line-height: 1.5; }
+
+.card-old { background: #fff; border-radius: 16px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.05); }
+.card-title-old { font-size: 15px; font-weight: 700; color: #1a1a2e; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
+.card-title-left-old { display: flex; align-items: center; gap: 8px; }
+.card-title-icon-old { width: 20px; height: 20px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 11px; }
+.more-btn-old { font-size: 12px; color: #888; cursor: pointer; }
+.badge-count-old { background: #ff4757; color: #fff; font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 10px; margin-left: 4px; }
+.action-row-old { display: flex; gap: 8px; margin-top: 12px; }
+.action-btn-old { flex: 1; padding: 10px 8px; border-radius: 10px; font-size: 12px; font-weight: 600; text-align: center; cursor: pointer; }
+.btn-old-primary { background: linear-gradient(135deg, #6c5ce7, #a29bfe); color: #fff; }
+.btn-old-secondary { background: #f0f0f0; color: #555; }
+
+/* ===== 预约管理全屏覆盖层 ===== */
+#apptManagePage {
+  position: fixed;
+  inset: 0;
+  background: var(--gray-50);
+  z-index: 200;
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+}
+#apptManagePage.active {
+  display: flex;
+}
+
+.appt-page-header {
+  background: var(--white);
+  border-bottom: 1px solid var(--gray-100);
+  flex-shrink: 0;
+}
+.appt-store-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px 8px;
+}
+.appt-store-name {
+  font-size: 15px; font-weight: 700; color: var(--gray-900);
+  display: flex; align-items: center; gap: 4px;
+}
+.appt-store-name span { font-size: 13px; color: var(--gray-400); }
+.appt-help-btn {
+  width: 28px; height: 28px; border-radius: 50%;
+  border: 1.5px solid var(--gray-200);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; color: var(--gray-400); cursor: pointer;
+}
+
+/* 日期横向滚动 */
+.appt-date-strip { display: flex; gap: 0; overflow-x: auto; padding: 0 16px 10px; }
+.appt-date-strip::-webkit-scrollbar { display: none; }
+.appt-date-col { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 44px; cursor: pointer; padding: 4px 6px; border-radius: 10px; flex-shrink: 0; }
+.appt-date-col.active { background: var(--primary-light); }
+.appt-date-weekday { font-size: 10px; color: var(--gray-400); }
+.appt-date-col.active .appt-date-weekday { color: var(--primary); font-weight: 600; }
+.appt-date-num { font-size: 15px; font-weight: 700; color: var(--gray-700); }
+.appt-date-col.active .appt-date-num { color: var(--primary); }
+.appt-date-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--primary); }
+
+/* 今日人员banner */
+.appt-staff-banner { margin: 0 16px 10px; background: var(--primary-light); border: 1px solid #C7D7FD; border-radius: var(--radius-sm); padding: 8px 12px; font-size: 12px; color: var(--primary); font-weight: 500; text-align: center; }
+
+/* 新客/老客Tab */
+.appt-client-tabs { display: flex; margin: 0 16px 10px; background: var(--gray-100); border-radius: var(--radius-sm); padding: 3px; }
+.appt-client-tab { flex: 1; text-align: center; padding: 7px 4px; font-size: 13px; font-weight: 500; color: var(--gray-500); border-radius: 6px; cursor: pointer; transition: all 0.2s; }
+.appt-client-tab.active { background: white; color: var(--gray-900); font-weight: 700; box-shadow: var(--shadow-sm); }
+.appt-client-tab.active::after { content: ''; display: block; width: 20px; height: 2px; background: var(--primary); border-radius: 1px; margin: 2px auto 0; }
+
+/* 已预约数 & 加床位 */
+.appt-count-row { display: flex; align-items: center; justify-content: space-between; padding: 0 16px 10px; }
+.appt-count-text { font-size: 13px; color: var(--gray-600); }
+.appt-count-text strong { color: var(--gray-900); font-size: 15px; font-weight: 800; }
+.appt-add-bed-btn { display: flex; align-items: center; gap: 4px; background: var(--primary); color: #fff; font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: var(--radius-sm); border: none; cursor: pointer; }
+
+/* 甘特图 */
+.appt-gantt-wrap { flex: 1; overflow-y: auto; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 20px; }
+.appt-gantt-wrap::-webkit-scrollbar { height: 4px; width: 4px; background: var(--gray-100); }
+.appt-gantt-wrap::-webkit-scrollbar-thumb { background: var(--gray-300); border-radius: 2px; }
+
+.appt-gantt-table { min-width: 520px; border-collapse: collapse; width: 100%; }
+.appt-gantt-table th { font-size: 11px; color: var(--gray-400); font-weight: 500; padding: 6px 8px; text-align: center; background: var(--white); border-bottom: 1px solid var(--gray-100); white-space: nowrap; }
+.appt-gantt-table th.time-col { width: 48px; text-align: left; padding-left: 16px; }
+.appt-gantt-table td { border-bottom: 1px solid var(--gray-100); vertical-align: top; padding: 0; }
+.appt-gantt-table td.time-cell { font-size: 11px; color: var(--gray-400); padding: 8px 6px 8px 16px; white-space: nowrap; vertical-align: top; }
+.appt-gantt-table td.slot-cell { padding: 4px 4px; min-width: 110px; }
+.slot-empty { height: 36px; }
+.appt-slot-block { border-radius: 8px; padding: 6px 8px; margin-bottom: 3px; cursor: pointer; transition: opacity 0.15s; }
+.appt-slot-block:active { opacity: 0.8; }
+.appt-slot-block.type-new { background: #DBEAFE; border-left: 3px solid var(--primary); }
+.appt-slot-block.type-new-other { background: #FEF9C3; border-left: 3px solid #EAB308; }
+.appt-slot-block.type-old { background: var(--success-light); border-left: 3px solid var(--success); }
+.appt-slot-block.type-service { background: #EDE9FE; border-left: 3px solid #7C3AED; }
+.appt-slot-block.type-temp { background: var(--gray-100); border-left: 3px solid var(--gray-300); border-style: dashed; }
+.appt-slot-name { font-size: 11px; font-weight: 700; color: var(--gray-800); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.appt-slot-project { font-size: 10px; color: var(--gray-500); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.appt-slot-time { font-size: 10px; color: var(--gray-400); margin-top: 1px; }
+
+/* 图例 */
+.appt-legend { display: flex; flex-wrap: wrap; gap: 10px; padding: 12px 16px; background: var(--white); border-top: 1px solid var(--gray-100); flex-shrink: 0; }
+.appt-legend-item { display: flex; align-items: center; gap: 4px; font-size: 10px; color: var(--gray-500); }
+.appt-legend-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+
+/* 底部床位规则 */
+.appt-bed-rule-btn { margin: 0 16px 8px; width: calc(100% - 32px); height: 44px; background: var(--white); border: 1.5px solid var(--gray-200); border-radius: var(--radius-md); font-size: 14px; font-weight: 600; color: var(--primary); cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+/* ===== PAGE 5 PROFILE ===== */
+.profile-header { background: linear-gradient(135deg, #1E40AF, #2B5AED); padding: 24px 16px 28px; color: white; }
+.profile-avatar { width: 56px; height: 56px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 24px; border: 2px solid rgba(255,255,255,0.4); }
+.profile-income-card { background: rgba(255,255,255,0.15); border-radius: var(--radius-md); padding: 14px; margin-top: 16px; border: 1px solid rgba(255,255,255,0.2); }
+.income-progress-bar { height: 6px; background: rgba(255,255,255,0.25); border-radius: 3px; overflow: hidden; }
+.income-progress-fill { height: 100%; background: white; border-radius: 3px; }
+.income-progress-labels { display: flex; justify-content: space-between; font-size: 10px; opacity: 0.75; margin-top: 4px; }
+
+.ai-tip-card { background: white; border-radius: var(--radius-md); padding: 14px; margin-bottom: 12px; box-shadow: var(--shadow-sm); border: 1px solid var(--gray-100); }
+.ai-tip-title { font-size: 13px; font-weight: 700; color: var(--gray-800); margin-bottom: 8px; }
+.ai-tip-body { font-size: 12px; color: var(--gray-600); line-height: 1.8; background: var(--gray-50); border-radius: var(--radius-sm); padding: 12px; border-left: 3px solid var(--primary); }
+
+.kpi-progress-list { display: flex; flex-direction: column; gap: 10px; }
+.kpi-row { display: flex; align-items: center; gap: 8px; }
+.kpi-label { font-size: 12px; color: var(--gray-600); width: 70px; flex-shrink: 0; }
+.kpi-vals { font-size: 12px; font-weight: 600; color: var(--gray-800); width: 90px; text-align: right; flex-shrink: 0; }
+
+.meeting-record-item { display: flex; align-items: flex-start; gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--gray-100); cursor: pointer; }
+.meeting-record-item:last-child { border-bottom: none; }
+.meeting-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+.icon-morning { background: linear-gradient(135deg, #FFFAEB, #FEF0C7); }
+.icon-evening { background: var(--gray-100); }
+.meeting-record-info { flex: 1; }
+.meeting-record-date { font-size: 11px; color: var(--gray-400); margin-bottom: 3px; }
+.meeting-record-title { font-size: 13px; font-weight: 600; color: var(--gray-800); }
+.meeting-record-summary { font-size: 11px; color: var(--gray-500); margin-top: 3px; }
+
+.setting-list { background: white; border-radius: var(--radius-md); overflow: hidden; margin-bottom: 12px; box-shadow: var(--shadow-sm); }
+.setting-item { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-bottom: 1px solid var(--gray-100); cursor: pointer; }
+.setting-item:last-child { border-bottom: none; }
+.setting-icon { width: 32px; height: 32px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 15px; }
+.setting-label { flex: 1; font-size: 14px; color: var(--gray-800); }
+.setting-right { font-size: 12px; color: var(--gray-400); }
+
+/* ===== MODALS ===== */
+.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 300; display: none; align-items: flex-end; backdrop-filter: blur(2px); }
+.overlay.active { display: flex; }
+.modal { background: white; border-radius: 20px 20px 0 0; width: 100%; max-height: 88vh; overflow-y: auto; padding: 0 0 32px; animation: slideUp 0.25s ease; }
+.modal::-webkit-scrollbar { display: none; }
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.modal-handle { width: 36px; height: 4px; background: var(--gray-200); border-radius: 2px; margin: 12px auto 16px; }
+.modal-title { font-size: 16px; font-weight: 700; color: var(--gray-900); padding: 0 20px 14px; border-bottom: 1px solid var(--gray-100); }
+.modal-body { padding: 16px 20px; }
+.modal-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--gray-100); }
+.modal-row-label { font-size: 13px; color: var(--gray-600); }
+.modal-row-val { font-size: 13px; font-weight: 600; color: var(--gray-900); }
+.modal-footer { padding: 12px 20px 0; display: flex; gap: 10px; flex-direction: column; }
+
+/* 收入测算弹窗专属样式 */
+.income-subtab-bar { display: flex; background: var(--gray-100); border-radius: var(--radius-sm); padding: 3px; margin-bottom: 16px; }
+.income-subtab-item { flex: 1; text-align: center; padding: 7px 4px; font-size: 12px; font-weight: 500; color: var(--gray-500); border-radius: 6px; cursor: pointer; transition: all 0.2s; }
+.income-subtab-item.active { background: white; color: var(--gray-900); font-weight: 600; box-shadow: var(--shadow-sm); }
+.income-sub-panel { display: none; }
+.income-sub-panel.active { display: block; }
+.salary-display-card { background: linear-gradient(135deg, #1E40AF, #2B5AED, #4F7CF5); border-radius: var(--radius-md); padding: 16px; margin-bottom: 16px; color: white; text-align: center; }
+.salary-display-label { font-size: 12px; opacity: 0.85; margin-bottom: 6px; }
+.salary-display-val { font-size: 36px; font-weight: 800; letter-spacing: -1px; }
+.salary-display-sub { font-size: 11px; opacity: 0.75; margin-top: 6px; }
+.salary-three-bar { height: 8px; background: rgba(255,255,255,0.2); border-radius: 20px; overflow: hidden; display: flex; margin-top: 12px; }
+.bar-locked { background: var(--success); border-radius: 20px 0 0 20px; }
+.bar-forecast { background: rgba(255,255,255,0.7); }
+.salary-bar-legend { display: flex; justify-content: space-between; margin-top: 6px; }
+.salary-bar-legend span { font-size: 10px; opacity: 0.8; display: flex; align-items: center; gap: 3px; }
+.legend-dot-sm { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+.preset-btns { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+.preset-btn-inc { padding: 6px 14px; border-radius: 20px; border: 1.5px solid var(--gray-200); background: var(--gray-50); font-size: 12px; font-weight: 600; color: var(--gray-700); cursor: pointer; transition: all 0.15s; }
+.preset-btn-inc.active { background: var(--primary-light); border-color: var(--primary); color: var(--primary); }
+.slider-wrap { margin-bottom: 16px; }
+.slider-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--gray-400); margin-bottom: 6px; }
+input[type=range] { width: 100%; height: 4px; appearance: none; border-radius: 2px; outline: none; margin-bottom: 4px; cursor: pointer; }
+input[type=range]::-webkit-slider-thumb { appearance: none; width: 22px; height: 22px; border-radius: 50%; background: var(--primary); box-shadow: 0 2px 8px rgba(43,90,237,0.35); cursor: pointer; border: 3px solid #fff; transition: transform 0.1s; }
+input[type=range]::-webkit-slider-thumb:active { transform: scale(1.2); }
+.metric-expand-card { background: var(--gray-50); border-radius: var(--radius-md); border: 1px solid var(--gray-200); margin-bottom: 10px; overflow: hidden; }
+.metric-expand-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; cursor: pointer; }
+.metric-expand-header:active { background: var(--primary-light); }
+.metric-expand-left { display: flex; align-items: center; gap: 8px; flex: 1; }
+.metric-expand-icon { font-size: 16px; flex-shrink: 0; }
+.metric-expand-name { font-size: 13px; font-weight: 700; color: var(--gray-800); }
+.metric-expand-impact { font-size: 10px; color: var(--primary); font-weight: 600; background: var(--primary-light); padding: 2px 8px; border-radius: 10px; flex-shrink: 0; }
+.metric-expand-arrow { font-size: 12px; color: var(--gray-400); flex-shrink: 0; margin-left: 6px; transition: transform 0.2s; }
+.metric-expand-card.open .metric-expand-arrow { transform: rotate(90deg); }
+.metric-expand-stats { display: flex; gap: 8px; padding: 0 14px 12px; }
+.metric-stat-item { flex: 1; text-align: center; background: white; border-radius: var(--radius-sm); padding: 8px 4px; border: 1px solid var(--gray-100); }
+.metric-stat-val { font-size: 13px; font-weight: 800; }
+.metric-stat-label { font-size: 10px; color: var(--gray-400); margin-top: 2px; }
+.metric-expand-body { display: none; padding: 0 14px 14px; }
+.metric-expand-card.open .metric-expand-body { display: block; }
+.metric-decompose-box { background: white; border-radius: var(--radius-sm); padding: 12px; border: 1px solid var(--gray-100); margin-bottom: 10px; }
+.metric-decompose-title { font-size: 11px; font-weight: 700; color: var(--gray-500); margin-bottom: 8px; }
+.metric-decompose-row { display: flex; align-items: flex-start; gap: 6px; padding: 5px 0; border-bottom: 1px solid var(--gray-50); }
+.metric-decompose-row:last-child { border-bottom: none; }
+.decompose-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 3px; }
+.decompose-text { font-size: 11px; color: var(--gray-600); line-height: 1.5; flex: 1; }
+.metric-gap-bar { height: 5px; background: var(--gray-100); border-radius: 10px; overflow: hidden; margin-bottom: 8px; }
+.metric-gap-fill { height: 100%; border-radius: 10px; background: var(--primary); transition: width 0.5s ease; }
+.metric-sync-btn { display: flex; align-items: center; justify-content: space-between; background: var(--primary-light); border-radius: var(--radius-sm); padding: 8px 12px; cursor: pointer; }
+.metric-sync-btn:active { opacity: 0.8; }
+.metric-sync-text { font-size: 11px; color: var(--primary); font-weight: 600; }
+.metric-sync-action { font-size: 11px; color: var(--primary); font-weight: 700; }
+.benchmark-card { background: var(--gray-900); border-radius: var(--radius-md); padding: 14px; margin-top: 4px; }
+.benchmark-title { font-size: 12px; font-weight: 700; color: #FCD34D; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
+.benchmark-title span { font-size: 10px; color: var(--gray-400); font-weight: 400; }
+.benchmark-row { display: flex; align-items: center; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,0.06); }
+.benchmark-row:last-child { border-bottom: none; }
+.benchmark-item-name { font-size: 11px; color: #CBD5E1; }
+.benchmark-item-vals { font-size: 11px; font-weight: 700; }
+.total-forecast-banner { background: var(--primary-light); border: 1px solid #C7D7FD; border-radius: var(--radius-md); padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.total-forecast-label { font-size: 12px; color: var(--primary); font-weight: 600; }
+.total-forecast-val { font-size: 18px; font-weight: 800; color: var(--primary); }
+.partner-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+.partner-card { background: white; border-radius: var(--radius-md); padding: 14px; border: 1px solid var(--gray-100); box-shadow: var(--shadow-sm); }
+.partner-card-label { font-size: 11px; color: var(--gray-500); margin-bottom: 6px; font-weight: 600; }
+.partner-card-val { font-size: 18px; font-weight: 800; color: var(--gray-900); line-height: 1; }
+.partner-card-sub { font-size: 10px; margin-top: 4px; }
+.partner-card-bar { height: 4px; background: var(--gray-100); border-radius: 2px; margin-top: 8px; overflow: hidden; }
+.partner-card-fill { height: 100%; border-radius: 2px; }
+
+.week-kpi-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 8px; margin-bottom: 14px; }
+.week-kpi-card { padding: 12px; background: var(--gray-50); border-radius: var(--radius-sm); border: 1px solid var(--gray-100); }
+.week-kpi-val { font-size: 20px; font-weight: 800; color: var(--gray-900); }
+.week-kpi-label { font-size: 11px; color: var(--gray-500); margin-top: 2px; }
+.week-kpi-change { font-size: 12px; font-weight: 600; margin-top: 4px; }
+.coach-effect-item { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--gray-100); }
+.coach-effect-icon { width: 36px; height: 36px; border-radius: 8px; background: var(--primary-light); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+.coach-effect-title { font-size: 13px; font-weight: 600; color: var(--gray-800); }
+.coach-effect-result { font-size: 12px; color: var(--gray-500); margin-top: 3px; line-height: 1.5; }
+.nwt-box { background: var(--primary-light); border-radius: var(--radius-md); padding: 14px; border: 1px solid #C7D7FD; }
+.nwt-title { font-size: 12px; color: var(--primary); font-weight: 600; margin-bottom: 10px; }
+.nwt-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid rgba(43,90,237,0.1); }
+.nwt-row:last-child { border-bottom: none; }
+.nwt-label { font-size: 12px; color: var(--gray-600); }
+.nwt-val { font-size: 13px; font-weight: 700; color: var(--primary); }
+
+.toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: rgba(30,30,30,0.88); color: white; font-size: 13px; font-weight: 500; padding: 10px 20px; border-radius: 20px; z-index: 999; display: none; white-space: nowrap; backdrop-filter: blur(4px); }
+.toast.show { display: block; animation: fadeInUp 0.2s ease; }
+@keyframes fadeInUp { from { opacity:0; transform:translateX(-50%) translateY(8px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }
+
+.diff-pos { color: var(--success); }
+.diff-neg { color: var(--danger); }
+</style>
+</head>
+<body>
+<div class="app">
+<div class="page-wrapper" id="pageWrapper">
+
+<!-- ==================== PAGE 1: 首页 ==================== -->
+<div class="page active" id="pageHome">
+  <div class="home-header">
+    <div class="home-header-top">
+      <div>
+        <div class="home-greeting">早上好，李店长 👋</div>
+        <div class="home-store">贝颜·朝阳旗舰店 · 2026年6月10日 周三</div>
+      </div>
+      <div class="home-avatar">👩</div>
+    </div>
+    <div class="commission-banner" onclick="openModal('incomeModal')">
+      <div class="commission-banner-top">
+        <div>
+          <div class="commission-earned">本月已赚提成 <span>4,200</span> 元</div>
+          <div class="commission-next">提成解锁中 <span class="commission-diff">差 +2,600元 达标</span></div>
+        </div>
+        <div style="font-size:11px;opacity:0.75;text-align:right;">🔒 2项<br>未达标</div>
+      </div>
+      <div class="commission-metrics">
+        <div class="c-metric">
+          <div class="c-metric-label">均客单 <span>1580/1700</span></div>
+          <div class="c-progress"><div class="c-progress-fill" style="width:93%"></div></div>
+        </div>
+        <div class="c-metric">
+          <div class="c-metric-label">总业绩 <span>87/100万</span></div>
+          <div class="c-progress"><div class="c-progress-fill" style="width:87%"></div></div>
+        </div>
+      </div>
+      <div class="commission-cta">
+        <span>点击测算收入目标</span>
+        <span class="calc-link">收入测算 →</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="weekly-banner" onclick="openModal('weeklyModal')">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div class="weekly-banner-icon">📋</div>
+      <div class="weekly-banner-text">
+        <div class="title">上周复盘已生成</div>
+        <div class="sub">王顾问均客单提升 +160元 · 本周目标已拆解</div>
+      </div>
+    </div>
+    <div style="color:var(--primary);font-size:16px;">›</div>
+  </div>
+
+  <!-- AI今日建议 -->
+  <div class="section-card">
+    <div class="section-title">
+      <div class="section-title-left"><span>🤖</span><span>AI今日建议</span></div>
+      <span style="font-size:11px;color:var(--gray-400)">07:30 自动生成</span>
+    </div>
+    <div class="alert-card red" onclick="openModal('alertModal1')">
+      <div class="alert-header"><span class="alert-badge">🔴 紧急</span><span class="alert-title">今日接待容量告警</span></div>
+      <div class="alert-desc">今日预约新客11人，当前在岗顾问2人，下午2-5点存在接待空档，预计3位客户等待超20分钟。</div>
+      <button class="alert-btn">查看排班 / 通知备勤 →</button>
+    </div>
+    <div class="alert-card yellow" onclick="openModal('alertModal2')">
+      <div class="alert-header"><span class="alert-badge">🟡 关注</span><span class="alert-title">王顾问近3日成交率异常</span></div>
+      <div class="alert-desc">王顾问本周接待新客6人，成交1人，成交率16%，历史均值72%，偏差显著，昨日2位客户离店未成交。</div>
+      <button class="alert-btn">查看记录 / 发起辅导 →</button>
+    </div>
+    <div class="alert-card blue" onclick="openModal('alertModal3')">
+      <div class="alert-header"><span class="alert-badge">💡 机会</span><span class="alert-title">本月均客单距达标差120元</span></div>
+      <div class="alert-desc">本月新客均客单1,580元，门店达标线1,700元，差距120元。今日3位跟进中新客有提升空间，AI已生成方案。</div>
+      <button class="alert-btn">查看客户方案 / 转发顾问 →</button>
+    </div>
+  </div>
+
+  <!-- 今日预约总览 -->
+  <div class="section-card">
+    <div class="section-title">
+      <div class="section-title-left"><span>📅</span><span>今日预约总览</span></div>
+      <!-- ✅ 修复点：直接调用 showApptPage() -->
+      <span class="section-more" onclick="showApptPage()">全部 ›</span>
+    </div>
+    <div class="appt-overview-stats">
+      <div class="appt-stat-col">
+        <div class="appt-stat-num num-primary">23</div>
+        <div class="appt-stat-label">已预约</div>
+      </div>
+      <div class="appt-stat-col">
+        <div class="appt-stat-num num-success">12</div>
+        <div class="appt-stat-label">已到店</div>
+      </div>
+      <div class="appt-stat-col">
+        <div class="appt-stat-num num-warning">5</div>
+        <div class="appt-stat-label">服务中</div>
+      </div>
+      <div class="appt-stat-col">
+        <div class="appt-stat-num num-danger">4</div>
+        <div class="appt-stat-label">未到店</div>
+      </div>
+      <div class="appt-stat-col">
+        <div class="appt-stat-num num-gray">2</div>
+        <div class="appt-stat-label">待确认</div>
+      </div>
+    </div>
+    <div class="appt-reminder">
+      <span style="font-size:14px;flex-shrink:0;">💡</span>
+      <span class="appt-reminder-text">实时提醒：11:00 预计有 3 拨客流高峰，请注意床位调配。</span>
+    </div>
+  </div>
+
+  <!-- 员工今日状态 -->
+  <div class="section-card">
+    <div class="section-title">
+      <div class="section-title-left"><span>👥</span><span>员工今日状态</span></div>
+      <span class="section-more" onclick="switchNav('pageStaff','navStaff')">管理 ›</span>
+    </div>
+    <div class="staff-row-home">
+      <div class="staff-item-home" onclick="openModal('staffDetailModal')">
+        <div class="staff-avatar-home" style="background:linear-gradient(135deg,#2B5AED,#6B8FF5)">张<div class="staff-status-dot status-busy"></div></div>
+        <div class="staff-name-home">小张</div>
+        <div class="staff-tag-home tag-home-green">接待中</div>
+      </div>
+      <div class="staff-item-home" onclick="openModal('staffDetailModal')">
+        <div class="staff-avatar-home" style="background:linear-gradient(135deg,#F04438,#FDA29B)">王<div class="staff-status-dot status-online"></div></div>
+        <div class="staff-name-home">王顾问</div>
+        <div class="staff-tag-home tag-home-red">需关注</div>
+      </div>
+      <div class="staff-item-home" onclick="openModal('staffDetailModal')">
+        <div class="staff-avatar-home" style="background:linear-gradient(135deg,#12B76A,#6CE9A6)">李<div class="staff-status-dot status-online"></div></div>
+        <div class="staff-name-home">李主任</div>
+        <div class="staff-tag-home tag-home-blue">空闲</div>
+      </div>
+      <div class="staff-item-home" onclick="openModal('staffDetailModal')">
+        <div class="staff-avatar-home" style="background:linear-gradient(135deg,#F79009,#FEC84B)">陈<div class="staff-status-dot status-off"></div></div>
+        <div class="staff-name-home">陈顾问</div>
+        <div class="staff-tag-home tag-home-gray">休假</div>
+      </div>
+      <div class="staff-item-home" onclick="openModal('staffDetailModal')">
+        <div class="staff-avatar-home" style="background:linear-gradient(135deg,#667085,#98A2B3)">张<div class="staff-status-dot status-absent"></div></div>
+        <div class="staff-name-home">张技师</div>
+        <div class="staff-tag-home tag-home-red">未到岗</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 工具箱 -->
+  <div class="section-card">
+    <div class="section-title"><div class="section-title-left"><span>🧰</span><span>工具箱</span></div></div>
+    <div class="toolbox-grid">
+      <div class="tool-item" onclick="showToast('跳转至开单系统')"><div class="tool-icon t1">📋</div><div class="tool-name">开单系统</div></div>
+      <div class="tool-item" onclick="showToast('跳转至AI销冠')"><div class="tool-icon t2">🤖</div><div class="tool-name">AI销冠</div><div class="tool-badge">3</div></div>
+      <div class="tool-item" onclick="showToast('跳转至AI回访')"><div class="tool-icon t3">📞</div><div class="tool-name">AI回访</div><div class="tool-badge">5</div></div>
+      <div class="tool-item" onclick="showToast('跳转至AI客服')"><div class="tool-icon t4">💬</div><div class="tool-name">AI客服</div><div class="tool-badge">2</div></div>
+      <div class="tool-item" onclick="showToast('跳转至考培陪练')"><div class="tool-icon t5">🎯</div><div class="tool-name">考培陪练</div><div class="tool-badge">2</div></div>
+      <div class="tool-item" onclick="showToast('跳转至进销存')"><div class="tool-icon t6">📦</div><div class="tool-name">进销存</div></div>
+      <div class="tool-item" onclick="showToast('跳转至视频剪辑')"><div class="tool-icon t7">🎬</div><div class="tool-name">视频剪辑</div></div>
+      <div class="tool-item" onclick="showToast('跳转至自动招聘')"><div class="tool-icon t8">👥</div><div class="tool-name">自动招聘</div><div class="tool-badge">3</div></div>
+    </div>
+  </div>
+
+  <div class="section-card">
+    <div class="section-title"><div class="section-title-left"><span>📢</span><span>会议中心</span></div></div>
+    <div class="meeting-btns">
+      <div class="meeting-btn morning-btn" onclick="openModal('morningModal')">
+        <div class="btn-icon">🌅</div>
+        <div><div class="btn-title">开早会</div><div class="btn-sub">AI自动备好今日简报</div></div>
+      </div>
+      <div class="meeting-btn evening-btn" onclick="openModal('eveningModal')">
+        <div class="btn-icon">🌙</div>
+        <div><div class="btn-title">开晚会</div><div class="btn-sub">今日收官复盘</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="height:16px"></div>
+</div>
+
+<!-- ==================== PAGE 2: 我的门店 ==================== -->
+<div class="page" id="pageStore">
+  <div class="nav-header">
+    <div class="page-title">📊 我的门店</div>
+    <div class="header-action" onclick="openModal('rankModal')">全国 #12 ›</div>
+  </div>
+  <div style="padding:12px 16px 0">
+    <div class="tab-bar">
+      <div class="tab-item active" onclick="switchTab(this)">今日</div>
+      <div class="tab-item" onclick="switchTab(this)">本周</div>
+      <div class="tab-item" onclick="switchTab(this)">本月</div>
+      <div class="tab-item" onclick="switchTab(this)">自定义</div>
+    </div>
+  </div>
+  <div class="section-card">
+    <div class="section-title">
+      <div class="section-title-left"><span>📈</span><span>核心指标</span></div>
+      <span style="font-size:10px;background
+            <span style="font-size:10px;background:var(--success-light);color:var(--success);padding:2px 8px;border-radius:10px;font-weight:600;">实时</span>
+    </div>
+    <div class="metric-grid">
+      <div class="metric-card" onclick="openModal('diagAvgModal')">
+        <div class="metric-label">新客均客单</div>
+        <div class="metric-val">1,580<span class="unit"> 元</span></div>
+        <div class="metric-sub diff-neg">▼ 达标线1700，差120元</div>
+        <div class="metric-progress"><div class="metric-progress-fill fill-danger" style="width:93%"></div></div>
+      </div>
+      <div class="metric-card" onclick="openModal('diagAvgModal')">
+        <div class="metric-label">新客成交率</div>
+        <div class="metric-val">62<span class="unit"> %</span></div>
+        <div class="metric-sub" style="color:var(--warning);font-size:10px;">⚠ 目标70%，差8%</div>
+        <div class="metric-progress"><div class="metric-progress-fill fill-warning" style="width:62%"></div></div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">本月总业绩</div>
+        <div class="metric-val">87<span class="unit"> 万</span></div>
+        <div class="metric-sub diff-pos">↑ 月进度87%，正常</div>
+        <div class="metric-progress"><div class="metric-progress-fill fill-primary" style="width:87%"></div></div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">卡量</div>
+        <div class="metric-val">23<span class="unit"> 张</span></div>
+        <div class="metric-sub diff-pos">↑ 目标30张，77%</div>
+        <div class="metric-progress"><div class="metric-progress-fill fill-success" style="width:77%"></div></div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:4px;">
+      <div style="background:var(--gray-50);border-radius:var(--radius-sm);padding:10px;text-align:center;border:1px solid var(--gray-100);">
+        <div style="font-size:16px;font-weight:800;color:var(--primary);">72%</div>
+        <div style="font-size:10px;color:var(--gray-400);margin-top:2px;">新客业绩占比</div>
+      </div>
+      <div style="background:var(--gray-50);border-radius:var(--radius-sm);padding:10px;text-align:center;border:1px solid var(--gray-100);">
+        <div style="font-size:16px;font-weight:800;color:var(--success);">21%</div>
+        <div style="font-size:10px;color:var(--gray-400);margin-top:2px;">老客业绩占比</div>
+      </div>
+      <div style="background:var(--gray-50);border-radius:var(--radius-sm);padding:10px;text-align:center;border:1px solid var(--gray-100);">
+        <div style="font-size:16px;font-weight:800;color:var(--warning);">7%</div>
+        <div style="font-size:10px;color:var(--gray-400);margin-top:2px;">外协业绩占比</div>
+      </div>
+    </div>
+  </div>
+  <div class="section-card">
+    <div class="section-title"><div class="section-title-left"><span>🔽</span><span>新客转化漏斗</span></div></div>
+    <div class="funnel-wrap">
+      <div class="funnel-row"><div class="funnel-label">线上曝光</div><div class="funnel-bar-wrap"><div class="funnel-bar" style="width:100%;background:var(--primary);">12,400次</div></div><div class="funnel-rate">—</div></div>
+      <div class="funnel-arrow-row">↓ 点击率 3.2%</div>
+      <div class="funnel-row"><div class="funnel-label">获取线索</div><div class="funnel-bar-wrap"><div class="funnel-bar" style="width:78%;background:#4F7CF5;">396次</div></div><div class="funnel-rate">3.2%</div></div>
+      <div class="funnel-arrow-row">↓ 预约转化 68%</div>
+      <div class="funnel-row"><div class="funnel-label">预约到店</div><div class="funnel-bar-wrap"><div class="funnel-bar" style="width:58%;background:var(--warning);">269人</div></div><div class="funnel-rate">68%</div></div>
+      <div class="funnel-arrow-row">↓ 到店率 85%</div>
+      <div class="funnel-row"><div class="funnel-label">实际到店</div><div class="funnel-bar-wrap"><div class="funnel-bar" style="width:44%;background:#F79009;">228人</div></div><div class="funnel-rate">85%</div></div>
+      <div class="funnel-arrow-row">↓ 成交率 62% ⚠️</div>
+      <div class="funnel-row"><div class="funnel-label">成交下单</div><div class="funnel-bar-wrap"><div class="funnel-bar" style="width:28%;background:var(--danger);">141人</div></div><div class="funnel-rate">62%</div></div>
+      <div style="margin-top:10px;padding:10px;background:var(--danger-light);border-radius:var(--radius-sm);border:1px solid #FECDD3;">
+        <div style="font-size:11px;color:var(--danger);font-weight:600;">⚠️ 成交率62%低于目标70%，是本月最大漏水点</div>
+        <div style="font-size:11px;color:var(--gray-500);margin-top:3px;">均客单1,580元 · 当月新客业绩22.3万</div>
+      </div>
+    </div>
+  </div>
+  <div class="section-card">
+    <div class="section-title">
+      <div class="section-title-left"><span>🏆</span><span>员工目标完成率</span></div>
+      <span class="section-more" onclick="switchNav('pageStaff','navStaff')">管人 ›</span>
+    </div>
+    <div style="font-size:11px;color:var(--gray-400);margin-bottom:10px;">点击前往团队页查看详情及辅导建议</div>
+    <div class="rank-list-store">
+      <div class="rank-row-store" onclick="switchNav('pageStaff','navStaff')">
+        <div class="rank-num-badge rank-num-gold">1</div>
+        <div style="flex:1"><div style="display:flex;align-items:center;gap:6px;"><span class="rank-name-store">李主任</span><span class="tag tag-gray" style="font-size:10px;">顾问主任</span><span class="tag tag-success" style="font-size:10px;">🟢</span></div><div class="rank-bar-mini" style="margin-top:5px;"><div class="rank-bar-mini-fill" style="width:92%"></div></div></div>
+        <div style="text-align:right;"><div class="rank-pct-store">92%</div><div style="font-size:10px;color:var(--success);">↑ 上升</div></div>
+      </div>
+      <div class="rank-row-store" onclick="switchNav('pageStaff','navStaff')">
+        <div class="rank-num-badge rank-num-silver">2</div>
+        <div style="flex:1"><div style="display:flex;align-items:center;gap:6px;"><span class="rank-name-store">张技师</span><span class="tag tag-gray" style="font-size:10px;">技师</span><span class="tag tag-success" style="font-size:10px;">🟢</span></div><div class="rank-bar-mini" style="margin-top:5px;"><div class="rank-bar-mini-fill" style="width:81%"></div></div></div>
+        <div style="text-align:right;"><div class="rank-pct-store">81%</div><div style="font-size:10px;color:var(--success);">↑ 上升</div></div>
+      </div>
+      <div class="rank-row-store" onclick="switchNav('pageStaff','navStaff')">
+        <div class="rank-num-badge rank-num-bronze">3</div>
+        <div style="flex:1"><div style="display:flex;align-items:center;gap:6px;"><span class="rank-name-store">陈顾问</span><span class="tag tag-gray" style="font-size:10px;">顾问</span><span class="tag tag-warning" style="font-size:10px;">🟡</span></div><div class="rank-bar-mini" style="margin-top:5px;"><div class="rank-bar-mini-fill fill-warning" style="width:73%"></div></div></div>
+        <div style="text-align:right;"><div class="rank-pct-store" style="color:var(--warning);">73%</div><div style="font-size:10px;color:var(--warning);">→ 持平</div></div>
+      </div>
+      <div class="rank-row-store" onclick="switchNav('pageStaff','navStaff')">
+        <div class="rank-num-badge rank-num-normal">4</div>
+        <div style="flex:1"><div style="display:flex;align-items:center;gap:6px;"><span class="rank-name-store">王顾问</span><span class="tag tag-gray" style="font-size:10px;">顾问</span><span class="tag tag-danger" style="font-size:10px;">🔴</span></div><div class="rank-bar-mini" style="margin-top:5px;"><div class="rank-bar-mini-fill fill-danger" style="width:56%"></div></div></div>
+        <div style="text-align:right;"><div class="rank-pct-store" style="color:var(--danger);">56%</div><div style="font-size:10px;color:var(--danger);">↓ 下滑</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="section-card">
+    <div class="section-title"><div class="section-title-left"><span>🌐</span><span>全国门店排名</span></div></div>
+    <div class="rank-national-card" onclick="openModal('rankModal')">
+      <div class="rank-national-num">#12</div>
+      <div class="rank-national-label">全国214家门店综合排名 · 点击查看详情</div>
+      <div class="rank-national-detail">
+        <div class="rank-dim"><div class="rank-dim-val">#8</div><div class="rank-dim-label">均客单排名</div></div>
+        <div class="rank-dim"><div class="rank-dim-val">#15</div><div class="rank-dim-label">业绩完成率</div></div>
+        <div class="rank-dim"><div class="rank-dim-val">#18</div><div class="rank-dim-label">新客单价</div></div>
+        <div class="rank-dim"><div class="rank-dim-val" style="color:var(--warning);">#42</div><div class="rank-dim-label">外协业绩</div></div>
+      </div>
+    </div>
+  </div>
+  <div style="height:16px"></div>
+</div>
+
+<!-- ==================== PAGE 3: 我的团队 ==================== -->
+<div class="page" id="pageStaff">
+  <div class="sub-page active" id="subStaffList">
+    <div class="nav-header">
+      <div class="page-title">👥 我的团队</div>
+      <div class="header-action" onclick="openModal('setTargetModal')">目标设定</div>
+    </div>
+    <div style="padding:12px 16px 0">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;">
+        <div style="background:var(--danger-light);border:1px solid #FECDD3;border-radius:var(--radius-sm);padding:10px;text-align:center;">
+          <div style="font-size:22px;font-weight:800;color:var(--danger);">1</div>
+          <div style="font-size:10px;color:var(--danger);margin-top:2px;">🔴 需干预</div>
+        </div>
+        <div style="background:var(--warning-light);border:1px solid #FEE685;border-radius:var(--radius-sm);padding:10px;text-align:center;">
+          <div style="font-size:22px;font-weight:800;color:var(--warning);">1</div>
+          <div style="font-size:10px;color:var(--warning);margin-top:2px;">🟡 需关注</div>
+        </div>
+        <div style="background:var(--success-light);border:1px solid #86EFAC;border-radius:var(--radius-sm);padding:10px;text-align:center;">
+          <div style="font-size:22px;font-weight:800;color:var(--success);">2</div>
+          <div style="font-size:10px;color:var(--success);margin-top:2px;">🟢 健康</div>
+        </div>
+      </div>
+      <div class="staff-tabs">
+        <div class="staff-tab active" onclick="filterStaff('all',this)">全部 (4)</div>
+        <div class="staff-tab" onclick="filterStaff('warn',this)">🔴 需干预 (1)</div>
+        <div class="staff-tab" onclick="filterStaff('notice',this)">🟡 需关注 (1)</div>
+        <div class="staff-tab" onclick="filterStaff('ok',this)">🟢 正常 (2)</div>
+      </div>
+      <div class="staff-card" data-status="warn" onclick="showSubPage('subStaffDetail')">
+        <div class="staff-card-top">
+          <div class="staff-avatar-md" style="background:var(--danger-light);">👩</div>
+          <div class="staff-info">
+            <div class="staff-name-row"><span class="staff-name">王顾问</span><span class="tag tag-gray">顾问</span><span class="tag tag-danger">🔴 需干预</span></div>
+            <div class="staff-sub">均客单连续3日低于1,400元 · 拉低门店约45元</div>
+          </div>
+        </div>
+        <div class="staff-metrics-row">
+          <div class="staff-metric"><div class="val" style="color:var(--danger)">1,320元</div><div class="lbl">均客单</div></div>
+          <div class="staff-metric"><div class="val">4.2万</div><div class="lbl">本月业绩</div></div>
+          <div class="staff-metric"><div class="val" style="color:var(--warning)">65%</div><div class="lbl">成交率</div></div>
+          <div class="staff-metric"><div class="val" style="color:var(--danger)">48分</div><div class="lbl">方案推荐</div></div>
+        </div>
+        <div class="staff-progress-row">
+          <span class="staff-progress-label">月目标进度</span>
+          <div style="flex:1"><div class="progress-wrap-bar"><div class="progress-fill-bar fill-warning" style="width:56%"></div></div></div>
+          <span class="staff-progress-num">4.2/7.5万</span>
+        </div>
+        <div class="staff-income-hint">预估提成 1,260元 → 达标可得 <span>2,400元</span> · 差额 1,140元</div>
+      </div>
+      <div class="staff-card" data-status="notice" onclick="showToast('陈顾问详情')">
+        <div class="staff-card-top">
+          <div class="staff-avatar-md" style="background:var(--warning-light);">👩</div>
+          <div class="staff-info">
+            <div class="staff-name-row"><span class="staff-name">陈顾问</span><span class="tag tag-gray">顾问</span><span class="tag tag-warning">🟡 需关注</span></div>
+            <div class="staff-sub">新客单低于目标，成交率本周下滑</div>
+          </div>
+        </div>
+        <div class="staff-metrics-row">
+          <div class="staff-metric"><div class="val" style="color:var(--warning)">1,560元</div><div class="lbl">均客单</div></div>
+          <div class="staff-metric"><div class="val">5.8万</div><div class="lbl">本月业绩</div></div>
+          <div class="staff-metric"><div class="val">72%</div><div class="lbl">成交率</div></div>
+          <div class="staff-metric"><div class="val" style="color:var(--warning)">61分</div><div class="lbl">方案推荐</div></div>
+        </div>
+        <div class="staff-progress-row">
+          <span class="staff-progress-label">月目标进度</span>
+          <div style="flex:1"><div class="progress-wrap-bar"><div class="progress-fill-bar fill-warning" style="width:73%"></div></div></div>
+          <span class="staff-progress-num">5.8/8万</span>
+        </div>
+        <div class="staff-income-hint">预估提成 1,740元 → 达标可得 <span>2,800元</span> · 差额 1,060元</div>
+      </div>
+      <div class="staff-card" data-status="ok" onclick="showToast('李主任详情')">
+        <div class="staff-card-top">
+          <div class="staff-avatar-md" style="background:var(--success-light);">👩</div>
+          <div class="staff-info">
+            <div class="staff-name-row"><span class="staff-name">李主任</span><span class="tag tag-gray">顾问主任</span><span class="tag tag-success">🟢 正常</span></div>
+            <div class="staff-sub">本月均客单标杆，可作为早会案例</div>
+          </div>
+        </div>
+        <div class="staff-metrics-row">
+          <div class="staff-metric"><div class="val" style="color:var(--success)">1,850元</div><div class="lbl">均客单</div></div>
+          <div class="staff-metric"><div class="val">9.2万</div><div class="lbl">本月业绩</div></div>
+          <div class="staff-metric"><div class="val" style="color:var(--success)">85%</div><div class="lbl">成交率</div></div>
+          <div class="staff-metric"><div class="val" style="color:var(--success)">82分</div><div class="lbl">方案推荐</div></div>
+        </div>
+        <div class="staff-progress-row">
+          <span class="staff-progress-label">月目标进度</span>
+          <div style="flex:1"><div class="progress-wrap-bar"><div class="progress-fill-bar fill-success" style="width:92%"></div></div></div>
+          <span class="staff-progress-num">9.2/10万</span>
+        </div>
+        <div class="staff-income-hint">预估提成 3,200元 → 达标可得 <span>3,800元</span> · 差额 600元</div>
+      </div>
+      <div class="staff-card" data-status="ok" onclick="showToast('张技师详情')">
+        <div class="staff-card-top">
+          <div class="staff-avatar-md" style="background:var(--primary-light);">👩</div>
+          <div class="staff-info">
+            <div class="staff-name-row"><span class="staff-name">张技师</span><span class="tag tag-gray">皮肤管理师</span><span class="tag tag-success">🟢 正常</span></div>
+            <div class="staff-sub">老客复购稳定，客户满意度高</div>
+          </div>
+        </div>
+        <div class="staff-metrics-row">
+          <div class="staff-metric"><div class="val" style="color:var(--success)">88%</div><div class="lbl">复购率</div></div>
+          <div class="staff-metric"><div class="val">6.5万</div><div class="lbl">本月业绩</div></div>
+          <div class="staff-metric"><div class="val" style="color:var(--success)">4.8</div><div class="lbl">服务评分</div></div>
+          <div class="staff-metric"><div class="val">24</div><div class="lbl">服务人次</div></div>
+        </div>
+        <div class="staff-progress-row">
+          <span class="staff-progress-label">月目标进度</span>
+          <div style="flex:1"><div class="progress-wrap-bar"><div class="progress-fill-bar fill-success" style="width:81%"></div></div></div>
+          <span class="staff-progress-num">6.5/8万</span>
+        </div>
+        <div class="staff-income-hint">预估提成 1,950元 → 达标可得 <span>2,600元</span> · 差额 650元</div>
+      </div>
+    </div>
+    <div style="height:16px"></div>
+  </div>
+
+  <div class="sub-page" id="subStaffDetail">
+    <div class="nav-header">
+      <button class="back-btn" onclick="showSubPage('subStaffList')">‹</button>
+      <div class="page-title">王顾问 · 详情</div>
+      <div class="header-action" onclick="openModal('coachModal')">+辅导任务</div>
+    </div>
+    <div style="padding:12px 16px 0">
+      <div class="section-card" style="margin:0 0 12px;background:linear-gradient(135deg,#FEF3F2,#fff);">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="width:52px;height:52px;border-radius:50%;background:var(--danger-light);display:flex;align-items:center;justify-content:center;font-size:24px;border:2px solid #FECDD3;flex-shrink:0;">👩</div>
+          <div style="flex:1;">
+            <div style="font-size:16px;font-weight:700;color:var(--gray-900);">王顾问</div>
+            <div style="font-size:12px;color:var(--gray-400);margin-top:2px;">美容顾问 · 入职18个月</div>
+            <div style="margin-top:6px;"><span class="tag tag-danger">🔴 需立即辅导</span></div>
+          </div>
+          <div style="text-align:center;">
+            <div style="font-size:22px;font-weight:800;color:var(--danger);">4.2万</div>
+            <div style="font-size:11px;color:var(--gray-400);">本月业绩</div>
+            <div style="font-size:11px;color:var(--danger);font-weight:600;">完成56%</div>
+          </div>
+        </div>
+        <div style="margin-top:12px;padding:10px 12px;background:var(--danger-light);border-radius:var(--radius-sm);border:1px solid #FECDD3;">
+          <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--gray-600);margin-bottom:5px;"><span>当前预估提成</span><span style="font-weight:700;color:var(--danger);">1,260元</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--gray-600);margin-bottom:5px;"><span>达标后可得</span><span style="font-weight:700;color:var(--primary);">2,400元</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--gray-600);"><span>还差业绩</span><span style="font-weight:700;color:var(--danger);">3.3万元</span></div>
+        </div>
+      </div>
+      <div class="section-card" style="margin:0 0 12px">
+        <div class="section-title"><div class="section-title-left"><span>🎯</span><span>销售能力五维分析</span></div><span style="font-size:11px;color:var(--gray-400);">基于近30天录音</span></div>
+        <div class="radar-container">
+          <svg viewBox="0 0 260 260" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;">
+            <polygon points="130,77 192,119 170,181 90,181 68,119" fill="none" stroke="#EAECF0" stroke-width="1"/>
+            <polygon points="130,54 211,103 181,191 79,191 49,103" fill="none" stroke="#EAECF0" stroke-width="1"/>
+            <polygon points="130,31 231,88 192,202 68,202 29,88" fill="none" stroke="#EAECF0" stroke-width="1"/>
+            <line x1="130" y1="130" x2="130" y2="31" stroke="#EAECF0" stroke-width="1"/>
+            <line x1="130" y1="130" x2="231" y2="88" stroke="#EAECF0" stroke-width="1"/>
+            <line x1="130" y1="130" x2="192" y2="202" stroke="#EAECF0" stroke-width="1"/>
+            <line x1="130" y1="130" x2="68" y2="202" stroke="#EAECF0" stroke-width="1"/>
+            <line x1="130" y1="130" x2="29" y2="88" stroke="#EAECF0" stroke-width="1"/>
+            <polygon points="130,58.7 195.6,88 159.8,164.6 92.8,173.2 77.5,88" fill="rgba(43,90,237,0.12)" stroke="#2B5AED" stroke-width="2"/>
+            <circle cx="130" cy="58.7" r="4" fill="#2B5AED"/><circle cx="195.6" cy="88" r="4" fill="#2B5AED"/>
+            <circle cx="159.8" cy="164.6" r="4" fill="#F04438"/><circle cx="92.8" cy="173.2" r="4" fill="#2B5AED"/>
+            <circle cx="77.5" cy="88" r="4" fill="#F04438"/>
+            <text x="130" y="22" text-anchor="middle" font-size="11" fill="#667085">开场话术</text>
+            <text x="244" y="91" text-anchor="start" font-size="11" fill="#667085">需求挖掘</text>
+            <text x="200" y="218" text-anchor="middle" font-size="11" fill="#F04438">方案推荐</text>
+            <text x="60" y="218" text-anchor="middle" font-size="11" fill="#667085">异议处理</text>
+            <text x="16" y="91" text-anchor="end" font-size="11" fill="#F04438">成交促单</text>
+            <text x="130" y="50" text-anchor="middle" font-size="10" fill="#2B5AED" font-weight="bold">72</text>
+            <text x="200" y="80" text-anchor="middle" font-size="10" fill="#2B5AED" font-weight="bold">65</text>
+            <text x="163" y="158" text-anchor="middle" font-size="10" fill="#F04438" font-weight="bold">48</text>
+            <text x="88" y="168" text-anchor="middle" font-size="10" fill="#2B5AED" font-weight="bold">60</text>
+            <text x="70" y="80" text-anchor="middle" font-size="10" fill="#F04438" font-weight="bold">52</text>
+          </svg>
+        </div>
+        <div class="ability-issues">
+          <div class="ability-issue"><div class="issue-icon">⚠️</div><div class="issue-text"><strong>方案推荐（48分）：</strong>AI标注「未主动推荐疗程组合」出现7次，「报价过早」出现5次。</div><div class="issue-action" onclick="showToast('方案推荐陪练已推送')">推送陪练</div></div>
+          <div class="ability-issue"><div class="issue-icon">⚠️</div><div class="issue-text"><strong>成交促单（52分）：</strong>AI标注「促单话术不足」6次，建议学习李主任"三步成交"技巧。</div><div class="issue-action" onclick="showToast('成交促单陪练已推送')">推送陪练</div></div>
+        </div>
+      </div>
+      <div style="padding:0 0 12px;">
+        <div class="diag-card">
+          <div class="diag-title">🔴 均客单异常：连续3日低于1,400元</div>
+          <div class="diag-root">根本原因：王顾问<strong>「方案推荐」评分48分</strong>，主要问题为报价时机过早（5次）和未推荐疗程组合（7次）。若均客单恢复至1,700元，预计本月额外增加提成 <strong style="color:var(--danger);">+1,140元</strong>。</div>
+          <div class="diag-actions">
+            <div class="diag-action-item"><div class="diag-action-text">💬 今日辅导：疗程组合推荐时机+报价节奏</div><button class="diag-action-btn" onclick="openModal('coachModal')">生成任务</button></div>
+            <div class="diag-action-item"><div class="diag-action-text">🎯 推送「方案推荐」陪练课程</div><button class="diag-action-btn" onclick="showToast('陪练任务已推送')">推送</button></div>
+            <div class="diag-action-item"><div class="diag-action-text">📋 早会复盘李主任2,400元高客单案例</div><button class="diag-action-btn" onclick="showToast('已加入早会议程')">加入早会</button></div>
+          </div>
+        </div>
+      </div>
+      <div class="section-card" style="margin:0 0 12px">
+        <div class="section-title"><div class="section-title-left"><span>📈</span><span>近期指标趋势</span></div></div>
+        <div class="trend-row"><div class="trend-label">本月均客单</div><div class="trend-val">1,320元</div><div class="trend-change diff-neg">↓260元 vs目标</div></div>
+        <div class="trend-row"><div class="trend-label">上月均客单</div><div class="trend-val">1,480元</div><div class="trend-change diff-neg">↓220元 vs目标</div></div>
+        <div class="trend-row" style="border:none;"><div class="trend-label">上上月均客单</div><div class="trend-val">1,620元</div><div class="trend-change diff-neg">↓80元 vs目标</div></div>
+      </div>
+      <div class="section-card" style="margin:0 0 12px">
+        <div class="section-title"><div class="section-title-left"><span>📝</span><span>辅导记录</span></div></div>
+        <div class="history-item"><div class="history-date">6月8日</div><div class="history-content">一对一辅导：话术改进，重点训练疗程推荐时机 → <strong>当日均客单1,580元，较前3日提升180元</strong></div></div>
+        <div class="history-item"><div class="history-date">6月5日</div><div class="history-content">推送陪练课程「方案推荐模块」，完成率100%，评分71分</div></div>
+        <div class="history-item" style="border:none;"><div class="history-date">6月1日</div><div class="history-content">月初目标设定：月业绩7.5万，均客单1,700元，方案推荐能力提升至70分</div></div>
+      </div>
+      <div style="display:flex;gap:8px;padding-bottom:16px;">
+        <button class="btn btn-primary btn-md" style="flex:1" onclick="openModal('coachModal')">📝 生成辅导任务</button>
+        <button class="btn btn-outline btn-md" style="flex:1" onclick="showToast('综合陪练计划已推送')">🎯 推送陪练</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== PAGE 4: 我的客户 ==================== -->
+<div class="page" id="pageCustomer">
+  <div class="sub-page active" id="subClientMain">
+    <div style="background:#fff;flex-shrink:0;">
+      <div style="height:44px;background:transparent;flex-shrink:0;"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:0 16px 12px;background:#fff;">
+        <div>
+          <div style="font-size:20px;font-weight:700;color:#1a1a2e;">我的客户</div>
+          <div style="font-size:12px;color:#888;margin-top:2px;">客户阵地 · 共238人</div>
+        </div>
+        <div style="width:36px;height:36px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.08);cursor:pointer;font-size:16px;" onclick="openModal('clientSearchModal')">🔍</div>
+      </div>
+    </div>
+    <div style="overflow-y:auto;overflow-x:hidden;padding:0 16px 80px;">
+      <div style="padding-top:4px;">
+        <div class="client-stat-row">
+          <div class="client-stat-card fire" onclick="showClientListPage('active')">
+            <div style="font-size:22px">🔥</div>
+            <div class="client-stat-num">128</div>
+            <div class="client-stat-label">活跃客户</div>
+          </div>
+          <div class="client-stat-card warn" onclick="showClientListPage('wake')">
+            <div style="font-size:22px">⏰</div>
+            <div class="client-stat-num">67</div>
+            <div class="client-stat-label">待唤醒</div>
+          </div>
+          <div class="client-stat-card sleep" onclick="showClientListPage('sleep')">
+            <div style="font-size:22px">💤</div>
+            <div class="client-stat-num">43</div>
+            <div class="client-stat-label">沉睡客户</div>
+          </div>
+        </div>
+        <div class="card-old">
+          <div class="card-title-old">
+            <div class="card-title-left-old"><div class="card-title-icon-old" style="background:#fff0f0">🎯</div>今日重点跟进<span class="badge-count-old">5</span></div>
+            <div class="more-btn-old">全部 ›</div>
+          </div>
+          <div class="follow-card" onclick="openModal('clientDetailModal')">
+            <div class="follow-card-top">
+              <div><div class="follow-name">王芳</div><div class="follow-time">昨日15:30到店 · 负责顾问：小李</div></div>
+              <span class="reason-badge badge-red">昨日未成交</span>
+            </div>
+            <div class="follow-ai-tip">💡 AI建议：王芳昨日主要顾虑是价格，建议今日发送效果对比图+分期方案，下午3-5点发最佳。</div>
+            <div class="follow-footer">
+              <div class="follow-staff">👤 小李跟进中</div>
+              <div class="assign-btn-purple" onclick="event.stopPropagation();openModal('assignModal')">转发方案给小李 →</div>
+            </div>
+          </div>
+          <div class="follow-card" onclick="openModal('clientDetailModal')">
+            <div class="follow-card-top">
+              <div><div class="follow-name">陈晓燕</div><div class="follow-time">疗程卡本月到期 · 负责技师：小陈</div></div>
+              <span class="reason-badge badge-orange">续卡提醒</span>
+            </div>
+            <div class="follow-ai-tip">💡 AI建议：陈晓燕本月疗程卡剩余2次，是高复购客户，建议在倒数第2次服务后引出续卡话题。</div>
+            <div class="follow-footer">
+              <div class="follow-staff">👤 小陈负责</div>
+              <div class="assign-btn-purple" onclick="event.stopPropagation();openModal('assignModal')">指派跟进 →</div>
+            </div>
+          </div>
+          <div class="follow-card" onclick="openModal('clientDetailModal')">
+            <div class="follow-card-top">
+              <div><div class="follow-name">刘小雨</div><div class="follow-time">45天未到店 · 负责顾问：小王</div></div>
+              <span class="reason-badge badge-purple">流失预警</span>
+            </div>
+            <div class="follow-ai-tip">💡 AI建议：刘小雨近期消费频次明显下降，建议发简短关怀消息+本月专属优惠。</div>
+            <div class="follow-footer">
+              <div class="follow-staff">👤 小王负责</div>
+              <div class="assign-btn-purple" onclick="event.stopPropagation();openModal('assignModal')">指派跟进 →</div>
+            </div>
+          </div>
+        </div>
+        <div class="card-old">
+          <div class="card-title-old">
+            <div class="card-title-left-old"><div class="card-title-icon-old" style="background:#f0edff">🆕</div>新客成交追踪<span class="badge-count-old">4</span></div>
+          </div>
+          <div class="unconverted-card" onclick="openModal('clientDetailModal')">
+            <div class="uc-header"><div class="uc-name">张美丽</div><div class="uc-window window-urgent">⏰ 距黄金窗口还剩4h</div></div>
+            <div class="uc-info">
+              <div class="uc-info-item"><span>到店时间</span><strong>昨日14:00</strong></div>
+              <div class="uc-info-item"><span>负责顾问</span><strong>小张</strong></div>
+              <div class="uc-info-item"><span>未成交原因</span><strong>需回家商量</strong></div>
+            </div>
+            <div class="uc-ai">🤖 建议小张今日上午主动联系，发送门店好评截图+今日限时方案。</div>
+            <div class="action-row-old">
+              <div class="action-btn-old btn-old-secondary">查看档案</div>
+              <div class="action-btn-old btn-old-primary" onclick="event.stopPropagation();openModal('assignModal')">转发任务给小张</div>
+            </div>
+          </div>
+          <div class="unconverted-card" onclick="openModal('clientDetailModal')">
+            <div class="uc-header"><div class="uc-name">李晓芸</div><div class="uc-window window-normal">已过黄金窗口·仍可跟进</div></div>
+            <div class="uc-info">
+              <div class="uc-info-item"><span>到店时间</span><strong>前日10:00</strong></div>
+              <div class="uc-info-item"><span>负责顾问</span><strong>小李</strong></div>
+              <div class="uc-info-item"><span>未成交原因</span><strong>价格偏高</strong></div>
+            </div>
+            <div class="uc-ai">🤖 价格敏感型客户，建议提供分期方案或小额入门疗程。</div>
+            <div class="action-row-old">
+              <div class="action-btn-old btn-old-secondary">查看档案</div>
+              <div class="action-btn-old btn-old-primary" onclick="event.stopPropagation();openModal('assignModal')">转发方案给小李</div>
+            </div>
+          </div>
+        </div>
+        <div class="card-old">
+          <div class="card-title-old">
+            <div class="card-title-left-old"><div class="card-title-icon-old" style="background:#e8fff6">🤝</div>外协客户追踪</div>
+            <div class="more-btn-old">全部 ›</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="background:#f8f8f8;border-radius:10px;padding:12px;display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="openModal('clientDetailModal')">
+              <div><div style="font-size:13px;font-weight:600;color:#1a1a2e">赵婷·百星医美(激光祛斑)</div><div style="font-size:10px;color:#aaa;margin-top:3px">送出日期：6月5日 · 外协机构确认接收</div></div>
+              <div style="font-size:10px;background:#e8fff6;color:#00b894;padding:3px 8px;border-radius:8px;font-weight:600">已到店</div>
+            </div>
+            <div style="background:#f8f8f8;border-radius:10px;padding:12px;display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="openModal('clientDetailModal')">
+              <div><div style="font-size:13px;font-weight:600;color:#1a1a2e">孙莉·百星医美(热玛吉)</div><div style="font-size:10px;color:#aaa;margin-top:3px">送出日期：6月8日 · 待确认</div></div>
+              <div style="font-size:10px;background:#fff8ee;color:#e17055;padding:3px 8px;border-radius:8px;font-weight:600">待确认</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sub-page" id="subClientList">
+    <div class="nav-header" style="position:sticky;top:0;z-index:10;">
+      <button class="back-btn" onclick="showSubPage('subClientMain')">‹</button>
+      <div class="page-title" id="clientListTitle">待唤醒客户</div>
+      <div style="font-size:12px;color:var(--gray-400);padding:4px 8px;" id="clientListCount">67人</div>
+    </div>
+    <div class="client-filter-bar" id="clientFilterBar">
+      <div class="client-filter-tag active" onclick="filterClientList('all',this)">全部</div>
+      <div class="client-filter-tag" onclick="filterClientList('expire',this)">疗程到期</div>
+      <div class="client-filter-tag" onclick="filterClientList('high',this)">高价值</div>
+      <div class="client-filter-tag" onclick="filterClientList('lost',this)">流失预警</div>
+      <div class="client-filter-tag" onclick="filterClientList('new',this)">新客</div>
+    </div>
+    <div style="padding:8px 16px;background:var(--warning-light);border-bottom:1px solid #FEE685;">
+      <div style="font-size:11px;color:#B45309;line-height:1.5;" id="clientListAiTip">建议优先跟进高价值老客和疗程卡即将到期客户，AI已按优先级排序。</div>
+    </div>
+    <div style="background:var(--white);overflow-y:auto;padding-bottom:80px;" id="clientListContainer"></div>
+    <div class="client-list-action-bar">
+      <button class="btn btn-primary btn-lg" id="clientListActionBtn" onclick="showToast('AI回访已批量触发')">🤖 一键发起AI回访</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== PAGE 5: 我 ==================== -->
+<div class="page" id="pageProfile">
+  <div class="profile-header">
+    <div style="display:flex;align-items:center;gap:14px;">
+      <div class="profile-avatar">👩</div>
+      <div>
+        <div style="font-size:18px;font-weight:800;color:#fff;">李店长</div>
+        <div style="font-size:12px;opacity:0.8;margin-top:3px;color:#fff;">贝颜·朝阳旗舰店 · 入职2年3个月</div>
+      </div>
+    </div>
+    <div class="profile-income-card" onclick="openModal('incomeModal')">
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:12px;">
+        <div>
+          <div style="font-size:12px;opacity:0.8;color:#fff;margin-bottom:4px;">本月已赚</div>
+          <div style="font-size:30px;font-weight:800;color:#fff;"><span style="font-size:14px;">¥</span>9,870</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:11px;opacity:0.7;color:#fff;">目标¥15,000</div>
+          <div style="font-size:16px;font-weight:700;color:#fff;">差¥5,130</div>
+          <div style="font-size:11px;opacity:0.7;color:#fff;margin-top:2px;">剩余13天</div>
+        </div>
+      </div>
+      <div class="income-progress-bar"><div class="income-progress-fill" style="width:66%"></div></div>
+      <div class="income-progress-labels" style="color:#fff;opacity:0.75;"><span>底薪¥3,500</span><span>已提成¥6,370</span><span>目标¥15,000</span></div>
+    </div>
+  </div>
+  <div style="flex:1;overflow-y:auto;overflow-x:hidden;padding:12px 16px 80px;">
+    <div class="ai-tip-card">
+      <div class="ai-tip-title">🤖 AI收入提升建议</div>
+      <div class="ai-tip-body">按当前进度，预计本月收入<strong>¥13,200</strong>，距目标差<strong style="color:var(--primary);">¥1,800</strong>。主要缺口来自<strong>均客单未达标</strong>（当前1,580 vs 目标1,700）。剩余13天，若均客单提升至1,720元，可完成目标。<br><br><strong>建议：今日重点辅导王顾问话术，特别是方案推荐环节。</strong></div>
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <button class="btn btn-gray btn-sm" style="flex:1" onclick="showSubPage('subStaffDetail');switchNav('pageStaff','navStaff')">辅导王顾问</button>
+        <button class="btn btn-primary btn-sm" style="flex:1" onclick="showToast('跳转AI销冠话术')">查看AI销冠话术</button>
+      </div>
+    </div>
+    <div class="section-card" style="margin:0 0 12px">
+      <div class="section-title"><div class="section-title-left"><span>🎯</span><span>本月考核指标</span></div></div>
+      <div class="kpi-progress-list">
+        <div class="kpi-row"><span class="kpi-label">门店总业绩</span><div style="flex:1"><div class="progress-wrap-bar"><div class="progress-fill-bar fill-primary" style="width:87%"></div></div></div><span class="kpi-vals">87/100万 (87%)</span></div>
+        <div class="kpi-row"><span class="kpi-label">新客均客单</span><div style="flex:1"><div class="progress-wrap-bar"><div class="progress-fill-bar fill-danger" style="width:93%"></div></div></div><span class="kpi-vals" style="color:var(--danger);">1580/1700 ⚠</span></div>
+        <div class="kpi-row"><span class="kpi-label">卡量</span><div style="flex:1"><div class="progress-wrap-bar"><div class="progress-fill-bar fill-success" style="width:77%"></div></div></div><span class="kpi-vals">23/30张 (77%)</span></div>
+        <div class="kpi-row"><span class="kpi-label">外协业绩</span><div style="flex:1"><div class="progress-wrap-bar"><div class="progress-fill-bar fill-warning" style="width:64%"></div></div></div><span class="kpi-vals">6.4/10万 (64%)</span></div>
+      </div>
+    </div>
+    <div class="section-card" style="margin:0 0 12px">
+      <div class="section-title"><div class="section-title-left"><span>📢</span><span>会议记录</span></div><span class="section-more">全部 ›</span></div>
+      <div class="meeting-record-item" onclick="openModal('morningModal')">
+        <div class="meeting-icon icon-morning">🌅</div>
+        <div class="meeting-record-info"><div class="meeting-record-date">今日 08:30 早会</div><div class="meeting-record-title">今日早会简报</div><div class="meeting-record-summary">重点：成交率提升、王顾问辅导、下午接待压力</div></div>
+        <div style="color:var(--gray-300);font-size:16px;">›</div>
+      </div>
+      <div class="meeting-record-item" onclick="openModal('eveningModal')">
+        <div class="meeting-icon icon-evening">🌙</div>
+        <div class="meeting-record-info"><div class="meeting-record-date">昨日 20:00 晚会</div><div class="meeting-record-title">昨日收官复盘</div><div class="meeting-record-summary">业绩完成87%，新客单1,540，李主任表现突出</div></div>
+        <div style="color:var(--gray-300);font-size:16px;">›</div>
+      </div>
+      <div class="meeting-record-item" style="border:none;" onclick="openModal('weeklyModal')">
+        <div class="meeting-icon icon-morning">📋</div>
+        <div class="meeting-record-info"><div class="meeting-record-date">上周 · 6月1日-6月7日</div><div class="meeting-record-title">上周复盘报告</div><div class="meeting-record-summary">王顾问均客单提升+320元，外协业绩+8000元</div></div>
+        <div style="color:var(--gray-300);font-size:16px;">›</div>
+      </div>
+    </div>
+    <div class="setting-list">
+      <div class="setting-item" onclick="showToast('通知设置')"><div class="setting-icon" style="background:var(--primary-light);">🔔</div><div class="setting-label">消息通知</div><div class="setting-right">已开启 ›</div></div>
+      <div class="setting-item" onclick="showToast('门店信息')"><div class="setting-icon" style="background:var(--success-light);">🏪</div><div class="setting-label">门店信息</div><div class="setting-right">贝颜朝阳店 ›</div></div>
+      <div class="setting-item" onclick="showToast('账号安全')"><div class="setting-icon" style="background:var(--danger-light);">🔐</div><div class="setting-label">账号安全</div><div class="setting-right">›</div></div>
+      <div class="setting-item" onclick="showToast('帮助与反馈')"><div class="setting-icon" style="background:var(--warning-light);">❓</div><div class="setting-label">帮助与反馈</div><div class="setting-right">›</div></div>
+    </div>
+    <div style="text-align:center;padding:16px;font-size:12px;color:var(--gray-300);">贝颜·百星数字化工作台 v2.0</div>
+  </div>
+</div>
+
+</div><!-- END PAGE-WRAPPER -->
+
+<!-- ==================== BOTTOM NAV ==================== -->
+<nav class="bottom-nav">
+  <div class="nav-item active" id="navHome" onclick="switchNav('pageHome','navHome')"><span class="nav-icon">🏠</span><span class="nav-label">工作台</span></div>
+  <div class="nav-item" id="navStore" onclick="switchNav('pageStore','navStore')"><span class="nav-icon">📊</span><span class="nav-label">我的门店</span></div>
+  <div class="nav-item" id="navStaff" onclick="switchNav('pageStaff','navStaff')"><span class="nav-icon">👥</span><span class="nav-label">我的团队</span></div>
+  <div class="nav-item" id="navClient" onclick="switchNav('pageCustomer','navClient')"><span class="nav-icon">👤</span><span class="nav-label">我的客户</span></div>
+  <div class="nav-item" id="navProfile" onclick="switchNav('pageProfile','navProfile')"><span class="nav-icon">🙋</span><span class="nav-label">我</span></div>
+</nav>
+</div>
+
+<!-- ==================== 预约管理全屏页（独立于页面结构之外） ==================== -->
+<div id="apptManagePage">
+  <!-- 顶部Header（固定） -->
+  <div class="appt-page-header">
+    <div class="appt-store-row">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button class="back-btn" onclick="hideApptPage()">‹</button>
+        <div class="appt-store-name">上海徐汇店 <span>›</span></div>
+      </div>
+      <div class="appt-help-btn">？</div>
+    </div>
+    <div class="appt-date-strip">
+      <div class="appt-date-col" onclick="selectApptDate(this)"><div class="appt-date-weekday">二</div><div class="appt-date-num" style="color:var(--primary);font-weight:800;">26</div><div class="appt-date-dot"></div></div>
+      <div class="appt-date-col active" onclick="selectApptDate(this)"><div class="appt-date-weekday">三</div><div class="appt-date-num">27</div></div>
+      <div class="appt-date-col" onclick="selectApptDate(this)"><div class="appt-date-weekday">四</div><div class="appt-date-num">28</div></div>
+      <div class="appt-date-col" onclick="selectApptDate(this)"><div class="appt-date-weekday">五</div><div class="appt-date-num">29</div></div>
+      <div class="appt-date-col" onclick="selectApptDate(this)"><div class="appt-date-weekday">六</div><div class="appt-date-num">30</div></div>
+      <div class="appt-date-col" onclick="selectApptDate(this)"><div class="appt-date-weekday">日</div><div class="appt-date-num">31</div></div>
+      <div class="appt-date-col" onclick="selectApptDate(this)"><div class="appt-date-weekday">一</div><div class="appt-date-num">01</div></div>
+    </div>
+    <div class="appt-staff-banner">今日：店长×4 &nbsp;顾问×1 &nbsp;主任×1</div>
+    <div class="appt-client-tabs">
+      <div class="appt-client-tab active" onclick="switchApptTab(this)">新客</div>
+      <div class="appt-client-tab" onclick="switchApptTab(this)">老客</div>
+    </div>
+    <div class="appt-count-row">
+      <div class="appt-count-text">已预约 <strong>23</strong></div>
+      <button class="appt-add-bed-btn" onclick="showToast('加床位功能')">＋ 加床位</button>
+    </div>
+  </div>
+
+  <!-- 甘特图主体（可滚动区域） -->
+  <div class="appt-gantt-wrap">
+    <table class="appt-gantt-table">
+      <thead>
+        <tr>
+          <th class="time-col">时间</th>
+          <th>床位 1</th>
+          <th>床位 2</th>
+          <th>床位 3</th>
+          <th style="color:var(--gray-300);font-style:italic;">临时床位 1<br><span style="font-size:9px;color:var(--gray-300);">临时</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- 09:00 -->
+        <tr>
+          <td class="time-cell">09:00</td>
+          <td class="slot-cell">
+            <div class="appt-slot-block type-new" onclick="showToast('形... 他人预约')">
+              <div class="appt-slot-name">形... &nbsp;<span style="font-size:9px;color:var(--gray-400);">他人预约 ❤</span></div>
+              <div class="appt-slot-project">水雾眉(基本)</div>
+              <div class="appt-slot-time">09:00-09:30</div>
+            </div>
+          </td>
+          <td class="slot-cell">
+            <div class="appt-slot-block type-new-other" onclick="showToast('熊杨64L 已取消')">
+              <div class="appt-slot-name" style="color:#B45309;">熊杨64L &nbsp;<span style="font-size:9px;">已取消</span></div>
+              <div class="appt-slot-project" style="color:#B45309;">水雾眉(基本)</div>
+              <div class="appt-slot-time" style="color:#B45309;">09:00-10:00</div>
+            </div>
+          </td>
+          <td class="slot-cell">
+            <div class="appt-slot-block type-new" onclick="showToast('余... 他人预约')">
+              <div class="appt-slot-name">余... &nbsp;<span style="font-size:9px;color:var(--gray-400);">他人预约 ❤</span></div>
+              <div class="appt-slot-project">水雾眉(基本)</div>
+              <div class="appt-slot-time">09:00-09:30</div>
+            </div>
+          </td>
+          <td class="slot-cell"><div class="slot-empty"></div></td>
+        </tr>
+        <!-- 09:30 -->
+        <tr>
+          <td class="time-cell">09:30</td>
+          <td class="slot-cell">
+            <div class="appt-slot-block type-service" onclick="showToast('孙玮64L')">
+              <div class="appt-slot-name">孙玮64L</div>
+              <div class="appt-slot-project">水雾眉(基本)</div>
+              <div class="appt-slot-time">09:30-11:00</div>
+            </div>
+          </td>
+          <td class="slot-cell"><div class="slot-empty"></div></td>
+          <td class="slot-cell">
+            <div class="appt-slot-block type-new" onclick="showToast('杨玉龙 他人预约')">
+              <div class="appt-slot-name">杨玉龙 &nbsp;<span style="font-size:9px;color:var(--gray-400);">他人预约</span></div>
+              <div class="appt-slot-project">水雾眉(基本)</div>
+              <div class="appt-slot-time">09:30-11:00</div>
+            </div>
+          </td>
+          <td class="slot-cell"><div class="slot-empty"></div></td>
+        </tr>
+        <!-- 10:00 -->
+        <tr>
+          <td class="time-cell">10:00</td>
+          <td class="slot-cell"><div class="slot-empty"></div></td>
+          <td class="slot-cell">
+            <div class="appt-slot-block type-new" onclick="showToast('小师... 他人预约')">
+              <div class="appt-slot-name">小师... &nbsp;<span style="font-size:9px;color:var(--gray-400);">他人预约</span></div>
+              <div class="appt-slot-project">水雾眉(基本)</div>
+              <div class="appt-slot-time">10:00-11:00</div>
+            </div>
+          </td>
+          <td class="slot-cell"><div class="slot-empty"></div></td>
+          <td class="slot-cell"><div class="slot-empty"></div></td>
+        </tr>
+        <!-- 11:00 -->
+        <tr>
+          <td class="time-cell">11:00</td>
+          <td class="slot-cell">
+            <div class="appt-slot-block type-new" onclick="showToast('王安... 他人预约')">
+              <div class="appt-slot-name">王安... &nbsp;<span style="font-size:9px;color:var(--gray-400);">他人预约</span></div>
+              <div class="appt-slot-project">小手臂(包干)...</div>
+              <div class="appt-slot-time">11:00-12:30</div>
+            </div>
+          </td>
+          <td class="slot-cell">
+            <div class="appt-slot-block type-service" onclick="showToast('刘杰... 他人预约')">
+              <div class="appt-slot-name">刘杰... &nbsp;<span style="font-size:9px;color:var(--gray-400);">他人预约</span></div>
+              <div class="appt-slot-project">水雾眉(基本)</div>
+              <div class="appt-slot-time">11:00-12:30</div>
+            </div>
+          </td>
+          <td class="slot-cell">
+            <div class="appt-slot-block type-new" onclick="showToast('李... 他人预约')">
+              <div class="appt-slot-name">李... &nbsp;<span style="font-size:9px;color:var(--gray-400);">他人预约</span></div>
+              <div class="appt-slot-project">水雾眉(基本)</div>
+              <div class="appt-slot-time">11:10-11:30</div>
+            </div>
+            <div class="appt-slot-block type-service" onclick="showToast('佳佳0061')">
+              <div class="appt-slot-name">佳佳0061</div>
+              <div class="appt-slot-project">水雾眉(基本)</div>
+              <div class="appt-slot-time">11:30-13:00</div>
+            </div>
+          </td>
+          <td class="slot-cell"><div class="slot-empty"></div></td>
+        </tr>
+        <!-- 12:00 -->
+        <tr>
+          <td class="time-cell">12:00</td>
+          <td class="slot-cell"><div class="slot-empty"></div></td>
+          <td class="slot-cell">
+            <div class="appt-slot-block type-new" onclick="showToast('马伟... 他人预约')">
+              <div class="appt-slot-name">马伟... &nbsp;<span style="font-size:9px;color:var(--gray-400);">他人预约</span></div>
+              <div class="appt-slot-project">水雾眉(基本)...</div>
+              <div class="appt-slot-time">12:00-13:30</div>
+            </div>
+          </td>
+          <td class="slot-cell"><div class="slot-empty"></div></td>
+          <td class="slot-cell"><div class="slot-empty"></div></td>
+        </tr>
+        <!-- 13:00 -->
+        <tr>
+          <td class="time-cell">13:00</td>
+          <td class="slot-cell">
+            <div class="appt-slot-block type-new" onclick="showToast('田系... 他人预约')">
+              <div class="appt-slot-name">田系... &nbsp;<span style="font-size:9px;color:var(--gray-400);">他人预约</span></div>
+              <div class="appt-slot-project">水雾眉(基本)</div>
+              <div class="appt-slot-time">13:00-14:30</div>
+            </div>
+          </td>
+          <td class="slot-cell"><div class="slot-empty"></div></td>
+          <td class="slot-cell"><div class="slot-empty"></div></td>
+          <td class="slot-cell"><div class="slot-empty"></div></td>
+        </tr>
+        <!-- 14:00 -->
+        <tr>
+          <td class="time-cell">14:00</td>
+          <td class="slot-cell"><div class="slot-empty"></div></td>
+          <td class="slot-cell"><div class="slot-empty"></div></td>
+          <td class="slot-cell">
+            <div class="appt-slot-block type-temp" onclick="showToast('待确认预约')">
+              <div class="appt-slot-name" style="color:var(--gray-400);">待确认预约</div>
+              <div class="appt-slot-time" style="color:var(--gray-300);">14:00-15:00</div>
+            </div>
+          </td>
+          <td class="slot-cell"><div class="slot-empty"></div></td>
+        </tr>
+        <!-- 15:00 -->
+        <tr>
+          <td class="time-cell">15:00</td>
+          <td class="slot-cell"><div class="slot-empty"></div></td>
+          <td class="slot-cell"><div class="slot-empty"></div></td>
+          <td class="slot-cell"><div class="slot-empty"></div></td>
+          <td class="slot-cell"><div class="slot-empty"></div></td>
+        </tr>
+        <!-- 16:00 -->
+        <tr>
+          <td class="time-cell">16:00</td>
+          <td class="slot-cell"><div class="slot-empty"></div></td>
+          <td class="slot-cell"><div class="slot-empty"></div></td>
+          <td class="slot-cell"><div class="slot-empty"></div></td>
+          <td class="slot-cell"><div class="slot-empty"></div></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- 图例 -->
+    <div class="appt-legend">
+      <div class="appt-legend-item"><div class="appt-legend-dot" style="background:#DBEAFE;border-left:3px solid var(--primary);"></div>空白可约</div>
+      <div class="appt-legend-item"><div class="appt-legend-dot" style="background:#EDE9FE;border-left:3px solid #7C3AED;"></div>已预约未到店</div>
+      <div class="appt-legend-item"><div class="appt-legend-dot" style="background:var(--success-light);border-left:3px solid var(--success);"></div>已预约已到店</div>
+      <div class="appt-legend-item"><div class="appt-legend-dot" style="background:#FEF9C3;border-left:3px solid #EAB308;"></div>压缩接待</div>
+      <div class="appt-legend-item"><div class="appt-legend-dot" style="background:var(--gray-100);border-left:3px solid var(--gray-300);"></div>不可约</div>
+    </div>
+
+    <!-- 床位规则设置按钮 -->
+    <button class="appt-bed-rule-btn" onclick="showToast('床位规则设置')">床位规则设置</button>
+    <div style="height:20px;"></div>
+  </div>
+</div>
+
+<!-- ==================== 弹窗系统 ==================== -->
+
+<!-- 收入测算弹窗 -->
+<div class="overlay" id="incomeModal" onclick="closeModal('incomeModal')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title">💰 收入目标测算</div>
+    <div class="modal-body">
+      <div class="income-subtab-bar">
+        <div class="income-subtab-item active" id="incSubTab1" onclick="switchIncomeSubTab('income')">收入指标</div>
+        <div class="income-subtab-item" id="incSubTab2" onclick="switchIncomeSubTab('partner')">合伙人指标</div>
+      </div>
+      <div class="income-sub-panel active" id="incPanelIncome">
+        <div class="salary-display-card">
+          <div class="salary-display-label">本月目标到手薪资</div>
+          <div class="salary-display-val">¥<span id="salaryDisplayVal">50,000</span></div>
+          <div class="salary-three-bar">
+            <div class="bar-locked" id="barLocked" style="width:60%"></div>
+            <div class="bar-forecast" id="barForecast" style="width:25%"></div>
+            <div class="bar-gap" style="width:15%"></div>
+          </div>
+          <div class="salary-bar-legend">
+            <span><span class="legend-dot-sm" style="background:#12B76A"></span>已锁定</span>
+            <span><span class="legend-dot-sm" style="background:rgba(255,255,255,0.7)"></span>预测可得</span>
+            <span style="color:#FDA29B"><span class="legend-dot-sm" style="background:#FDA29B"></span>还差 <span id="barGapLabel">¥7,500</span></span>
+          </div>
+          <div class="salary-display-sub">AI预测本月实际到手：¥<span id="predictedSalary">42,500</span></div>
+        </div>
+        <div class="preset-btns">
+          <button class="preset-btn-inc" onclick="setIncomeTarget(30000,this)">3万</button>
+          <button class="preset-btn-inc active" onclick="setIncomeTarget(50000,this)">5万</button>
+          <button class="preset-btn-inc" onclick="setIncomeTarget(80000,this)">8万</button>
+          <button class="preset-btn-inc" onclick="setIncomeTarget(100000,this)">10万</button>
+          <button class="preset-btn-inc" onclick="setIncomeTarget(120000,this)">12万</button>
+        </div>
+        <div class="slider-wrap">
+          <div class="slider-labels"><span>¥2万 最低底线</span><span>¥12万 顶级目标</span></div>
+          <input type="range" id="incomeSlider" min="20000" max="120000" step="5000" value="50000" oninput="onIncomeSlider(this)">
+        </div>
+        <div class="total-forecast-banner">
+          <div><div class="total-forecast-label">📈 门店总业绩需达成</div><div style="font-size:11px;color:var(--gray-500);margin-top:2px;">基于薪资目标实时推算</div></div>
+          <div class="total-forecast-val">≥ <span id="totalBizTarget">104万</span></div>
+        </div>
+        <div id="incomeMetricList"></div>
+        <div class="benchmark-card">
+          <div class="benchmark-title">⭐ 标杆门店差距对标<span>对标：全国#1门店</span></div>
+          <div class="benchmark-row"><span class="benchmark-item-name">老客到店率</span><span class="benchmark-item-vals" style="color:#F87171;">本店48% / 标杆62% <span style="color:#FCD34D;">差+14%</span></span></div>
+          <div class="benchmark-row"><span class="benchmark-item-name">新客均客单</span><span class="benchmark-item-vals" style="color:#34D399;">本店1,580 / 标杆1,480 <span style="color:#34D399;">已超</span></span></div>
+          <div class="benchmark-row"><span class="benchmark-item-name">外协完成率</span><span class="benchmark-item-vals" style="color:#F87171;">本店64% / 标杆96% <span style="color:#FCD34D;">差+32%</span></span></div>
+        </div>
+        <div style="height:4px;"></div>
+      </div>
+      <div class="income-sub-panel" id="incPanelPartner">
+        <div style="background:var(--primary-light);border:1px solid #C7D7FD;border-radius:var(--radius-md);padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;">
+          <div><div style="font-size:13px;font-weight:700;color:var(--primary);">合伙人达标概率</div><div style="font-size:11px;color:var(--gray-500);margin-top:2px;">各项指标综合评估</div></div>
+          <div style="font-size:28px;font-weight:800;color:var(--primary);">92%</div>
+        </div>
+        <div class="partner-grid">
+          <div class="partner-card"><div class="partner-card-label">📅 预约贡献值</div><div class="partner-card-val">820<span style="font-size:12px;color:var(--gray-400);font-weight:500;"> 次</span></div><div class="partner-card-sub diff-pos">超目标 12%</div><div class="partner-card-bar"><div class="partner-card-fill fill-success" style="width:82%"></div></div></div>
+          <div class="partner-card"><div class="partner-card-label">🏪 坪效（店效）</div><div class="partner-card-val">3,500<span style="font-size:12px;color:var(--gray-400);font-weight:500;"> 元/㎡</span></div><div class="partner-card-sub" style="color:var(--warning);">目标3,600，差100</div><div class="partner-card-bar"><div class="partner-card-fill fill-warning" style="width:95%"></div></div></div>
+          <div class="partner-card"><div class="partner-card-label">👥 员工人效均值</div><div class="partner-card-val">14.8<span style="font-size:12px;color:var(--gray-400);font-weight:500;"> 万元</span></div><div class="partner-card-sub diff-neg">2人落后需辅导</div><div class="partner-card-bar"><div class="partner-card-fill fill-danger" style="width:74%"></div></div></div>
+          <div class="partner-card"><div class="partner-card-label">✅ 考核违规记录</div><div class="partner-card-val" style="color:var(--success);font-size:14px;">完美清白</div><div class="partner-card-sub diff-pos">未触发任何警告</div><div class="partner-card-bar"><div class="partner-card-fill fill-success" style="width:100%"></div></div></div>
+        </div>
+        <div style="background:var(--gray-50);border-radius:var(--radius-md);padding:14px;border:1px solid var(--gray-100);">
+          <div style="font-size:12px;font-weight:700;color:var(--gray-700);margin-bottom:10px;">📋 合伙人考核说明</div>
+          <div style="font-size:11px;color:var(--gray-600);line-height:1.8;">· 预约贡献值：本月顾客预约及到店次数达标即可解锁<br>· 坪效达标线：月末核算，当前略低需在剩余13天冲刺<br>· 人效要求：全员均值≥15万，需重点辅导王顾问<br>· 违规考核：本月零违规，合伙人分红不受影响</div>
+        </div>
+        <div style="height:4px;"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary btn-lg" onclick="showToast('目标已同步至指标中心');closeModal('incomeModal')">同步至指标中心</button>
+      <button class="btn btn-gray btn-lg" onclick="closeModal('incomeModal')">关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- 均客单诊断弹窗 -->
+<div class="overlay" id="diagAvgModal" onclick="closeModal('diagAvgModal')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title">🔴 均客单异常诊断</div>
+    <div class="modal-body">
+      <div class="modal-row"><span class="modal-row-label">当前均客单</span><span class="modal-row-val" style="color:var(--danger)">1,580元</span></div>
+      <div class="modal-row"><span class="modal-row-label">目标均客单</span><span class="modal-row-val">1,700元</span></div>
+      <div class="modal-row"><span class="modal-row-label">缺口</span><span class="modal-row-val" style="color:var(--danger)">-120元</span></div>
+      <div class="modal-row" style="border:none"><span class="modal-row-label">持续偏低天数</span><span class="modal-row-val">3天</span></div>
+      <div style="height:1px;background:var(--gray-100);margin:12px 0;"></div>
+      <div style="font-size:12px;color:var(--gray-700);line-height:1.7;background:var(--gray-50);padding:12px;border-radius:var(--radius-sm);">王顾问（均客单1,320）+ 陈顾问（均客单1,560）合计接待了本月<strong>58%</strong>的新客，综合拉低门店均值约<strong>45元</strong>。<br><br>AI销冠诊断：王顾问「方案推荐」48分，主要问题为<strong>报价过早</strong>和<strong>未推荐疗程组合</strong>。</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary btn-lg" onclick="showSubPage('subStaffDetail');switchNav('pageStaff','navStaff');closeModal('diagAvgModal')">查看王顾问并辅导</button>
+      <button class="btn btn-gray btn-lg" onclick="closeModal('diagAvgModal')">关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- AI预警1 -->
+<div class="overlay" id="alertModal1" onclick="closeModal('alertModal1')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title">🔴 接待容量告警</div>
+    <div class="modal-body">
+      <div style="background:var(--danger-light);border-radius:var(--radius-md);padding:14px;margin-bottom:16px;border:1px solid #FECDD3;">
+        <div style="font-size:13px;font-weight:700;color:var(--danger);margin-bottom:8px;">⚠️ 紧急情况说明</div>
+        <div style="font-size:12px;color:var(--gray-700);line-height:1.8;">今日预约新客11人，当前在岗顾问2人，按历史均接待时长90分钟/人测算，下午2-5点存在接待空档，预计有3位客户等待时间超过20分钟。</div>
+      </div>
+      <div style="background:var(--primary-light);border-radius:var(--radius-sm);padding:12px;font-size:12px;color:var(--gray-700);line-height:1.8;">方案A：联系陈顾问，询问是否可下午提前到岗支援<br>方案B：对2:30后的预约客户，主动告知等待时间<br>方案C：将2:30后未确认预约客户，建议改约至傍晚</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-gray btn-lg" onclick="closeModal('alertModal1')">稍后处理</button>
+      <button class="btn btn-primary btn-lg" onclick="showToast('已通知陈顾问');closeModal('alertModal1')">📱 立即联系陈顾问</button>
+    </div>
+  </div>
+</div>
+
+<!-- AI预警2 -->
+<div class="overlay" id="alertModal2" onclick="closeModal('alertModal2')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title">🟡 王顾问成交率异常</div>
+    <div class="modal-body">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;">
+        <div style="background:var(--danger-light);border-radius:var(--radius-sm);padding:10px;text-align:center;"><div style="font-size:20px;font-weight:800;color:var(--danger);">16%</div><div style="font-size:10px;color:var(--gray-500);margin-top:2px;">本周成交率</div></div>
+        <div style="background:var(--primary-light);border-radius:var(--radius-sm);padding:10px;text-align:center;"><div style="font-size:20px;font-weight:800;color:var(--primary);">72%</div><div style="font-size:10px;color:var(--gray-500);margin-top:2px;">历史均值</div></div>
+        <div style="background:var(--gray-50);border-radius:var(--radius-sm);padding:10px;text-align:center;"><div style="font-size:20px;font-weight:800;color:var(--gray-900);">6人</div><div style="font-size:10px;color:var(--gray-500);margin-top:2px;">本周接待</div></div>
+      </div>
+      <div style="background:var(--primary-light);border-radius:var(--radius-md);padding:14px;font-size:12px;color:var(--gray-700);line-height:1.8;border-left:3px solid var(--primary);">有4位未成交原因记录为"价格问题"，而同类客户在李主任手中成交率达75%。<br><br><strong>初步判断：</strong>王顾问在方案定价和价值塑造话术环节存在薄弱点。</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-gray btn-lg" onclick="showSubPage('subStaffDetail');switchNav('pageStaff','navStaff');closeModal('alertModal2')">查看王顾问详细档案</button>
+      <button class="btn btn-primary btn-lg" onclick="openModal('coachModal');closeModal('alertModal2')">🎯 发起1对1辅导</button>
+    </div>
+  </div>
+</div>
+
+<!-- AI预警3 -->
+<div class="overlay" id="alertModal3" onclick="closeModal('alertModal3')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title">💡 均客单提升机会</div>
+    <div class="modal-body">
+      <div style="background:var(--primary-light);border-radius:var(--radius-md);padding:14px;margin-bottom:16px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><span style="font-size:12px;color:var(--gray-500);">当前均客单</span><span style="font-size:18px;font-weight:800;color:var(--danger);">¥1,580</span></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><span style="font-size:12px;color:var(--gray-500);">达标线</span><span style="font-size:18px;font-weight:800;color:var(--primary);">¥1,700</span></div>
+        <div style="height:1px;background:rgba(43,90,237,0.15);margin:8px 0;"></div>
+        <div style="font-size:12px;color:var(--primary);font-weight:600;">如果今日3位跟进客户每单均提升¥120，可补上缺口</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div style="border:1.5px solid var(--gray-200);border-radius:var(--radius-md);padding:12px;">
+          <div style="font-size:13px;font-weight:700;color:var(--gray-900);margin-bottom:6px;">王芳 · 预计可提升至¥2,200</div>
+          <div style="font-size:11px;color:var(--gray-600);line-height:1.6;background:var(--gray-50);padding:8px;border-radius:8px;">建议加推祛斑+肌底修复套组，可提升至¥2,200。话术：强调疗效协同，分开做效果打折。</div>
+          <div style="margin-top:8px;"><button class="btn btn-primary btn-sm" style="width:100%;" onclick="openModal('assignModal');closeModal('alertModal3')">转发方案给负责顾问</button></div>
+        </div>
+        <div style="border:1.5px solid var(--gray-200);border-radius:var(--radius-md);padding:12px;">
+          <div style="font-size:13px;font-weight:700;color:var(--gray-900);margin-bottom:6px;">张美丽 · 预计可提升至¥1,800</div>
+          <div style="font-size:11px;color:var(--gray-600);line-height:1.6;background:var(--gray-50);padding:8px;border-radius:8px;">建议加推皮肤管理月卡，首次8折，客单可升至¥1,800。</div>
+          <div style="margin-top:8px;"><button class="btn btn-primary btn-sm" style="width:100%;" onclick="openModal('assignModal');closeModal('alertModal3')">转发方案给负责顾问</button></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary btn-lg" onclick="showToast('所有方案已一键转发');closeModal('alertModal3')">📤 一键转发所有方案</button>
+    </div>
+  </div>
+</div>
+
+<!-- 员工状态弹窗 -->
+<div class="overlay" id="staffDetailModal" onclick="closeModal('staffDetailModal')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title">👤 员工今日状态</div>
+    <div class="modal-body">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--gray-100);">
+        <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#F04438,#FDA29B);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#fff;position:relative;">王<div style="position:absolute;inset:-3px;border-radius:50%;border:2.5px solid var(--danger);"></div></div>
+        <div><div style="font-size:16px;font-weight:800;color:var(--gray-900);">王顾问</div><div style="font-size:11px;color:var(--gray-500);margin-top:2px;">顾问 · 今日在岗</div><div style="margin-top:6px;"><span class="tag tag-danger">🔴 需关注</span></div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;">
+        <div style="background:var(--danger-light);border-radius:var(--radius-sm);padding:10px;text-align:center;"><div style="font-size:18px;font-weight:800;color:var(--danger);">56%</div><div style="font-size:10px;color:var(--gray-500);margin-top:2px;">月目标完成</div></div>
+        <div style="background:var(--warning-light);border-radius:var(--radius-sm);padding:10px;text-align:center;"><div style="font-size:18px;font-weight:800;color:var(--warning);">1,320</div><div style="font-size:10px;color:var(--gray-500);margin-top:2px;">均客单元</div></div>
+        <div style="background:var(--gray-50);border-radius:var(--radius-sm);padding:10px;text-align:center;"><div style="font-size:18px;font-weight:800;color:var(--gray-900);">2人</div><div style="font-size:10px;color:var(--gray-500);margin-top:2px;">今日已接待</div></div>
+      </div>
+      <div style="background:var(--primary-light);border-radius:var(--radius-md);padding:12px;font-size:12px;color:var(--primary);line-height:1.7;border-left:3px solid var(--primary);">🤖 AI今日建议：王顾问方案推荐评分48分，建议在需求确认完成后再报价。</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-gray btn-lg" onclick="switchNav('pageStaff','navStaff');closeModal('staffDetailModal')">查看完整档案</button>
+      <button class="btn btn-primary btn-lg" onclick="openModal('coachModal');closeModal('staffDetailModal')">🎯 发起辅导</button>
+    </div>
+  </div>
+</div>
+
+<!-- 早会弹窗 -->
+<div class="overlay" id="morningModal" onclick="closeModal('morningModal')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title">🌅 今日早会简报</div>
+    <div class="modal-body">
+      <div style="background:linear-gradient(135deg,#FFFAEB,#FEF0C7);border-radius:var(--radius-md);padding:12px;margin-bottom:14px;text-align:center;border:1px solid #FEE685;">
+        <div style="font-size:11px;color:var(--warning);font-weight:600;">AI自动生成 · 2026年6月10日 07:30</div>
+        <div style="font-size:13px;color:var(--gray-700);margin-top:4px;">月进度87% · 剩余13天 · 今日新客预约11人</div>
+      </div>
+      <div class="modal-row"><span class="modal-row-label">昨日总业绩</span><span class="modal-row-val">¥14,260</span></div>
+      <div class="modal-row"><span class="modal-row-label">新客成交率</span><span class="modal-row-val" style="color:var(--warning)">67%（目标70%）</span></div>
+      <div class="modal-row"><span class="modal-row-label">均客单</span><span class="modal-row-val" style="color:var(--danger)">¥1,540（差¥160达标）</span></div>
+      <div class="modal-row" style="border:none"><span class="modal-row-label">最高单</span><span class="modal-row-val" style="color:var(--success)">李主任 · ¥2,400</span></div>
+      <div style="height:1px;background:var(--gray-100);margin:12px 0;"></div>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <div style="background:var(--danger-light);border-radius:var(--radius-sm);padding:10px;border-left:3px solid var(--danger);"><div style="font-size:12px;font-weight:700;color:var(--danger);margin-bottom:3px;">🔴 王顾问需今日辅导</div><div style="font-size:12px;color:var(--gray-600);">连续3日均客单低于1,400元，建议空闲时一对一辅导。</div></div>
+        <div style="background:var(--warning-light);border-radius:var(--radius-sm);padding:10px;border-left:3px solid var(--warning);"><div style="font-size:12px;font-weight:700;color:var(--warning);margin-bottom:3px;">🟡 外协业绩需强调</div><div style="font-size:12px;color:var(--gray-600);">早会专项提醒外协项目推荐，目标本周成交2单。</div></div>
+        <div style="background:var(--primary-light);border-radius:var(--radius-sm);padding:10px;border-left:3px solid var(--primary);"><div style="font-size:12px;font-weight:700;color:var(--primary);margin-bottom:3px;">💡 今日3位高分客户需跟进</div><div style="font-size:12px;color:var(--gray-600);">王芳等3人，AI已生成跟进方案，早会后转发顾问。</div></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary btn-lg" onclick="showToast('早会已开始');closeModal('morningModal')">✅ 开始早会</button>
+      <button class="btn btn-gray btn-lg" onclick="showToast('已分享给区经');closeModal('morningModal')">📤 分享给区经</button>
+    </div>
+  </div>
+</div>
+
+<!-- 晚会弹窗 -->
+<div class="overlay" id="eveningModal" onclick="closeModal('eveningModal')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title">🌙 今日晚会复盘</div>
+    <div class="modal-body">
+      <div style="background:var(--gray-100);border-radius:var(--radius-md);padding:12px;margin-bottom:14px;text-align:center;border:1px solid var(--gray-200);">
+        <div style="font-size:11px;color:var(--gray-500);font-weight:600;">AI自动生成 · 2026年6月10日 20:00</div>
+        <div style="font-size:13px;color:var(--gray-700);margin-top:4px;">今日业绩¥12,640 · 完成今日目标93%</div>
+      </div>
+      <div class="modal-row"><span class="modal-row-label">今日总业绩</span><span class="modal-row-val" style="color:var(--success)">¥12,640</span></div>
+      <div class="modal-row"><span class="modal-row-label">新客到店</span><span class="modal-row-val">8人</span></div>
+      <div class="modal-row"><span class="modal-row-label">成交率</span><span class="modal-row-val" style="color:var(--warning)">62%（差8%）</span></div>
+      <div class="modal-row" style="border:none"><span class="modal-row-label">均客单</span><span class="modal-row-val" style="color:var(--danger)">¥1,580（差¥120达标）</span></div>
+      <div style="height:1px;background:var(--gray-100);margin:12px 0;"></div>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <div style="background:var(--danger-light);border-radius:var(--radius-sm);padding:8px 10px;font-size:12px;color:var(--danger);">🔴 张美丽 · 今日离店未成交，明日黄金窗口截止</div>
+        <div style="background:var(--warning-light);border-radius:var(--radius-sm);padding:8px 10px;font-size:12px;color:var(--warning);">🟡 王芳 · 价格顾虑，建议明日发送分期方案</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary btn-lg" onclick="showToast('晚会已开始');closeModal('eveningModal')">✅ 开始晚会</button>
+      <button class="btn btn-gray btn-lg" onclick="showToast('已分享复盘');closeModal('eveningModal')">📤 分享复盘</button>
+    </div>
+  </div>
+</div>
+
+<!-- 周复盘弹窗 -->
+<div class="overlay" id="weeklyModal" onclick="closeModal('weeklyModal')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title">📋 上周复盘 · 6/1–6/7</div>
+    <div class="modal-body">
+      <div class="week-kpi-grid">
+        <div class="week-kpi-card"><div class="week-kpi-val">23万</div><div class="week-kpi-label">周业绩</div><div class="week-kpi-change diff-pos">↑8% vs上周</div></div>
+        <div class="week-kpi-card"><div class="week-kpi-val" style="color:var(--warning)">1,640元</div><div class="week-kpi-label">周均客单</div><div class="week-kpi-change diff-neg">↓60元 vs目标</div></div>
+        <div class="week-kpi-card"><div class="week-kpi-val">42人</div><div class="week-kpi-label">到店新客</div><div class="week-kpi-change diff-pos">↑5人 vs上周</div></div>
+        <div class="week-kpi-card"><div class="week-kpi-val" style="color:var(--warning)">73%</div><div class="week-kpi-label">成交率</div><div class="week-kpi-change diff-neg">↓7% vs目标</div></div>
+      </div>
+      <div class="coach-effect-item"><div class="coach-effect-icon">💬</div><div><div class="coach-effect-title">辅导王顾问话术（3次）</div><div class="coach-effect-result">均客单从1,160元→1,480元，<strong>提升+320元</strong></div><div style="margin-top:5px;"><span class="tag tag-success">✅ 有效</span></div></div></div>
+      <div class="coach-effect-item"><div class="coach-effect-icon">📢</div><div><div class="coach-effect-title">早会强调外协推荐</div><div class="coach-effect-result">外协成交2单，周环比+8,000元</div><div style="margin-top:5px;"><span class="tag tag-success">✅ 有效</span></div></div></div>
+      <div class="coach-effect-item" style="border:none"><div class="coach-effect-icon">🤖</div><div><div class="coach-effect-title">触发AI回访（12人）</div><div class="coach-effect-result">回复率58%，到店预约3人</div><div style="margin-top:5px;"><span class="tag tag-warning">⚡ 可提升</span></div></div></div>
+      <div style="height:1px;background:var(--gray-100);margin:12px 0;"></div>
+      <div class="nwt-box">
+        <div class="nwt-title">🎯 本周目标</div>
+        <div class="nwt-row"><span class="nwt-label">周业绩目标</span><span class="nwt-val">≥ 6.5万</span></div>
+        <div class="nwt-row"><span class="nwt-label">均客单目标</span><span class="nwt-val">≥ 1,680元</span></div>
+        <div class="nwt-row"><span class="nwt-label">新客接待</span><span class="nwt-val">≥ 18人</span></div>
+        <div class="nwt-row"><span class="nwt-label">存量激活</span><span class="nwt-val">联系8人</span></div>
+        <div class="nwt-row"><span class="nwt-label">员工辅导</span><span class="nwt-val">王顾问3次</span></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary btn-lg" onclick="showToast('已发送给区经');closeModal('weeklyModal')">📤 发送给区经</button>
+      <button class="btn btn-gray btn-lg" onclick="closeModal('weeklyModal')">关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- 辅导任务弹窗 -->
+<div class="overlay" id="coachModal" onclick="closeModal('coachModal')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title">📝 生成辅导任务</div>
+    <div class="modal-body">
+      <div class="modal-row"><span class="modal-row-label">辅导对象</span><span class="modal-row-val">王顾问</span></div>
+      <div class="modal-row"><span class="modal-row-label">重点方向</span><span class="modal-row-val" style="color:var(--primary)">方案推荐 · 成交促单</span></div>
+      <div class="modal-row"><span class="modal-row-label">辅导方式</span><span class="modal-row-val">一对一辅导</span></div>
+      <div class="modal-row" style="border:none"><span class="modal-row-label">预期时间</span><span class="modal-row-val">今日空闲时段</span></div>
+      <div style="height:1px;background:var(--gray-100);margin:12px 0;"></div>
+      <div style="font-size:12px;color:var(--gray-700);line-height:1.8;background:var(--gray-50);padding:12px;border-radius:var(--radius-sm);">1. 疗程组合推荐时机：在需求确认后再报价<br>2. 报价节奏：先展示效果价值，再给出价格区间<br>3. 促单话术：参考李主任「三步成交」案例<br>4. 今日目标：接待均客单达到 ≥1,600元</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary btn-lg" onclick="showToast('辅导任务已创建');closeModal('coachModal')">确认创建并提醒自己</button>
+      <button class="btn btn-outline btn-lg" onclick="showToast('陪练已推送给王顾问');closeModal('coachModal')">同步推送陪练给王顾问</button>
+    </div>
+  </div>
+</div>
+
+<!-- 分配跟进弹窗 -->
+<div class="overlay" id="assignModal" onclick="closeModal('assignModal')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title">📤 分配客户跟进</div>
+    <div class="modal-body">
+      <div style="font-size:12px;color:var(--gray-500);margin-bottom:12px;">选择跟进人员，系统将在对方工作台生成跟进任务</div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;">
+        <div style="display:flex;align-items:center;gap:10px;padding:12px;background:var(--gray-50);border-radius:var(--radius-sm);cursor:pointer;border:2px solid var(--primary);">
+          <div style="width:36px;height:36px;border-radius:50%;background:var(--primary-light);display:flex;align-items:center;justify-content:center;font-size:18px;">👩</div>
+          <div style="flex:1;"><div style="font-size:13px;font-weight:600;">张技师</div><div style="font-size:11px;color:var(--gray-400);">皮肤管理师 · 负责该客户历史服务</div></div>
+          <span class="tag tag-blue">推荐</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:12px;background:var(--gray-50);border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--gray-200);">
+          <div style="width:36px;height:36px;border-radius:50%;background:var(--success-light);display:flex;align-items:center;justify-content:center;font-size:18px;">👩</div>
+          <div style="flex:1;"><div style="font-size:13px;font-weight:600;">李主任</div><div style="font-size:11px;color:var(--gray-400);">顾问主任 · 高客单标杆</div></div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--gray-600);margin-bottom:6px;font-weight:600;">跟进备注（可选）</div>
+      <textarea style="width:100%;border:1px solid var(--gray-200);border-radius:var(--radius-sm);padding:10px;font-size:12px;resize:none;outline:none;color:var(--gray-700);font-family:inherit;" rows="3" placeholder="提示跟进人员：推荐项目、客户偏好、注意事项..."></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary btn-lg" onclick="showToast('已分配，任务已推送');closeModal('assignModal')">确认分配</button>
+    </div>
+  </div>
+</div>
+
+<!-- 全国排名弹窗 -->
+<div class="overlay" id="rankModal" onclick="closeModal('rankModal')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title">🏆 全国门店排名</div>
+    <div class="modal-body">
+      <div style="text-align:center;padding:10px 0 16px;"><div style="font-size:52px;font-weight:800;color:var(--primary);">#12</div><div style="font-size:13px;color:var(--gray-500);">全国214家门店 · 本月综合排名</div></div>
+      <div class="modal-row"><span class="modal-row-label">业绩完成率排名</span><span class="modal-row-val" style="color:var(--primary)">#15（87%）</span></div>
+      <div class="modal-row"><span class="modal-row-label">均客单排名</span><span class="modal-row-val" style="color:var(--primary)">#8（1,580元）</span></div>
+      <div class="modal-row"><span class="modal-row-label">新客单价排名</span><span class="modal-row-val">#18（1,480元）</span></div>
+      <div class="modal-row" style="border:none"><span class="modal-row-label">外协业绩排名</span><span class="modal-row-val" style="color:var(--warning)">#42（64%）</span></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-gray btn-lg" onclick="closeModal('rankModal')">关闭</button></div>
+  </div>
+</div>
+
+<!-- 月度目标设定弹窗 -->
+<div class="overlay" id="setTargetModal" onclick="closeModal('setTargetModal')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title">🎯 员工月目标设定</div>
+    <div class="modal-body">
+      <div style="font-size:12px;color:var(--gray-500);margin-bottom:14px;">总部门店业绩目标：100万 · 建议员工总和 ≥105万</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div style="background:var(--gray-50);border-radius:var(--radius-sm);padding:12px;border:1px solid var(--gray-100);"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><span style="font-size:13px;font-weight:600;">王顾问</span><span class="tag tag-gray">顾问</span></div><div style="display:flex;align-items:center;gap:8px;"><span style="font-size:12px;color:var(--gray-500);width:60px;">业绩目标</span><input type="number" style="flex:1;border:1px solid var(--gray-200);border-radius:6px;padding:8px 10px;font-size:13px;outline:none;font-family:inherit;" value="75000"></div></div>
+        <div style="background:var(--gray-50);border-radius:var(--radius-sm);padding:12px;border:1px solid var(--gray-100);"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><span style="font-size:13px;font-weight:600;">陈顾问</span><span class="tag tag-gray">顾问</span></div><div style="display:flex;align-items:center;gap:8px;"><span style="font-size:12px;color:var(--gray-500);width:60px;">业绩目标</span><input type="number" style="flex:1;border:1px solid var(--gray-200);border-radius:6px;padding:8px 10px;font-size:13px;outline:none;font-family:inherit;" value="80000"></div></div>
+        <div style="background:var(--gray-50);border-radius:var(--radius-sm);padding:12px;border:1px solid var(--gray-100);"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><span style="font-size:13px;font-weight:600;">李主任</span><span class="tag tag-gray">顾问主任</span></div><div style="display:flex;align-items:center;gap:8px;"><span style="font-size:12px;color:var(--gray-500);width:60px;">业绩目标</span><input type="number" style="flex:1;border:1px solid var(--gray-200);border-radius:6px;padding:8px 10px;font-size:13px;outline:none;font-family:inherit;" value="100000"></div></div>
+        <div style="background:var(--gray-50);border-radius:var(--radius-sm);padding:12px;border:1px solid var(--gray-100);"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><span style="font-size:13px;font-weight:600;">张技师</span><span class="tag tag-gray">皮肤管理师</span></div><div style="display:flex;align-items:center;gap:8px;"><span style="font-size:12px;color:var(--gray-500);width:60px;">业绩目标</span><input type="number" style="flex:1;border:1px solid var(--gray-200);border-radius:6px;padding:8px 10px;font-size:13px;outline:none;font-family:inherit;" value="80000"></div></div>
+      </div>
+      <div style="background:var(--primary-light);border-radius:var(--radius-sm);padding:10px 12px;margin-top:12px;font-size:12px;color:var(--primary);">当前员工目标总和：<strong>33.5万</strong> · 超出门店目标 <strong>+5%</strong> ✅</div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-primary btn-lg" onclick="showToast('目标已保存并通知员工');closeModal('setTargetModal')">保存并通知员工</button></div>
+  </div>
+</div>
+
+<!-- 客户详情弹窗 -->
+<div class="overlay" id="clientDetailModal" onclick="closeModal('clientDetailModal')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title" style="padding:0 20px 14px;border-bottom:1px solid #f5f5f5;">👤 客户档案</div>
+    <div class="modal-body">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid #f5f5f5;">
+        <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#fd79a8,#e84393);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#fff;">王</div>
+        <div>
+          <div style="font-size:18px;font-weight:800;color:#1a1a2e;">王芳</div>
+          <div style="font-size:11px;color:#888;margin-top:2px;">手机：138****8888 · 来源：抖音投流</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;">
+            <span style="font-size:10px;padding:2px 8px;border-radius:10px;font-weight:500;background:#f0edff;color:#6c5ce7;">祛斑意向</span>
+            <span style="font-size:10px;padding:2px 8px;border-radius:10px;font-weight:500;background:#fff8ee;color:#e17055;">价格敏感</span>
+            <span style="font-size:10px;padding:2px 8px;border-radius:10px;font-weight:500;background:#fff0f0;color:#ff4757;">未成交</span>
+          </div>
+        </div>
+      </div>
+      <div style="background:#f0edff;border-radius:12px;padding:14px;">
+        <div style="font-size:11px;font-weight:700;color:#6c5ce7;margin-bottom:8px;">🤖 AI跟进建议</div>
+        <div style="font-size:12px;color:#444;line-height:1.8;">建议跟进话术聚焦在：①提供分期方案（¥500/月×3）；②强调祛斑早做比晚做省钱；③可以加一个小赠品增加转化。</div>
+      </div>
+    </div>
+    <div style="padding:12px 20px 20px;border-top:1px solid #f5f5f5;display:flex;gap:10px;">
+      <div style="flex:1;padding:10px 8px;border-radius:10px;font-size:12px;font-weight:600;text-align:center;cursor:pointer;background:#f0f0f0;color:#555;" onclick="openModal('assignModal');closeModal('clientDetailModal')">转发给负责顾问</div>
+      <div style="flex:1;padding:10px 8px;border-radius:10px;font-size:12px;font-weight:600;text-align:center;cursor:pointer;background:linear-gradient(135deg,#00b894,#00cec9);color:#fff;" onclick="showToast('一键外呼已触发')">📞 一键外呼</div>
+    </div>
+  </div>
+</div>
+
+<!-- 客户搜索弹窗 -->
+<div class="overlay" id="clientSearchModal" onclick="closeModal('clientSearchModal')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title" style="padding:0 20px 14px;border-bottom:1px solid #f5f5f5;">🔍 搜索客户</div>
+    <div class="modal-body">
+      <input style="width:100%;border:1.5px solid #eee;border-radius:10px;padding:10px 12px;font-size:13px;color:#1a1a2e;outline:none;background:#fafafa;margin-bottom:16px;font-family:inherit;" placeholder="输入姓名或手机号...">
+      <div style="font-size:12px;color:#888;margin-bottom:8px;">快速筛选</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
+        <div style="background:#f0edff;color:#6c5ce7;font-size:11px;padding:5px 12px;border-radius:20px;cursor:pointer;">未成交新客</div>
+        <div style="background:#fff8ee;color:#e17055;font-size:11px;padding:5px 12px;border-radius:20px;cursor:pointer;">即将到期疗程</div>
+        <div style="background:#fff0f0;color:#ff4757;font-size:11px;padding:5px 12px;border-radius:20px;cursor:pointer;">流失预警</div>
+        <div style="background:#e8fff6;color:#00b894;font-size:11px;padding:5px 12px;border-radius:20px;cursor:pointer;">高价值客户</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===== 页面切换 ===== */
+function switchNav(pageId, navId) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const targetPage = document.getElementById(pageId);
+  if (targetPage) {
+    targetPage.classList.add('active');
+    const firstSub = targetPage.querySelector('.sub-page');
+    if (firstSub) firstSub.classList.add('active');
+  }
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const targetNav = document.getElementById(navId);
+  if (targetNav) targetNav.classList.add('active');
+  document.getElementById('pageWrapper').scrollTop = 0;
+  hideApptPage();
+}
+
+function showSubPage(subId) {
+  const targetSub = document.getElementById(subId);
+  if (!targetSub) return;
+  const parentPage = targetSub.closest('.page');
+  if (!parentPage) return;
+  parentPage.querySelectorAll(':scope > .sub-page').forEach(sp => sp.classList.remove('active'));
+  targetSub.classList.add('active');
+  document.getElementById('pageWrapper').scrollTop = 0;
+}
+
+/* ===== 预约管理全屏页 ===== */
+function showApptPage() {
+  const el = document.getElementById('apptManagePage');
+  if (el) el.classList.add('active');
+}
+function hideApptPage() {
+  const el = document.getElementById('apptManagePage');
+  if (el) el.classList.remove('active');
+}
+
+/* ===== 预约页日期选择 ===== */
+function selectApptDate(el) {
+  el.closest('.appt-date-strip').querySelectorAll('.appt-date-col').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+}
+
+/* ===== 预约页新客/老客Tab ===== */
+function switchApptTab(el) {
+  el.parentElement.querySelectorAll('.appt-client-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+/* ===== 弹窗 ===== */
+function openModal(id) { const el = document.getElementById(id); if (el) el.classList.add('active'); }
+function closeModal(id) { const el = document.getElementById(id); if (el) el.classList.remove('active'); }
+
+/* ===== 门店页Tab切换 ===== */
+function switchTab(el) {
+  el.parentElement.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+/* ===== 员工筛选 ===== */
+function filterStaff(type, el) {
+  if (!el) return;
+  el.parentElement.querySelectorAll('.staff-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('#pageStaff .staff-card').forEach(card => {
+    card.style.display = (type === 'all' || card.dataset.status === type) ? 'block' : 'none';
+  });
+}
+
+/* ===== Toast ===== */
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+/* ===== 客户列表二级页数据 ===== */
+const CLIENT_DATA = {
+  active: {
+    title: '活跃客户', count: '128人',
+    aiTip: '活跃客户消费频次高，建议重点推进升级套餐和老带新活动。',
+    actionBtn: '🎯 一键推送升级方案',
+    list: [
+      { name:'陈晓燕', avatar:'陈', color:'#6c5ce7', tag:'高价值', tagColor:'#f0edff', tagText:'#6c5ce7', meta:'42天未到店 · 历史消费¥32,000', ai:'疗程卡本月到期，剩余2次，需及时跟进续卡', days:'42天前到店', consume:'¥32,000' },
+      { name:'李美玲', avatar:'李', color:'#00b894', tag:'活跃', tagColor:'#e8fff6', tagText:'#00b894', meta:'3天前到店 · 历史消费¥15,600', ai:'复购稳定，可推荐年度会员卡，预计客单提升¥3,000', days:'3天前到店', consume:'¥15,600' },
+      { name:'张晓芸', avatar:'张', color:'#fd79a8', tag:'活跃', tagColor:'#e8fff6', tagText:'#00b894', meta:'7天前到店 · 历史消费¥8,900', ai:'近期频繁咨询美白项目，可主动推送新品套餐', days:'7天前到店', consume:'¥8,900' },
+      { name:'王雪梅', avatar:'王', color:'#e17055', tag:'高价值', tagColor:'#f0edff', tagText:'#6c5ce7', meta:'10天前到店 · 历史消费¥28,000', ai:'老客转介绍意愿强，可邀请参与老带新活动', days:'10天前到店', consume:'¥28,000' },
+      { name:'刘芳',  avatar:'刘', color:'#0984e3', tag:'活跃', tagColor:'#e8fff6', tagText:'#00b894', meta:'5天前到店 · 历史消费¥6,200', ai:'上次服务满意度4.9，适合推荐好友转介绍', days:'5天前到店', consume:'¥6,200' },
+      { name:'赵敏',  avatar:'赵', color:'#a29bfe', tag:'活跃', tagColor:'#e8fff6', tagText:'#00b894', meta:'12天前到店 · 历史消费¥11,000', ai:'套餐剩余3次，建议约下次到店时间锁档', days:'12天前到店', consume:'¥11,000' },
+    ]
+  },
+  wake: {
+    title: '待唤醒客户', count: '67人',
+    aiTip: '建议优先跟进高价值老客和疗程卡即将到期客户，AI已按优先级排序。',
+    actionBtn: '🤖 一键发起AI回访',
+    list: [
+      { name:'陈晓燕', avatar:'陈', color:'#6c5ce7', tag:'疗程到期', tagColor:'#fff8ee', tagText:'#e17055', meta:'42天未到店 · 历史消费¥32,000', ai:'疗程卡本月到期，剩余2次，需及时跟进续卡', days:'42天未到店', consume:'¥32,000' },
+      { name:'刘小雨', avatar:'刘', color:'#636e72', tag:'流失预警', tagColor:'#f0edff', tagText:'#6c5ce7', meta:'45天未到店 · 历史消费¥8,600', ai:'上次反馈满意但说"最近忙"，建议发关怀消息', days:'45天未到店', consume:'¥8,600' },
+      { name:'周静',  avatar:'周', color:'#e17055', tag:'高价值', tagColor:'#fff0f0', tagText:'#ff4757', meta:'38天未到店 · 历史消费¥25,000', ai:'历史消费高，建议电话+限时优惠双触达', days:'38天未到店', consume:'¥25,000' },
+      { name:'孙丽',  avatar:'孙', color:'#0984e3', tag:'疗程到期', tagColor:'#fff8ee', tagText:'#e17055', meta:'30天未到店 · 历史消费¥4,500', ai:'购买的水光套餐本月到期，需提醒预约', days:'30天未到店', consume:'¥4,500' },
+      { name:'吴佳',  avatar:'吴', color:'#a29bfe', tag:'流失预警', tagColor:'#f0edff', tagText:'#6c5ce7', meta:'60天未到店 · 历史消费¥12,000', ai:'超过60天未到店，建议发送专属回归优惠券', days:'60天未到店', consume:'¥12,000' },
+      { name:'郑美',  avatar:'郑', color:'#fd79a8', tag:'疗程到期', tagColor:'#fff8ee', tagText:'#e17055', meta:'35天未到店 · 历史消费¥7,800', ai:'祛斑疗程还剩4次，建议约定完成节点', days:'35天未到店', consume:'¥7,800' },
+    ]
+  },
+  sleep: {
+    title: '沉睡客户', count: '43人',
+    aiTip: '90天以上未到店的沉睡客户，AI建议通过特别优惠或活动触达，激活成本最低。',
+    actionBtn: '🤖 AI批量发送唤醒消息',
+    list: [
+      { name:'马晓红', avatar:'马', color:'#b2bec3', tag:'沉睡', tagColor:'#f8f8f8', tagText:'#888', meta:'120天未到店 · 历史消费¥3,200', ai:'距上次到店已超4个月，可发送"老朋友专属回归礼"', days:'120天未到店', consume:'¥3,200' },
+      { name:'黄燕',  avatar:'黄', color:'#636e72', tag:'沉睡', tagColor:'#f8f8f8', tagText:'#888', meta:'95天未到店 · 历史消费¥6,800', ai:'曾消费过高端疗程，可用新品首发活动做触点', days:'95天未到店', consume:'¥6,800' },
+      { name:'林娜',  avatar:'林', color:'#b2bec3', tag:'沉睡', tagColor:'#f8f8f8', tagText:'#888', meta:'180天未到店 · 历史消费¥1,500', ai:'已超半年，建议低门槛体验活动重建连接', days:'180天未到店', consume:'¥1,500' },
+      { name:'叶云',  avatar:'叶', color:'#636e72', tag:'高价值沉睡', tagColor:'#fff0f0', tagText:'#ff4757', meta:'100天未到店 · 历史消费¥22,000', ai:'高价值沉睡客户，建议店长本人电话关怀', days:'100天未到店', consume:'¥22,000' },
+      { name:'徐倩',  avatar:'徐', color:'#b2bec3', tag:'沉睡', tagColor:'#f8f8f8', tagText:'#888', meta:'150天未到店 · 历史消费¥2,100', ai:'上次离店原因是搬家，可确认是否在附近', days:'150天未到店', consume:'¥2,100' },
+    ]
+  }
+};
+
+function showClientListPage(type) {
+  const data = CLIENT_DATA[type];
+  if (!data) return;
+  document.getElementById('clientListTitle').textContent = data.title;
+  document.getElementById('clientListCount').textContent = data.count;
+  document.getElementById('clientListAiTip').textContent = data.aiTip;
+  document.getElementById('clientListActionBtn').textContent = data.actionBtn;
+  renderClientList(data.list);
+  showSubPage('subClientList');
+}
+
+function renderClientList(list) {
+  const container = document.getElementById('clientListContainer');
+  let html = '';
+  list.forEach(item => {
+    html += `
+      <div class="client-list-item" onclick="openModal('clientDetailModal')">
+        <div class="client-list-avatar" style="background:${item.color};">${item.avatar}</div>
+        <div class="client-list-main">
+          <div class="client-list-name-row">
+            <span class="client-list-name">${item.name}</span>
+            <span style="font-size:10px;padding:2px 7px;border-radius:10px;font-weight:600;background:${item.tagColor};color:${item.tagText};flex-shrink:0;">${item.tag}</span>
+          </div>
+          <div class="client-list-meta">${item.meta}</div>
+          <div class="client-list-ai">💡 ${item.ai}</div>
+        </div>
+        <div class="client-list-right">
+          <div class="client-list-consume">${item.consume}</div>
+          <div class="client-list-days">${item.days}</div>
+        </div>
+      </div>`;
+  });
+  container.innerHTML = html;
+}
+
+function filterClientList(type, el) {
+  document.querySelectorAll('.client-filter-tag').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  showToast('已筛选：' + el.textContent);
+}
+
+/* ===== 收入测算弹窗逻辑 ===== */
+const INCOME_METRICS = [
+  { key:'avg-ticket', icon:'🛍️', name:'新客均客单', unit:'元', baseVal:1580, targetBase:1700, coef:0.6, difficulty:'medium', impactBase:1800,
+    decomposeItems:[{color:'#2B5AED',text:'门店级目标：均客单达到目标值，提升门店整体均值'},{color:'#12B76A',text:'业务策略：重点辅导王顾问话术，强化疗程组合推荐'},{color:'#F79009',text:'每日行动：每位顾问当日接待均客单需达到目标线'}] },
+  { key:'conv-rate', icon:'📊', name:'新客成交率', unit:'%', baseVal:62, targetBase:70, coef:0.02, difficulty:'hard', impactBase:2200,
+    decomposeItems:[{color:'#2B5AED',text:'门店级目标：成交率达到月度目标，避免大量流失'},{color:'#12B76A',text:'业务策略：分析未成交客户档案，找出话术断点'},{color:'#F79009',text:'每日行动：每日复盘离店未成交客户，24小时内跟进'}] },
+  { key:'total-perf', icon:'📈', name:'门店总业绩', unit:'万', baseVal:87, targetBase:100, coef:0.08, difficulty:'medium', impactBase:3200,
+    decomposeItems:[{color:'#2B5AED',text:'门店级目标：月度总业绩完成率100%，达标基础提成'},{color:'#12B76A',text:'业务策略：四大业务线均衡推进'},{color:'#F79009',text:'每日行动：日均业绩目标约3.2万，重点监控新客成单'}] },
+  { key:'card-qty', icon:'💳', name:'卡量', unit:'张', baseVal:23, targetBase:30, coef:0.04, difficulty:'easy', impactBase:800,
+    decomposeItems:[{color:'#2B5AED',text:'门店级目标：本月卡量达到目标，锁定老客复购周期'},{color:'#12B76A',text:'业务策略：在疗程倒数第2次主动引出续卡话题'},{color:'#F79009',text:'每日行动：每日至少跟进1位疗程即将到期的老客'}] },
+  { key:'ext-perf', icon:'🤝', name:'外协业绩', unit:'万', baseVal:6.4, targetBase:10, coef:0.015, difficulty:'hard', impactBase:1500,
+    decomposeItems:[{color:'#2B5AED',text:'门店级目标：外协业绩达到10万，解锁额外外协提成'},{color:'#12B76A',text:'业务策略：早会每日强调外协项目推荐话术与激励'},{color:'#F79009',text:'每日行动：每周目标成交外协2单'}] },
+  { key:'old-return', icon:'🔄', name:'老客到店率', unit:'%', baseVal:48, targetBase:62, coef:0.05, difficulty:'medium', impactBase:2800,
+    decomposeItems:[{color:'#2B5AED',text:'门店级目标：老客到店率提升至标杆水平'},{color:'#12B76A',text:'业务策略：AI回访触达30-90天未到店老客，优先高价值'},{color:'#F79009',text:'每日行动：每日AI回访≥5人'}] },
+];
+const DIFFICULTY_MAP = {
+  easy:  { label:'容易', color:'#12B76A', bg:'#ECFDF3' },
+  medium:{ label:'中等', color:'#F79009', bg:'#FFFAEB' },
+  hard:  { label:'较难', color:'#F04438', bg:'#FEF3F2' }
+};
+
+function renderIncomeMetrics(salary) {
+  const container = document.getElementById('incomeMetricList');
+  if (!container) return;
+  const salaryRatio = (salary - 20000) / (120000 - 20000);
+  let html = '';
+  INCOME_METRICS.forEach(m => {
+    let targetVal = m.targetBase + Math.round(salaryRatio * m.coef * (salary - 20000) / 1000);
+    if (m.unit === '%') targetVal = Math.min(100, Math.round(m.targetBase + salaryRatio * 8));
+    if (m.unit === '万') targetVal = parseFloat((m.targetBase + salaryRatio * m.coef * 10).toFixed(1));
+    let gapPct = Math.min(100, Math.round((m.baseVal / targetVal) * 100));
+    let impact = Math.round(m.impactBase * (1 + salaryRatio * 0.6));
+    const diff = DIFFICULTY_MAP[m.difficulty];
+    html += `
+      <div class="metric-expand-card" id="card-${m.key}">
+        <div class="metric-expand-header" onclick="toggleMetricCard('${m.key}')">
+          <div class="metric-expand-left"><span class="metric-expand-icon">${m.icon}</span><span class="metric-expand-name">${m.name}</span></div>
+          <span class="metric-expand-impact">月薪影响≈¥${impact.toLocaleString()}</span>
+          <span class="metric-expand-arrow">›</span>
+        </div>
+        <div class="metric-expand-stats">
+          <div class="metric-stat-item"><div class="metric-stat-val" style="color:var(--gray-800);">${m.baseVal}${m.unit}</div><div class="metric-stat-label">当前现状</div></div>
+          <div class="metric-stat-item"><div class="metric-stat-val" style="color:var(--primary);">≥${targetVal}${m.unit}</div><div class="metric-stat-label">目标需达</div></div>
+          <div class="metric-stat-item"><div class="metric-stat-val" style="color:${diff.color};">${diff.label}</div><div class="metric-stat-label">难度</div></div>
+        </div>
+        <div class="metric-expand-body" id="body-${m.key}" style="display:none;">
+          <div class="metric-gap-bar"><div class="metric-gap-fill" style="width:${gapPct}%;background:${gapPct>=100?'var(--success)':gapPct>=70?'var(--warning)':'var(--danger)'};"></div></div>
+          <div style="font-size:10px;color:var(--gray-400);margin-bottom:10px;">当前进度 ${gapPct}%，距目标还差 ${Math.abs(targetVal - m.baseVal)}${m.unit}</div>
+          <div class="metric-decompose-box">
+            <div class="metric-decompose-title">🎯 三层目标分解</div>
+            ${m.decomposeItems.map(d=>`<div class="metric-decompose-row"><div class="decompose-dot" style="background:${d.color}"></div><div class="decompose-text">${d.text}</div></div>`).join('')}
+          </div>
+          <div class="metric-sync-btn" onclick="syncMetricToWorkbench('${m.name}')"><span class="metric-sync-text">📌 同步「${m.name}」提升任务至工作台</span><span class="metric-sync-action">同步 →</span></div>
+        </div>
+      </div>`;
+  });
+  container.innerHTML = html;
+}
+
+function toggleMetricCard(key) {
+  const card = document.getElementById('card-' + key);
+  if (!card) return;
+  card.classList.toggle('open');
+  const body = document.getElementById('body-' + key);
+  if (body) body.style.display = card.classList.contains('open') ? 'block' : 'none';
+}
+
+function syncMetricToWorkbench(name) {
+  showToast('「' + name + '」提升任务已同步至今日工作台');
+}
+
+function onIncomeSlider(input) {
+  updateIncomeTarget(parseInt(input.value));
+  document.querySelectorAll('.preset-btn-inc').forEach(b => b.classList.remove('active'));
+}
+
+function setIncomeTarget(val, el) {
+  document.querySelectorAll('.preset-btn-inc').forEach(b => b.classList.remove('active'));
+  if (el) el.classList.add('active');
+  const slider = document.getElementById('incomeSlider');
+  if (slider) slider.value = val;
+  updateIncomeTarget(val);
+}
+
+function updateIncomeTarget(salary) {
+  const ratio = (salary - 20000) / (120000 - 20000);
+  const dispEl = document.getElementById('salaryDisplayVal');
+  if (dispEl) dispEl.textContent = salary.toLocaleString();
+  const predicted = Math.round(salary * 0.85);
+  const predEl = document.getElementById('predictedSalary');
+  if (predEl) predEl.textContent = predicted.toLocaleString();
+  const lockedPct = Math.round(40 + ratio * 30);
+  const forecastPct = Math.round(20 + ratio * 10);
+  const gapPct = Math.max(0, 100 - lockedPct - forecastPct);
+  const barLocked = document.getElementById('barLocked');
+  const barForecast = document.getElementById('barForecast');
+  if (barLocked) barLocked.style.width = lockedPct + '%';
+  if (barForecast) barForecast.style.width = forecastPct + '%';
+  const gapMoney = Math.round(salary * (gapPct / 100));
+  const gapLabel = document.getElementById('barGapLabel');
+  if (gapLabel) gapLabel.textContent = '¥' + gapMoney.toLocaleString();
+  const totalBiz = Math.round((80 + ratio * 40) * 10) / 10;
+  const totalEl = document.getElementById('totalBizTarget');
+  if (totalEl) totalEl.textContent = totalBiz + '万';
+  const slider = document.getElementById('incomeSlider');
+  if (slider) {
+    const pct = ((slider.value - slider.min) / (slider.max - slider.min)) * 100;
+    slider.style.background = `linear-gradient(to right, var(--primary) 0%, var(--primary) ${pct}%, var(--gray-200) ${pct}%, var(--gray-200) 100%)`;
+  }
+  renderIncomeMetrics(salary);
+}
+
+function switchIncomeSubTab(tab) {
+  ['income','partner'].forEach(t => {
+    const btn   = document.getElementById('incSubTab'   + (t==='income'?'1':'2'));
+    const panel = document.getElementById('incPanel'    + (t==='income'?'Income':'Partner'));
+    if (t === tab) { btn && btn.classList.add('active'); panel && panel.classList.add('active'); }
+    else           { btn && btn.classList.remove('active'); panel && panel.classList.remove('active'); }
+  });
+}
+
+/* ===== 初始化 ===== */
+window.addEventListener('load', () => {
+  updateIncomeTarget(50000);
+});
+</script>
+</body>
+</html>

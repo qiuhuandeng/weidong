@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>员工奖励与机构成本发放管理</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --primary:#1677ff;--primary-hover:#4096ff;--primary-light:#e6f4ff;--primary-border:#91caff;
+  --success:#52c41a;--success-light:#f6ffed;--success-border:#b7eb8f;
+  --warning:#fa8c16;--warning-light:#fff7e6;--warning-border:#ffd591;
+  --danger:#ff4d4f;--danger-light:#fff1f0;--danger-border:#ffa39e;
+  --purple:#722ed1;--purple-light:#f9f0ff;--purple-border:#d3adf7;
+  --cyan:#13c2c2;--cyan-light:#e6fffb;--cyan-border:#87e8de;
+  --text-1:#262626;--text-2:#595959;--text-3:#8c8c8c;--text-4:#bfbfbf;
+  --border:#d9d9d9;--border-light:#f0f0f0;
+  --bg:#f0f2f5;--bg-white:#fff;--bg-table:#fafafa;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.06),0 1px 3px rgba(0,0,0,.08);
+  --shadow:0 2px 8px rgba(0,0,0,.1);
+  --r:6px;--r-sm:4px;
+  --font:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif
+}
+body{font-family:var(--font);font-size:14px;color:var(--text-1);background:var(--bg);min-height:100vh;line-height:1.5715}
+.page{padding:16px}
+
+/* Card */
+.card{background:var(--bg-white);border-radius:var(--r);box-shadow:var(--shadow-sm);border:1px solid var(--border-light)}
+
+/* ════════ FILTER ════════ */
+.fp{padding:16px 20px 8px;margin-bottom:12px}
+.frow{display:flex;align-items:flex-start;margin-bottom:10px;min-height:32px}
+.flabel{flex-shrink:0;width:68px;font-size:13px;color:var(--text-2);line-height:32px;white-space:nowrap}
+.fbody{flex:1;display:flex;flex-wrap:wrap;align-items:center;gap:4px;min-height:32px}
+.divider{height:1px;background:var(--border-light);margin:4px 0 8px}
+
+/* Date */
+.date-wrap{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.date-box{display:flex;align-items:center;height:32px;padding:0 10px;border:1px solid var(--border);border-radius:var(--r-sm);background:#fff;gap:6px;transition:border-color .2s,box-shadow .2s}
+.date-box:focus-within{border-color:var(--primary);box-shadow:0 0 0 2px rgba(22,119,255,.15)}
+.date-box input[type=date]{border:none;outline:none;font-size:13px;color:var(--text-1);background:transparent;font-family:var(--font);width:120px}
+.date-sep{color:var(--text-3);font-size:12px}
+.shortcuts{display:flex;gap:4px}
+.sc{height:30px;padding:0 10px;border:1px solid var(--border);border-radius:var(--r-sm);background:#fff;font-size:13px;color:var(--text-2);cursor:pointer;transition:all .15s;white-space:nowrap}
+.sc:hover{border-color:var(--primary);color:var(--primary)}
+.sc.active{border-color:var(--primary);color:var(--primary);background:var(--primary-light)}
+.btn-query{height:32px;padding:0 16px;border:none;border-radius:var(--r-sm);background:var(--primary);color:#fff;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:background .2s}
+.btn-query:hover{background:var(--primary-hover)}
+.btn-reset{height:32px;padding:0 14px;border:1px solid var(--border);border-radius:var(--r-sm);background:#fff;color:var(--text-2);font-size:13px;cursor:pointer;transition:all .2s}
+.btn-reset:hover{border-color:var(--primary);color:var(--primary)}
+
+/* Tags */
+.tag-overflow{display:flex;flex-wrap:wrap;gap:2px 4px;flex:1;overflow:hidden;max-height:32px;transition:max-height .35s ease}
+.tag-overflow.open{max-height:180px}
+.ftag{height:28px;padding:0 10px;border:1px solid transparent;border-radius:var(--r-sm);font-size:13px;color:var(--text-2);cursor:pointer;transition:all .15s;white-space:nowrap;display:inline-flex;align-items:center;background:transparent;user-select:none}
+.ftag:hover{color:var(--primary);background:var(--primary-light)}
+.ftag.active{color:var(--primary);background:var(--primary-light);border-color:var(--primary-border)}
+.exp-btn{height:28px;padding:0 6px;font-size:13px;color:var(--primary);border:none;background:none;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:3px;flex-shrink:0}
+.exp-btn .arr{display:inline-block;transition:transform .25s;font-size:10px}
+.exp-btn.open .arr{transform:rotate(180deg)}
+
+/* Pills */
+.pills{display:flex;gap:4px;flex-wrap:wrap}
+.pill{height:28px;padding:0 14px;border:1px solid var(--border);border-radius:14px;background:#fff;font-size:13px;color:var(--text-2);cursor:pointer;transition:all .15s;white-space:nowrap}
+.pill:hover{border-color:var(--primary);color:var(--primary)}
+.pill.active{border-color:var(--primary);color:var(--primary);background:var(--primary-light)}
+
+/* Keyword */
+.kw-wrap{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.kw-types{display:flex;gap:4px}
+.kwt{height:30px;padding:0 10px;border:1px solid var(--border);border-radius:var(--r-sm);background:#fff;font-size:13px;color:var(--text-2);cursor:pointer;transition:all .15s}
+.kwt:hover{border-color:var(--primary);color:var(--primary)}
+.kwt.active{border-color:var(--primary);color:var(--primary);background:var(--primary-light)}
+.search-box{position:relative;display:inline-flex;align-items:center}
+.search-ico{position:absolute;left:9px;color:var(--text-3);pointer-events:none}
+.search-inp{height:32px;width:200px;padding:0 10px 0 32px;border:1px solid var(--border);border-radius:var(--r-sm);font-size:13px;outline:none;transition:all .2s;font-family:var(--font)}
+.search-inp:focus{border-color:var(--primary);box-shadow:0 0 0 2px rgba(22,119,255,.15)}
+
+/* ════════ TABS ════════ */
+.tabs-card{overflow:visible}
+.tab-nav{display:flex;border-bottom:1px solid var(--border-light);padding:0 20px;background:#fff;border-radius:var(--r) var(--r) 0 0}
+.tab-btn{height:46px;padding:0 20px;font-size:14px;color:var(--text-2);border:none;background:none;cursor:pointer;position:relative;border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .2s;white-space:nowrap}
+.tab-btn:hover{color:var(--primary)}
+.tab-btn.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:500}
+.tab-pane{display:none}
+.tab-pane.active{display:block}
+
+/* ════════ TOOLBAR ════════ */
+.toolbar{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid var(--border-light)}
+.tb-l{display:flex;align-items:center;gap:8px}
+.tb-r{display:flex;align-items:center;gap:8px}
+.rec-info{font-size:13px;color:var(--text-3)}
+.rec-info b{color:var(--primary)}
+.bsm{height:30px;padding:0 12px;border-radius:var(--r-sm);font-size:13px;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
+.b-outline{border:1px solid var(--border);background:#fff;color:var(--text-2)}
+.b-outline:hover{border-color:var(--primary);color:var(--primary)}
+.b-primary{border:none;background:var(--primary);color:#fff}
+.b-primary:hover{background:var(--primary-hover)}
+.b-success{border:none;background:var(--success);color:#fff}
+.b-success:hover{background:#389e0d}
+
+/* ════════ TABLE ════════ */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+table.emp-tbl{min-width:1300px}
+table.inst-tbl{min-width:1300px}
+thead tr{background:var(--bg-table)}
+th{padding:11px 12px;text-align:left;font-weight:500;color:var(--text-2);border-bottom:1px solid var(--border-light);white-space:nowrap}
+th.sortable{cursor:pointer;user-select:none}
+th.sortable:hover{color:var(--primary)}
+tbody tr.drow{border-bottom:1px solid var(--border-light);transition:background .15s}
+tbody tr.drow:hover{background:#f5f8ff}
+td{padding:13px 12px;vertical-align:middle;white-space:nowrap}
+
+/* Amounts */
+.a-blue{color:var(--primary);font-weight:500}
+.a-red{color:var(--danger)}
+.a-orange{color:var(--warning);font-weight:500}
+.a-bold{color:var(--primary);font-weight:600;font-size:14px}
+.a-green{color:var(--success);font-weight:600;font-size:14px}
+
+/* Badge */
+.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:500}
+.badge::before{content:'';width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.bw{color:var(--warning);background:var(--warning-light);border:1px solid var(--warning-border)}
+.bw::before{background:var(--warning)}
+.bs{color:var(--success);background:var(--success-light);border:1px solid var(--success-border)}
+.bs::before{background:var(--success)}
+
+/* Cell actions */
+.act{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.bc{height:26px;padding:0 10px;border-radius:var(--r-sm);font-size:12px;cursor:pointer;transition:all .15s;white-space:nowrap;display:inline-flex;align-items:center;gap:3px}
+.bc-pri{border:1px solid var(--primary);background:var(--primary-light);color:var(--primary)}
+.bc-pri:hover{background:var(--primary);color:#fff}
+.bc-dark{border:none;background:#434343;color:#fff}
+.bc-dark:hover{background:#1f1f1f}
+.bc-grn{border:1px solid var(--success);background:var(--success-light);color:var(--success)}
+.bc-grn:hover{background:var(--success);color:#fff}
+.bc-def{border:1px solid var(--border);background:#fff;color:var(--text-2)}
+.bc-def:hover{border-color:var(--primary);color:var(--primary)}
+.done-txt{font-size:12px;color:var(--text-3);display:inline-flex;align-items:center;gap:3px}
+.ck{color:var(--success);font-style:normal;font-weight:700}
+
+/* Summary tfoot row */
+.sum-row td{border-top:2px solid #ffe58f!important;background:#fffbe6;font-weight:600}
+
+/* Pagination */
+.pg-wrap{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-top:1px solid var(--border-light)}
+.pg-info{font-size:13px;color:var(--text-3)}
+.pg-btns{display:flex;align-items:center;gap:4px}
+.pg-btn{min-width:32px;height:32px;padding:0 6px;border:1px solid var(--border);border-radius:var(--r-sm);background:#fff;font-size:13px;color:var(--text-2);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:all .15s}
+.pg-btn:hover:not([disabled]){border-color:var(--primary);color:var(--primary)}
+.pg-btn.active{border-color:var(--primary);background:var(--primary);color:#fff}
+.pg-btn[disabled]{opacity:.4;cursor:not-allowed}
+.pg-sel{height:32px;padding:0 8px;border:1px solid var(--border);border-radius:var(--r-sm);font-size:13px;color:var(--text-2);background:#fff;outline:none}
+
+/* Checkbox */
+.cb{width:16px;height:16px;border:1px solid var(--border);border-radius:3px;background:#fff;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
+.cb.on{background:var(--primary);border-color:var(--primary)}
+.cb.on::after{content:'';width:9px;height:5px;border:2px solid #fff;border-top:none;border-right:none;transform:rotate(-45deg) translateY(-1px)}
+.cb.half::after{content:'';width:8px;height:2px;background:#fff;border-radius:1px}
+.cb.half{background:var(--primary);border-color:var(--primary)}
+
+/* Toast */
+#toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);background:#262626;color:#fff;padding:10px 20px;border-radius:var(--r);font-size:13px;opacity:0;transition:all .3s;pointer-events:none;z-index:9999;display:flex;align-items:center;gap:8px;box-shadow:var(--shadow)}
+
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:#f0f0f0;border-radius:3px}
+::-webkit-scrollbar-thumb{background:#ccc;border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:#aaa}
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- ████████████████ FILTER PANEL ████████████████ -->
+<div class="card fp">
+
+  <div class="frow">
+    <span class="flabel">完成时间</span>
+    <div class="fbody">
+      <div class="date-wrap">
+        <div class="date-box">
+          <input type="date" id="ds" value="2026-06-01">
+          <span class="date-sep">至</span>
+          <input type="date" id="de" value="2026-06-30">
+        </div>
+        <div class="shortcuts">
+          <button class="sc" onclick="setDate('lastMonth',this)">上月</button>
+          <button class="sc" onclick="setDate('yesterday',this)">昨天</button>
+          <button class="sc" onclick="setDate('today',this)">今天</button>
+          <button class="sc active" onclick="setDate('thisMonth',this)">本月</button>
+          <button class="sc" onclick="setDate('thisYear',this)">本年</button>
+        </div>
+        <button class="btn-query" onclick="doQuery()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>查看
+        </button>
+        <button class="btn-reset" onclick="doReset()">重置</button>
+      </div>
+    </div>
+  </div>
+  <div class="divider"></div>
+
+  <div class="frow">
+    <span class="flabel">外分机构</span>
+    <div class="fbody">
+      <div class="tag-overflow" id="to-org">
+        <span class="ftag active" data-g="org">全部</span>
+        <span class="ftag" data-g="org">第一个外协机构</span>
+        <span class="ftag" data-g="org">第二个外协机构</span>
+        <span class="ftag" data-g="org">深圳翻菜谱医疗美容诊所</span>
+        <span class="ftag" data-g="org">不知道的机构</span>
+        <span class="ftag" data-g="org">香辣的机构-外协积数-有体验卡</span>
+        <span class="ftag" data-g="org">贝非草(我方收款)-无体验卡</span>
+        <span class="ftag" data-g="org">菲非美(我方收款)-有体验卡</span>
+        <span class="ftag" data-g="org">诺谱-我方收款-仅有预售卡</span>
+        <span class="ftag" data-g="org">诺德-我方收款-仅有体验卡</span>
+        <span class="ftag" data-g="org">美积-外协积数-仅体验卡</span>
+      </div>
+      <button class="exp-btn" onclick="toggleExp('to-org',this)">展开<span class="arr">▾</span></button>
+    </div>
+  </div>
+
+  <div class="frow">
+    <span class="flabel">门店大区</span>
+    <div class="fbody">
+      <div class="tag-overflow" id="to-area">
+        <span class="ftag active" data-g="area">全部</span>
+        <span class="ftag" data-g="area">昆瑞大区</span>
+        <span class="ftag" data-g="area">榆林大区</span>
+        <span class="ftag" data-g="area">华联大区</span>
+        <span class="ftag" data-g="area">麻椰大区</span>
+        <span class="ftag" data-g="area">西用推售</span>
+        <span class="ftag" data-g="area">春极大区</span>
+        <span class="ftag" data-g="area">多项目组</span>
+        <span class="ftag" data-g="area">双美事业部</span>
+        <span class="ftag" data-g="area">大重区</span>
+      </div>
+      <button class="exp-btn" onclick="toggleExp('to-area',this)">展开<span class="arr">▾</span></button>
+    </div>
+  </div>
+
+  <div class="frow">
+    <span class="flabel">门店城区</span>
+    <div class="fbody">
+      <div class="tag-overflow" id="to-city">
+        <span class="ftag active" data-g="city">全部</span>
+        <span class="ftag" data-g="city">华东区域</span>
+        <span class="ftag" data-g="city">文莉区域</span>
+        <span class="ftag" data-g="city">朝春花区域</span>
+        <span class="ftag" data-g="city">云南区域</span>
+        <span class="ftag" data-g="city">梅梅区域</span>
+        <span class="ftag" data-g="city">全疆区域</span>
+        <span class="ftag" data-g="city">桂辣区域</span>
+        <span class="ftag" data-g="city">博辣区域</span>
+        <span class="ftag" data-g="city">田田区域</span>
+        <span class="ftag" data-g="city">标辣区域</span>
+        <span class="ftag" data-g="city">标雷区域</span>
+        <span class="ftag" data-g="city">葡萄区域</span>
+        <span class="ftag" data-g="city">黄南区域</span>
+        <span class="ftag" data-g="city">美湾区域</span>
+        <span class="ftag" data-g="city">西南区域</span>
+        <span class="ftag" data-g="city">李朔区域</span>
+        <span class="ftag" data-g="city">赵兴区域</span>
+        <span class="ftag" data-g="city">秀红区域</span>
+        <span class="ftag" data-g="city">会馆区域</span>
+        <span class="ftag" data-g="city">婧鹏区域</span>
+      </div>
+      <button class="exp-btn" onclick="toggleExp('to-city',this)">展开<span class="arr">▾</span></button>
+    </div>
+  </div>
+
+  <div class="frow">
+    <span class="flabel">门店名称</span>
+    <div class="fbody">
+      <div class="tag-overflow" id="to-store">
+        <span class="ftag active" data-g="store">全部</span>
+        <span class="ftag" data-g="store">南京澳口店</span>
+        <span class="ftag" data-g="store">昆山玉山店</span>
+        <span class="ftag" data-g="store">扬州枚江店</span>
+        <span class="ftag" data-g="store">常州天宁店</span>
+        <span class="ftag" data-g="store">徐州云龙店</span>
+        <span class="ftag" data-g="store">上海徐汇店</span>
+        <span class="ftag" data-g="store">上海静安店</span>
+        <span class="ftag" data-g="store">上海松江店</span>
+        <span class="ftag" data-g="store">上海宝山店</span>
+        <span class="ftag" data-g="store">上海嘉定店</span>
+        <span class="ftag" data-g="store">上海东二店</span>
+        <span class="ftag" data-g="store">上海崇明店</span>
+        <span class="ftag" data-g="store">宁波海曙店</span>
+        <span class="ftag" data-g="store">金华金东店</span>
+        <span class="ftag" data-g="store">宁波鄞州店</span>
+        <span class="ftag" data-g="store">嘉兴秀宁店</span>
+        <span class="ftag" data-g="store">湖州吴兴店</span>
+        <span class="ftag" data-g="store">盐城盐都店</span>
+        <span class="ftag" data-g="store">上海浦东店</span>
+      </div>
+      <button class="exp-btn" onclick="toggleExp('to-store',this)">展开<span class="arr">▾</span></button>
+    </div>
+  </div>
+
+  <div class="frow">
+    <span class="flabel">发放状态</span>
+    <div class="fbody">
+      <div class="pills">
+        <button class="pill active" data-pg="status">全部</button>
+        <button class="pill" data-pg="status">已发放</button>
+        <button class="pill" data-pg="status">未发放</button>
+        <button class="pill" data-pg="status">已取消</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="frow">
+    <span class="flabel">收支类型</span>
+    <div class="fbody">
+      <div class="pills">
+        <button class="pill active" data-pg="type">全部</button>
+        <button class="pill" data-pg="type">体验卡</button>
+        <button class="pill" data-pg="type">非体验卡</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="frow">
+    <span class="flabel">关键字</span>
+    <div class="fbody">
+      <div class="kw-wrap">
+        <div class="kw-types">
+          <button class="kwt" data-kt>客户姓名</button>
+          <button class="kwt" data-kt>客户手机</button>
+          <button class="kwt active" data-kt>会员号</button>
+        </div>
+        <div class="search-box">
+          <svg class="search-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input class="search-inp" type="text" placeholder="输入关键字搜索">
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /filter -->
+
+
+<!-- ████████████████ TABS ████████████████ -->
+<div class="card tabs-card">
+
+  <div class="tab-nav" id="tabNav">
+    <button class="tab-btn active" data-tab="pane-emp">员工奖励发放</button>
+    <button class="tab-btn" data-tab="pane-inst">机构成本发放</button>
+  </div>
+
+  <!-- ══════ TAB1: 员工奖励 ══════ -->
+  <div class="tab-pane active" id="pane-emp">
+    <div class="toolbar">
+      <div class="tb-l"><span class="rec-info">共 <b>4</b> 条记录</span></div>
+      <div class="tb-r">
+        <button class="bsm b-primary" onclick="toast('正在导出 Excel…','info')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          导出 Excel
+        </button>
+      </div>
+    </div>
+    <div class="tbl-wrap">
+      <table class="emp-tbl">
+        <thead>
+          <tr>
+            <th style="width:40px"><div class="cb" id="ca-emp" onclick="checkAll('emp-tbody',this)"></div></th>
+            <th>序号</th><th>姓名</th><th>会员号</th><th>门店</th><th>所属区域</th>
+            <th>订单号</th><th>收支类型</th><th>确认时间</th><th>核对金额</th>
+            <th class="sortable" onclick="sortCol(this,10,'emp-tbody')">我司奖金部分<span style="font-size:11px;color:var(--text-4);margin-left:3px">↕</span></th>
+            <th class="sortable" onclick="sortCol(this,11,'emp-tbody')">外协代付奖金（已扣）<span style="font-size:11px;color:var(--text-4);margin-left:3px">↕</span></th>
+            <th class="sortable" onclick="sortCol(this,12,'emp-tbody')">实发奖励总额（合并）<span style="font-size:11px;color:var(--text-4);margin-left:3px">↕</span></th>
+            <th>发放状态</th>
+            <th style="min-width:130px">核销并发放动作</th>
+          </tr>
+        </thead>
+        <tbody id="emp-tbody">
+          <tr class="drow">
+            <td><div class="cb" onclick="this.classList.toggle('on')"></div></td>
+            <td>1</td><td>张晓明</td><td>HY20240001</td><td>上海徐汇店</td><td>华东区域</td>
+            <td>ORD202406001</td><td>服务奖励</td><td>2026-06-05 14:23</td><td>¥800.00</td>
+            <td class="a-orange">¥800.00</td><td class="a-red">¥880.00</td><td class="a-bold">¥1,600.00</td>
+            <td><span class="badge bw">未发放</span></td>
+            <td><div class="act"><button class="bc bc-dark" onclick="empConfirm(this)">已发放</button></div></td>
+          </tr>
+          <tr class="drow">
+            <td><div class="cb" onclick="this.classList.toggle('on')"></div></td>
+            <td>2</td><td>李雨桐</td><td>HY20240002</td><td>南京澳口店</td><td>文莉区域</td>
+            <td>ORD202406002</td><td>服务奖励</td><td>2026-06-06 09:15</td><td>¥0.00</td>
+            <td class="a-orange">¥0.00</td><td class="a-red">¥1,500.00</td><td class="a-bold">¥1,500.00</td>
+            <td><span class="badge bw">未发放</span></td>
+            <td><div class="act"><button class="bc bc-dark" onclick="empConfirm(this)">已发放</button></div></td>
+          </tr>
+          <tr class="drow">
+            <td><div class="cb" onclick="this.classList.toggle('on')"></div></td>
+            <td>3</td><td>王建国</td><td>HY20240003</td><td>昆山玉山店</td><td>云南区域</td>
+            <td>ORD202406003</td><td>绩效奖金</td><td>2026-06-07 11:40</td><td>¥1,860.00</td>
+            <td class="a-orange">¥1,860.00</td><td class="a-red">¥1,800.00</td><td class="a-bold">¥3,600.00</td>
+            <td><span class="badge bs">已发放</span></td>
+            <td><div class="act"><span class="done-txt"><i class="ck">✓</i> 奖励已发放</span></div></td>
+          </tr>
+          <tr class="drow">
+            <td><div class="cb" onclick="this.classList.toggle('on')"></div></td>
+            <td>4</td><td>陈思远</td><td>HY20240004</td><td>上海松江店</td><td>梅梅区域</td>
+            <td>ORD202406004</td><td>服务奖励</td><td>2026-06-08 16:05</td><td>¥400.00</td>
+            <td class="a-orange">¥400.00</td><td class="a-red">¥480.00</td><td class="a-bold">¥880.00</td>
+            <td><span class="badge bs">已发放</span></td>
+            <td><div class="act"><span class="done-txt"><i class="ck">✓</i> 奖励已发放</span></div></td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr class="sum-row">
+            <td colspan="10" style="text-align:right;color:var(--text-2)">汇总合计：</td>
+            <td class="a-orange">¥3,060.00</td>
+            <td class="a-red">¥4,660.00</td>
+            <td class="a-bold">¥7,580.00</td>
+            <td colspan="2"></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    <div class="pg-wrap">
+      <div class="pg-info">共 4 条 &nbsp;|&nbsp; 每页 <select class="pg-sel"><option>20</option><option>50</option><option>100</option></select> 条</div>
+      <div class="pg-btns">
+        <button class="pg-btn" disabled>‹</button>
+        <button class="pg-btn active">1</button>
+        <button class="pg-btn" disabled>›</button>
+      </div>
+    </div>
+  </div><!-- /pane-emp -->
+
+
+  <!-- ══════ TAB2: 机构成本 ══════ -->
+  <div class="tab-pane" id="pane-inst">
+    <div class="toolbar">
+      <div class="tb-l"><span class="rec-info">共 <b>4</b> 条记录</span></div>
+      <div class="tb-r">
+        <button class="bsm b-success" onclick="batchPay()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+          批量确认打款
+        </button>
+        <button class="bsm b-primary" onclick="toast('正在导出 Excel…','info')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          导出 Excel
+        </button>
+      </div>
+    </div>
+    <div class="tbl-wrap">
+      <table class="inst-tbl">
+        <thead>
+          <tr>
+            <th style="width:36px"><div class="cb" id="ca-inst" onclick="checkAll('inst-tbody',this)"></div></th>
+            <th>序号</th><th>机构名称</th><th>机构编号</th><th>关联门店</th><th>所属区域</th>
+            <th>订单号</th><th>收支类型</th><th>确认时间</th>
+            <th class="sortable" onclick="sortCol(this,9,'inst-tbody')">本期应付成本<span style="font-size:11px;color:var(--text-4);margin-left:3px">↕</span></th>
+            <th class="sortable" onclick="sortCol(this,10,'inst-tbody')">本期应付分佣<span style="font-size:11px;color:var(--text-4);margin-left:3px">↕</span></th>
+            <th class="sortable" onclick="sortCol(this,11,'inst-tbody')">代扣奖励金额<span style="font-size:11px;color:var(--text-4);margin-left:3px">↕</span></th>
+            <th class="sortable" onclick="sortCol(this,12,'inst-tbody')">实际应打款总额<span style="font-size:11px;color:var(--text-4);margin-left:3px">↕</span></th>
+            <th>打款状态</th>
+            <th style="min-width:120px">财务操作</th>
+          </tr>
+        </thead>
+        <tbody id="inst-tbody">
+
+          <!-- Row 1 -->
+          <tr class="drow" id="inst-row-1">
+            <td><div class="cb" onclick="this.classList.toggle('on')"></div></td>
+            <td>1</td><td><b>深圳翻菜谱医疗</b></td><td>JG20240001</td><td>深圳南山店</td><td>华南区域</td>
+            <td>ORD202406101</td><td>机构成本</td><td>2026-06-05 10:00</td>
+            <td class="a-blue">¥15,000.00</td><td class="a-blue">¥60,000.00</td>
+            <td class="a-red">-¥1,500.00</td><td class="a-green">¥73,500.00</td>
+            <td><span class="badge bw">待打款</span></td>
+            <td><div class="act">
+              <button class="bc bc-grn" onclick="instPay(this,1)">确认打款</button>
+            </div></td>
+          </tr>
+
+          <!-- Row 2 -->
+          <tr class="drow" id="inst-row-2">
+            <td><div class="cb" onclick="this.classList.toggle('on')"></div></td>
+            <td>2</td><td><b>香辣的协作机构</b></td><td>JG20240002</td><td>成都锦江店</td><td>西南区域</td>
+            <td>ORD202406102</td><td>机构分佣</td><td>2026-06-06 14:30</td>
+            <td class="a-blue">¥24,000.00</td><td class="a-blue">¥0.00</td>
+            <td class="a-red">-¥3.00</td><td class="a-green">¥24,000.00</td>
+            <td><span class="badge bw">待打款</span></td>
+            <td><div class="act">
+              <button class="bc bc-grn" onclick="instPay(this,2)">确认打款</button>
+            </div></td>
+          </tr>
+
+          <!-- Row 3 -->
+          <tr class="drow" id="inst-row-3">
+            <td><div class="cb" onclick="this.classList.toggle('on')"></div></td>
+            <td>3</td><td><b>贝非草合作机构</b></td><td>JG20240003</td><td>杭州西湖店</td><td>华东区域</td>
+            <td>ORD202406103</td><td>机构成本</td><td>2026-06-07 09:20</td>
+            <td class="a-blue">¥9,600.00</td><td class="a-blue">¥28,800.00</td>
+            <td class="a-red">-¥1,800.00</td><td class="a-green">¥36,600.00</td>
+            <td><span class="badge bs">已打款</span></td>
+            <td><div class="act">
+              <span class="done-txt"><i class="ck">✓</i> 凭证已审核</span>
+            </div></td>
+          </tr>
+
+          <!-- Row 4 -->
+          <tr class="drow" id="inst-row-4">
+            <td><div class="cb" onclick="this.classList.toggle('on')"></div></td>
+            <td>4</td><td><b>诺谱协作机构</b></td><td>JG20240004</td><td>北京朝阳店</td><td>华北区域</td>
+            <td>ORD202406104</td><td>机构分佣</td><td>2026-06-08 15:45</td>
+            <td class="a-blue">¥10,000.00</td><td class="a-blue">¥40,000.00</td>
+            <td class="a-red">-¥1,000.00</td><td class="a-green">¥49,000.00</td>
+            <td><span class="badge bs">已打款</span></td>
+            <td><div class="act">
+              <span class="done-txt"><i class="ck">✓</i> 凭证已审核</span>
+            </div></td>
+          </tr>
+
+        </tbody>
+        <tfoot>
+          <tr class="sum-row">
+            <td colspan="9" style="text-align:right;color:var(--text-2)">汇总合计：</td>
+            <td class="a-blue">¥58,600.00</td>
+            <td class="a-blue">¥128,800.00</td>
+            <td class="a-red">-¥4,303.00</td>
+            <td class="a-green">¥183,100.00</td>
+            <td colspan="2"></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    <div class="pg-wrap">
+      <div class="pg-info">共 4 条 &nbsp;|&nbsp; 每页 <select class="pg-sel"><option>20</option><option>50</option><option>100</option></select> 条</div>
+      <div class="pg-btns">
+        <button class="pg-btn" disabled>‹</button>
+        <button class="pg-btn active">1</button>
+        <button class="pg-btn" disabled>›</button>
+      </div>
+    </div>
+  </div><!-- /pane-inst -->
+
+</div><!-- /tabs-card -->
+</div><!-- /page -->
+
+<div id="toast"></div>
+
+<script>
+// ─────────────────────────────────────────
+//  Tab 切换
+// ─────────────────────────────────────────
+document.getElementById('tabNav').addEventListener('click', function(e) {
+  const btn = e.target.closest('.tab-btn');
+  if (!btn) return;
+  const targetId = btn.getAttribute('data-tab');
+  if (!targetId) return;
+  // 切换 nav 按钮
+  this.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  // 切换面板
+  document.querySelectorAll('.tab-pane').forEach(function(p){ p.classList.remove('active'); });
+  document.getElementById(targetId).classList.add('active');
+});
+
+// ─────────────────────────────────────────
+//  日期快捷
+// ─────────────────────────────────────────
+function setDate(type, btn) {
+  document.querySelectorAll('.sc').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  const now = new Date();
+  const p = function(n){ return String(n).padStart(2,'0'); };
+  const fmt = function(d){ return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate()); };
+  var s, e;
+  if (type==='today') { s = e = fmt(now); }
+  else if (type==='yesterday') { var y=new Date(now); y.setDate(y.getDate()-1); s=e=fmt(y); }
+  else if (type==='thisMonth') { s=fmt(new Date(now.getFullYear(),now.getMonth(),1)); e=fmt(new Date(now.getFullYear(),now.getMonth()+1,0)); }
+  else if (type==='lastMonth') { s=fmt(new Date(now.getFullYear(),now.getMonth()-1,1)); e=fmt(new Date(now.getFullYear(),now.getMonth(),0)); }
+  else if (type==='thisYear') { s=now.getFullYear()+'-01-01'; e=now.getFullYear()+'-12-31'; }
+  document.getElementById('ds').value = s;
+  document.getElementById('de').value = e;
+}
+
+// ─────────────────────────────────────────
+//  筛选标签展开收起
+// ─────────────────────────────────────────
+function toggleExp(wrapId, btn) {
+  var wrap = document.getElementById(wrapId);
+  var isOpen = wrap.classList.toggle('open');
+  btn.classList.toggle('open', isOpen);
+  btn.childNodes[0].nodeValue = isOpen ? '收起' : '展开';
+}
+
+// ─────────────────────────────────────────
+//  标签单选（全部互斥）
+// ─────────────────────────────────────────
+document.querySelectorAll('.ftag').forEach(function(tag){
+  tag.addEventListener('click', function(){
+    var wrap = this.closest('.tag-overflow');
+    var isAll = !this.dataset.g || (wrap.querySelector('.ftag.active') === this && false);
+    // 判断是否是第一个（全部）
+    var tags = wrap.querySelectorAll('.ftag');
+    var firstTag = tags[0];
+    if (this === firstTag) {
+      tags.forEach(function(t){ t.classList.remove('active'); });
+      firstTag.classList.add('active');
+    } else {
+      firstTag.classList.remove('active');
+      this.classList.toggle('active');
+      var anyOn = wrap.querySelectorAll('.ftag.active').length > 0;
+      if (!anyOn) firstTag.classList.add('active');
+    }
+  });
+});
+
+// Pill 单选
+document.querySelectorAll('.pill').forEach(function(pill){
+  pill.addEventListener('click', function(){
+    var group = this.getAttribute('data-pg');
+    document.querySelectorAll('.pill[data-pg="'+group+'"]').forEach(function(p){ p.classList.remove('active'); });
+    this.classList.add('active');
+  });
+});
+
+// Keyword type
+document.querySelectorAll('.kwt').forEach(function(kwt){
+  kwt.addEventListener('click', function(){
+    document.querySelectorAll('.kwt').forEach(function(k){ k.classList.remove('active'); });
+    this.classList.add('active');
+  });
+});
+
+// ─────────────────────────────────────────
+//  查询 & 重置
+// ─────────────────────────────────────────
+function doQuery() { toast('查询成功，数据已刷新','ok'); }
+function doReset() {
+  document.getElementById('ds').value = '2026-06-01';
+  document.getElementById('de').value = '2026-06-30';
+  document.querySelectorAll('.sc').forEach(function(b,i){ b.classList.toggle('active', i===3); });
+  document.querySelectorAll('.tag-overflow').forEach(function(wrap){
+    var tags = wrap.querySelectorAll('.ftag');
+    tags.forEach(function(t){ t.classList.remove('active'); });
+    if(tags[0]) tags[0].classList.add('active');
+    wrap.classList.remove('open');
+  });
+  document.querySelectorAll('.exp-btn').forEach(function(b){
+    b.classList.remove('open');
+    b.childNodes[0].nodeValue = '展开';
+  });
+  document.querySelectorAll('.pills').forEach(function(g){
+    var ps = g.querySelectorAll('.pill');
+    ps.forEach(function(p){ p.classList.remove('active'); });
+    if(ps[0]) ps[0].classList.add('active');
+  });
+  document.querySelectorAll('.kwt').forEach(function(k,i){ k.classList.toggle('active', i===2); });
+  document.querySelector('.search-inp').value = '';
+  toast('已重置所有筛选条件','info');
+}
+
+// ─────────────────────────────────────────
+//  Checkbox 全选
+// ─────────────────────────────────────────
+function checkAll(tbodyId, master) {
+  master.classList.toggle('on');
+  var on = master.classList.contains('on');
+  document.querySelectorAll('#'+tbodyId+' .drow .cb').forEach(function(cb){
+    if(on) cb.classList.add('on'); else cb.classList.remove('on');
+  });
+}
+
+// ─────────────────────────────────────────
+//  Table 排序
+// ─────────────────────────────────────────
+var sortDir = {};
+function sortCol(th, colIdx, tbodyId) {
+  var key = tbodyId + colIdx;
+  sortDir[key] = sortDir[key]==='asc' ? 'desc' : 'asc';
+  var asc = sortDir[key]==='asc';
+  var tbody = document.getElementById(tbodyId);
+  var rows = Array.from(tbody.querySelectorAll('tr.drow'));
+  rows.sort(function(a,b){
+    var av = parseFloat(a.cells[colIdx].textContent.replace(/[¥,\s]/g,''))||0;
+    var bv = parseFloat(b.cells[colIdx].textContent.replace(/[¥,\s]/g,''))||0;
+    return asc ? av-bv : bv-av;
+  });
+  rows.forEach(function(row){
+    tbody.appendChild(row);
+  });
+  toast('已按'+(asc?'升序':'降序')+'排列','info');
+}
+
+// ─────────────────────────────────────────
+//  员工奖励 - 确认已发
+// ─────────────────────────────────────────
+function empConfirm(btn) {
+  var row = btn.closest('tr');
+  row.querySelector('.badge').className = 'badge bs';
+  row.querySelector('.badge').textContent = '已发票发放';
+  row.querySelector('.act').innerHTML = '<span class="done-txt"><i class="ck">✓</i> 奖励已发放</span>';
+  toast('发放确认成功！','ok');
+}
+
+// ─────────────────────────────────────────
+//  机构打款确认
+// ─────────────────────────────────────────
+function instPay(btn, rowId) {
+  var row = document.getElementById('inst-row-'+rowId);
+  row.querySelector('.badge').className = 'badge bs';
+  row.querySelector('.badge').textContent = '已打款';
+  row.querySelector('.act').innerHTML = '<span class="done-txt"><i class="ck">✓</i> 凭证已审核</span>';
+  toast('打款确认成功！','ok');
+}
+
+function batchPay() {
+  var cbs = document.querySelectorAll('#inst-tbody .drow .cb.on');
+  if(!cbs.length){ toast('请先勾选需要批量打款的记录','warn'); return; }
+  cbs.forEach(function(cb){
+    var row = cb.closest('tr.drow');
+    if(row && row.id){
+      var id = row.id.replace('inst-row-','');
+      var badge = row.querySelector('.badge');
+      if(badge && badge.classList.contains('bw')) instPay(null, id);
+    }
+  });
+  toast('已批量确认 '+cbs.length+' 条打款','ok');
+}
+
+// ─────────────────────────────────────────
+//  Toast
+// ─────────────────────────────────────────
+var toastTimer = null;
+function toast(msg, type) {
+  var icons = {ok:'✅', warn:'⚠️', info:'ℹ️', err:'❌'};
+  var el = document.getElementById('toast');
+  el.textContent = (icons[type]||'ℹ️') + ' ' + msg;
+  el.style.opacity = '1';
+  el.style.transform = 'translateX(-50%) translateY(0)';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){
+    el.style.opacity = '0';
+    el.style.transform = 'translateX(-50%) translateY(20px)';
+  }, 2600);
+}
+</script>
+</body>
+</html>

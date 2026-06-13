@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>贝颜区经看板</title>
+
+<link rel="dns-prefetch" href="https://esm.sh">
+<link rel="preconnect" href="https://esm.sh" crossorigin>
+
+<style>
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:#f3f4f6;color:#1f2937;-webkit-font-smoothing:antialiased}
+button{font:inherit;border:0;background:none;cursor:pointer;color:inherit;padding:0}
+svg{display:block}
+
+.app{min-height:100vh;display:flex;justify-content:center;background:#f3f4f6}
+.phone{width:100%;max-width:28rem;background:#F4F6F9;position:relative;padding-bottom:5rem;box-shadow:0 20px 25px -5px rgba(0,0,0,.1),0 8px 10px -6px rgba(0,0,0,.1);overflow:hidden;display:flex;flex-direction:column;height:100vh}
+
+/* 顶部 */
+.topbar{background:#fff;padding:1rem 1rem .75rem;flex-shrink:0;box-shadow:0 1px 2px rgba(0,0,0,.05);z-index:20}
+.topbar-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem}
+.time-filters{display:flex;gap:.5rem;overflow-x:auto;-ms-overflow-style:none;scrollbar-width:none}
+.time-filters::-webkit-scrollbar{display:none}
+.tf-btn{white-space:nowrap;padding:.375rem 1rem;border-radius:9999px;font-size:13px;background:#f3f4f6;color:#4b5563;transition:background .15s}
+.tf-btn:hover{background:#e5e7eb}
+.tf-btn.active{background:#2563eb;color:#fff;font-weight:500;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+.area-name{display:flex;align-items:center;color:#1f2937;font-size:14px;font-weight:700;padding-left:.5rem;flex-shrink:0;cursor:pointer}
+.page-title{font-size:16px;font-weight:800;color:#1f2937}
+
+/* 内容 */
+.content{padding:1rem .75rem;flex:1;overflow-y:auto}
+.stack{display:flex;flex-direction:column;gap:1rem;padding-bottom:1.5rem}
+
+/* 数据声明 */
+.tip{display:flex;align-items:center;justify-content:center;font-size:11px;color:#9ca3af;margin-top:.5rem}
+
+/* 区域概览 */
+.card{background:#fff;border-radius:1rem;box-shadow:0 1px 2px rgba(0,0,0,.05);padding:1rem;border:1px solid rgba(243,244,246,.5)}
+.card-title{font-size:15px;font-weight:800;color:#1f2937;display:flex;align-items:center;margin:0 0 1rem}
+.overview-banner{background:linear-gradient(to bottom right,#3b82f6,#2563eb);border-radius:.75rem;padding:1rem;color:#fff;box-shadow:0 4px 6px -1px rgba(59,130,246,.4);margin-bottom:.75rem}
+.overview-banner .lbl{font-size:12px;color:#dbeafe;opacity:.9;margin-bottom:.25rem}
+.overview-banner .val{font-size:30px;font-weight:900;letter-spacing:-.025em;line-height:1.1}
+.overview-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+.overview-cell{background:#f9fafb;border-radius:.75rem;padding:.75rem;display:flex;flex-direction:column;justify-content:center;border:1px solid #f3f4f6}
+.overview-cell .lbl{font-size:11px;color:#6b7280;margin-bottom:.25rem;display:flex;align-items:center}
+.overview-cell .val{font-size:18px;font-weight:700;color:#1f2937}
+
+/* 排行工具栏 */
+.role-head{display:flex;justify-content:space-between;align-items:center;padding:0 .25rem;margin:.5rem 0 .75rem;position:relative;z-index:20}
+.role-title{font-size:15px;font-weight:800;color:#1f2937;display:flex;align-items:center;margin:0}
+.sort-wrap{position:relative}
+.sort-btn{font-size:11px;background:#fff;border:1px solid #e5e7eb;padding:.375rem .5rem;border-radius:.25rem;color:#6b7280;display:flex;align-items:center;box-shadow:0 1px 2px rgba(0,0,0,.05);transition:background .15s}
+.sort-btn:hover{background:#f9fafb}
+.sort-overlay{position:fixed;inset:0;z-index:30}
+.sort-menu{position:absolute;right:0;margin-top:.25rem;width:8rem;max-height:16rem;overflow-y:auto;background:#fff;border-radius:.5rem;box-shadow:0 10px 15px -3px rgba(0,0,0,.1);border:1px solid #f3f4f6;z-index:40;padding:.25rem 0}
+.sort-item{display:block;width:100%;text-align:left;padding:.625rem .75rem;font-size:12px;color:#4b5563;transition:background .15s}
+.sort-item:hover{background:#f9fafb}
+.sort-item.active{color:#2563eb;background:#eff6ff;font-weight:700}
+
+/* 门店卡 */
+.store-list{display:flex;flex-direction:column;gap:.75rem;position:relative;z-index:10}
+.store{background:#fff;border-radius:1rem;box-shadow:0 1px 2px rgba(0,0,0,.05);border:1px solid #f3f4f6;padding:.75rem;position:relative;overflow:hidden;transition:box-shadow .15s}
+.store:hover{box-shadow:0 4px 6px -1px rgba(0,0,0,.1)}
+.store-line{position:absolute;top:0;left:0;width:4px;height:100%}
+.store-line.g{background:#fbbf24}
+.store-line.s{background:#d1d5db}
+.store-line.b{background:#fdba74}
+.store-inner{padding-left:.5rem}
+.store-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem}
+.store-left{display:flex;align-items:center}
+.store-rank{font-size:13px;font-weight:900;width:1rem;flex-shrink:0;color:#d1d5db}
+.store-rank.g{color:#f59e0b}
+.store-rank.s{color:#9ca3af}
+.store-rank.b{color:#fb923c}
+.store-name{font-weight:700;color:#1f2937;font-size:15px}
+.store-main{text-align:right}
+.store-main .lbl{font-size:10px;line-height:1;margin-bottom:.25rem;color:#9ca3af}
+.store-main .val{font-weight:900;font-size:16px;line-height:1;color:#1f2937}
+.store-main .lbl.hl{color:#3b82f6;font-weight:700}
+.store-main .val.hl{color:#2563eb}
+
+.store-grid-wrap{background:rgba(249,250,251,.7);border-radius:.75rem;padding:.625rem}
+.store-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem .375rem}
+.store-metric{display:flex;flex-direction:column;align-items:center;background:#fff;border-radius:.375rem;padding:.25rem .125rem;border:1px solid rgba(243,244,246,.5)}
+.store-metric .lbl{font-size:9px;margin-bottom:.125rem;white-space:nowrap;transform:scale(.9);color:#9ca3af}
+.store-metric .val{font-size:11px;font-weight:700;color:#374151}
+.store-metric .lbl.hl{color:#3b82f6;font-weight:700}
+.store-metric .val.hl{color:#2563eb}
+.store-progress{display:flex;align-items:center;justify-content:space-between;margin-top:.75rem;padding:.5rem .25rem 0;border-top:1px solid #f3f4f6}
+.store-progress .lbl{font-size:10px;color:#9ca3af}
+.store-progress .lbl.hl{color:#3b82f6;font-weight:700}
+.store-progress .right{display:flex;align-items:center;width:60%}
+.store-progress .bar{width:100%;height:6px;background:#e5e7eb;border-radius:9999px;overflow:hidden;margin-right:.5rem}
+.store-progress .bar-fill{height:100%;background:#34d399}
+.store-progress .val{font-size:11px;font-weight:700;color:#374151}
+.store-progress .val.hl{color:#2563eb}
+
+/* 底部导航 */
+.bottombar{position:absolute;bottom:0;width:100%;max-width:28rem;background:#fff;border-top:1px solid #e5e7eb;display:flex;justify-content:space-around;padding:.5rem .5rem 1.5rem;font-size:10px;color:#9ca3af;z-index:30}
+.bnav{display:flex;flex-direction:column;align-items:center;cursor:pointer;position:relative}
+.bnav .dot{width:1.5rem;height:1.5rem;background:#f3f4f6;border-radius:9999px;margin-bottom:.25rem}
+.bnav.active{color:#2563eb}
+.badge{position:absolute;top:-.25rem;right:-.5rem;background:#ef4444;color:#fff;font-size:9px;padding:0 .25rem;border-radius:9999px;transform:scale(.9)}
+
+.skeleton{text-align:center;margin-top:50px;color:#666}
+</style>
+</head>
+<body>
+<div id="root"><div class="skeleton">加载中...</div></div>
+
+<script type="module">
+import React, { useState } from 'https://esm.sh/react@18.2.0';
+import ReactDOM from 'https://esm.sh/react-dom@18.2.0/client';
+
+const h = React.createElement;
+
+/* ---------- 图标 ---------- */
+const SIMPLE = { ChevronDown:'M6 9l6 6 6-6' };
+const COMPLEX = {
+  TrendingUp:[['polyline',{points:'23 6 13.5 15.5 8.5 10.5 1 18'}],['polyline',{points:'17 6 23 6 23 12'}]],
+  Users:[['path',{d:'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2'}],['circle',{cx:9,cy:7,r:4}],['path',{d:'M22 21v-2a4 4 0 0 0-3-3.87'}],['path',{d:'M16 3.13a4 4 0 0 1 0 7.75'}]],
+  Target:[['circle',{cx:12,cy:12,r:10}],['circle',{cx:12,cy:12,r:6}],['circle',{cx:12,cy:12,r:2}]],
+  PieChart:[['path',{d:'M21.21 15.89A10 10 0 1 1 8 2.83'}],['path',{d:'M22 12A10 10 0 0 0 12 2v10z'}]],
+  Info:[['circle',{cx:12,cy:12,r:10}],['line',{x1:12,y1:16,x2:12,y2:12}],['line',{x1:12,y1:8,x2:12.01,y2:8}]],
+  Building:[['rect',{x:4,y:2,width:16,height:20,rx:2,ry:2}],['path',{d:'M9 22v-4h6v4'}],['path',{d:'M8 6h.01'}],['path',{d:'M16 6h.01'}],['path',{d:'M12 6h.01'}],['path',{d:'M12 10h.01'}],['path',{d:'M12 14h.01'}],['path',{d:'M16 10h.01'}],['path',{d:'M16 14h.01'}],['path',{d:'M8 10h.01'}],['path',{d:'M8 14h.01'}]],
+};
+
+function Icon({ name, size = 24, color = 'currentColor', strokeWidth = 2, fill = 'none', style }) {
+  const props = { xmlns:'http://www.w3.org/2000/svg', width:size, height:size, viewBox:'0 0 24 24', fill, stroke:color, strokeWidth, strokeLinecap:'round', strokeLinejoin:'round', style };
+  if (SIMPLE[name]) return h('svg', props, h('path',{d:SIMPLE[name]}));
+  return h('svg', props, (COMPLEX[name]||[]).map((it,i)=>h(it[0],{key:i,...it[1]})));
+}
+
+/* ---------- 数据 ---------- */
+const OVERVIEW = {
+  totalRevenue:'48,500,000',
+  appointmentContribution:'2,850',
+  arrivalRate:'76.5%'
+};
+
+const STORES = [
+  { id:1, name:'昆明五华店', total:'12,900,000', yygx:'2,866', hc_in:'4500', kd_in:'3510', kd_ra:'78%', avg_order:'3,675', avg_order_new:'2,000', wf_in:'1,500,000', avg_order_dz:'3,500', f_ra:'81%' },
+  { id:2, name:'昆明盘龙店', total:'9,850,000',  yygx:'2,736', hc_in:'3600', kd_in:'2700', kd_ra:'75%', avg_order:'3,648', avg_order_new:'1,950', wf_in:'1,200,000', avg_order_dz:'3,400', f_ra:'78%' },
+  { id:3, name:'曲靖麒麟店', total:'8,500,000',  yygx:'2,656', hc_in:'3200', kd_in:'2336', kd_ra:'73%', avg_order:'3,638', avg_order_new:'1,800', wf_in:'900,000',   avg_order_dz:'3,300', f_ra:'75%' },
+  { id:4, name:'玉溪红塔店', total:'7,200,000',  yygx:'2,571', hc_in:'2800', kd_in:'2016', kd_ra:'72%', avg_order:'3,571', avg_order_new:'1,750', wf_in:'750,000',   avg_order_dz:'3,200', f_ra:'72%' },
+  { id:5, name:'大理下关店', total:'6,500,000',  yygx:'2,500', hc_in:'2600', kd_in:'1820', kd_ra:'70%', avg_order:'3,571', avg_order_new:'1,600', wf_in:'600,000',   avg_order_dz:'3,100', f_ra:'68%' },
+];
+
+const SORT_OPTIONS = [
+  { key:'total',         label:'总业绩' },
+  { key:'yygx',          label:'预约贡献' },
+  { key:'hc_in',         label:'核算预约' },
+  { key:'kd_in',         label:'核算到店' },
+  { key:'kd_ra',         label:'到店率' },
+  { key:'avg_order',     label:'核算均客单' },
+  { key:'avg_order_new', label:'核算新客单' },
+  { key:'wf_in',         label:'Y10业绩' },
+  { key:'avg_order_dz',  label:'主营均客单' },
+  { key:'f_ra',          label:'老客业绩占比', isProgress:true },
+];
+
+const TIME_FILTERS = [
+  {id:'today',label:'今天'},{id:'yesterday',label:'昨天'},
+  {id:'month',label:'本月'},{id:'lastMonth',label:'上月'}
+];
+
+/* ---------- 区经看板内容 ---------- */
+function AreaManagerContent() {
+  const [sortBy, setSortBy] = useState('total');
+  const [isSortOpen, setIsSortOpen] = useState(false);
+
+  const parseVal = v => parseFloat(String(v).replace(/,/g,'').replace('%','')) || 0;
+  const sorted = [...STORES].sort((a,b)=>parseVal(b[sortBy])-parseVal(a[sortBy]));
+  const currentLabel = SORT_OPTIONS.find(o=>o.key===sortBy)?.label;
+  const mainMetric = SORT_OPTIONS[0];
+  const progressMetric = SORT_OPTIONS.find(m=>m.isProgress);
+  const gridMetrics = SORT_OPTIONS.filter(m=>m.key!==mainMetric.key && !m.isProgress);
+
+  const lineClass = i => i===0?'store-line g':i===1?'store-line s':i===2?'store-line b':'store-line';
+  const rankClass = i => i===0?'store-rank g':i===1?'store-rank s':i===2?'store-rank b':'store-rank';
+
+  return h('div',{className:'stack'},
+    h('div',{className:'tip'},
+      h(Icon,{name:'Info',size:12,style:{marginRight:'.25rem'}}),
+      '区域数据汇总，采用T+1规则，截至昨日'),
+
+    // 区域概览
+    h('div',{className:'card'},
+      h('h2',{className:'card-title'},
+        h(Icon,{name:'TrendingUp',size:16,color:'#3b82f6',style:{marginRight:'.375rem'}}),
+        '区域概览'),
+      h('div',{className:'overview-banner'},
+        h('div',{className:'lbl'},'大区总业绩'),
+        h('div',{className:'val'},'¥'+OVERVIEW.totalRevenue)
+      ),
+      h('div',{className:'overview-grid'},
+        h('div',{className:'overview-cell'},
+          h('div',{className:'lbl'},
+            h(Icon,{name:'Target',size:12,color:'#f97316',style:{marginRight:'.25rem'}}),
+            '预约贡献'),
+          h('div',{className:'val'},'¥'+OVERVIEW.appointmentContribution)
+        ),
+        h('div',{className:'overview-cell'},
+          h('div',{className:'lbl'},
+            h(Icon,{name:'Users',size:12,color:'#6366f1',style:{marginRight:'.25rem'}}),
+            '到店率'),
+          h('div',{className:'val'},OVERVIEW.arrivalRate)
+        )
+      )
+    ),
+
+    // 门店比拼
+    h('div',null,
+      h('div',{className:'role-head'},
+        h('h2',{className:'role-title'},
+          h(Icon,{name:'Building',size:16,color:'#4b5563',style:{marginRight:'.375rem'}}),
+          '门店比拼'),
+        h('div',{className:'sort-wrap'},
+          h('button',{className:'sort-btn',onClick:()=>setIsSortOpen(!isSortOpen)},
+            '按'+currentLabel,h(Icon,{name:'ChevronDown',size:12,style:{marginLeft:'.25rem'}})
+          ),
+          isSortOpen && h(React.Fragment,null,
+            h('div',{className:'sort-overlay',onClick:()=>setIsSortOpen(false)}),
+            h('div',{className:'sort-menu'},
+              SORT_OPTIONS.map(opt => h('button',{
+                key:opt.key,
+                className:'sort-item'+(sortBy===opt.key?' active':''),
+                onClick:()=>{setSortBy(opt.key);setIsSortOpen(false);}
+              },opt.label))
+            )
+          )
+        )
+      ),
+      h('div',{className:'store-list'},
+        sorted.map((s,i) => h('div',{key:s.id,className:'store'},
+          h('div',{className:lineClass(i)}),
+          h('div',{className:'store-inner'},
+            h('div',{className:'store-head'},
+              h('div',{className:'store-left'},
+                h('span',{className:rankClass(i)},i+1),
+                h('span',{className:'store-name'},s.name)
+              ),
+              h('div',{className:'store-main'},
+                h('div',{className:'lbl'+(sortBy===mainMetric.key?' hl':'')},mainMetric.label),
+                h('div',{className:'val'+(sortBy===mainMetric.key?' hl':'')},s[mainMetric.key])
+              )
+            ),
+            h('div',{className:'store-grid-wrap'},
+              h('div',{className:'store-grid'},
+                gridMetrics.map(m => h('div',{key:m.key,className:'store-metric'},
+                  h('span',{className:'lbl'+(sortBy===m.key?' hl':'')},m.label),
+                  h('span',{className:'val'+(sortBy===m.key?' hl':'')},s[m.key])
+                ))
+              ),
+              progressMetric && h('div',{className:'store-progress'},
+                h('span',{className:'lbl'+(sortBy===progressMetric.key?' hl':'')},progressMetric.label),
+                h('div',{className:'right'},
+                  h('div',{className:'bar'},h('div',{className:'bar-fill',style:{width:s[progressMetric.key]}})),
+                  h('span',{className:'val'+(sortBy===progressMetric.key?' hl':'')},s[progressMetric.key])
+                )
+              )
+            )
+          )
+        ))
+      )
+    )
+  );
+}
+
+/* ---------- 主应用 ---------- */
+function App() {
+  const [timeFilter, setTimeFilter] = useState('month');
+
+  return h('div',{className:'app'},
+    h('div',{className:'phone'},
+      h('div',{className:'topbar'},
+        h('div',{className:'topbar-row'},
+          h('div',{className:'time-filters'},
+            TIME_FILTERS.map(f => h('button',{
+              key:f.id,
+              className:'tf-btn'+(timeFilter===f.id?' active':''),
+              onClick:()=>setTimeFilter(f.id)
+            },f.label)),
+            h('button',{className:'tf-btn'},'更多')
+          ),
+          h('div',{className:'area-name'},'云南大区',
+            h(Icon,{name:'ChevronDown',size:14,color:'#9ca3af',style:{marginLeft:'.25rem'}}))
+        ),
+        h('div',{className:'page-title'},'贝颜区经看板')
+      ),
+      h('div',{className:'content'}, h(AreaManagerContent)),
+      h('div',{className:'bottombar'},
+        h('div',{className:'bnav'},h('div',{className:'dot'}),'大区管理'),
+        h('div',{className:'bnav'},h('div',{className:'dot'}),'排行榜'),
+        h('div',{className:'bnav'},h('div',{className:'badge'},'99+'),h('div',{className:'dot'}),'工作台'),
+        h('div',{className:'bnav active'},h(Icon,{name:'PieChart',size:22,style:{marginBottom:'.25rem'}}),'数据'),
+        h('div',{className:'bnav'},h('div',{className:'dot'}),'我的')
+      )
+    )
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(h(App));
+</script>
+</body>
+</html>
