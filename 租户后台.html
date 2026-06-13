@@ -244,17 +244,8 @@
   .ai-product-status.running { color: #52c41a; }
   .ai-product-status.partial { color: #fa8c16; }
   .ai-product-status.testing { color: #fa8c16; }
-  .ai-product-meta { font-size: 12px; color: #8c9bab; margin-bottom: 10px; display: flex; gap: 12px; }
+  .ai-product-meta { font-size: 12px; color: #8c9bab; margin-bottom: 14px; display: flex; gap: 12px; }
   .ai-product-meta span strong { color: #1677ff; }
-  .ai-quota-wrap { margin-bottom: 14px; }
-  .ai-quota-label { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #8c9bab; margin-bottom: 5px; }
-  .ai-quota-label .quota-used { font-weight: 600; color: #1a2332; }
-  .ai-quota-label .quota-warn { color: #ff4d4f; font-weight: 600; }
-  .quota-bar { height: 6px; background: #f0f2f5; border-radius: 3px; overflow: hidden; }
-  .quota-fill { height: 100%; border-radius: 3px; transition: width 0.5s; }
-  .quota-fill.normal { background: #1677ff; }
-  .quota-fill.warn { background: linear-gradient(90deg, #fa8c16, #ff4d4f); }
-  .quota-fill.safe { background: #52c41a; }
   .ai-product-footer { display: flex; gap: 8px; padding-top: 14px; border-top: 1px solid #f0f2f5; }
   .ai-product-footer .btn { flex: 1; justify-content: center; }
   .btn-quota-warn { background: #fff7e6; color: #fa8c16; border: 1px solid #ffd591; }
@@ -1258,7 +1249,7 @@
 
     <!-- ==================== AI产品列表（已升级）==================== -->
     <div class="page" id="page-product-list">
-      <div class="page-header"><h2>AI产品列表</h2><p>管理平台所有AI产品的接入状态、门店覆盖及月配额使用情况</p></div>
+      <div class="page-header"><h2>AI产品列表</h2><p>管理平台所有AI产品的接入状态、门店覆盖及调用情况</p></div>
       <div class="ai-product-grid">
 
         <!-- 自动化招聘 -->
@@ -1278,13 +1269,6 @@
           <div class="ai-product-meta">
             <span>已启用门店 <strong>217</strong> / 217</span>
             <span>本月调用 <strong>12,480</strong> 次</span>
-          </div>
-          <div class="ai-quota-wrap">
-            <div class="ai-quota-label">
-              <span>月配额使用</span>
-              <span class="quota-used">12,480 / 50,000</span>
-            </div>
-            <div class="quota-bar"><div class="quota-fill safe" style="width:25%"></div></div>
           </div>
           <div class="ai-product-footer">
             <button class="btn btn-default btn-sm" onclick="openModal('modal-product-detail')">查看详情</button>
@@ -1310,13 +1294,6 @@
             <span>已启用门店 <strong>156</strong> / 217</span>
             <span>本月调用 <strong>8,920</strong> 次</span>
           </div>
-          <div class="ai-quota-wrap">
-            <div class="ai-quota-label">
-              <span>月配额使用</span>
-              <span class="quota-used">8,920 / 30,000</span>
-            </div>
-            <div class="quota-bar"><div class="quota-fill safe" style="width:30%"></div></div>
-          </div>
           <div class="ai-product-footer">
             <button class="btn btn-default btn-sm" onclick="openModal('modal-product-detail')">查看详情</button>
             <button class="btn btn-primary btn-sm" onclick="openProductStoreConfig(this)">门店配置</button>
@@ -1340,13 +1317,6 @@
           <div class="ai-product-meta">
             <span>已启用门店 <strong>200</strong> / 217</span>
             <span>本月调用 <strong>89,200</strong> 次</span>
-          </div>
-          <div class="ai-quota-wrap">
-            <div class="ai-quota-label">
-              <span>月配额使用</span>
-              <span class="quota-warn">89,200 / 100,000 ⚠️ 配额预警</span>
-            </div>
-            <div class="quota-bar"><div class="quota-fill warn" style="width:89%"></div></div>
           </div>
           <div class="ai-product-footer">
             <button class="btn btn-default btn-sm" onclick="openModal('modal-product-detail')">查看详情</button>
@@ -1372,13 +1342,6 @@
             <span>已启用门店 <strong>217</strong> / 217</span>
             <span>本月调用 <strong>45,320</strong> 次</span>
           </div>
-          <div class="ai-quota-wrap">
-            <div class="ai-quota-label">
-              <span>月配额使用</span>
-              <span class="quota-used">45,320 / 80,000</span>
-            </div>
-            <div class="quota-bar"><div class="quota-fill normal" style="width:57%"></div></div>
-          </div>
           <div class="ai-product-footer">
             <button class="btn btn-default btn-sm" onclick="openModal('modal-product-detail')">查看详情</button>
             <button class="btn btn-primary btn-sm" onclick="openProductStoreConfig(this)">门店配置</button>
@@ -1402,13 +1365,6 @@
           <div class="ai-product-meta">
             <span>已启用门店 <strong>189</strong> / 217</span>
             <span>本月调用 <strong>23,100</strong> 次</span>
-          </div>
-          <div class="ai-quota-wrap">
-            <div class="ai-quota-label">
-              <span>月配额使用</span>
-              <span class="quota-used">23,100 / 60,000</span>
-            </div>
-            <div class="quota-bar"><div class="quota-fill safe" style="width:39%"></div></div>
           </div>
           <div class="ai-product-footer">
             <button class="btn btn-default btn-sm" onclick="openModal('modal-product-detail')">查看详情</button>
@@ -1434,13 +1390,6 @@
             <span>已启用门店 <strong>167</strong> / 217</span>
             <span>本月调用 <strong>31,800</strong> 次</span>
           </div>
-          <div class="ai-quota-wrap">
-            <div class="ai-quota-label">
-              <span>月配额使用</span>
-              <span class="quota-used">31,800 / 60,000</span>
-            </div>
-            <div class="quota-bar"><div class="quota-fill normal" style="width:53%"></div></div>
-          </div>
           <div class="ai-product-footer">
             <button class="btn btn-default btn-sm" onclick="openModal('modal-product-detail')">查看详情</button>
             <button class="btn btn-primary btn-sm" onclick="openProductStoreConfig(this)">门店配置</button>
@@ -1464,13 +1413,6 @@
           <div class="ai-product-meta">
             <span>已启用门店 <strong>210</strong> / 217</span>
             <span>本月调用 <strong>45,320</strong> 次</span>
-          </div>
-          <div class="ai-quota-wrap">
-            <div class="ai-quota-label">
-              <span>月配额使用</span>
-              <span class="quota-used">45,320 / 80,000</span>
-            </div>
-            <div class="quota-bar"><div class="quota-fill normal" style="width:57%"></div></div>
           </div>
           <div class="ai-product-footer">
             <button class="btn btn-default btn-sm" onclick="openModal('modal-product-detail')">查看详情</button>
@@ -1496,13 +1438,6 @@
             <span>已启用门店 <strong>98</strong> / 217</span>
             <span>本月调用 <strong>2,100</strong> 次</span>
           </div>
-          <div class="ai-quota-wrap">
-            <div class="ai-quota-label">
-              <span>月配额使用</span>
-              <span class="quota-used">2,100 / 20,000</span>
-            </div>
-            <div class="quota-bar"><div class="quota-fill safe" style="width:11%"></div></div>
-          </div>
           <div class="ai-product-footer">
             <button class="btn btn-default btn-sm" onclick="openModal('modal-product-detail')">查看详情</button>
             <button class="btn btn-primary btn-sm" onclick="openProductStoreConfig(this)">门店配置</button>
@@ -1526,13 +1461,6 @@
           <div class="ai-product-meta">
             <span>已启用门店 <strong>217</strong> / 217</span>
             <span>本月调用 <strong>26,180</strong> 次</span>
-          </div>
-          <div class="ai-quota-wrap">
-            <div class="ai-quota-label">
-              <span>月配额使用</span>
-              <span class="quota-used">26,180 / 50,000</span>
-            </div>
-            <div class="quota-bar"><div class="quota-fill normal" style="width:52%"></div></div>
           </div>
           <div class="ai-product-footer">
             <button class="btn btn-default btn-sm" onclick="openModal('modal-product-detail')">查看详情</button>
@@ -3247,25 +3175,17 @@ function openProductStoreConfig(btn) {
   var title = card.querySelector('.ai-product-title');
   var status = card.querySelector('.ai-product-status');
   var metaItems = card.querySelectorAll('.ai-product-meta span');
-  var quotaItem = card.querySelector('.quota-used');
 
   var iconText = icon ? icon.textContent.trim() : '🤖';
   var titleText = title ? title.textContent.trim() : 'AI产品';
   var statusText = status ? status.textContent.replace(/\s+/g, '') : '运行中';
   var enabledText = metaItems.length > 0 ? metaItems[0].textContent.trim() : '';
   var callText = metaItems.length > 1 ? metaItems[1].textContent.trim() : '';
-  var quotaText = quotaItem ? quotaItem.textContent.trim() : '';
 
   var enabledNum = enabledText.match(/(\d+)\s*\/\s*(\d+)/);
   var enabledUsed = enabledNum ? enabledNum[1] : '--';
   var enabledTotal = enabledNum ? enabledNum[2] : '--';
   var callNum = callText.match(/(\d+[\d,]*)/) ? callText.match(/(\d+[\d,]*)/)[1] : '--';
-  var quotaNums = quotaText.match(/([\d,]+)\s*\/\s*([\d,]+)/);
-  var quotaUsedNum = quotaNums ? quotaNums[1] : '--';
-  var quotaTotalNum = quotaNums ? quotaNums[2] : '--';
-  var quotaUsed = quotaUsedNum === '--' ? 0 : Number(quotaUsedNum.replace(/,/g, ''));
-  var quotaTotal = quotaTotalNum === '--' ? 0 : Number(quotaTotalNum.replace(/,/g, ''));
-  var quotaRate = quotaTotal > 0 ? Math.round((quotaUsed / quotaTotal) * 100) : 0;
 
   var titleEl = document.getElementById('product-store-config-title');
   var iconEl = document.getElementById('product-store-config-icon');
@@ -3278,11 +3198,11 @@ function openProductStoreConfig(btn) {
   if (titleEl) titleEl.textContent = titleText;
   if (iconEl) iconEl.textContent = iconText;
   if (summaryEl) summaryEl.textContent = '已启用门店 ' + enabledUsed + ' / ' + enabledTotal + '，月调用 ' + callNum;
-  if (rateEl) rateEl.textContent = quotaRate + '%';
+  if (rateEl) rateEl.textContent = callNum + ' 次';
   if (statusEl) statusEl.textContent = statusText;
 
   if (quotaEl) {
-    quotaEl.className = 'status-dot ' + (quotaRate >= 80 ? 'dot-orange' : 'dot-green');
+    quotaEl.className = 'status-dot dot-green';
   }
   if (statusEl) {
     var statusCls = statusText === '运行中' ? 'dot-green' : 'dot-orange';
