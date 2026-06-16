@@ -169,6 +169,18 @@
   .org-tree-header { padding: 14px 16px; border-bottom: 1px solid #f0f2f5; display: flex; align-items: center; justify-content: space-between; }
   .org-tree-body { padding: 12px; max-height: 520px; overflow-y: auto; }
 
+  /* ===== ACCOUNT LAYOUT ===== */
+  .account-layout { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 16px; align-items: start; }
+  .account-tree-panel { background: #fff; border-radius: 8px; border: 1px solid #e8edf2; overflow: hidden; min-height: 720px; }
+  .account-tree-body { padding: 14px; max-height: 720px; overflow-y: auto; }
+  .account-filter-bar { background: #fff; border: 1px solid #e8edf2; border-radius: 8px; padding: 18px 20px; margin-bottom: 16px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .account-filter-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #555; }
+  .account-table-actions { display: flex; align-items: center; gap: 10px; white-space: nowrap; color: #1677ff; font-size: 13px; }
+  .account-action-link { color: #1677ff; cursor: pointer; }
+  .account-status-cell { display: flex; align-items: center; gap: 10px; font-weight: 600; color: #1a2332; white-space: nowrap; }
+  .avatar-upload { width: 96px; height: 96px; border: 1px dashed #b8c4d6; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #8c9bab; font-size: 32px; background: #fafbfc; }
+  .radio-row { display: flex; gap: 28px; align-items: center; margin-bottom: 18px; color: #555; font-size: 14px; }
+
   /* ===== SWITCH ===== */
   .switch { position: relative; display: inline-block; width: 38px; height: 20px; }
   .switch input { opacity: 0; width: 0; height: 0; }
@@ -431,6 +443,47 @@
   .rule-desc { font-size: 12px; color: #8c9bab; margin-top: 4px; }
   .rule-params { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 10px; }
   .rule-param { font-size: 12px; color: #555; background: #fff; border: 1px solid #e8edf2; padding: 3px 10px; border-radius: 4px; }
+  .chip-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .chip { display: inline-flex; align-items: center; gap: 5px; padding: 4px 9px; border-radius: 4px; background: #f5f7fa; border: 1px solid #e8edf2; color: #555; font-size: 12px; }
+  .timeline-node { display: grid; grid-template-columns: 78px 1fr 86px; gap: 10px; align-items: center; padding: 10px 0; border-bottom: 1px solid #f0f2f5; }
+  .timeline-node:last-child { border-bottom: none; }
+  .payload-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .payload-item { display: flex; align-items: flex-start; gap: 8px; padding: 10px; border: 1px solid #e8edf2; border-radius: 6px; background: #fff; font-size: 12px; color: #555; }
+  .selector-box { border: 1px solid #d9e0e8; border-radius: 6px; background: #fff; padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  .selector-box .selector-main { display: flex; flex-wrap: wrap; gap: 6px; }
+  .upload-zone { border: 1px dashed #91caff; border-radius: 8px; background: #f6fbff; padding: 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .attachment-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .time-node-row { display: grid; grid-template-columns: 72px 1fr 86px 86px 32px; gap: 8px; align-items: center; margin-bottom: 8px; }
+  .segment-builder { display: grid; grid-template-columns: 220px 1fr; gap: 16px; min-height: 560px; }
+  .segment-sidebar { background: #fafbfc; border: 1px solid #f0f2f5; border-radius: 8px; padding: 14px; }
+  .condition-category { font-size: 13px; font-weight: 600; color: #1a2332; margin: 16px 0 8px; }
+  .condition-button-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .condition-button { border: 1px solid #d9e0e8; background: #fff; border-radius: 4px; padding: 8px 6px; font-size: 12px; color: #555; text-align: center; cursor: pointer; }
+  .condition-button.active { background: #1677ff; border-color: #1677ff; color: #fff; }
+  .segment-main { background: #fff; border: 1px solid #f0f2f5; border-radius: 8px; padding: 16px; overflow-y: auto; max-height: 620px; }
+  .logic-toggle { display: inline-flex; border: 1px solid #d9e0e8; border-radius: 4px; overflow: hidden; vertical-align: middle; }
+  .logic-toggle span { padding: 6px 12px; font-size: 12px; background: #fff; color: #555; }
+  .logic-toggle .active { background: #4f46e5; color: #fff; }
+  .condition-block { background: #f8fafc; border-radius: 8px; padding: 14px; margin-top: 14px; }
+  .condition-group { border-left: 3px solid #91caff; background: #fff; border-radius: 8px; padding: 12px; margin-top: 14px; }
+  .condition-row { display: grid; grid-template-columns: 86px 130px 130px 1fr 28px; gap: 10px; align-items: center; padding: 10px; border: 1px solid #e8edf2; border-radius: 6px; margin-top: 10px; }
+  .condition-row.flash { border-color: #1677ff; box-shadow: 0 0 0 2px rgba(22,119,255,.08); }
+  .product-picker-layout { display: grid; grid-template-columns: 170px 1fr; gap: 14px; min-height: 430px; }
+  .category-tree { border-right: 1px solid #f0f2f5; padding-right: 12px; }
+  .category-tree-item { padding: 10px 12px; border-radius: 6px; font-size: 13px; color: #555; cursor: pointer; }
+  .category-tree-item.active { background: #e6f4ff; color: #1677ff; font-weight: 600; }
+  .guardrail-row { display: grid; grid-template-columns: 220px 1fr; gap: 16px; align-items: center; padding: 14px 0; border-bottom: 1px solid #f0f2f5; }
+  .guardrail-row:last-child { border-bottom: none; }
+  .merge-option { border: 1px solid #e8edf2; border-radius: 8px; padding: 14px; background: #fff; display: flex; gap: 10px; align-items: flex-start; }
+  .merge-option.active { border-color: #1677ff; background: #f0f7ff; }
+  .json-preview { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; line-height: 1.65; background: #0f172a; color: #dbeafe; border-radius: 8px; padding: 14px; overflow: auto; }
+  .prompt-studio { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 16px; }
+  .prompt-editor { min-height: 360px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 13px; line-height: 1.7; resize: vertical; }
+  .variable-token { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 9px 10px; border: 1px solid #e8edf2; border-radius: 6px; background: #fff; margin-bottom: 8px; font-size: 12px; color: #1a2332; }
+  .persona-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .eval-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .eval-output { background: #fff; border: 1px solid #e8edf2; border-radius: 8px; padding: 14px; min-height: 150px; font-size: 13px; line-height: 1.8; color: #333; }
+  .score-row { display: grid; grid-template-columns: 130px 1fr 52px; gap: 10px; align-items: center; margin-bottom: 10px; font-size: 12px; color: #555; }
   .empty { text-align: center; padding: 40px 0; color: #8c9bab; font-size: 14px; }
   .pagination { display: flex; gap: 4px; align-items: center; justify-content: flex-end; margin-top: 16px; }
   .page-btn { padding: 5px 10px; border: 1px solid #d9e0e8; border-radius: 5px; cursor: pointer; font-size: 13px; background: #fff; color: #555; }
@@ -531,6 +584,14 @@
       <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg></span>
       消费/服务记录
     </div>
+    <div class="nav-item" onclick="showPage('appointment-record')">
+      <span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/><path d="M8 14h4M8 18h8"/></svg></span>
+      预约记录数据
+    </div>
+    <div class="nav-item" onclick="showPage('treatment-progress')">
+      <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M4 19V5"/><path d="M4 19h16"/><rect x="7" y="11" width="3" height="5" rx="1"/><rect x="12" y="8" width="3" height="8" rx="1"/><rect x="17" y="6" width="3" height="10" rx="1"/></svg></span>
+      项目/疗程进度
+    </div>
     <div class="nav-item" onclick="showPage('crm')">
       <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></span>
       旧CRM对接配置
@@ -591,9 +652,25 @@
   <!-- 五、自动化规则 -->
   <div class="nav-section">
     <div class="nav-group-title">五、自动化规则</div>
-    <div class="nav-item" onclick="showPage('rule')">
+    <div class="nav-item" onclick="showPage('recall-strategy')">
+      <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M4 19V5"/><path d="M4 5h14l-2 4 2 4H4"/><path d="M8 19h12"/></svg></span>
+      策略与业务场景
+    </div>
+    <div class="nav-item" onclick="showPage('recall-trigger')">
       <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M4 4h6v6H4zM14 4h6v6h-6zM14 14h6v6h-6z"/><path d="M7 10v4h4M4 17h6v3H4z"/></svg></span>
-      回访触发规则
+      触发规则与时机
+    </div>
+    <div class="nav-item" onclick="showPage('recall-guardrails')">
+      <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10C7.5 20.5 4 17 4 12V6z"/><path d="M9 12l2 2 4-5"/></svg></span>
+      风控与合并策略
+    </div>
+    <div class="nav-item" onclick="showPage('ai-engine')">
+      <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/><circle cx="12" cy="12" r="4"/></svg></span>
+      AI引擎与Prompt
+    </div>
+    <div class="nav-item" onclick="showPage('customer-routing')">
+      <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M16 3h5v5M21 3l-7 7"/><path d="M8 21H3v-5M3 21l7-7"/><circle cx="12" cy="12" r="3"/><path d="M4 12h5M15 12h5"/></svg></span>
+      客户分配与流转
     </div>
   </div>
 
@@ -786,39 +863,84 @@
 
     <!-- ==================== 账号管理 ==================== -->
     <div class="page" id="page-account">
-      <div class="page-header"><h2>账号管理</h2><p>管理系统登录账号及状态</p></div>
-      <div class="sync-bar">
-        <div class="sync-info">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4v5h5M20 20v-5h-5"/><path d="M20 9A8 8 0 006.5 5.5L4 9M4 15a8 8 0 0013.5 3.5L20 15"/></svg>
-          最近同步：2026-06-08 09:15 &nbsp;|&nbsp; 已同步 <strong>1,284</strong> 个账号 &nbsp;|&nbsp; 来源：钉钉
-        </div>
-        <div class="sync-actions">
-          <button class="btn btn-default btn-sm" onclick="openModal('modal-sync-account')">同步设置</button>
-          <button class="btn btn-primary btn-sm" onclick="triggerSync('账号')">立即同步</button>
-        </div>
-      </div>
-      <div class="panel">
-        <div class="panel-header">
-          <span class="panel-title">账号列表</span>
-          <div class="panel-actions">
-            <input class="search-input" placeholder="搜索姓名/手机号" style="width:180px">
-            <select class="search-select"><option>全部状态</option><option>启用</option><option>禁用</option><option>待激活</option></select>
-            <select class="search-select"><option>全部角色</option><option>超级管理员</option><option>大区总监</option><option>区域经理</option><option>店长</option><option>员工</option></select>
-            <button class="btn btn-primary" onclick="openModal('modal-add-account')">+ 新建账号</button>
+      <div class="page-header"><h2>账号管理</h2><p>管理员工登录账号、部门归属、角色权限与超管状态</p></div>
+      <div class="account-layout">
+        <div class="account-tree-panel">
+          <div class="org-tree-header"><span style="font-weight:600;color:#1a2332">组织部门</span><button class="btn btn-default btn-sm" onclick="openModal('modal-sync-account')">同步</button></div>
+          <div class="account-tree-body">
+            <input class="search-input" placeholder="搜索节点 / 门店" style="width:100%;margin-bottom:12px">
+            <div class="tree-node selected"><span class="tree-toggle open">▶</span><strong>贝颜</strong></div>
+            <div class="tree-children">
+              <div class="tree-node"><span class="tree-toggle open">▶</span>贝颜事业部</div>
+              <div class="tree-children">
+                <div class="tree-node"><span class="tree-toggle open">▶</span>慧娟大区</div>
+                <div class="tree-children">
+                  <div class="tree-node"><span class="tree-toggle open">▶</span>华东区域</div>
+                  <div class="tree-children">
+                    <div class="tree-node">南京浦口店</div>
+                    <div class="tree-node">昆山玉山店</div>
+                    <div class="tree-node">扬州邗江店</div>
+                    <div class="tree-node">常州天宁店</div>
+                    <div class="tree-node">徐州云龙店</div>
+                  </div>
+                  <div class="tree-node"><span class="tree-toggle open">▶</span>文莉区域</div>
+                  <div class="tree-children">
+                    <div class="tree-node">上海徐汇店</div>
+                    <div class="tree-node">上海静安店</div>
+                    <div class="tree-node">上海松江店</div>
+                    <div class="tree-node">上海宝山店</div>
+                    <div class="tree-node">上海嘉定店</div>
+                    <div class="tree-node">上海浦东二店</div>
+                    <div class="tree-node">上海黄浦店</div>
+                  </div>
+                  <div class="tree-node"><span class="tree-toggle open">▶</span>韩春区域</div>
+                  <div class="tree-children">
+                    <div class="tree-node">宁波海曙店</div>
+                    <div class="tree-node">金华金东店</div>
+                    <div class="tree-node">宁波鄞州店</div>
+                    <div class="tree-node">嘉兴海宁店</div>
+                    <div class="tree-node">湖州吴兴店</div>
+                  </div>
+                  <div class="tree-node"><span class="tree-toggle open">▶</span>云凤区域</div>
+                  <div class="tree-children">
+                    <div class="tree-node">上海浦东店</div>
+                    <div class="tree-node">合肥政务店</div>
+                    <div class="tree-node">合肥瑶海店</div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>姓名</th><th>手机号</th><th>所属组织</th><th>角色</th><th>同步来源</th><th>最后登录</th><th>状态</th><th>操作</th></tr></thead>
-            <tbody>
-              <tr><td>春丽</td><td>138****8801</td><td>春丽大区</td><td><span class="tag tag-blue">大区总监</span></td><td>钉钉</td><td>2026-06-07 18:32</td><td><span class="status-dot dot-green"></span>启用</td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-account')">编辑</button> <button class="btn btn-default btn-sm" onclick="openModal('modal-reset-pwd')">重置密码</button> <button class="btn btn-danger btn-sm" onclick="openModal('modal-disable-account')">禁用</button></td></tr>
-              <tr><td>黄丽</td><td>139****2203</td><td>黄丽区域</td><td><span class="tag tag-blue">区域经理</span></td><td>钉钉</td><td>2026-06-08 08:10</td><td><span class="status-dot dot-green"></span>启用</td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-account')">编辑</button> <button class="btn btn-default btn-sm" onclick="openModal('modal-reset-pwd')">重置密码</button> <button class="btn btn-danger btn-sm" onclick="openModal('modal-disable-account')">禁用</button></td></tr>
-              <tr><td>张芳</td><td>136****5514</td><td>张芳大店</td><td><span class="tag tag-purple">店长</span></td><td>手动</td><td>2026-06-08 09:01</td><td><span class="status-dot dot-green"></span>启用</td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-account')">编辑</button> <button class="btn btn-default btn-sm" onclick="openModal('modal-reset-pwd')">重置密码</button> <button class="btn btn-danger btn-sm" onclick="openModal('modal-disable-account')">禁用</button></td></tr>
-              <tr><td>林娜</td><td>137****6620</td><td>林娜大区</td><td><span class="tag tag-blue">大区总监</span></td><td>钉钉</td><td>—</td><td><span class="status-dot dot-orange"></span>待激活</td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-account')">编辑</button> <button class="btn btn-success btn-sm" onclick="openModal('modal-activate-account')">激活</button> <button class="btn btn-danger btn-sm" onclick="openModal('modal-del-confirm')">删除</button></td></tr>
-            </tbody>
-          </table>
+        <div>
+          <div class="account-filter-bar">
+            <div class="account-filter-item"><span>状态：</span><select class="search-select" style="width:130px"><option>请选择</option><option>启用</option><option>禁用</option></select></div>
+            <div class="account-filter-item"><span>超管：</span><select class="search-select" style="width:130px"><option>请选择</option><option>是</option><option>否</option></select></div>
+            <div class="account-filter-item"><span>角色：</span><select class="search-select" style="width:160px"><option>请选择</option><option>市场贝颜_管理员</option><option>项目总监</option><option>录音测试</option><option>门店用户</option></select></div>
+            <div class="account-filter-item"><span>关键字：</span><input class="search-input" placeholder="关键字搜索" style="width:180px"></div>
+            <button class="btn btn-primary">搜索</button>
+          </div>
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">账号列表</span><button class="btn btn-primary" onclick="openModal('modal-add-account')">+ 添加账号</button></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>ID</th><th>姓名</th><th>钉钉ID</th><th>手机号</th><th>所属部门</th><th>所属角色</th><th>入职日期</th><th>离职日期</th><th>状态</th><th>操作</th></tr></thead>
+                <tbody>
+                  <tr><td>2026063001</td><td>测试小组六</td><td>—</td><td>132****3444</td><td>佛山南海店</td><td>市场贝颜_管理员</td><td>26-06-30</td><td>-</td><td><div class="account-status-cell">禁用 <label class="switch"><input type="checkbox" checked><span class="switch-slider"></span></label> 启用</div></td><td><div class="account-table-actions"><span class="account-action-link" onclick="openModal('modal-edit-account')">编辑</span><span class="account-action-link" onclick="openModal('modal-account-permission')">权限</span><span class="account-action-link" onclick="openModal('modal-del-confirm')">删除</span><span class="account-action-link">设置超管</span></div></td></tr>
+                  <tr><td>2026062904</td><td>测试小组四</td><td>—</td><td>138****9000</td><td>玉溪红塔店</td><td>市场贝颜_管理员</td><td>26-06-29</td><td>-</td><td><div class="account-status-cell">禁用 <label class="switch"><input type="checkbox" checked><span class="switch-slider"></span></label> 启用</div></td><td><div class="account-table-actions"><span class="account-action-link" onclick="openModal('modal-edit-account')">编辑</span><span class="account-action-link" onclick="openModal('modal-account-permission')">权限</span><span class="account-action-link" onclick="openModal('modal-del-confirm')">删除</span><span class="account-action-link">设置超管</span></div></td></tr>
+                  <tr><td>2026063005</td><td>测试小组五</td><td>—</td><td>137****8999</td><td>武汉江夏店</td><td>市场贝颜_管理员</td><td>26-06-30</td><td>-</td><td><div class="account-status-cell">禁用 <label class="switch"><input type="checkbox" checked><span class="switch-slider"></span></label> 启用</div></td><td><div class="account-table-actions"><span class="account-action-link" onclick="openModal('modal-edit-account')">编辑</span><span class="account-action-link" onclick="openModal('modal-account-permission')">权限</span><span class="account-action-link" onclick="openModal('modal-del-confirm')">删除</span><span class="account-action-link">设置超管</span></div></td></tr>
+                  <tr><td>2026063003</td><td>测试小组三</td><td>—</td><td>136****7888</td><td>昆明五华店</td><td>市场贝颜_管理员</td><td>26-06-30</td><td>-</td><td><div class="account-status-cell">禁用 <label class="switch"><input type="checkbox" checked><span class="switch-slider"></span></label> 启用</div></td><td><div class="account-table-actions"><span class="account-action-link" onclick="openModal('modal-edit-account')">编辑</span><span class="account-action-link" onclick="openModal('modal-account-permission')">权限</span><span class="account-action-link" onclick="openModal('modal-del-confirm')">删除</span><span class="account-action-link">设置超管</span></div></td></tr>
+                  <tr><td>2026063002</td><td>测试小组二</td><td>—</td><td>134****5666</td><td>上海浦东二店</td><td>市场贝颜_管理员</td><td>26-06-30</td><td>-</td><td><div class="account-status-cell">禁用 <label class="switch"><input type="checkbox" checked><span class="switch-slider"></span></label> 启用</div></td><td><div class="account-table-actions"><span class="account-action-link" onclick="openModal('modal-edit-account')">编辑</span><span class="account-action-link" onclick="openModal('modal-account-permission')">权限</span><span class="account-action-link" onclick="openModal('modal-del-confirm')">删除</span><span class="account-action-link">设置超管</span></div></td></tr>
+                  <tr><td>2026063001</td><td>测试小组一</td><td>—</td><td>135****6777</td><td>南京浦口店</td><td>市场贝颜_管理员</td><td>26-06-30</td><td>-</td><td><div class="account-status-cell">禁用 <label class="switch"><input type="checkbox" checked><span class="switch-slider"></span></label> 启用</div></td><td><div class="account-table-actions"><span class="account-action-link" onclick="openModal('modal-edit-account')">编辑</span><span class="account-action-link" onclick="openModal('modal-account-permission')">权限</span><span class="account-action-link" onclick="openModal('modal-del-confirm')">删除</span><span class="account-action-link">设置超管</span></div></td></tr>
+                  <tr><td>2026050701</td><td>测试壹</td><td>—</td><td>158****2215</td><td>南京浦口店</td><td>录音测试</td><td>26-05-07</td><td>-</td><td><div class="account-status-cell">禁用 <label class="switch"><input type="checkbox" checked><span class="switch-slider"></span></label> 启用</div></td><td><div class="account-table-actions"><span class="account-action-link" onclick="openModal('modal-edit-account')">编辑</span><span class="account-action-link" onclick="openModal('modal-account-permission')">权限</span><span class="account-action-link" onclick="openModal('modal-del-confirm')">删除</span><span class="account-action-link">设置超管</span></div></td></tr>
+                  <tr><td>2026041601</td><td>黄玲测试</td><td>—</td><td>181****5118</td><td>贝颜</td><td>市场_贝颜_服务</td><td>26-04-16</td><td>-</td><td><div class="account-status-cell">禁用 <label class="switch"><input type="checkbox" checked><span class="switch-slider"></span></label> 启用</div></td><td><div class="account-table-actions"><span class="account-action-link" onclick="openModal('modal-edit-account')">编辑</span><span class="account-action-link" onclick="openModal('modal-account-permission')">权限</span><span class="account-action-link" onclick="openModal('modal-del-confirm')">删除</span><span class="account-action-link">设置超管</span></div></td></tr>
+                  <tr><td>2025121901</td><td>稽核人员</td><td>—</td><td>130****1219</td><td>稽核部</td><td>项目总监</td><td>25-12-19</td><td>-</td><td><div class="account-status-cell">禁用 <label class="switch"><input type="checkbox" checked><span class="switch-slider"></span></label> 启用</div></td><td><div class="account-table-actions"><span class="account-action-link" onclick="openModal('modal-edit-account')">编辑</span><span class="account-action-link" onclick="openModal('modal-account-permission')">权限</span><span class="account-action-link" onclick="openModal('modal-del-confirm')">删除</span><span class="account-action-link">设置超管</span></div></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="pagination"><span style="font-size:13px;color:#8c9bab;padding:0 8px">共 7269 条</span><button class="page-btn">‹</button><button class="page-btn active">1</button><button class="page-btn">2</button><button class="page-btn">3</button><button class="page-btn">4</button><button class="page-btn">5</button><button class="page-btn">6</button><button class="page-btn">…</button><button class="page-btn">364</button><button class="page-btn">›</button><select class="search-select"><option>20条/页</option><option>50条/页</option></select><span style="font-size:13px;color:#8c9bab">跳至</span><input class="search-input" style="width:58px" value="1"></div>
+          </div>
         </div>
-        <div class="pagination"><button class="page-btn active">1</button><button class="page-btn">2</button><button class="page-btn">3</button><span style="font-size:13px;color:#8c9bab;padding:0 8px">共 1,284 条</span></div>
       </div>
     </div>
 
@@ -834,11 +956,11 @@
           <table>
             <thead><tr><th>角色名称</th><th>角色描述</th><th>人员数量</th><th>数据权限范围</th><th>状态</th><th>操作</th></tr></thead>
             <tbody>
-              <tr><td><strong>超级管理员</strong></td><td>系统最高权限，管理全部功能</td><td>3</td><td><span class="tag tag-red">全公司</span></td><td><span class="status-dot dot-green"></span>启用</td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-role')">编辑</button> <button class="btn btn-default btn-sm" onclick="showPage('perm')">配置权限</button> <button class="btn btn-danger btn-sm" onclick="openModal('modal-del-confirm')">删除</button></td></tr>
-              <tr><td><strong>大区总监</strong></td><td>管理大区内所有门店及人员</td><td>8</td><td><span class="tag tag-orange">大区</span></td><td><span class="status-dot dot-green"></span>启用</td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-role')">编辑</button> <button class="btn btn-default btn-sm" onclick="showPage('perm')">配置权限</button> <button class="btn btn-danger btn-sm" onclick="openModal('modal-del-confirm')">删除</button></td></tr>
-              <tr><td><strong>区域经理</strong></td><td>管理区域内所有门店</td><td>24</td><td><span class="tag tag-orange">区域</span></td><td><span class="status-dot dot-green"></span>启用</td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-role')">编辑</button> <button class="btn btn-default btn-sm" onclick="showPage('perm')">配置权限</button> <button class="btn btn-danger btn-sm" onclick="openModal('modal-del-confirm')">删除</button></td></tr>
-              <tr><td><strong>店长</strong></td><td>管理单店内人员、客户和业务</td><td>217</td><td><span class="tag tag-blue">本店</span></td><td><span class="status-dot dot-green"></span>启用</td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-role')">编辑</button> <button class="btn btn-default btn-sm" onclick="showPage('perm')">配置权限</button> <button class="btn btn-danger btn-sm" onclick="openModal('modal-del-confirm')">删除</button></td></tr>
-              <tr><td><strong>普通员工</strong></td><td>仅访问与自身相关的数据</td><td>1,032</td><td><span class="tag tag-green">个人</span></td><td><span class="status-dot dot-green"></span>启用</td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-role')">编辑</button> <button class="btn btn-default btn-sm" onclick="showPage('perm')">配置权限</button> <button class="btn btn-danger btn-sm" onclick="openModal('modal-del-confirm')">删除</button></td></tr>
+              <tr><td><strong>超级管理员</strong></td><td>系统最高权限，管理全部功能</td><td>3</td><td><span class="tag tag-red">全公司</span></td><td><label class="switch"><input type="checkbox" checked><span class="switch-slider"></span></label></td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-role')">编辑</button> <button class="btn btn-default btn-sm" onclick="openModal('modal-role-permission')">配置权限</button> <button class="btn btn-danger btn-sm" onclick="openModal('modal-del-confirm')">删除</button></td></tr>
+              <tr><td><strong>大区总监</strong></td><td>管理大区内所有门店及人员</td><td>8</td><td><span class="tag tag-orange">大区</span></td><td><label class="switch"><input type="checkbox" checked><span class="switch-slider"></span></label></td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-role')">编辑</button> <button class="btn btn-default btn-sm" onclick="openModal('modal-role-permission')">配置权限</button> <button class="btn btn-danger btn-sm" onclick="openModal('modal-del-confirm')">删除</button></td></tr>
+              <tr><td><strong>区域经理</strong></td><td>管理区域内所有门店</td><td>24</td><td><span class="tag tag-orange">区域</span></td><td><label class="switch"><input type="checkbox" checked><span class="switch-slider"></span></label></td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-role')">编辑</button> <button class="btn btn-default btn-sm" onclick="openModal('modal-role-permission')">配置权限</button> <button class="btn btn-danger btn-sm" onclick="openModal('modal-del-confirm')">删除</button></td></tr>
+              <tr><td><strong>店长</strong></td><td>管理单店内人员、客户和业务</td><td>217</td><td><span class="tag tag-blue">本店</span></td><td><label class="switch"><input type="checkbox" checked><span class="switch-slider"></span></label></td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-role')">编辑</button> <button class="btn btn-default btn-sm" onclick="openModal('modal-role-permission')">配置权限</button> <button class="btn btn-danger btn-sm" onclick="openModal('modal-del-confirm')">删除</button></td></tr>
+              <tr><td><strong>普通员工</strong></td><td>仅访问与自身相关的数据</td><td>1,032</td><td><span class="tag tag-green">个人</span></td><td><label class="switch"><input type="checkbox" checked><span class="switch-slider"></span></label></td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-role')">编辑</button> <button class="btn btn-default btn-sm" onclick="openModal('modal-role-permission')">配置权限</button> <button class="btn btn-danger btn-sm" onclick="openModal('modal-del-confirm')">删除</button></td></tr>
             </tbody>
           </table>
         </div>
@@ -990,6 +1112,100 @@
           </table>
         </div>
         <div class="pagination"><span style="font-size:13px;color:#8c9bab;padding:0 8px">共 24,182 条</span><button class="page-btn">«</button><button class="page-btn active">1</button><button class="page-btn">2</button><button class="page-btn">3</button><button class="page-btn">»</button></div>
+      </div>
+    </div>
+
+    <!-- ==================== 预约记录数据 ==================== -->
+    <div class="page" id="page-appointment-record">
+      <div class="page-header"><h2>预约记录数据</h2><p>沉淀客户预约时间、预约项目、预约员工、到店状态和到店时长，作为AI预测客户粘性的重要特征</p></div>
+      <div class="stat-row">
+        <div class="stat-card"><div class="stat-label">本月预约总数</div><div class="stat-value blue">18,642</div><div class="stat-sub">较上月 <span class="up">+6.8%</span></div></div>
+        <div class="stat-card"><div class="stat-label">预约到店率</div><div class="stat-value green">76.4%</div><div class="stat-sub">已到店 / 全部有效预约</div></div>
+        <div class="stat-card"><div class="stat-label">爽约率</div><div class="stat-value orange">8.7%</div><div class="stat-sub">AI流失风险关键变量</div></div>
+        <div class="stat-card"><div class="stat-label">平均到店时长</div><div class="stat-value blue" style="font-size:22px">86分钟</div><div class="stat-sub">从到店签到到离店</div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">预约记录列表</span>
+          <div class="panel-actions">
+            <input class="search-input" placeholder="搜索客户/预约单号…" style="width:210px">
+            <select class="search-select"><option>全部门店</option><option>张芳大店</option><option>思明店</option><option>湖里店</option><option>中山旗舰店</option></select>
+            <select class="search-select"><option>全部预约状态</option><option>已到店</option><option>爽约</option><option>取消</option></select>
+            <input type="date" class="search-input" style="width:140px" value="2026-06-08">
+            <button class="btn btn-default" onclick="triggerSync('预约记录数据')">同步预约数据</button>
+            <button class="btn btn-default">导出记录</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>预约单号</th><th>客户姓名</th><th>预约时间</th><th>预约项目</th><th>预约员工</th><th>预约状态</th><th>到店时长</th><th>AI特征</th><th>操作</th></tr></thead>
+            <tbody>
+              <tr><td style="font-size:12px;color:#8c9bab">APT-20260608-1024</td><td><strong>李美华</strong></td><td>2026-06-08 10:00</td><td>高端烫发套餐</td><td>张芳</td><td><span class="tag tag-green">已到店</span></td><td>112分钟</td><td><span class="tag tag-green">准时到店</span><span class="tag tag-blue">高粘性</span></td><td><button class="btn btn-default btn-sm">查看详情</button></td></tr>
+              <tr><td style="font-size:12px;color:#8c9bab">APT-20260608-0986</td><td><strong>王丽萍</strong></td><td>2026-06-08 11:30</td><td>面部补水护理</td><td>黄丽</td><td><span class="tag tag-orange">爽约</span></td><td>—</td><td><span class="tag tag-red">爽约风险</span><span class="tag tag-orange">需二次跟进</span></td><td><button class="btn btn-default btn-sm">查看详情</button></td></tr>
+              <tr><td style="font-size:12px;color:#8c9bab">APT-20260608-0872</td><td><strong>刘雨欣</strong></td><td>2026-06-08 14:00</td><td>染发+护理</td><td>张芳</td><td><span class="tag tag-green">已到店</span></td><td>95分钟</td><td><span class="tag tag-blue">新客履约</span></td><td><button class="btn btn-default btn-sm">查看详情</button></td></tr>
+              <tr><td style="font-size:12px;color:#8c9bab">APT-20260607-7660</td><td><strong>陈晓燕</strong></td><td>2026-06-07 16:30</td><td>头皮深层护理</td><td>王小燕</td><td><span class="tag tag-gray">取消</span></td><td>—</td><td><span class="tag tag-orange">沉睡倾向</span></td><td><button class="btn btn-default btn-sm">查看详情</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="pagination"><span style="font-size:13px;color:#8c9bab;padding:0 8px">共 18,642 条</span><button class="page-btn">«</button><button class="page-btn active">1</button><button class="page-btn">2</button><button class="page-btn">3</button><button class="page-btn">»</button></div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><span class="panel-title">AI预测特征说明</span></div>
+        <div class="panel-body">
+          <div class="info-grid">
+            <div class="info-item"><label>预约偏好</label><span>常预约时间段、常约项目、常约员工</span></div>
+            <div class="info-item"><label>履约能力</label><span>到店率、爽约率、取消率、迟到次数</span></div>
+            <div class="info-item"><label>服务投入度</label><span>到店时长、项目完成度、是否提前离店</span></div>
+            <div class="info-item"><label>触发器价值</label><span>爽约后跟进、预约前提醒、低到店率客户唤醒</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 项目/疗程进度 ==================== -->
+    <div class="page" id="page-treatment-progress">
+      <div class="page-header"><h2>客户项目 / 疗程进度数据</h2><p>同步客户购买疗程、已使用次数、剩余次数和最近消耗记录，驱动疗程到期预警与升单回访</p></div>
+      <div class="stat-row">
+        <div class="stat-card"><div class="stat-label">进行中疗程</div><div class="stat-value blue">42,806</div><div class="stat-sub">仍有剩余次数</div></div>
+        <div class="stat-card"><div class="stat-label">余量≤2次客户</div><div class="stat-value orange">6,218</div><div class="stat-sub">高价值回访触发池</div></div>
+        <div class="stat-card"><div class="stat-label">本周即将到期</div><div class="stat-value" style="color:#ff4d4f">1,542</div><div class="stat-sub">需优先召回</div></div>
+        <div class="stat-card"><div class="stat-label">疗程续购转化</div><div class="stat-value green">18.6%</div><div class="stat-sub">AI回访归因口径</div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">疗程进度列表</span>
+          <div class="panel-actions">
+            <input class="search-input" placeholder="搜索客户/项目…" style="width:210px">
+            <select class="search-select"><option>全部门店</option><option>张芳大店</option><option>思明店</option><option>湖里店</option><option>中山旗舰店</option></select>
+            <select class="search-select"><option>全部进度</option><option>余量充足</option><option>余量不足</option><option>即将到期</option><option>已用完</option></select>
+            <button class="btn btn-default" onclick="triggerSync('疗程进度数据')">同步疗程数据</button>
+            <button class="btn btn-primary">生成预警名单</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>客户姓名</th><th>项目/疗程</th><th>购买次数</th><th>已用次数</th><th>剩余次数</th><th>最近消耗</th><th>到期时间</th><th>AI预警</th><th>操作</th></tr></thead>
+            <tbody>
+              <tr><td><strong>李美华</strong><div style="font-size:12px;color:#8c9bab">VIP-00231</div></td><td>超声炮年度护理</td><td>6次</td><td>4次</td><td><span class="tag tag-orange">2次</span></td><td>2026-06-03</td><td>2026-08-31</td><td><span class="tag tag-orange">疗程余量不足</span></td><td><button class="btn btn-default btn-sm">查看消耗</button></td></tr>
+              <tr><td><strong>王丽萍</strong><div style="font-size:12px;color:#8c9bab">VIP-00892</div></td><td>面部补水10次卡</td><td>10次</td><td>9次</td><td><span class="tag tag-red">1次</span></td><td>2026-06-01</td><td>2026-06-30</td><td><span class="tag tag-red">即将流失/升单窗口</span></td><td><button class="btn btn-default btn-sm">查看消耗</button></td></tr>
+              <tr><td><strong>赵小燕</strong><div style="font-size:12px;color:#8c9bab">VIP-02341</div></td><td>VIP年度护理卡</td><td>12次</td><td>3次</td><td><span class="tag tag-green">9次</span></td><td>2026-06-07</td><td>2027-01-15</td><td><span class="tag tag-green">余量充足</span></td><td><button class="btn btn-default btn-sm">查看消耗</button></td></tr>
+              <tr><td><strong>陈晓燕</strong><div style="font-size:12px;color:#8c9bab">VIP-01204</div></td><td>头皮护理5次卡</td><td>5次</td><td>5次</td><td><span class="tag tag-gray">0次</span></td><td>2025-12-15</td><td>2026-01-31</td><td><span class="tag tag-red">已用完未续购</span></td><td><button class="btn btn-default btn-sm">查看消耗</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="pagination"><span style="font-size:13px;color:#8c9bab;padding:0 8px">共 42,806 条</span><button class="page-btn">«</button><button class="page-btn active">1</button><button class="page-btn">2</button><button class="page-btn">3</button><button class="page-btn">»</button></div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><span class="panel-title">疗程到期预警规则</span><button class="btn btn-primary">保存预警规则</button></div>
+        <div class="panel-body">
+          <div class="info-grid">
+            <div class="info-item"><label>余量预警</label><span>剩余次数 ≤ <input class="form-control" style="width:70px;display:inline-block" value="2"> 次，进入疗程消耗回访池</span></div>
+            <div class="info-item"><label>到期预警</label><span>有效期剩余 ≤ <input class="form-control" style="width:70px;display:inline-block" value="14"> 天，触发到期提醒</span></div>
+            <div class="info-item"><label>长期未消耗</label><span>最近一次使用距今 ≥ <input class="form-control" style="width:70px;display:inline-block" value="45"> 天，触发沉默疗程唤醒</span></div>
+            <div class="info-item"><label>AI Payload字段</label><span>项目名称、购买次数、已用次数、剩余次数、最近消耗、到期时间</span></div>
+          </div>
+          <div class="alert alert-success" style="margin-top:14px">疗程快用完时，客户既容易流失，也最容易升单；该数据会直接进入“疗程到期预警”触发规则和AI回访Payload。</div>
+        </div>
       </div>
     </div>
 
@@ -1220,6 +1436,8 @@
                 <tr><td>客户数据</td><td>旧CRM系统</td><td>实时增量</td><td>旧CRM→本系统</td><td>外部优先</td><td><label class="switch"><input type="checkbox" checked><span class="switch-slider"></span></label></td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-sync-module')">配置</button></td></tr>
                 <tr><td>员工档案</td><td>钉钉企业版</td><td>实时</td><td>钉钉→本系统</td><td>外部优先</td><td><label class="switch"><input type="checkbox" checked><span class="switch-slider"></span></label></td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-sync-module')">配置</button></td></tr>
                 <tr><td>消费/服务记录</td><td>旧CRM系统</td><td>实时增量</td><td>旧CRM→本系统</td><td>外部优先</td><td><label class="switch"><input type="checkbox" checked><span class="switch-slider"></span></label></td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-sync-module')">配置</button></td></tr>
+                <tr><td>预约记录数据</td><td>旧CRM系统</td><td>实时增量</td><td>旧CRM→本系统</td><td>外部优先</td><td><label class="switch"><input type="checkbox" checked><span class="switch-slider"></span></label></td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-sync-module')">配置</button></td></tr>
+                <tr><td>项目/疗程进度</td><td>旧CRM系统</td><td>实时增量</td><td>旧CRM→本系统</td><td>外部优先</td><td><label class="switch"><input type="checkbox" checked><span class="switch-slider"></span></label></td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-sync-module')">配置</button></td></tr>
                 <tr><td>岗位字典</td><td>旧CRM系统</td><td>每周一 06:00</td><td>旧CRM→本系统</td><td>手动确认</td><td><label class="switch"><input type="checkbox" checked><span class="switch-slider"></span></label></td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-sync-module')">配置</button></td></tr>
                 <tr><td>项目字典</td><td>旧CRM系统</td><td>每天 06:00</td><td>旧CRM→本系统</td><td>手动确认</td><td><label class="switch"><input type="checkbox" checked><span class="switch-slider"></span></label></td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-sync-module')">配置</button></td></tr>
                 <tr><td>商品字典</td><td>旧CRM系统</td><td>每天 06:00</td><td>旧CRM→本系统</td><td>手动确认</td><td><label class="switch"><input type="checkbox" checked><span class="switch-slider"></span></label></td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-sync-module')">配置</button></td></tr>
@@ -1873,18 +2091,292 @@
       </div>
     </div>
 
-    <!-- ==================== 回访触发规则 ==================== -->
-    <div class="page" id="page-rule">
-      <div class="page-header"><h2>回访触发规则</h2><p>配置AI自动回访的触发条件与执行参数</p></div>
-      <div class="panel-header" style="background:#fff;border-radius:8px;border:1px solid #e8edf2;padding:16px 20px;margin-bottom:16px">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <span class="panel-title">规则列表</span>
-          <button class="btn btn-primary" onclick="openModal('modal-add-rule')">+ 新增规则</button>
+    <!-- ==================== 智能回访：策略与业务场景 ==================== -->
+    <div class="page" id="page-recall-strategy">
+      <div class="page-header"><h2>策略与业务场景管理</h2><p>定义品牌级回访场景，挂载AI专业知识与人设模板</p></div>
+      <div class="stat-row stat-row-4">
+        <div class="stat-card"><div class="stat-label">今日触发回访总数</div><div class="stat-value blue">128,420</div><div class="stat-trend up">↑ 较昨日 +8.6%</div></div>
+        <div class="stat-card"><div class="stat-label">AI话术生成成功率</div><div class="stat-value green">99.2%</div><div class="stat-trend">失败任务自动重试</div></div>
+        <div class="stat-card"><div class="stat-label">员工采纳率</div><div class="stat-value blue">73.8%</div><div class="stat-trend up">↑ 近7日 +4.1%</div></div>
+        <div class="stat-card"><div class="stat-label">回访到店转化率</div><div class="stat-value orange">12.5%</div><div class="stat-trend">30天归因口径</div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><span class="panel-title">业务场景列表</span><button class="btn btn-primary" onclick="openModal('modal-add-goal')">+ 新建业务场景</button></div>
+        <div class="panel-body">
+          <div class="tag-card-grid">
+            <div class="rule-card"><div class="rule-card-header"><div><div class="rule-name">医美手术/光电类术后高风险关怀</div><div class="rule-desc">面向术后安全期的红肿、结痂、反黑等风险教育</div></div><span class="tag tag-green">运行中</span></div><div class="chip-list"><span class="chip">《超声炮注意事项.pdf》</span><span class="chip">皮秒术后FAQ</span><span class="chip">人设：专业严谨</span></div><div class="rule-params"><span class="rule-param">触发中客户：42,680</span><span class="rule-param">成功率：99.4%</span></div></div>
+            <div class="rule-card"><div class="rule-card-header"><div><div class="rule-name">疗程消耗与复购提醒</div><div class="rule-desc">围绕卡项余量、疗程间隔和预测复购窗口生成提醒</div></div><span class="tag tag-blue">优化中</span></div><div class="chip-list"><span class="chip">疗程周期SOP.docx</span><span class="chip">光电复购周期表</span><span class="chip">人设：暖心闺蜜</span></div><div class="rule-params"><span class="rule-param">触发中客户：88,120</span><span class="rule-param">采纳率：76.1%</span></div></div>
+            <div class="rule-card"><div class="rule-card-header"><div><div class="rule-name">客情唤醒与沉睡召回</div><div class="rule-desc">针对连续未到店客户，以低打扰方式恢复沟通</div></div><span class="tag tag-orange">灰度</span></div><div class="chip-list"><span class="chip">沉睡客户话术库</span><span class="chip">会员权益说明</span><span class="chip">人设：克制关怀</span></div><div class="rule-params"><span class="rule-param">触发中客户：126,400</span><span class="rule-param">到店率：8.7%</span></div></div>
+            <div class="rule-card"><div class="rule-card-header"><div><div class="rule-name">敏感肌特殊关怀</div><div class="rule-desc">识别敏感肌标签与特殊护理项目，控制表达强度</div></div><span class="tag tag-green">运行中</span></div><div class="chip-list"><span class="chip">敏感肌护理说明.pdf</span><span class="chip">禁忌词清单</span><span class="chip">人设：专业温和</span></div><div class="rule-params"><span class="rule-param">触发中客户：18,930</span><span class="rule-param">风控拦截：0.8%</span></div></div>
+          </div>
         </div>
       </div>
-      <div class="rule-card"><div class="rule-card-header"><div><div class="rule-name">消费后次日回访</div><div class="rule-desc">客户完成服务消费后，次日触发AI自动回访，收集满意度反馈</div></div><div style="display:flex;align-items:center;gap:10px"><label class="switch"><input type="checkbox" checked><span class="switch-slider"></span></label><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-rule')">编辑</button><button class="btn btn-danger btn-sm" onclick="openModal('modal-del-confirm')">删除</button></div></div><div class="rule-params"><span class="rule-param">触发：消费完成</span><span class="rule-param">延迟：24小时</span><span class="rule-param">方式：AI语音外呼</span><span class="rule-param">话术：满意度标准话术</span><span class="rule-param">适用：全部门店</span></div></div>
-      <div class="rule-card"><div class="rule-card-header"><div><div class="rule-name">复购周期到期提醒</div><div class="rule-desc">根据服务项目复购周期，在到期前3天触发回访，推荐预约下次服务</div></div><div style="display:flex;align-items:center;gap:10px"><label class="switch"><input type="checkbox" checked><span class="switch-slider"></span></label><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-rule')">编辑</button><button class="btn btn-danger btn-sm" onclick="openModal('modal-del-confirm')">删除</button></div></div><div class="rule-params"><span class="rule-param">触发：复购周期-3天</span><span class="rule-param">方式：短信+AI外呼</span><span class="rule-param">话术：复购推荐话术</span><span class="rule-param">适用：VIP客户</span><span class="rule-param">适用项目：护肤类、美体类</span></div></div>
-      <div class="rule-card"><div class="rule-card-header"><div><div class="rule-name">沉睡客户唤醒</div><div class="rule-desc">超过60天未消费的客户，触发唤醒回访，赠送优惠券激励复购</div></div><div style="display:flex;align-items:center;gap:10px"><label class="switch"><input type="checkbox"><span class="switch-slider"></span></label><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-rule')">编辑</button><button class="btn btn-danger btn-sm" onclick="openModal('modal-del-confirm')">删除</button></div></div><div class="rule-params"><span class="rule-param">触发：60天未消费</span><span class="rule-param">方式：AI语音外呼</span><span class="rule-param">话术：唤醒激励话术</span><span class="rule-param">优惠：首单88折</span><span class="rule-param">适用：全部门店</span></div></div>
+    </div>
+
+    <!-- ==================== 智能回访：触发规则与时机 ==================== -->
+    <div class="page" id="page-recall-trigger">
+      <div class="page-header"><h2>触发规则与时机配置</h2><p>定义触发源、时间生命周期，并组装传给AI的Payload</p></div>
+      <div class="panel">
+        <div class="panel-header"><span class="panel-title">触发规则列表</span><div class="panel-actions"><input class="search-input" placeholder="搜索规则名称 / 项目" style="width:180px"><select class="search-select"><option>全部业务场景</option><option>术后高风险关怀</option><option>疗程消耗与复购</option><option>客情唤醒</option></select><select class="search-select"><option>全部触发事件</option><option>1.加微</option><option>2.下单</option><option>3.预约</option><option>4.排客</option><option>5.改约</option><option>6.取消排客</option><option>7.预约超时</option><option>8.到店</option><option>9.流退</option><option>10.结算</option></select><select class="search-select"><option>全部状态</option><option>运行中</option><option>观察</option><option>停用</option></select><button class="btn btn-primary" onclick="openModal('modal-add-trigger')">+ 新建触发规则</button></div></div>
+        <div class="table-wrap"><table><thead><tr><th>规则名称</th><th>目标</th><th>触发源</th><th>时间节点</th><th>今日命中</th><th>状态</th><th>操作</th></tr></thead><tbody>
+          <tr><td><strong>超声炮术后关怀</strong></td><td>术后高风险关怀</td><td>1.加微 / 超声炮术后SOP</td><td>D+1 10:00, D+3 15:00, D+21 11:00</td><td>18,240</td><td><span class="tag tag-green">运行中</span></td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-add-trigger')">编辑</button></td></tr>
+          <tr><td><strong>疗程余量不足提醒</strong></td><td>疗程消耗与复购</td><td>2.下单 / 余量≤2次</td><td>次日 09:30</td><td>9,812</td><td><span class="tag tag-green">运行中</span></td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-add-trigger')">编辑</button></td></tr>
+          <tr><td><strong>线上咨询未购买跟进</strong></td><td>客情唤醒</td><td>1.加微 / 3天未下单</td><td>D+3 14:00</td><td>6,430</td><td><span class="tag tag-orange">观察</span></td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-add-trigger')">编辑</button></td></tr>
+        </tbody></table></div>
+      </div>
+    </div>
+
+    <!-- ==================== 智能回访：风控与合并策略 ==================== -->
+    <div class="page" id="page-recall-guardrails">
+      <div class="page-header"><h2>风控与全局合并策略</h2><p>控制千万级客户去重、流控、合并与敏感词校验</p></div>
+      <div class="panel">
+        <div class="panel-header"><span class="panel-title">防疲劳与流控</span><button class="btn btn-primary">保存全局策略</button></div>
+        <div class="panel-body">
+          <div class="guardrail-row"><div><strong>单客户24小时频次</strong><div class="text-muted">硬过滤，命中即不进入AI队列</div></div><div>单个客户 <input class="form-control" style="width:70px;display:inline-block" value="24"> 小时内最多触发 <input class="form-control" style="width:70px;display:inline-block" value="1"> 次系统回访</div></div>
+          <div class="guardrail-row"><div><strong>单客户7天频次</strong><div class="text-muted">避免多项目长期叠加打扰</div></div><div>单个客户 <input class="form-control" style="width:70px;display:inline-block" value="7"> 天内最多触发 <input class="form-control" style="width:70px;display:inline-block" value="3"> 次系统回访</div></div>
+          <div class="guardrail-row"><div><strong>渠道免打扰时间</strong><div class="text-muted">待执行任务顺延至次日早上</div></div><div>每日 <input class="form-control" style="width:90px;display:inline-block" value="21:30"> 至次日 <input class="form-control" style="width:90px;display:inline-block" value="09:30"> 停止发送任务</div></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><span class="panel-title">多项目交叉合并策略</span></div>
+        <div class="panel-body">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+            <label class="merge-option"><input type="radio" name="merge"> <div><strong>错时顺延</strong><div class="text-muted">同一天多个项目回访时，按手术 > 光电 > 生美优先级执行一个，其余顺延</div></div></label>
+            <label class="merge-option active"><input type="radio" name="merge" checked> <div><strong>AI 多意图融合（推荐）</strong><div class="text-muted">4小时内同一客户多个节点到期，合并为一条融合话术</div></div></label>
+          </div>
+          <div class="form-group"><label class="form-label">合并窗口</label><span>当 <input class="form-control" style="width:70px;display:inline-block" value="4"> 小时内同一个客户有多个回访节点到期，启动合并引擎</span></div>
+          <div class="json-preview">[
+  {"intent":"水光针术后1天","risk":"补水、泛红、避免揉搓"},
+  {"intent":"超声炮术后1天","risk":"紧绷、轻微肿胀、加强防晒"}
+]
+prompt_guard: 请将以上两个项目的关怀重点融合在一条话术中，严禁分开发送。</div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><span class="panel-title">安全边界与敏感词</span></div>
+        <div class="panel-body">
+          <div class="form-group"><label class="form-label">禁止词/敏感词</label><textarea class="form-control" rows="3">包治好、百分百、绝对、退款、打折、永久有效、无任何风险</textarea></div>
+          <div class="alert alert-warning">AI Agent 生成话术命中敏感词时，系统直接触发拒绝流，将任务打回，并提示顾问：AI话术触发风控，请人工撰写。</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 智能回访：AI引擎与Prompt ==================== -->
+    <div class="page" id="page-ai-engine">
+      <div class="page-header"><h2>AI 引擎与 Prompt 管理中心</h2><p>配置模型路由、系统Prompt、人设矩阵，并在发布前完成沙盒评测</p></div>
+      <div class="panel">
+        <div class="panel-header"><span class="panel-title">基础模型路由与参数配置</span><button class="btn btn-primary">保存路由策略</button></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>业务场景</th><th>推荐模型</th><th>Temperature</th><th>路由状态</th><th>说明</th></tr></thead>
+            <tbody>
+              <tr><td><strong>高客单 / 手术 / 投诉风险关怀</strong><div class="text-muted">隆鼻术后 T+1、客诉安抚、反黑风险</div></td><td><select class="form-control"><option>Claude 3.5 Sonnet</option><option>GPT-4o</option></select></td><td><input type="range" class="form-control" value="30"><span class="text-muted">0.3 严谨/专业</span></td><td><span class="tag tag-green">生产中</span></td><td>优先保证安全、情商和医学表达稳定性</td></tr>
+              <tr><td><strong>常规生美 / 消耗 / 小福利提醒</strong><div class="text-muted">洗脸卡消耗、节日问候、到店提醒</div></td><td><select class="form-control"><option>DeepSeek</option><option>智谱 GLM-4</option></select></td><td><input type="range" class="form-control" value="80"><span class="text-muted">0.8 活跃/个性</span></td><td><span class="tag tag-blue">自动路由</span></td><td>极速、低成本，适合千万级批量吞吐</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><span class="panel-title">Prompt Studio</span><div class="panel-actions"><button class="btn btn-default">保存草稿</button><button class="btn btn-primary">提交评测</button></div></div>
+        <div class="panel-body">
+          <div class="prompt-studio">
+            <textarea class="form-control prompt-editor"># 角色
+你现在是美业连锁门店的智能客情顾问。你正在替员工执行一笔售后回访。
+
+# 动态上下文输入
+- 顾问人设：{{advisor_persona}}
+- 客户姓名：{{customer_name}}
+- 客户标签：{{customer_tags}}
+- 触发原因：{{trigger_reason}}
+- 核心意图：{{core_goal}}
+- 医疗常识参考：{{knowledge_ref}}
+
+# 核心限制
+1. 必须使用第1人称（我）和带有温度的行业特定称呼。
+2. 禁止出现以下敏感词：{{sensitive_words}}。
+3. 如果包含多项目触发，必须将两者的注意事项天然融合，严禁分成两段话。</textarea>
+            <div>
+              <div style="font-size:13px;font-weight:600;color:#1a2332;margin-bottom:10px">可用变量</div>
+              <div class="variable-token"><span>{{customer_age}}</span><span class="tag tag-blue">客户年龄</span></div>
+              <div class="variable-token"><span>{{doctor_name}}</span><span class="tag tag-blue">本次消费医生</span></div>
+              <div class="variable-token"><span>{{last_chat_summary}}</span><span class="tag tag-blue">上次聊天摘要</span></div>
+              <div class="variable-token"><span>{{trigger_reason}}</span><span class="tag tag-green">触发原因</span></div>
+              <div class="variable-token"><span>{{sensitive_words}}</span><span class="tag tag-red">敏感词</span></div>
+              <div class="alert alert-info" style="margin-top:12px">运营可将变量插入主提示词，实际调用时由CRM Payload实时替换。</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><span class="panel-title">多人设矩阵配置</span><button class="btn btn-primary">+ 新增人设</button></div>
+        <div class="panel-body">
+          <div class="persona-grid">
+            <div class="rule-card"><div class="rule-card-header"><div><div class="rule-name">暖心闺蜜型</div><div class="rule-desc">多提供情绪价值，像在发私信聊天</div></div><span class="tag tag-green">启用</span></div><div class="alert alert-info">多使用“宝子”“亲爱的”，每句话结尾尽量带上温柔表情；多问询感受。</div><button class="btn btn-default btn-sm">编辑Prompt</button></div>
+            <div class="rule-card"><div class="rule-card-header"><div><div class="rule-name">皮肤科医生型</div><div class="rule-desc">简练、严谨、医学信任感优先</div></div><span class="tag tag-green">启用</span></div><div class="alert alert-info">称呼为“XX女士/先生”。使用屏障受损、表皮重塑等专业表达，不使用花哨表情。</div><button class="btn btn-default btn-sm">编辑Prompt</button></div>
+            <div class="rule-card"><div class="rule-card-header"><div><div class="rule-name">克制关怀型</div><div class="rule-desc">适合沉睡客户与低打扰触达</div></div><span class="tag tag-orange">灰度</span></div><div class="alert alert-info">不制造紧迫感，不强推促销，保持短句与低频互动，给客户留退出空间。</div><button class="btn btn-default btn-sm">编辑Prompt</button></div>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><span class="panel-title">AI 效果评测与 Sandbox</span><div class="panel-actions"><select class="search-select"><option>10个极端/典型Payload样本</option><option>手术客诉样本集</option><option>敏感肌样本集</option></select><button class="btn btn-primary">开始批量评测</button></div></div>
+        <div class="panel-body">
+          <div class="eval-grid">
+            <div><div style="font-weight:600;margin-bottom:8px">老 Prompt 生成话术</div><div class="eval-output">亲爱的，昨天做完超声炮后如果有轻微紧绷属于常见反应，今天记得加强补水和防晒，先不要按摩揉搓面部。有任何不舒服可以随时找我。</div></div>
+            <div><div style="font-weight:600;margin-bottom:8px">新 Prompt 生成话术</div><div class="eval-output">王女士，我这边来跟进一下您昨天超声炮后的恢复情况。今天如果有轻微紧绷或局部热感，通常与皮肤屏障修护过程有关，请继续做好补水、防晒，并避免揉搓刺激。</div></div>
+          </div>
+          <div class="divider"></div>
+          <div class="score-row"><span>人设符合度</span><div class="progress-bar"><div class="progress-fill" style="width:94%"></div></div><strong>94</strong></div>
+          <div class="score-row"><span>错别字/幻觉率</span><div class="progress-bar"><div class="progress-fill" style="width:98%"></div></div><strong>98</strong></div>
+          <div class="score-row"><span>风控敏感词拦截率</span><div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div><strong>100</strong></div>
+          <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px"><button class="btn btn-default">查看10条详情</button><button class="btn btn-success">一键发布至生产环境</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 客户分配与流转规则 ==================== -->
+    <div class="page" id="page-customer-routing">
+      <div class="page-header"><h2>客户分配与流转规则</h2><p>配置AI任务回复后的客户归属、二级兜底分配、阶段流转与门店交接保护</p></div>
+      <div class="stat-row stat-row-4">
+        <div class="stat-card"><div class="stat-label">今日待分配客户</div><div class="stat-value blue">3,286</div><div class="stat-trend">来自AI回访回复与主动咨询</div></div>
+        <div class="stat-card"><div class="stat-label">自动分配成功率</div><div class="stat-value green">98.7%</div><div class="stat-trend up">↑ 近7日 +1.2%</div></div>
+        <div class="stat-card"><div class="stat-label">待流转清单</div><div class="stat-value orange">412</div><div class="stat-trend">今日09:00批处理生成</div></div>
+        <div class="stat-card"><div class="stat-label">店长审批中</div><div class="stat-value blue">68</div><div class="stat-trend">审批窗口 2 小时</div></div>
+      </div>
+
+      <div class="tabs" style="margin-bottom:16px">
+        <div class="tab active" onclick="switchTab(this,'routing-assign-tab')">客户分配规则</div>
+        <div class="tab" onclick="switchTab(this,'routing-flow-tab')">客户流转规则</div>
+      </div>
+
+      <div class="tab-panel active" id="routing-assign-tab">
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">分配规则配置</span><div class="panel-actions"><button class="btn btn-default">查看待分配池</button><button class="btn btn-primary">保存分配规则</button></div></div>
+          <div class="panel-body">
+            <div class="alert alert-info">这块只决定“客户触发会话后分给谁”。配置项会影响后续新增待分配客户；右上角“查看待分配池”用于处理已经进入队列但尚未分配的客户。</div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label required">启用自动分配的触发来源</label>
+                <div class="payload-grid">
+                  <label class="payload-item"><input type="checkbox" checked> AI任务回复：客户回复SOP、回访、激活、通知消息</label>
+                  <label class="payload-item"><input type="checkbox" checked> 新客首次成交：第一笔订单完成后建立归属</label>
+                  <label class="payload-item"><input type="checkbox" checked> 客户主动发消息：当前无明确员工归属时触发</label>
+                  <label class="payload-item"><input type="checkbox" checked> 店长手动分配：从待分配池或客户详情指定员工</label>
+                </div>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label required">主分配规则</label>
+                <select class="form-control">
+                  <option>触发该笔订单维护老师（当前默认）</option>
+                  <option>触发该笔订单接待销售</option>
+                  <option>触发该笔订单开单老师</option>
+                  <option>最后一笔订单接待销售</option>
+                  <option>最后一笔订单维护老师</option>
+                  <option>指定岗位池</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">指定岗位池</label>
+                <select class="form-control">
+                  <option>仅当主规则选择“指定岗位池”时生效</option>
+                  <option>咨询师</option>
+                  <option>美容师</option>
+                  <option>客服</option>
+                  <option>店长</option>
+                </select>
+              </div>
+            </div>
+            <div class="alert alert-warning">“触发该笔订单”取本次AI任务来源订单；“最后一笔订单”取客户历史最近完成订单。字段为空、员工离职、休假或暂停接客时，自动进入兜底分配。</div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">兜底分配顺序</span></div>
+          <div class="panel-body">
+            <div class="time-node-row"><span class="tag tag-blue">第1步</span><select class="form-control"><option>历史绑定员工优先</option><option>当前持有客户数最少</option><option>店长预设分组</option></select><span class="text-muted">可用时执行</span><button class="btn btn-default btn-sm">上移</button><button class="btn btn-default btn-sm">下移</button></div>
+            <div class="time-node-row"><span class="tag tag-blue">第2步</span><select class="form-control"><option>当前持有客户数最少</option><option>历史绑定员工优先</option><option>店长预设分组</option></select><span class="text-muted">默认兜底</span><button class="btn btn-default btn-sm">上移</button><button class="btn btn-default btn-sm">下移</button></div>
+            <div class="time-node-row"><span class="tag tag-blue">第3步</span><select class="form-control"><option>店长预设分组</option><option>当前持有客户数最少</option><option>历史绑定员工优先</option></select><span class="text-muted">可选</span><button class="btn btn-default btn-sm">上移</button><button class="btn btn-default btn-sm">下移</button></div>
+            <div class="divider"></div>
+            <div class="info-grid">
+              <div class="info-item"><label>无订单客户</label><span>进入指定岗位池，默认分配给咨询/客服岗位</span></div>
+              <div class="info-item"><label>员工不可用</label><span>离职、休假、停用、暂停接客时跳过该员工</span></div>
+              <div class="info-item"><label>订单字段为空</label><span>按上方兜底顺序重新计算</span></div>
+              <div class="info-item"><label>员工查看范围</label><span>聚合聊天中只显示已分配给自己的客户</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">分配运行记录</span><div class="panel-actions"><input class="search-input" placeholder="搜索客户 / 员工" style="width:180px"><button class="btn btn-default">导出</button></div></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>时间</th><th>客户</th><th>触发来源</th><th>分配结果</th><th>命中规则</th><th>状态</th></tr></thead>
+              <tbody>
+                <tr><td>09:32</td><td>李美华</td><td>AI术后回访回复</td><td>张芳</td><td>触发订单维护老师</td><td><span class="tag tag-green">已分配</span></td></tr>
+                <tr><td>09:18</td><td>王莉</td><td>客户主动发消息</td><td>陈敏</td><td>历史绑定员工优先</td><td><span class="tag tag-green">已分配</span></td></tr>
+                <tr><td>09:05</td><td>赵女士</td><td>新客首次成交</td><td>待分配池</td><td>订单字段为空</td><td><span class="tag tag-orange">待处理</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-panel" id="routing-flow-tab">
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">流转规则配置</span><div class="panel-actions"><button class="btn btn-default">查看待流转清单</button><button class="btn btn-primary">保存流转规则</button></div></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>客户阶段</th><th>流转判定</th><th>阈值</th><th>处理方式</th><th>启用</th></tr></thead>
+              <tbody>
+                <tr><td>新客未到店</td><td>分配后没有有效跟进</td><td><input class="form-control" style="width:80px" value="5"> 天</td><td><select class="form-control"><option>进入待流转池</option><option>仅提醒员工</option></select></td><td><input type="checkbox" checked></td></tr>
+                <tr><td>新客未到店</td><td>已跟进但阶段无推进</td><td><input class="form-control" style="width:80px" value="15"> 天</td><td><select class="form-control"><option>店长审批后流转</option><option>直接流转</option></select></td><td><input type="checkbox" checked></td></tr>
+                <tr><td>已预约</td><td>爽约后未二次跟进</td><td><input class="form-control" style="width:80px" value="3"> 天</td><td><select class="form-control"><option>先提醒，超期流转</option><option>仅提醒员工</option></select></td><td><input type="checkbox" checked></td></tr>
+                <tr><td>已预约</td><td>累计爽约</td><td><input class="form-control" style="width:80px" value="3"> 次</td><td><select class="form-control"><option>标记难转化并通知店长</option><option>进入待流转池</option></select></td><td><input type="checkbox" checked></td></tr>
+                <tr><td>已到店 / 已成交 / 复购</td><td>正常经营客户</td><td>不自动流转</td><td>仅离职交接、调店、店长手动流转</td><td><input type="checkbox" disabled></td></tr>
+                <tr><td>沉默客户</td><td>标记沉默后没有激活动作</td><td><input class="form-control" style="width:80px" value="10"> 天</td><td><select class="form-control"><option>进入激活流转队列</option><option>仅提醒店长</option></select></td><td><input type="checkbox" checked></td></tr>
+                <tr><td>维护提醒</td><td>高价值或已成交客户长期无维护</td><td><input class="form-control" style="width:80px" value="60"> 天</td><td><select class="form-control"><option>提醒店长，不强制流转</option><option>进入待流转池</option></select></td><td><input type="checkbox" checked></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="panel-body">
+            <div class="alert alert-info">有效跟进行为包括：聚合聊天人工消息、电话记录、修改备注/标签/阶段、添加跟进记录。系统消息、客户未读、普通提醒不计入有效跟进。</div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">保护规则与执行方式</span></div>
+          <div class="panel-body">
+            <div class="info-grid">
+              <div class="info-item"><label>新分配保护期</label><span><input class="form-control" style="width:70px;display:inline-block" value="5"> 天内不自动流转</span></div>
+              <div class="info-item"><label>最多自动流转</label><span>同一客户最多 <input class="form-control" style="width:70px;display:inline-block" value="2"> 次</span></div>
+              <div class="info-item"><label>避免回流同人</label><span><input class="form-control" style="width:70px;display:inline-block" value="30"> 天内不再分回原员工</span></div>
+              <div class="info-item"><label>员工日释放上限</label><span>不超过持有客户的 <input class="form-control" style="width:70px;display:inline-block" value="10"> %</span></div>
+              <div class="info-item"><label>扫描时间</label><span>每日 <input class="form-control" style="width:90px;display:inline-block" value="09:00"> 批量扫描</span></div>
+              <div class="info-item"><label>店长审批</label><span><label><input type="checkbox" checked> 开启</label>，审批窗口 <input class="form-control" style="width:70px;display:inline-block" value="2"> 小时</span></div>
+            </div>
+            <div class="divider"></div>
+            <div class="rule-params">
+              <span class="rule-param">1. 系统每日扫描生成待流转清单</span>
+              <span class="rule-param">2. 店长审批、驳回或指定新员工</span>
+              <span class="rule-param">3. 到期未处理按兜底规则再分配</span>
+              <span class="rule-param">4. 通知原员工、新员工和店长</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">特殊交接场景</span></div>
+          <div class="panel-body">
+            <div class="tag-card-grid">
+              <div class="rule-card"><div class="rule-card-header"><div><div class="rule-name">离职 / 调岗批量交接</div><div class="rule-desc">员工离职、调店或岗位变更时，店长按客户阶段、消费金额、标签批量转交</div></div><button class="btn btn-default btn-sm">配置</button></div></div>
+              <div class="rule-card"><div class="rule-card-header"><div><div class="rule-name">休假暂停接新客</div><div class="rule-desc">员工休假期间不接收新分配客户，已持有客户不自动释放</div></div><button class="btn btn-default btn-sm">配置</button></div></div>
+              <div class="rule-card"><div class="rule-card-header"><div><div class="rule-name">跨店客户转移</div><div class="rule-desc">客户归属门店变更时，需店长确认并保留完整聊天历史与跟进记录</div></div><button class="btn btn-default btn-sm">配置</button></div></div>
+            </div>
+            <div class="alert alert-success" style="margin-top:14px">流转完成后，新员工可查看完整聊天历史、客户资料、流转原因、标签备注与当前阶段，无需重新向客户解释交接过程。</div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- ==================== 操作审计日志 ==================== -->
@@ -2244,25 +2736,58 @@
 
 <!-- 新增账号 -->
 <div class="modal-overlay" id="modal-add-account">
-  <div class="modal">
-    <div class="modal-header"><span class="modal-title">新建账号</span><button class="modal-close" onclick="closeModal('modal-add-account')">×</button></div>
+  <div class="modal modal-lg">
+    <div class="modal-header"><span class="modal-title">添加账号</span><button class="modal-close" onclick="closeModal('modal-add-account')">×</button></div>
     <div class="modal-body">
-      <div class="form-row"><div class="form-group"><label class="form-label required">姓名</label><input class="form-control" placeholder="请输入姓名"></div><div class="form-group"><label class="form-label required">手机号</label><input class="form-control" placeholder="用于登录和接收验证码"></div></div>
-      <div class="form-row"><div class="form-group"><label class="form-label required">所属组织</label><select class="form-control"><option>美业集团（总部）</option><option>春丽大区</option><option>张芳大店</option></select></div><div class="form-group"><label class="form-label required">角色</label><select class="form-control"><option>超级管理员</option><option>大区总监</option><option>店长</option><option>普通员工</option></select></div></div>
+      <div class="radio-row"><label><input type="radio" name="add-account-type" checked> 默认</label><label><input type="radio" name="add-account-type"> 门店用户</label></div>
+      <div class="form-row"><div class="form-group"><label class="form-label required">姓名</label><input class="form-control" placeholder="请输入姓名"></div><div class="form-group"><label class="form-label">密码</label><input class="form-control" type="password" placeholder="请输入密码"></div></div>
+      <div class="form-row"><div class="form-group"><label class="form-label required">手机</label><input class="form-control" placeholder="请输入手机号"></div><div class="form-group"><label class="form-label">工作机</label><input class="form-control" placeholder="请输入手机号"></div></div>
+      <div class="form-row"><div class="form-group"><label class="form-label required">部门</label><select class="form-control"><option>贝颜 / 市场中心 / 春丽大区 / 华东区域</option><option>贝颜 / 稽核部</option><option>贝颜 / 软件业务部</option><option>南京浦口店</option></select></div><div class="form-group"><label class="form-label">岗位</label><select class="form-control"><option>0</option><option>市场贝颜_管理员</option><option>项目总监</option><option>门店用户</option></select></div></div>
+      <div class="form-row"><div class="form-group"><label class="form-label required">入职日期</label><input class="form-control" type="date" value="2026-06-30"></div><div class="form-group"><label class="form-label">头像</label><div class="avatar-upload">+</div></div></div>
     </div>
-    <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('modal-add-account')">取消</button><button class="btn btn-primary" onclick="closeModal('modal-add-account')">确认创建</button></div>
+    <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('modal-add-account')">取消</button><button class="btn btn-primary" onclick="closeModal('modal-add-account')">确定</button></div>
   </div>
 </div>
 
 <!-- 编辑账号 -->
 <div class="modal-overlay" id="modal-edit-account">
-  <div class="modal">
-    <div class="modal-header"><span class="modal-title">编辑账号</span><button class="modal-close" onclick="closeModal('modal-edit-account')">×</button></div>
+  <div class="modal modal-lg">
+    <div class="modal-header"><span class="modal-title">修改账号</span><button class="modal-close" onclick="closeModal('modal-edit-account')">×</button></div>
     <div class="modal-body">
-      <div class="form-row"><div class="form-group"><label class="form-label required">姓名</label><input class="form-control" value="春丽"></div><div class="form-group"><label class="form-label">手机号</label><input class="form-control" value="138****8801" disabled></div></div>
-      <div class="form-row"><div class="form-group"><label class="form-label">所属组织</label><select class="form-control"><option selected>春丽大区</option></select></div><div class="form-group"><label class="form-label">角色</label><select class="form-control"><option selected>大区总监</option></select></div></div>
+      <div class="radio-row"><label><input type="radio" name="edit-account-type" checked> 默认</label><label><input type="radio" name="edit-account-type"> 门店用户</label></div>
+      <div class="form-row"><div class="form-group"><label class="form-label required">姓名</label><input class="form-control" value="测试小组六"></div><div class="form-group"><label class="form-label">密码</label><input class="form-control" type="password" placeholder="请输入密码"></div></div>
+      <div class="form-row"><div class="form-group"><label class="form-label required">手机</label><input class="form-control" value="13222333444"></div><div class="form-group"><label class="form-label">工作机</label><input class="form-control" placeholder="请输入手机号"></div></div>
+      <div class="form-row"><div class="form-group"><label class="form-label required">部门</label><select class="form-control"><option selected>贝颜 / 市场中心 / 春丽大区 / 华东区域</option><option>贝颜 / 稽核部</option><option>贝颜 / 软件业务部</option><option>南京浦口店</option></select></div><div class="form-group"><label class="form-label">岗位</label><select class="form-control"><option selected>0</option><option>市场贝颜_管理员</option><option>项目总监</option><option>门店用户</option></select></div></div>
+      <div class="form-row"><div class="form-group"><label class="form-label required">入职日期</label><input class="form-control" type="date" value="2026-06-30"></div><div class="form-group"><label class="form-label">头像</label><div class="avatar-upload">+</div></div></div>
     </div>
-    <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('modal-edit-account')">取消</button><button class="btn btn-primary" onclick="closeModal('modal-edit-account')">保存修改</button></div>
+    <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('modal-edit-account')">取消</button><button class="btn btn-primary" onclick="closeModal('modal-edit-account')">确定</button></div>
+  </div>
+</div>
+
+<!-- 账号权限 -->
+<div class="modal-overlay" id="modal-account-permission">
+  <div class="modal modal-lg">
+    <div class="modal-header"><span class="modal-title">账号权限 — 选择角色</span><button class="modal-close" onclick="closeModal('modal-account-permission')">×</button></div>
+    <div class="modal-body">
+      <div class="info-grid" style="margin-bottom:16px">
+        <div class="info-item"><label>账号姓名</label><span>测试小组六</span></div>
+        <div class="info-item"><label>所属部门</label><span>佛山南海店</span></div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th style="width:70px">选择</th><th>角色名称</th><th>数据范围</th><th>功能权限</th><th>说明</th></tr></thead>
+          <tbody>
+            <tr><td><input type="radio" name="account-role" checked></td><td><strong>市场贝颜_管理员</strong></td><td><span class="tag tag-orange">大区/区域</span></td><td>账号管理、客户数据、营销配置</td><td>适用于市场运营与区域管理账号</td></tr>
+            <tr><td><input type="radio" name="account-role"></td><td><strong>市场_贝颜_服务</strong></td><td><span class="tag tag-blue">本部门</span></td><td>客户数据查看、服务记录、回访协作</td><td>适用于服务中心与客服协作账号</td></tr>
+            <tr><td><input type="radio" name="account-role"></td><td><strong>项目总监</strong></td><td><span class="tag tag-red">全公司</span></td><td>项目数据、门店数据、报表导出</td><td>适用于总部项目负责人</td></tr>
+            <tr><td><input type="radio" name="account-role"></td><td><strong>录音测试</strong></td><td><span class="tag tag-green">测试数据</span></td><td>语音记录、测试任务、日志查看</td><td>仅用于测试环境和录音验收</td></tr>
+            <tr><td><input type="radio" name="account-role"></td><td><strong>门店用户</strong></td><td><span class="tag tag-blue">本店</span></td><td>客户查看、预约记录、聚合聊天</td><td>适用于门店一线员工账号</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="alert alert-warning" style="margin-top:14px">这里修改的是当前账号绑定的角色；角色本身的菜单权限和数据权限仍在「权限分配」页面统一维护。</div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('modal-account-permission')">取消</button><button class="btn btn-primary" onclick="closeModal('modal-account-permission')">确定</button></div>
   </div>
 </div>
 
@@ -2324,7 +2849,6 @@
     <div class="modal-body">
       <div class="form-group"><label class="form-label required">角色名称</label><input class="form-control" placeholder="如：运营主管"></div>
       <div class="form-group"><label class="form-label">角色描述</label><textarea class="form-control" rows="2" placeholder="描述该角色的职责范围"></textarea></div>
-      <div class="form-row"><div class="form-group"><label class="form-label required">数据权限范围</label><select class="form-control"><option>全公司</option><option>大区</option><option>区域</option><option>本店</option><option>个人</option></select></div><div class="form-group"><label class="form-label">复制权限自</label><select class="form-control"><option>— 不复制 —</option><option>大区总监</option><option>店长</option></select></div></div>
     </div>
     <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('modal-add-role')">取消</button><button class="btn btn-primary" onclick="closeModal('modal-add-role')">确认新增</button></div>
   </div>
@@ -2337,9 +2861,53 @@
     <div class="modal-body">
       <div class="form-group"><label class="form-label required">角色名称</label><input class="form-control" value="大区总监"></div>
       <div class="form-group"><label class="form-label">角色描述</label><textarea class="form-control" rows="2">管理大区内所有门店及人员</textarea></div>
-      <div class="form-group"><label class="form-label required">数据权限范围</label><select class="form-control"><option>全公司</option><option selected>大区</option><option>区域</option></select></div>
     </div>
     <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('modal-edit-role')">取消</button><button class="btn btn-primary" onclick="closeModal('modal-edit-role')">保存修改</button></div>
+  </div>
+</div>
+
+<!-- 配置角色权限 -->
+<div class="modal-overlay" id="modal-role-permission">
+  <div class="modal modal-xl">
+    <div class="modal-header"><span class="modal-title">配置权限 — 大区总监</span><button class="modal-close" onclick="closeModal('modal-role-permission')">×</button></div>
+    <div class="modal-body">
+      <div class="tabs" style="margin-bottom:16px">
+        <div class="tab active" onclick="switchTab(this,'role-page-perm-tab')">页面功能权限</div>
+        <div class="tab" onclick="switchTab(this,'role-data-perm-tab')">数据权限</div>
+      </div>
+      <div class="tab-panel active" id="role-page-perm-tab">
+        <div class="table-wrap">
+          <table class="perm-table">
+            <thead><tr><th style="width:180px">功能模块</th><th>查看</th><th>新增</th><th>编辑</th><th>删除</th><th>导出</th><th>配置/审批</th></tr></thead>
+            <tbody>
+              <tr><td class="perm-module">组织架构</td><td><input type="checkbox" checked></td><td><input type="checkbox"></td><td><input type="checkbox" checked></td><td><input type="checkbox"></td><td><input type="checkbox"></td><td><input type="checkbox"></td></tr>
+              <tr><td class="perm-module">门店档案</td><td><input type="checkbox" checked></td><td><input type="checkbox" checked></td><td><input type="checkbox" checked></td><td><input type="checkbox"></td><td><input type="checkbox" checked></td><td><input type="checkbox"></td></tr>
+              <tr><td class="perm-module">账号管理</td><td><input type="checkbox" checked></td><td><input type="checkbox" checked></td><td><input type="checkbox" checked></td><td><input type="checkbox"></td><td><input type="checkbox"></td><td><input type="checkbox" checked></td></tr>
+              <tr><td class="perm-module">角色管理</td><td><input type="checkbox" checked></td><td><input type="checkbox"></td><td><input type="checkbox"></td><td><input type="checkbox"></td><td><input type="checkbox"></td><td><input type="checkbox"></td></tr>
+              <tr><td class="perm-module">客户数据管理</td><td><input type="checkbox" checked></td><td><input type="checkbox"></td><td><input type="checkbox" checked></td><td><input type="checkbox"></td><td><input type="checkbox" checked></td><td><input type="checkbox"></td></tr>
+              <tr><td class="perm-module">预约记录数据</td><td><input type="checkbox" checked></td><td><input type="checkbox"></td><td><input type="checkbox"></td><td><input type="checkbox"></td><td><input type="checkbox" checked></td><td><input type="checkbox"></td></tr>
+              <tr><td class="perm-module">消费/服务记录</td><td><input type="checkbox" checked></td><td><input type="checkbox"></td><td><input type="checkbox"></td><td><input type="checkbox"></td><td><input type="checkbox" checked></td><td><input type="checkbox"></td></tr>
+              <tr><td class="perm-module">项目/疗程进度</td><td><input type="checkbox" checked></td><td><input type="checkbox"></td><td><input type="checkbox" checked></td><td><input type="checkbox"></td><td><input type="checkbox" checked></td><td><input type="checkbox" checked></td></tr>
+              <tr><td class="perm-module">AI产品管理</td><td><input type="checkbox" checked></td><td><input type="checkbox"></td><td><input type="checkbox" checked></td><td><input type="checkbox"></td><td><input type="checkbox"></td><td><input type="checkbox" checked></td></tr>
+              <tr><td class="perm-module">自动化规则</td><td><input type="checkbox" checked></td><td><input type="checkbox" checked></td><td><input type="checkbox" checked></td><td><input type="checkbox"></td><td><input type="checkbox"></td><td><input type="checkbox" checked></td></tr>
+              <tr><td class="perm-module">系统安全</td><td><input type="checkbox" checked></td><td><input type="checkbox"></td><td><input type="checkbox"></td><td><input type="checkbox"></td><td><input type="checkbox" checked></td><td><input type="checkbox"></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="tab-panel" id="role-data-perm-tab">
+        <div style="max-width:520px">
+          <div class="form-group"><label class="form-label">组织范围</label><select class="form-control"><option>请选择</option><option selected>当前大区及下级区域/门店</option><option>全公司</option><option>仅本人所属门店</option><option>仅本人</option></select></div>
+          <div class="form-group"><label class="form-label">部门</label><select class="form-control"><option>请输入</option><option selected>贝颜 / 贝颜事业部 / 慧娟大区</option><option>市场中心</option><option>稽核部</option><option>软件业务部</option></select></div>
+          <div class="form-group"><label class="form-label">门店</label><select class="form-control"><option>请选择</option><option selected>当前大区全部门店</option><option>南京浦口店</option><option>上海浦东店</option><option>昆明五华店</option></select></div>
+          <div class="form-group"><label class="form-label">客户数据范围</label><select class="form-control"><option>请选择</option><option selected>客户基础信息 + 消费/预约/疗程进度</option><option>仅客户基础信息</option><option>脱敏查看</option></select></div>
+          <div class="form-group"><label class="form-label">预约/消费/疗程归属</label><select class="form-control"><option>请选择</option><option selected>按客户归属门店</option><option>按预约门店</option><option>按服务员工</option></select></div>
+          <div class="form-group"><label class="form-label">AI任务与回访数据</label><select class="form-control"><option>请选择</option><option selected>可查看本范围内AI任务和回访结果</option><option>仅查看统计结果</option><option>不可查看</option></select></div>
+          <div class="form-group"><label class="form-label">报表归属</label><select class="form-control"><option>请选择</option><option selected>大区汇总 + 下级门店明细</option><option>仅汇总</option><option>仅本人相关</option></select></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('modal-role-permission')">取消</button><button class="btn btn-primary" onclick="closeModal('modal-role-permission')">确定</button></div>
   </div>
 </div>
 
@@ -3038,30 +3606,116 @@ Z6a7b8c9d0e1f2g3h4i5j6k7l8m9n0o1p2q3r4s5t6u7v8w9x0y1z2AQAB
   </div>
 </div>
 
-<!-- 新增回访规则 -->
-<div class="modal-overlay" id="modal-add-rule">
+<!-- 新建/编辑业务场景 -->
+<div class="modal-overlay" id="modal-add-goal">
   <div class="modal modal-lg">
-    <div class="modal-header"><span class="modal-title">新增回访触发规则</span><button class="modal-close" onclick="closeModal('modal-add-rule')">×</button></div>
+    <div class="modal-header"><span class="modal-title">新建业务场景</span><button class="modal-close" onclick="closeModal('modal-add-goal')">×</button></div>
     <div class="modal-body">
-      <div class="form-row"><div class="form-group"><label class="form-label required">规则名称</label><input class="form-control" placeholder="如：节假日关怀回访"></div><div class="form-group"><label class="form-label required">触发条件</label><select class="form-control"><option>消费完成后</option><option>距上次消费N天</option><option>生日前N天</option><option>节假日</option></select></div></div>
-      <div class="form-row"><div class="form-group"><label class="form-label required">回访方式</label><select class="form-control"><option>AI语音外呼</option><option>短信</option><option>短信+AI外呼</option></select></div><div class="form-group"><label class="form-label required">延迟时间</label><input class="form-control" placeholder="如：24（小时）"></div></div>
-      <div class="form-row"><div class="form-group"><label class="form-label">适用门店</label><select class="form-control"><option>全部门店</option><option>旗舰店</option><option>按门店选择</option></select></div><div class="form-group"><label class="form-label">适用客户</label><select class="form-control"><option>全部客户</option><option>VIP客户</option><option>沉睡客户</option></select></div></div>
-      <div class="form-group"><label class="form-label">规则描述</label><textarea class="form-control" rows="2" placeholder="描述该规则的触发场景和目的"></textarea></div>
+      <div class="form-group"><label class="form-label required">场景名称</label><input class="form-control" placeholder="例：敏感肌特殊关怀"></div>
+      <div class="form-group"><label class="form-label">知识库关联</label>
+        <div class="upload-zone">
+          <div><div style="font-weight:600;color:#1a2332;margin-bottom:4px">上传知识文档或附件</div><div class="text-muted">支持 PDF / Word / 图片 / 文本附件，保存后自动向量化为 Embedding 知识库</div></div>
+          <button class="btn btn-default">上传附件</button>
+        </div>
+        <div class="attachment-list"><span class="chip">超声炮注意事项.pdf</span><span class="chip">皮秒术后FAQ.docx</span><span class="chip">+ 添加文本片段</span></div>
+        <div class="alert alert-info" style="margin-top:10px">知识库不是必填项；未指定知识库时，AI 会基于通用美业知识、当前 CRM Payload 和全局安全规则完成话术生成。</div>
+      </div>
+      <div class="form-row"><div class="form-group"><label class="form-label">AI人设</label><select class="form-control"><option>专业严谨</option><option>暖心闺蜜</option><option>克制关怀</option><option>专业温和</option></select></div><div class="form-group"><label class="form-label">启用状态</label><select class="form-control"><option>立即启用</option><option>保存为草稿</option></select></div></div>
+      <div class="form-row"><div class="form-group"><label class="form-label">专业度</label><input type="range" class="form-control" value="85"></div><div class="form-group"><label class="form-label">热情度</label><input type="range" class="form-control" value="62"></div></div>
+      <div class="form-group"><label class="form-label">表情包使用频率</label><input type="range" class="form-control" value="15"></div>
     </div>
-    <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('modal-add-rule')">取消</button><button class="btn btn-primary" onclick="closeModal('modal-add-rule')">确认新增</button></div>
+    <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('modal-add-goal')">取消</button><button class="btn btn-primary" onclick="closeModal('modal-add-goal')">保存场景</button></div>
   </div>
 </div>
 
-<!-- 编辑回访规则 -->
-<div class="modal-overlay" id="modal-edit-rule">
+<!-- 新建/编辑触发规则 -->
+<div class="modal-overlay" id="modal-add-trigger">
   <div class="modal modal-lg">
-    <div class="modal-header"><span class="modal-title">编辑规则 — 消费后次日回访</span><button class="modal-close" onclick="closeModal('modal-edit-rule')">×</button></div>
+    <div class="modal-header"><span class="modal-title">触发规则</span><button class="modal-close" onclick="closeModal('modal-add-trigger')">×</button></div>
     <div class="modal-body">
-      <div class="form-row"><div class="form-group"><label class="form-label required">规则名称</label><input class="form-control" value="消费后次日回访"></div><div class="form-group"><label class="form-label required">触发条件</label><select class="form-control"><option selected>消费完成后</option><option>距上次消费N天</option></select></div></div>
-      <div class="form-row"><div class="form-group"><label class="form-label required">回访方式</label><select class="form-control"><option selected>AI语音外呼</option><option>短信</option></select></div><div class="form-group"><label class="form-label required">延迟时间（小时）</label><input class="form-control" value="24" type="number"></div></div>
-      <div class="form-group"><label class="form-label">规则描述</label><textarea class="form-control" rows="2">客户完成服务消费后，次日触发AI自动回访，收集满意度反馈</textarea></div>
+      <div style="font-size:13px;font-weight:600;color:#1677ff;margin-bottom:10px">1. 触发源配置 If</div>
+      <div class="form-row"><div class="form-group"><label class="form-label required">关联业务场景</label><select class="form-control"><option>医美手术/光电类术后高风险关怀</option><option>疗程消耗与复购提醒</option><option>客情唤醒与沉睡召回</option></select></div><div class="form-group"><label class="form-label required">【START】触发事件（单选）</label><select class="form-control"><option>1.加微</option><option>2.下单</option><option>3.预约</option><option>4.排客</option><option>5.改约</option><option>6.取消排客</option><option>7.预约超时</option><option>8.到店</option><option>9.流退</option><option>10.结算</option></select></div></div>
+      <div class="form-group"><label class="form-label">【EXIT】目标终点（多选 / 熔断条件）</label><div class="payload-grid"><label class="payload-item"><input type="checkbox">1.加微</label><label class="payload-item"><input type="checkbox" checked>2.下单</label><label class="payload-item"><input type="checkbox" checked>3.预约</label><label class="payload-item"><input type="checkbox">4.排客</label><label class="payload-item"><input type="checkbox">5.改约</label><label class="payload-item"><input type="checkbox">6.取消排客</label><label class="payload-item"><input type="checkbox">7.预约超时</label><label class="payload-item"><input type="checkbox">8.到店</label><label class="payload-item"><input type="checkbox">9.流退</label><label class="payload-item"><input type="checkbox">10.结算</label></div><div class="alert alert-info" style="margin-top:10px">客户触发 START 事件后 SOP 启动；在后续 1、3、5、7 天节点执行前，只要检测到客户命中任一 EXIT 事件，该 SOP 立即整体熔断，不再继续触达。</div></div>
+      <div class="form-group"><label class="form-label">项目/品项选择</label><div class="selector-box"><div class="selector-main"><span class="chip">黄金微针</span><span class="chip">AOPT超光子</span><span class="chip">光电抗衰类</span></div><button class="btn btn-default btn-sm" onclick="openModal('modal-project-picker')">选择项目</button></div></div>
+      <div class="form-group"><label class="form-label">目标人群筛选</label><div class="selector-box"><div class="selector-main"><span class="chip">性别：女</span><span class="chip">年龄：25-45</span><span class="chip">会员等级：VIP</span><span class="chip">标签：敏感肌</span></div><button class="btn btn-default btn-sm" onclick="openModal('modal-audience-picker')">配置人群</button></div></div>
+      <div class="divider"></div>
+      <div style="font-size:13px;font-weight:600;color:#1677ff;margin-bottom:10px">2. 时间生命周期 When</div>
+      <div class="time-node-row"><span class="tag tag-blue">节点 1</span><span>离店后 <select class="form-control" style="width:82px;display:inline-block"><option>1</option><option>2</option><option>3</option></select> 天</span><select class="form-control"><option>10:00</option><option>11:00</option><option>15:00</option></select><select class="form-control"><option>启用</option><option>停用</option></select><button class="btn btn-default btn-sm">×</button></div>
+      <div class="time-node-row"><span class="tag tag-blue">节点 2</span><span>离店后 <select class="form-control" style="width:82px;display:inline-block"><option>3</option><option>5</option><option>7</option></select> 天</span><select class="form-control"><option>15:00</option><option>10:00</option><option>18:00</option></select><select class="form-control"><option>启用</option><option>停用</option></select><button class="btn btn-default btn-sm">×</button></div>
+      <div class="time-node-row"><span class="tag tag-blue">节点 3</span><span>离店后 <select class="form-control" style="width:82px;display:inline-block"><option>21</option><option>14</option><option>30</option></select> 天</span><select class="form-control"><option>11:00</option><option>10:00</option><option>15:00</option></select><select class="form-control"><option>启用</option><option>停用</option></select><button class="btn btn-default btn-sm">×</button></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px"><button class="btn btn-default btn-sm">+ 增加回访节点</button><div><span class="text-muted" style="margin-right:8px">执行Job</span><select class="form-control" style="width:180px;display:inline-block"><option>分钟级分片定时任务</option><option>小时级批处理任务</option></select></div></div>
+      <div class="divider"></div>
+      <div style="font-size:13px;font-weight:600;color:#1677ff;margin-bottom:10px">3. AI 上下文组装 Payload</div>
+      <div class="form-group"><label class="form-label">Payload字段</label><div class="payload-grid"><label class="payload-item"><input type="checkbox" checked>客户基本信息</label><label class="payload-item"><input type="checkbox" checked>本次消费明细</label><label class="payload-item"><input type="checkbox" checked>历史客情笔记</label><label class="payload-item"><input type="checkbox" checked>下个节点预测</label></div></div>
     </div>
-    <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('modal-edit-rule')">取消</button><button class="btn btn-primary" onclick="closeModal('modal-edit-rule')">保存修改</button></div>
+    <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('modal-add-trigger')">取消</button><button class="btn btn-primary" onclick="closeModal('modal-add-trigger')">保存规则</button></div>
+  </div>
+</div>
+
+<!-- 项目/品项选择 -->
+<div class="modal-overlay" id="modal-project-picker">
+  <div class="modal modal-xl">
+    <div class="modal-header"><span class="modal-title">选择项目/品项 <span style="color:#ff4d4f;margin-left:12px">选择购买产品</span></span><button class="modal-close" onclick="closeModal('modal-project-picker')">×</button></div>
+    <div class="modal-body">
+      <div class="product-picker-layout">
+        <div class="category-tree">
+          <div class="category-tree-item">R10</div>
+          <div class="category-tree-item active">Y10</div>
+          <div class="category-tree-item">外协项目(Y10)</div>
+          <div class="category-tree-item">体验卡项目(Y10)</div>
+          <div class="category-tree-item">专场开单(Y10)</div>
+        </div>
+        <div>
+          <div class="search-bar"><span style="font-size:13px;color:#555">产品名称：</span><input class="search-input" placeholder="请输入内容" style="width:180px"><span style="font-size:13px;color:#555">所属分类：</span><select class="search-select" style="width:160px"><option>请选择</option><option>Y10</option><option>R10</option></select><button class="btn btn-primary">查询</button></div>
+          <div class="table-wrap"><table><thead><tr><th style="width:42px"><input type="checkbox"></th><th>ID</th><th>产品名称</th><th>类型</th><th>所属分类</th></tr></thead><tbody>
+            <tr><td><input type="checkbox"></td><td>3473</td><td>热玛吉特价套餐(黄金逆龄抗衰)</td><td>单选</td><td>R10</td></tr>
+            <tr><td><input type="checkbox"></td><td>3474</td><td>热玛吉特价套餐(明星抗衰)</td><td>单选</td><td>R10</td></tr>
+            <tr><td><input type="checkbox"></td><td>3475</td><td>热玛吉特价套餐(至尊抗衰套餐)</td><td>单选</td><td>R10</td></tr>
+            <tr><td><input type="checkbox"></td><td>3476</td><td>热玛吉特价套餐(VIP抗衰)</td><td>单选</td><td>R10</td></tr>
+            <tr><td><input type="checkbox" checked></td><td>8999</td><td>黄金微针项目卡</td><td>多选</td><td>Y10</td></tr>
+            <tr><td><input type="checkbox" checked></td><td>9000</td><td>AOPT超光子体验卡</td><td>多选</td><td>Y10</td></tr>
+          </tbody></table></div>
+          <div class="pagination"><span class="text-muted">共 30 条</span><select class="search-select"><option>10条/页</option></select><button class="page-btn active">1</button><button class="page-btn">2</button><button class="page-btn">3</button><span class="text-muted">前往</span><input class="search-input" style="width:44px" value="1"><span class="text-muted">页</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('modal-project-picker')">取消</button><button class="btn btn-primary" onclick="closeModal('modal-project-picker')">确认选择</button></div>
+  </div>
+</div>
+
+<!-- 目标人群配置 -->
+<div class="modal-overlay" id="modal-audience-picker">
+  <div class="modal modal-xl">
+    <div class="modal-header"><span class="modal-title">新建分群</span><button class="modal-close" onclick="closeModal('modal-audience-picker')">×</button></div>
+    <div class="modal-body">
+      <div class="segment-builder">
+        <div class="segment-sidebar">
+          <input class="search-input" placeholder="搜索条件..." style="width:100%">
+          <div class="condition-category">订单相关</div>
+          <div class="condition-button-grid"><div class="condition-button" data-condition="amount">消费金额</div><div class="condition-button active" data-condition="consume_count">消费次数</div><div class="condition-button" data-condition="order_status">订单状态</div><div class="condition-button" data-condition="last_visit">最近到店</div><div class="condition-button" data-condition="new_price">新客单价</div><div class="condition-button" data-condition="avg_price">均客单价</div><div class="condition-button" data-condition="buy_product">购买项目</div><div class="condition-button" data-condition="maintain_project">维护项目</div></div>
+          <div class="condition-category">资产相关</div>
+          <div class="condition-button-grid"><div class="condition-button" data-condition="balance">账户余额</div><div class="condition-button active" data-condition="remaining_product">剩余产品</div></div>
+        </div>
+        <div class="segment-main">
+          <div class="form-row"><div class="form-group"><label class="form-label required">人群名称</label><input class="form-control"></div></div>
+          <div class="condition-block"><span class="text-muted">创建人群，满足</span> <span class="logic-toggle"><span class="active">同时满足 (AND)</span><span>满足任意 (OR)</span></span> <span class="text-muted">以下所有条件组</span>
+            <div style="display:grid;grid-template-columns:120px 130px 110px 1fr;gap:10px;align-items:center;margin-top:14px"><strong>完成时间</strong><span class="text-muted">筛选完成时间内容的数据</span><select class="form-control"><option>订单完成时间</option></select><div style="display:flex;gap:8px;align-items:center"><select class="form-control" style="width:130px"><option>过去的</option></select><input class="form-control" style="width:80px" value="30"><span>次</span><select class="form-control" style="width:150px"><option>包括退款订单</option></select></div></div>
+          </div>
+          <div class="condition-group"><div><span class="text-muted">组内逻辑：</span><span class="logic-toggle"><span class="active">AND</span><span>OR</span></span></div>
+            <div class="condition-row" data-condition="gender"><strong>性别</strong><select class="form-control"><option>女</option><option>男</option></select><span></span><span></span><button class="btn btn-default btn-sm" data-remove-condition>×</button></div>
+            <div class="condition-row" data-condition="age"><strong>年龄</strong><select class="form-control"><option>等于、介于、大于、小于</option></select><input class="form-control" value="30"><span style="display:flex;gap:8px;align-items:center">- <input class="form-control" value="50"></span><button class="btn btn-default btn-sm" data-remove-condition>×</button></div>
+            <div class="condition-row" data-condition="birthday"><strong>生日</strong><select class="form-control"><option>当天</option><option>本周</option><option>本月</option></select><span></span><span></span><button class="btn btn-default btn-sm" data-remove-condition>×</button></div>
+          </div>
+          <div class="condition-group"><div><span class="text-muted">组内逻辑：</span><span class="logic-toggle"><span class="active">AND</span><span>OR</span></span></div>
+            <div class="condition-row" data-condition="customer_tag"><strong>客户标签</strong><button class="btn btn-default btn-sm">选择标签</button><span class="chip">131</span><span class="chip">431</span><button class="btn btn-default btn-sm" data-remove-condition>×</button></div>
+            <div class="condition-row" data-condition="store"><strong>所属门店</strong><button class="btn btn-default btn-sm">选择标签</button><span>已选 <strong class="text-blue">30</strong> 家</span><span></span><button class="btn btn-default btn-sm" data-remove-condition>×</button></div>
+            <div class="condition-row" data-condition="amount"><strong>消费能力</strong><select class="form-control"><option>不限制</option><option>大于</option><option>介于</option></select><input class="form-control" value="30"><span>元</span><button class="btn btn-default btn-sm" data-remove-condition>×</button></div>
+            <div class="condition-row" data-condition="consume_count"><strong>消费次数</strong><select class="form-control"><option>不限制</option><option>大于</option><option>介于</option></select><input class="form-control" value="30"><span>次</span><button class="btn btn-default btn-sm" data-remove-condition>×</button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('modal-audience-picker')">取消</button><button class="btn btn-primary" onclick="closeModal('modal-audience-picker')">确认配置</button></div>
   </div>
 </div>
 
@@ -3094,12 +3748,16 @@ function showPage(pageId) {
     'org': '组织架构', 'store': '门店档案', 'account': '账号管理',
     'role': '角色管理', 'perm': '权限分配', 'customer-data': '客户数据管理',
     'employee-data': '员工档案管理', 'consume-record': '消费/服务记录',
+    'appointment-record': '预约记录数据', 'treatment-progress': '项目/疗程进度',
     'crm': '旧CRM对接配置', 'dict-post': '岗位字典', 'dict-service': '项目字典',
     'dict-goods': '商品字典', 'dict-customer-tag': '客户标签字典',
     'dict-area': '地区字典', 'sync-config': '数据同步配置',
     'product-list': 'AI产品列表', 'store-enable': '门店启用配置',
     'sso-token': '账号产品打通', 'role-map': '角色权限映射',
-    'rule': '回访触发规则', 'audit': '操作审计日志',
+    'recall-strategy': '策略与业务场景', 'recall-trigger': '触发规则与时机',
+    'recall-guardrails': '风控与合并策略', 'ai-engine': 'AI引擎与Prompt',
+    'customer-routing': '客户分配与流转',
+    'audit': '操作审计日志',
     'security': '登录安全配置', 'oauth-config': '第三方登录配置'
   };
   var bc = document.getElementById('breadcrumb-text');
@@ -3224,8 +3882,64 @@ function switchStoreEnableProduct(sel) {
   if (nameEl) nameEl.textContent = sel.value;
 }
 
+var audienceConditionTemplates = {
+  amount: '<div class="condition-row" data-condition="amount"><strong>消费金额</strong><select class="form-control"><option>不限制</option><option>大于</option><option>介于</option></select><input class="form-control" value="30"><span>元</span><button class="btn btn-default btn-sm" data-remove-condition>×</button></div>',
+  consume_count: '<div class="condition-row" data-condition="consume_count"><strong>消费次数</strong><select class="form-control"><option>不限制</option><option>大于</option><option>介于</option></select><input class="form-control" value="30"><span>次</span><button class="btn btn-default btn-sm" data-remove-condition>×</button></div>',
+  order_status: '<div class="condition-row" data-condition="order_status"><strong>订单状态</strong><select class="form-control"><option>不包含</option><option>包含</option><option>等于</option></select><select class="form-control"><option>全部状态</option><option>已完成</option><option>已退款</option></select><span></span><button class="btn btn-default btn-sm" data-remove-condition>×</button></div>',
+  last_visit: '<div class="condition-row" data-condition="last_visit"><strong>到店情况</strong><select class="form-control"><option>过去</option><option>最近</option></select><input class="form-control" value="30"><span>天 未到店</span><button class="btn btn-default btn-sm" data-remove-condition>×</button></div>',
+  new_price: '<div class="condition-row" data-condition="new_price"><strong>新客单价</strong><select class="form-control"><option>不限制</option><option>大于</option><option>介于</option></select><input class="form-control" value="30"><span>元</span><button class="btn btn-default btn-sm" data-remove-condition>×</button></div>',
+  avg_price: '<div class="condition-row" data-condition="avg_price"><strong>均客单价</strong><select class="form-control"><option>不限制</option><option>大于</option><option>介于</option></select><input class="form-control" value="30"><span>元</span><button class="btn btn-default btn-sm" data-remove-condition>×</button></div>',
+  buy_product: '<div class="condition-row" data-condition="buy_product"><strong>购买产品</strong><label><input type="radio" name="buyProductType"> 购买产品</label><button class="btn btn-default btn-sm" onclick="openModal(&quot;modal-project-picker&quot;)">选择</button><span class="text-red">选择产品规格及分类</span><button class="btn btn-default btn-sm" data-remove-condition>×</button></div>',
+  maintain_project: '<div class="condition-row" data-condition="maintain_project"><strong>维护项目</strong><label><input type="radio" name="maintainType"> 维护项目</label><button class="btn btn-default btn-sm" onclick="openModal(&quot;modal-project-picker&quot;)">选择</button><span class="text-red">选择基础产品及分类</span><button class="btn btn-default btn-sm" data-remove-condition>×</button></div>',
+  balance: '<div class="condition-row" data-condition="balance"><strong>账户余额</strong><select class="form-control"><option>不限制</option><option>大于</option><option>介于</option></select><input class="form-control" value="30"><span>元</span><button class="btn btn-default btn-sm" data-remove-condition>×</button></div>',
+  remaining_product: '<div class="condition-row" data-condition="remaining_product"><strong>剩余产品</strong><label><input type="radio" name="remainingType"> 任意项目</label><button class="btn btn-default btn-sm" onclick="openModal(&quot;modal-project-picker&quot;)">选择</button><span class="text-red">选择基础产品及分类</span><button class="btn btn-default btn-sm" data-remove-condition>×</button></div>'
+};
+
+function syncAudienceConditionButtons() {
+  var modal = document.getElementById('modal-audience-picker');
+  if (!modal) return;
+  modal.querySelectorAll('.condition-button[data-condition]').forEach(function(btn) {
+    var key = btn.getAttribute('data-condition');
+    btn.classList.toggle('active', !!modal.querySelector('.condition-row[data-condition="' + key + '"]'));
+  });
+}
+
+function addAudienceCondition(key) {
+  var modal = document.getElementById('modal-audience-picker');
+  var targetGroup = modal ? modal.querySelector('.condition-group:last-of-type') : null;
+  if (!modal || !targetGroup || !audienceConditionTemplates[key]) return;
+  var existing = modal.querySelector('.condition-row[data-condition="' + key + '"]');
+  if (existing) {
+    existing.classList.add('flash');
+    existing.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    setTimeout(function() { existing.classList.remove('flash'); }, 900);
+    return;
+  }
+  targetGroup.insertAdjacentHTML('beforeend', audienceConditionTemplates[key]);
+  syncAudienceConditionButtons();
+}
+
+function removeAudienceCondition(row) {
+  if (!row) return;
+  row.remove();
+  syncAudienceConditionButtons();
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   showPage('org');
+  syncAudienceConditionButtons();
+
+  document.addEventListener('click', function(e) {
+    var conditionBtn = e.target.closest('.condition-button[data-condition]');
+    if (conditionBtn) {
+      addAudienceCondition(conditionBtn.getAttribute('data-condition'));
+      return;
+    }
+    var removeBtn = e.target.closest('[data-remove-condition]');
+    if (removeBtn) {
+      removeAudienceCondition(removeBtn.closest('.condition-row'));
+    }
+  });
 });
 </script>
 </body>
