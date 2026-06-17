@@ -35,9 +35,15 @@
 
   .nav-section { padding: 16px 0 4px; }
   .nav-group-title {
-    padding: 0 20px 6px; font-size: 11px; color: #4a6783;
+    padding: 0 16px 6px 20px; font-size: 11px; color: #4a6783;
     text-transform: uppercase; letter-spacing: 0.5px; font-weight: 500;
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    cursor: pointer; user-select: none;
   }
+  .nav-group-title:hover { color: #7fa7cf; }
+  .nav-group-arrow { color: #6f89a5; font-size: 14px; line-height: 1; transition: transform .18s ease; }
+  .nav-section.collapsed .nav-group-arrow { transform: rotate(-90deg); }
+  .nav-section.collapsed .nav-item { display: none; }
   .nav-item {
     display: flex; align-items: center; gap: 9px;
     padding: 9px 20px; cursor: pointer; color: #8ba5bf;
@@ -721,7 +727,7 @@
 
   <!-- 一、组织与人员 -->
   <div class="nav-section">
-    <div class="nav-group-title">一、组织与人员</div>
+    <div class="nav-group-title" onclick="toggleNavSection(this)"><span>一、组织与人员</span><span class="nav-group-arrow">⌄</span></div>
     <div class="nav-item active" onclick="showPage('org')">
       <span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="4" rx="1"/><rect x="3" y="15" width="6" height="4" rx="1"/><rect x="15" y="15" width="6" height="4" rx="1"/><path d="M12 7v4M6 15V13a2 2 0 012-2h8a2 2 0 012 2v2"/></svg></span>
       组织架构
@@ -746,7 +752,7 @@
 
   <!-- 二、数据中台 -->
   <div class="nav-section">
-    <div class="nav-group-title">二、数据中台</div>
+    <div class="nav-group-title" onclick="toggleNavSection(this)"><span>二、数据中台</span><span class="nav-group-arrow">⌄</span></div>
     <div class="nav-item" onclick="showPage('customer-data')">
       <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></span>
       客户数据管理
@@ -771,7 +777,7 @@
 
   <!-- 三、基础数据 -->
   <div class="nav-section">
-    <div class="nav-group-title">三、基础数据</div>
+    <div class="nav-group-title" onclick="toggleNavSection(this)"><span>三、基础数据</span><span class="nav-group-arrow">⌄</span></div>
     <div class="nav-item" onclick="showPage('dict-category')">
       <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M4 5h7v6H4zM13 5h7v6h-7zM4 13h7v6H4zM13 13h7v6h-7z"/></svg></span>
       分类管理
@@ -794,22 +800,9 @@
     </div>
   </div>
 
-  <!-- 四、AI产品管理 -->
+  <!-- 四、自动化规则 -->
   <div class="nav-section">
-    <div class="nav-group-title">四、AI产品管理</div>
-    <div class="nav-item" onclick="showPage('product-list')">
-      <span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="9" height="9" rx="1.5"/><rect x="13" y="3" width="9" height="9" rx="1.5"/><rect x="2" y="13" width="9" height="9" rx="1.5"/><rect x="13" y="13" width="9" height="9" rx="1.5"/></svg></span>
-      AI产品列表
-    </div>
-    <div class="nav-item" onclick="showPage('sso-token')">
-      <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M15 7h3a5 5 0 010 10h-3m-6 0H6A5 5 0 016 7h3"/><line x1="8" y1="12" x2="16" y2="12"/></svg></span>
-      AI产品配置
-    </div>
-  </div>
-
-  <!-- 五、自动化规则 -->
-  <div class="nav-section">
-    <div class="nav-group-title">五、自动化规则</div>
+    <div class="nav-group-title" onclick="toggleNavSection(this)"><span>四、自动化规则</span><span class="nav-group-arrow">⌄</span></div>
     <div class="nav-item" onclick="showPage('recall-strategy')">
       <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M4 19V5"/><path d="M4 5h14l-2 4 2 4H4"/><path d="M8 19h12"/></svg></span>
       策略与业务场景
@@ -832,9 +825,22 @@
     </div>
   </div>
 
+  <!-- 五、AI产品管理 -->
+  <div class="nav-section">
+    <div class="nav-group-title" onclick="toggleNavSection(this)"><span>五、AI产品管理</span><span class="nav-group-arrow">⌄</span></div>
+    <div class="nav-item" onclick="showPage('product-list')">
+      <span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="9" height="9" rx="1.5"/><rect x="13" y="3" width="9" height="9" rx="1.5"/><rect x="2" y="13" width="9" height="9" rx="1.5"/><rect x="13" y="13" width="9" height="9" rx="1.5"/></svg></span>
+      AI产品列表
+    </div>
+    <div class="nav-item" onclick="showPage('sso-token')">
+      <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M15 7h3a5 5 0 010 10h-3m-6 0H6A5 5 0 016 7h3"/><line x1="8" y1="12" x2="16" y2="12"/></svg></span>
+      AI产品配置
+    </div>
+  </div>
+
   <!-- 六、系统安全 -->
   <div class="nav-section">
-    <div class="nav-group-title">六、系统安全</div>
+    <div class="nav-group-title" onclick="toggleNavSection(this)"><span>六、系统安全</span><span class="nav-group-arrow">⌄</span></div>
     <div class="nav-item" onclick="showPage('oauth-config')">
       <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M8 12h8M12 8v8"/></svg></span>
       授权登录
@@ -3871,6 +3877,11 @@ function toggleSidebar() {
   var layout = document.querySelector('.layout');
   if (layout) layout.classList.toggle('sidebar-collapsed');
   hideNavTooltip();
+}
+
+function toggleNavSection(titleEl) {
+  var section = titleEl ? titleEl.closest('.nav-section') : null;
+  if (section) section.classList.toggle('collapsed');
 }
 
 function initNavTooltips() {
