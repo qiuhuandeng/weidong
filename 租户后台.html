@@ -16,6 +16,7 @@
     width: 220px; min-width: 220px; background: #001529;
     display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden;
     scrollbar-width: thin; scrollbar-color: #1e3a5f transparent;
+    transition: width .2s ease, min-width .2s ease;
   }
   .sidebar::-webkit-scrollbar { width: 4px; }
   .sidebar::-webkit-scrollbar-thumb { background: #1e3a5f; border-radius: 2px; }
@@ -50,6 +51,17 @@
   }
   .nav-item.active .nav-icon, .nav-item:hover .nav-icon { opacity: 1; }
   .nav-icon svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .layout.sidebar-collapsed .sidebar { width: 64px; min-width: 64px; }
+  .layout.sidebar-collapsed .logo { justify-content: center; padding: 16px 0; }
+  .layout.sidebar-collapsed .logo > div:not(.logo-icon) { display: none; }
+  .layout.sidebar-collapsed .nav-section { padding: 12px 0 0; }
+  .layout.sidebar-collapsed .nav-group-title { display: none; }
+  .layout.sidebar-collapsed .nav-item {
+    justify-content: center; gap: 0; margin: 0 10px 8px; padding: 12px 0;
+    border-left: none; border-radius: 8px; font-size: 0;
+  }
+  .layout.sidebar-collapsed .nav-icon { width: 18px; height: 18px; }
+  .layout.sidebar-collapsed .nav-icon svg { width: 17px; height: 17px; }
 
   /* ===== MAIN ===== */
   .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
@@ -60,6 +72,14 @@
     border-bottom: 1px solid #e8edf2; flex-shrink: 0;
     box-shadow: 0 1px 4px rgba(0,21,41,.08);
   }
+  .header-left { display: flex; align-items: center; gap: 16px; min-width: 0; }
+  .sidebar-toggle {
+    width: 32px; height: 32px; border: none; border-radius: 6px;
+    background: transparent; color: #64748b; cursor: pointer; display: inline-flex;
+    align-items: center; justify-content: center; flex-shrink: 0; transition: all .18s ease;
+  }
+  .sidebar-toggle:hover { color: #1677ff; background: #f3f7ff; }
+  .sidebar-toggle svg { width: 18px; height: 18px; stroke: currentColor; stroke-width: 2; fill: none; stroke-linecap: round; }
   .breadcrumb { font-size: 13px; color: #8c9bab; }
   .breadcrumb span { color: #1677ff; }
   .header-right { display: flex; align-items: center; gap: 16px; }
@@ -70,6 +90,43 @@
   }
   .sync-dot { width: 6px; height: 6px; background: #52c41a; border-radius: 50%; display: inline-block; }
   .avatar { width: 32px; height: 32px; background: #1677ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; cursor: pointer; }
+
+  .recent-tabs {
+    min-height: 40px; padding: 6px 24px 0; background: #fff;
+    border-bottom: 1px solid #e8edf2; display: flex; align-items: flex-end;
+    gap: 4px; overflow-x: auto; flex-shrink: 0;
+  }
+  .recent-tabs::-webkit-scrollbar { height: 4px; }
+  .recent-tabs::-webkit-scrollbar-thumb { background: #d9e0e8; border-radius: 2px; }
+  .recent-tab {
+    height: 32px; min-width: 92px; padding: 0 8px 0 12px;
+    border: 1px solid #e3e9f2; border-bottom: none; border-radius: 6px 6px 0 0;
+    background: #fff; color: #64748b; display: inline-flex; align-items: center;
+    justify-content: space-between; gap: 8px; cursor: pointer; flex: 0 0 auto;
+    font-size: 12px; font-weight: 600; transition: all .18s ease;
+  }
+  .recent-tab:hover { color: #1677ff; background: #f8fbff; border-color: #cfe2ff; }
+  .recent-tab.active {
+    background: #f6faff; color: #1677ff; border-color: #d6e7ff;
+    box-shadow: 0 -1px 6px rgba(22,119,255,.08);
+  }
+  .recent-tab-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .recent-tab-close {
+    width: 16px; height: 16px; border: none; background: transparent;
+    color: #9aa8b8; border-radius: 50%; cursor: pointer; line-height: 16px;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+    font-size: 13px; padding: 0;
+  }
+  .recent-tab-close:hover { background: #eaf2ff; color: #1677ff; }
+
+  .nav-tooltip {
+    position: fixed; z-index: 3000; padding: 6px 10px; border-radius: 4px;
+    background: rgba(26, 35, 50, .96); color: #fff; font-size: 12px;
+    line-height: 1; pointer-events: none; white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(0,0,0,.16); opacity: 0;
+    transform: translateX(-4px); transition: opacity .08s ease, transform .08s ease;
+  }
+  .nav-tooltip.show { opacity: 1; transform: translateX(0); }
 
   .content { flex: 1; overflow-y: auto; padding: 24px; }
 
@@ -788,12 +845,18 @@
 <!-- ===== MAIN ===== -->
 <div class="main">
   <div class="header">
-    <div class="breadcrumb">美业AI平台 / <span id="breadcrumb-text">组织架构</span></div>
+    <div class="header-left">
+      <button type="button" class="sidebar-toggle" onclick="toggleSidebar()" aria-label="展开或收起菜单">
+        <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+      <div class="breadcrumb">美业AI平台 / <span id="breadcrumb-text">组织架构</span></div>
+    </div>
     <div class="header-right">
       <div class="sync-badge"><span class="sync-dot"></span> 上次同步 2026-06-08 09:15</div>
       <div class="avatar">管</div>
     </div>
   </div>
+  <div class="recent-tabs" id="recent-page-tabs"></div>
 
   <div class="content">
 
@@ -1347,12 +1410,12 @@
         <div class="panel-header"><span class="panel-title">品项列表</span><div class="panel-actions"><input class="search-input" placeholder="搜索品项名称/编码" style="width:180px"><select class="search-select"><option>全部类型</option><option>服务</option><option>商品</option></select><select class="search-select"><option>全部分类</option><option>护肤</option><option>美体</option><option>美甲</option><option>家居护理</option></select><button class="btn btn-primary" onclick="openModal('modal-add-service')">+ 新增品项</button></div></div>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>品项编码</th><th>品项名称</th><th>类型</th><th>分类</th><th>标准时长</th><th>复购周期(天)</th><th>参考价格</th><th>状态</th><th>操作</th></tr></thead>
+            <thead><tr><th>品项编码</th><th>品项名称</th><th>类型</th><th>分类</th><th>标准时长</th><th>参考价格</th><th>状态</th><th>操作</th></tr></thead>
             <tbody>
-              <tr><td>S001</td><td>深层补水护理</td><td><span class="tag tag-blue">服务</span></td><td><span class="tag tag-blue">护肤</span></td><td>60分钟</td><td>30</td><td>298元</td><td><span class="status-dot dot-green"></span>上架</td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-service')">编辑</button> <button class="btn btn-danger btn-sm" onclick="openModal('modal-del-confirm')">删除</button></td></tr>
-              <tr><td>S002</td><td>精油全身SPA</td><td><span class="tag tag-blue">服务</span></td><td><span class="tag tag-purple">美体</span></td><td>90分钟</td><td>14</td><td>588元</td><td><span class="status-dot dot-green"></span>上架</td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-service')">编辑</button> <button class="btn btn-danger btn-sm" onclick="openModal('modal-del-confirm')">删除</button></td></tr>
-              <tr><td>G001</td><td>修护洗护套装</td><td><span class="tag tag-orange">商品</span></td><td><span class="tag tag-green">家居护理</span></td><td>-</td><td>45</td><td>398元</td><td><span class="status-dot dot-green"></span>上架</td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-service')">编辑</button> <button class="btn btn-danger btn-sm" onclick="openModal('modal-del-confirm')">删除</button></td></tr>
-              <tr><td>S004</td><td>头皮深层护理</td><td><span class="tag tag-blue">服务</span></td><td><span class="tag tag-blue">护肤</span></td><td>75分钟</td><td>45</td><td>398元</td><td><span class="status-dot dot-green"></span>上架</td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-service')">编辑</button> <button class="btn btn-danger btn-sm" onclick="openModal('modal-del-confirm')">删除</button></td></tr>
+              <tr><td>S001</td><td>深层补水护理</td><td><span class="tag tag-blue">服务</span></td><td><span class="tag tag-blue">护肤</span></td><td>60分钟</td><td>298元</td><td><span class="status-dot dot-green"></span>上架</td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-service')">编辑</button> <button class="btn btn-danger btn-sm" onclick="openModal('modal-del-confirm')">删除</button></td></tr>
+              <tr><td>S002</td><td>精油全身SPA</td><td><span class="tag tag-blue">服务</span></td><td><span class="tag tag-purple">美体</span></td><td>90分钟</td><td>588元</td><td><span class="status-dot dot-green"></span>上架</td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-service')">编辑</button> <button class="btn btn-danger btn-sm" onclick="openModal('modal-del-confirm')">删除</button></td></tr>
+              <tr><td>G001</td><td>修护洗护套装</td><td><span class="tag tag-orange">商品</span></td><td><span class="tag tag-green">家居护理</span></td><td>-</td><td>398元</td><td><span class="status-dot dot-green"></span>上架</td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-service')">编辑</button> <button class="btn btn-danger btn-sm" onclick="openModal('modal-del-confirm')">删除</button></td></tr>
+              <tr><td>S004</td><td>头皮深层护理</td><td><span class="tag tag-blue">服务</span></td><td><span class="tag tag-blue">护肤</span></td><td>75分钟</td><td>398元</td><td><span class="status-dot dot-green"></span>上架</td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-service')">编辑</button> <button class="btn btn-danger btn-sm" onclick="openModal('modal-del-confirm')">删除</button></td></tr>
             </tbody>
           </table>
         </div>
@@ -3133,7 +3196,7 @@ prompt_guard: 请将以上两个项目的关怀重点融合在一条话术中，
       <div class="form-row"><div class="form-group"><label class="form-label required">品项名称</label><input class="form-control" placeholder="如：深层补水护理"></div><div class="form-group"><label class="form-label required">品项类型</label><select class="form-control"><option>服务</option><option>商品</option></select></div></div>
       <div class="form-row"><div class="form-group"><label class="form-label required">品项编码</label><input class="form-control" placeholder="如：S001"></div><div class="form-group"><label class="form-label required">分类</label><select class="form-control"><option>护肤</option><option>美体</option><option>美甲</option><option>家居护理</option></select></div></div>
       <div class="form-row"><div class="form-group"><label class="form-label">标准时长</label><input class="form-control" placeholder="服务类填写，如：60分钟"></div><div class="form-group"><label class="form-label">参考价格（元）</label><input class="form-control" type="number" placeholder="请输入价格"></div></div>
-      <div class="form-row"><div class="form-group"><label class="form-label">复购周期（天）</label><input class="form-control" type="number" placeholder="请输入天数"></div><div class="form-group"><label class="form-label required">上架状态</label><select class="form-control"><option>上架</option><option>下架</option></select></div></div>
+      <div class="form-group"><label class="form-label required">上架状态</label><select class="form-control"><option>上架</option><option>下架</option></select></div>
     </div>
     <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('modal-add-service')">取消</button><button class="btn btn-primary" onclick="closeModal('modal-add-service')">确认新增</button></div>
   </div>
@@ -3147,7 +3210,7 @@ prompt_guard: 请将以上两个项目的关怀重点融合在一条话术中，
       <div class="form-row"><div class="form-group"><label class="form-label required">品项名称</label><input class="form-control" value="深层补水护理"></div><div class="form-group"><label class="form-label required">品项类型</label><select class="form-control"><option selected>服务</option><option>商品</option></select></div></div>
       <div class="form-row"><div class="form-group"><label class="form-label required">品项编码</label><input class="form-control" value="S001"></div><div class="form-group"><label class="form-label required">分类</label><select class="form-control"><option selected>护肤</option><option>美体</option><option>美甲</option><option>家居护理</option></select></div></div>
       <div class="form-row"><div class="form-group"><label class="form-label">标准时长</label><input class="form-control" value="60分钟"></div><div class="form-group"><label class="form-label">参考价格（元）</label><input class="form-control" type="number" value="298"></div></div>
-      <div class="form-row"><div class="form-group"><label class="form-label">复购周期（天）</label><input class="form-control" type="number" value="30"></div><div class="form-group"><label class="form-label required">上架状态</label><select class="form-control"><option selected>上架</option><option>下架</option></select></div></div>
+      <div class="form-group"><label class="form-label required">上架状态</label><select class="form-control"><option selected>上架</option><option>下架</option></select></div>
     </div>
     <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('modal-edit-service')">取消</button><button class="btn btn-primary" onclick="closeModal('modal-edit-service')">保存修改</button></div>
   </div>
@@ -3784,35 +3847,123 @@ Z6a7b8c9d0e1f2g3h4i5j6k7l8m9n0o1p2q3r4s5t6u7v8w9x0y1z2AQAB
 </div>
 
 <script>
-function showPage(pageId) {
+var pageTitleMap = {
+  'org': '组织架构', 'store': '门店档案', 'account': '账号管理',
+  'role': '角色管理', 'customer-data': '客户数据管理',
+  'employee-data': '员工档案管理', 'consume-record': '消费/服务记录',
+  'appointment-record': '预约记录数据', 'treatment-progress': '项目/疗程进度',
+  'dict-post': '岗位管理', 'dict-service': '品项管理',
+  'dict-category': '分类管理', 'dict-goods': '卡项列表',
+  'dict-customer-tag': '客户标签',
+  'sync-config': '数据同步',
+  'product-list': 'AI产品列表',
+  'sso-token': 'AI产品配置',
+  'recall-strategy': '策略与业务场景', 'recall-trigger': '触发规则与时机',
+  'recall-guardrails': '风控与合并策略', 'ai-engine': 'AI引擎与Prompt',
+  'customer-routing': '客户分配与流转',
+  'oauth-config': '授权登录'
+};
+var recentPageTabs = [];
+var maxRecentPageTabs = 10;
+var navTooltipEl = null;
+
+function toggleSidebar() {
+  var layout = document.querySelector('.layout');
+  if (layout) layout.classList.toggle('sidebar-collapsed');
+  hideNavTooltip();
+}
+
+function initNavTooltips() {
+  document.querySelectorAll('.nav-item').forEach(function(item) {
+    var label = item.textContent.trim().replace(/\s+/g, ' ');
+    if (!label) return;
+    item.setAttribute('data-tooltip', label);
+    item.removeAttribute('title');
+    item.addEventListener('mouseenter', function() { showNavTooltip(item); });
+    item.addEventListener('mouseleave', hideNavTooltip);
+  });
+}
+
+function showNavTooltip(item) {
+  var layout = document.querySelector('.layout');
+  if (!layout || !layout.classList.contains('sidebar-collapsed') || !item) return;
+  var label = item.getAttribute('data-tooltip');
+  if (!label) return;
+  if (!navTooltipEl) {
+    navTooltipEl = document.createElement('div');
+    navTooltipEl.className = 'nav-tooltip';
+    document.body.appendChild(navTooltipEl);
+  }
+  var rect = item.getBoundingClientRect();
+  navTooltipEl.textContent = label;
+  navTooltipEl.style.left = (rect.right + 10) + 'px';
+  navTooltipEl.style.top = (rect.top + rect.height / 2 - 12) + 'px';
+  navTooltipEl.classList.add('show');
+}
+
+function hideNavTooltip() {
+  if (navTooltipEl) navTooltipEl.classList.remove('show');
+}
+
+function getActivePageId() {
+  var active = document.querySelector('.page.active');
+  return active ? active.id.replace('page-', '') : '';
+}
+
+function addRecentPageTab(pageId) {
+  if (!pageTitleMap[pageId] || recentPageTabs.indexOf(pageId) !== -1) return;
+  recentPageTabs.push(pageId);
+  if (recentPageTabs.length > maxRecentPageTabs) recentPageTabs.shift();
+}
+
+function renderRecentPageTabs(activePageId) {
+  var wrap = document.getElementById('recent-page-tabs');
+  if (!wrap) return;
+  wrap.innerHTML = recentPageTabs.map(function(id) {
+    var activeClass = id === activePageId ? ' active' : '';
+    return '<div class="recent-tab' + activeClass + '" onclick="showPage(\'' + id + '\')">' +
+      '<span class="recent-tab-title">' + pageTitleMap[id] + '</span>' +
+      '<button type="button" class="recent-tab-close" onclick="closeRecentPageTab(event,\'' + id + '\')">×</button>' +
+      '</div>';
+  }).join('');
+}
+
+function closeRecentPageTab(event, pageId) {
+  if (event) event.stopPropagation();
+  var idx = recentPageTabs.indexOf(pageId);
+  if (idx === -1) return;
+  var wasActive = getActivePageId() === pageId;
+  recentPageTabs.splice(idx, 1);
+
+  if (!recentPageTabs.length) {
+    showPage('org');
+    return;
+  }
+
+  if (wasActive) {
+    var nextPageId = recentPageTabs[idx - 1] || recentPageTabs[idx] || recentPageTabs[0];
+    showPage(nextPageId, { keepTabOrder: true });
+  } else {
+    renderRecentPageTabs(getActivePageId());
+  }
+}
+
+function showPage(pageId, options) {
+  options = options || {};
+  var target = document.getElementById('page-' + pageId);
+  if (!target) return;
+
   document.querySelectorAll('.page').forEach(function(p) {
     p.classList.remove('active');
   });
-  var target = document.getElementById('page-' + pageId);
-  if (target) target.classList.add('active');
+  target.classList.add('active');
 
   document.querySelectorAll('.nav-item').forEach(function(n) {
     n.classList.remove('active');
   });
 
-  var breadcrumbMap = {
-    'org': '组织架构', 'store': '门店档案', 'account': '账号管理',
-    'role': '角色管理', 'customer-data': '客户数据管理',
-    'employee-data': '员工档案管理', 'consume-record': '消费/服务记录',
-    'appointment-record': '预约记录数据', 'treatment-progress': '项目/疗程进度',
-    'dict-post': '岗位管理', 'dict-service': '品项管理',
-    'dict-category': '分类管理', 'dict-goods': '卡项列表',
-    'dict-customer-tag': '客户标签',
-    'sync-config': '数据同步',
-    'product-list': 'AI产品列表',
-    'sso-token': 'AI产品配置',
-    'recall-strategy': '策略与业务场景', 'recall-trigger': '触发规则与时机',
-    'recall-guardrails': '风控与合并策略', 'ai-engine': 'AI引擎与Prompt',
-    'customer-routing': '客户分配与流转',
-    'oauth-config': '授权登录'
-  };
   var bc = document.getElementById('breadcrumb-text');
-  if (bc && breadcrumbMap[pageId]) bc.textContent = breadcrumbMap[pageId];
+  if (bc && pageTitleMap[pageId]) bc.textContent = pageTitleMap[pageId];
 
   // 高亮当前导航
   var navItems = document.querySelectorAll('.nav-item');
@@ -3821,6 +3972,9 @@ function showPage(pageId) {
       item.classList.add('active');
     }
   });
+
+  if (!options.keepTabOrder) addRecentPageTab(pageId);
+  renderRecentPageTabs(pageId);
 }
 
 function openModal(id) {
@@ -4326,6 +4480,7 @@ function removeAudienceCondition(row) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+  initNavTooltips();
   showPage('org');
   syncAudienceConditionButtons();
 
