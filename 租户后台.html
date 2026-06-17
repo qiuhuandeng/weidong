@@ -301,13 +301,16 @@
   /* ===== MODAL ===== */
   .modal-overlay {
     position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 1000;
-    display: none; align-items: center; justify-content: center;
+    display: flex; align-items: stretch; justify-content: flex-end;
+    opacity: 0; visibility: hidden; pointer-events: none;
+    transition: opacity .22s ease, visibility 0s linear .22s;
   }
-  .modal-overlay.show { display: flex; }
-  .modal { background: #fff; border-radius: 10px; padding: 0; min-width: 480px; max-width: 680px; width: 90%; max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 8px 32px rgba(0,21,41,.18); }
-  .modal-lg { max-width: 800px; }
-  .modal-xl { max-width: 960px; }
-  .modal-sm { min-width: 360px; max-width: 400px; }
+  .modal-overlay.show { opacity: 1; visibility: visible; pointer-events: auto; transition: opacity .22s ease; }
+  .modal { background: #fff; border-radius: 0; padding: 0; min-width: 0; max-width: min(560px, 100vw); width: min(560px, 100vw); height: 100vh; max-height: 100vh; display: flex; flex-direction: column; box-shadow: -8px 0 32px rgba(0,21,41,.18); transform: translateX(100%); transition: transform .28s cubic-bezier(.22, .61, .36, 1); }
+  .modal-overlay.show .modal { transform: translateX(0); }
+  .modal-lg { max-width: min(680px, 100vw); width: min(680px, 100vw); }
+  .modal-xl { max-width: min(860px, 100vw); width: min(860px, 100vw); }
+  .modal-sm { max-width: min(420px, 100vw); width: min(420px, 100vw); }
   .modal-header { padding: 18px 24px 14px; border-bottom: 1px solid #f0f2f5; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
   .modal-title { font-size: 16px; font-weight: 600; color: #1a2332; }
   .modal-close { width: 28px; height: 28px; border: none; background: none; font-size: 18px; color: #8c9bab; cursor: pointer; border-radius: 4px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
@@ -498,7 +501,41 @@
   .role-tree-caret { width: 14px; color: #555; font-size: 11px; cursor: pointer; user-select: none; text-align: center; flex-shrink: 0; }
   .role-tree-checkbox { width: 15px; height: 15px; accent-color: #1677ff; flex-shrink: 0; }
   .role-tree-children.is-hidden { display: none; }
-  .role-data-form { max-width: 1180px; margin: 0 28px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 18px; }
+  .account-role-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+  .account-role-group { display: grid; gap: 10px; align-content: start; }
+  .account-role-group-title { font-size: 13px; font-weight: 600; color: #1a2332; padding-bottom: 2px; }
+  .account-role-option { display: flex; align-items: center; gap: 10px; min-height: 42px; padding: 0 14px; border: 1px solid #e8edf2; border-radius: 6px; background: #fff; color: #555; cursor: pointer; font-size: 13px; font-weight: 400; }
+  .account-role-option:hover { border-color: #91caff; background: #f6fbff; }
+  .account-role-option input { width: 15px; height: 15px; accent-color: #1677ff; flex-shrink: 0; }
+  .account-role-type { margin-left: auto; font-size: 12px; color: #8c9bab; }
+  .role-data-form { max-width: 1180px; margin: 0 28px; display: block; }
+  .account-permission-meta { margin-bottom: 16px; }
+  .permission-scope-config { display: grid; gap: 16px; justify-content: start; }
+  .account-data-field { position: relative; display: grid; grid-template-columns: 72px 280px; gap: 12px; align-items: start; }
+  .account-data-field > div:not(.account-data-field-label) { width: 280px; }
+  .account-data-field-label { padding-top: 10px; color: #555; font-size: 13px; text-align: right; }
+  .account-data-select { min-height: 56px; border-color: #1677ff; align-items: flex-start; cursor: pointer; }
+  .account-data-select .selector-main { flex: 1; min-width: 0; }
+  .account-data-select .selector-arrow { margin-top: 8px; }
+  .account-data-empty { color: #8c9bab; font-size: 13px; line-height: 28px; }
+  .account-data-chip { background: #f0f3f7; color: #64748b; border-color: #e3e9f2; max-width: 180px; }
+  .account-data-chip-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .account-data-chip-remove { width: 14px; height: 14px; border: 0; border-radius: 50%; background: #c8d1dc; color: #fff; font-size: 11px; line-height: 14px; padding: 0; cursor: pointer; }
+  .account-data-chip-remove:hover { background: #8c9bab; }
+  .account-data-cascader { display: none; position: absolute; left: 84px; width: min(760px, calc(100vw - 140px)); top: calc(100% + 8px); z-index: 60; border: 1px solid #e8edf2; border-radius: 6px; background: #fff; grid-template-columns: repeat(5, minmax(150px, 1fr)); min-height: 238px; overflow: hidden; box-shadow: 0 8px 24px rgba(15,35,70,.12); }
+  .account-data-picker.open .account-data-cascader { display: grid; }
+  .account-data-col { border-right: 1px solid #eef2f7; max-height: 300px; overflow-y: auto; background: #fff; }
+  .account-data-col:last-child { border-right: none; }
+  .account-data-item { display: flex; align-items: center; gap: 8px; min-height: 34px; padding: 0 12px; color: #555; font-size: 13px; cursor: pointer; }
+  .account-data-item:hover, .account-data-item.active { background: #f5f9ff; color: #1677ff; }
+  .account-data-item.active { font-weight: 600; }
+  .account-data-item.is-hidden { display: none; }
+  .account-data-checkbox { width: 14px; height: 14px; accent-color: #1677ff; flex-shrink: 0; }
+  .account-data-item-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+  .account-data-arrow { margin-left: auto; color: #8c9bab; font-size: 16px; line-height: 1; }
+  .permission-scope-row { display: grid; grid-template-columns: 72px 280px; gap: 12px; align-items: center; }
+  .permission-scope-label { color: #555; font-size: 13px; text-align: right; }
+  .permission-scope-select { width: 280px; height: 36px; }
 
   /* ===== TIMELINE ===== */
   .timeline { padding: 0; list-style: none; }
@@ -1146,17 +1183,20 @@
       <div class="panel">
         <div class="panel-header">
           <span class="panel-title">角色列表</span>
-          <button class="btn btn-primary" onclick="openModal('modal-add-role')">+ 新增角色</button>
+          <div class="panel-actions">
+            <select class="search-select" style="width:140px" onchange="filterRoleType(this.value)"><option value="">全部角色</option><option value="store">门店角色</option><option value="hq">总部角色</option></select>
+            <button class="btn btn-primary" onclick="openModal('modal-add-role')">+ 新增角色</button>
+          </div>
         </div>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>角色名称</th><th>角色描述</th><th>人员数量</th><th>数据权限范围</th><th>状态</th><th>操作</th></tr></thead>
+            <thead><tr><th>角色名称</th><th>角色类型</th><th>角色描述</th><th>状态</th><th>操作</th></tr></thead>
             <tbody>
-              <tr><td><strong>超级管理员</strong></td><td>系统最高权限，管理全部功能</td><td>3</td><td><span class="tag tag-red">全公司</span></td><td><label class="switch"><input type="checkbox" checked><span class="switch-slider"></span></label></td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-role')">编辑</button> <button class="btn btn-danger btn-sm" onclick="openModal('modal-del-confirm')">删除</button></td></tr>
-              <tr><td><strong>大区总监</strong></td><td>管理大区内所有门店及人员</td><td>8</td><td><span class="tag tag-orange">大区</span></td><td><label class="switch"><input type="checkbox" checked><span class="switch-slider"></span></label></td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-role')">编辑</button> <button class="btn btn-danger btn-sm" onclick="openModal('modal-del-confirm')">删除</button></td></tr>
-              <tr><td><strong>区域经理</strong></td><td>管理区域内所有门店</td><td>24</td><td><span class="tag tag-orange">区域</span></td><td><label class="switch"><input type="checkbox" checked><span class="switch-slider"></span></label></td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-role')">编辑</button> <button class="btn btn-danger btn-sm" onclick="openModal('modal-del-confirm')">删除</button></td></tr>
-              <tr><td><strong>店长</strong></td><td>管理单店内人员、客户和业务</td><td>217</td><td><span class="tag tag-blue">本店</span></td><td><label class="switch"><input type="checkbox" checked><span class="switch-slider"></span></label></td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-role')">编辑</button> <button class="btn btn-danger btn-sm" onclick="openModal('modal-del-confirm')">删除</button></td></tr>
-              <tr><td><strong>普通员工</strong></td><td>仅访问与自身相关的数据</td><td>1,032</td><td><span class="tag tag-green">个人</span></td><td><label class="switch"><input type="checkbox" checked><span class="switch-slider"></span></label></td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-role')">编辑</button> <button class="btn btn-danger btn-sm" onclick="openModal('modal-del-confirm')">删除</button></td></tr>
+              <tr data-role-type="hq"><td><strong>超级管理员</strong></td><td><span class="tag tag-red">总部角色</span></td><td>系统最高权限，管理全部功能</td><td><label class="switch"><input type="checkbox" checked><span class="switch-slider"></span></label></td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-role')">编辑</button> <button class="btn btn-danger btn-sm" onclick="openModal('modal-del-confirm')">删除</button></td></tr>
+              <tr data-role-type="hq"><td><strong>大区总监</strong></td><td><span class="tag tag-orange">总部角色</span></td><td>管理大区内所有门店及人员</td><td><label class="switch"><input type="checkbox" checked><span class="switch-slider"></span></label></td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-role')">编辑</button> <button class="btn btn-danger btn-sm" onclick="openModal('modal-del-confirm')">删除</button></td></tr>
+              <tr data-role-type="hq"><td><strong>区域经理</strong></td><td><span class="tag tag-orange">总部角色</span></td><td>管理区域内所有门店</td><td><label class="switch"><input type="checkbox" checked><span class="switch-slider"></span></label></td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-role')">编辑</button> <button class="btn btn-danger btn-sm" onclick="openModal('modal-del-confirm')">删除</button></td></tr>
+              <tr data-role-type="store"><td><strong>店长</strong></td><td><span class="tag tag-blue">门店角色</span></td><td>管理单店内人员、客户和业务</td><td><label class="switch"><input type="checkbox" checked><span class="switch-slider"></span></label></td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-role')">编辑</button> <button class="btn btn-danger btn-sm" onclick="openModal('modal-del-confirm')">删除</button></td></tr>
+              <tr data-role-type="store"><td><strong>普通员工</strong></td><td><span class="tag tag-green">门店角色</span></td><td>仅访问与自身相关的数据</td><td><label class="switch"><input type="checkbox" checked><span class="switch-slider"></span></label></td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-role')">编辑</button> <button class="btn btn-danger btn-sm" onclick="openModal('modal-del-confirm')">删除</button></td></tr>
             </tbody>
           </table>
         </div>
@@ -2732,26 +2772,99 @@ prompt_guard: 请将以上两个项目的关怀重点融合在一条话术中，
 
 <!-- 账号权限 -->
 <div class="modal-overlay" id="modal-account-permission">
-  <div class="modal modal-lg">
+  <div class="modal modal-xl">
     <div class="modal-header"><span class="modal-title">账号权限 — 选择角色</span><button class="modal-close" onclick="closeModal('modal-account-permission')">×</button></div>
     <div class="modal-body">
-      <div class="info-grid" style="margin-bottom:16px">
+      <div class="info-grid account-permission-meta">
         <div class="info-item"><label>账号姓名</label><span>测试小组六</span></div>
         <div class="info-item"><label>所属部门</label><span>佛山南海店</span></div>
       </div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th style="width:70px">选择</th><th>角色名称</th><th>数据范围</th><th>功能权限</th><th>说明</th></tr></thead>
-          <tbody>
-            <tr><td><input type="radio" name="account-role" checked></td><td><strong>市场贝颜_管理员</strong></td><td><span class="tag tag-orange">大区/区域</span></td><td>账号管理、客户数据、营销配置</td><td>适用于市场运营与区域管理账号</td></tr>
-            <tr><td><input type="radio" name="account-role"></td><td><strong>市场_贝颜_服务</strong></td><td><span class="tag tag-blue">本部门</span></td><td>客户数据查看、服务记录、回访协作</td><td>适用于服务中心与客服协作账号</td></tr>
-            <tr><td><input type="radio" name="account-role"></td><td><strong>项目总监</strong></td><td><span class="tag tag-red">全公司</span></td><td>项目数据、门店数据、报表导出</td><td>适用于总部项目负责人</td></tr>
-            <tr><td><input type="radio" name="account-role"></td><td><strong>录音测试</strong></td><td><span class="tag tag-green">测试数据</span></td><td>语音记录、测试任务、日志查看</td><td>仅用于测试环境和录音验收</td></tr>
-            <tr><td><input type="radio" name="account-role"></td><td><strong>门店用户</strong></td><td><span class="tag tag-blue">本店</span></td><td>客户查看、预约记录、聚合聊天</td><td>适用于门店一线员工账号</td></tr>
-          </tbody>
-        </table>
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab(this,'account-role-tab')">所属角色</div>
+        <div class="tab" onclick="switchTab(this,'account-data-permission-tab')">数据权限</div>
       </div>
-      <div class="alert alert-warning" style="margin-top:14px">这里修改的是当前账号绑定的角色；角色本身的菜单权限和数据权限请在「角色管理」的编辑弹窗中维护。</div>
+      <div class="tab-panel active" id="account-role-tab">
+        <div class="account-role-list">
+          <div class="account-role-group">
+            <div class="account-role-group-title">总部角色</div>
+            <label class="account-role-option"><input type="checkbox" checked><span>市场贝颜_管理员</span></label>
+            <label class="account-role-option"><input type="checkbox" checked><span>市场_贝颜_服务</span></label>
+            <label class="account-role-option"><input type="checkbox"><span>项目总监</span></label>
+          </div>
+          <div class="account-role-group">
+            <div class="account-role-group-title">门店角色</div>
+            <label class="account-role-option"><input type="checkbox"><span>录音测试</span></label>
+            <label class="account-role-option"><input type="checkbox"><span>门店用户</span></label>
+          </div>
+        </div>
+      </div>
+      <div class="tab-panel" id="account-data-permission-tab">
+        <div class="permission-scope-config">
+        <div class="account-data-field account-data-picker">
+          <div class="account-data-field-label">部门</div>
+          <div>
+            <div class="selector-box account-data-select" onclick="toggleAccountDataPicker(event,this)">
+              <div class="selector-main account-data-selected">
+                <span class="chip account-data-chip" data-value="beauty"><span class="account-data-chip-text">贝颜事业部</span><button type="button" class="account-data-chip-remove" onclick="removeAccountDataPermission(event,'beauty')">×</button></span>
+                <span class="chip account-data-chip" data-value="east-area"><span class="account-data-chip-text">慧娟大区</span><button type="button" class="account-data-chip-remove" onclick="removeAccountDataPermission(event,'east-area')">×</button></span>
+              </div>
+              <span class="selector-arrow"></span>
+            </div>
+            <div class="account-data-cascader">
+              <div class="account-data-col" data-level="1">
+                <div class="account-data-item active" data-value="brand" data-label="贝颜" data-parent="" data-child-level="2" onclick="focusAccountDataItem(this)"><input class="account-data-checkbox" type="checkbox" onchange="toggleAccountDataPermission(event,this)"><span class="account-data-item-name">贝颜</span><span class="account-data-arrow">›</span></div>
+              </div>
+              <div class="account-data-col" data-level="2">
+                <div class="account-data-item active" data-value="beauty" data-label="贝颜事业部" data-parent="brand" data-child-level="3" onclick="focusAccountDataItem(this)"><input class="account-data-checkbox" type="checkbox" checked onchange="toggleAccountDataPermission(event,this)"><span class="account-data-item-name">贝颜事业部</span><span class="account-data-arrow">›</span></div>
+                <div class="account-data-item" data-value="promotion" data-label="推广部" data-parent="brand" data-child-level="3" onclick="focusAccountDataItem(this)"><input class="account-data-checkbox" type="checkbox" onchange="toggleAccountDataPermission(event,this)"><span class="account-data-item-name">推广部</span><span class="account-data-arrow">›</span></div>
+                <div class="account-data-item" data-value="hr" data-label="人力资源部" data-parent="brand" data-child-level="3" onclick="focusAccountDataItem(this)"><input class="account-data-checkbox" type="checkbox" onchange="toggleAccountDataPermission(event,this)"><span class="account-data-item-name">人力资源部</span></div>
+                <div class="account-data-item" data-value="software" data-label="软件业务部" data-parent="brand" data-child-level="3" onclick="focusAccountDataItem(this)"><input class="account-data-checkbox" type="checkbox" onchange="toggleAccountDataPermission(event,this)"><span class="account-data-item-name">软件业务部</span></div>
+                <div class="account-data-item" data-value="finance" data-label="财务部" data-parent="brand" data-child-level="3" onclick="focusAccountDataItem(this)"><input class="account-data-checkbox" type="checkbox" onchange="toggleAccountDataPermission(event,this)"><span class="account-data-item-name">财务部</span><span class="account-data-arrow">›</span></div>
+              </div>
+              <div class="account-data-col" data-level="3">
+                <div class="account-data-item active" data-value="east-area" data-label="慧娟大区" data-parent="beauty" data-child-level="4" onclick="focusAccountDataItem(this)"><input class="account-data-checkbox" type="checkbox" checked onchange="toggleAccountDataPermission(event,this)"><span class="account-data-item-name">慧娟大区</span><span class="account-data-arrow">›</span></div>
+                <div class="account-data-item" data-value="gu-wei-area" data-label="顾伟大区" data-parent="beauty" data-child-level="4" onclick="focusAccountDataItem(this)"><input class="account-data-checkbox" type="checkbox" onchange="toggleAccountDataPermission(event,this)"><span class="account-data-item-name">顾伟大区</span><span class="account-data-arrow">›</span></div>
+                <div class="account-data-item" data-value="lin-lin-area" data-label="琳淋大区" data-parent="beauty" data-child-level="4" onclick="focusAccountDataItem(this)"><input class="account-data-checkbox" type="checkbox" onchange="toggleAccountDataPermission(event,this)"><span class="account-data-item-name">琳淋大区</span><span class="account-data-arrow">›</span></div>
+                <div class="account-data-item" data-value="li-yang-area" data-label="李洋大区" data-parent="beauty" data-child-level="4" onclick="focusAccountDataItem(this)"><input class="account-data-checkbox" type="checkbox" onchange="toggleAccountDataPermission(event,this)"><span class="account-data-item-name">李洋大区</span><span class="account-data-arrow">›</span></div>
+                <div class="account-data-item" data-value="juan-qin-area" data-label="娟琴大区" data-parent="beauty" data-child-level="4" onclick="focusAccountDataItem(this)"><input class="account-data-checkbox" type="checkbox" onchange="toggleAccountDataPermission(event,this)"><span class="account-data-item-name">娟琴大区</span><span class="account-data-arrow">›</span></div>
+                <div class="account-data-item" data-value="shen-tian-area" data-label="沈田集合" data-parent="beauty" data-child-level="4" onclick="focusAccountDataItem(this)"><input class="account-data-checkbox" type="checkbox" onchange="toggleAccountDataPermission(event,this)"><span class="account-data-item-name">沈田集合</span><span class="account-data-arrow">›</span></div>
+                <div class="account-data-item is-hidden" data-value="promo-east" data-label="推广华东组" data-parent="promotion" data-child-level="4" onclick="focusAccountDataItem(this)"><input class="account-data-checkbox" type="checkbox" onchange="toggleAccountDataPermission(event,this)"><span class="account-data-item-name">推广华东组</span><span class="account-data-arrow">›</span></div>
+                <div class="account-data-item is-hidden" data-value="settlement" data-label="结算组" data-parent="finance" data-child-level="4" onclick="focusAccountDataItem(this)"><input class="account-data-checkbox" type="checkbox" onchange="toggleAccountDataPermission(event,this)"><span class="account-data-item-name">结算组</span></div>
+              </div>
+              <div class="account-data-col" data-level="4">
+                <div class="account-data-item active" data-value="east-region" data-label="华东区域" data-parent="east-area" data-child-level="5" onclick="focusAccountDataItem(this)"><input class="account-data-checkbox" type="checkbox" onchange="toggleAccountDataPermission(event,this)"><span class="account-data-item-name">华东区域</span><span class="account-data-arrow">›</span></div>
+                <div class="account-data-item" data-value="nan-jing-region" data-label="南京区域" data-parent="east-area" data-child-level="5" onclick="focusAccountDataItem(this)"><input class="account-data-checkbox" type="checkbox" onchange="toggleAccountDataPermission(event,this)"><span class="account-data-item-name">南京区域</span><span class="account-data-arrow">›</span></div>
+                <div class="account-data-item" data-value="wen-li-region" data-label="文莉区域" data-parent="east-area" data-child-level="5" onclick="focusAccountDataItem(this)"><input class="account-data-checkbox" type="checkbox" onchange="toggleAccountDataPermission(event,this)"><span class="account-data-item-name">文莉区域</span><span class="account-data-arrow">›</span></div>
+                <div class="account-data-item" data-value="han-chun-region" data-label="韩春区域" data-parent="east-area" data-child-level="5" onclick="focusAccountDataItem(this)"><input class="account-data-checkbox" type="checkbox" onchange="toggleAccountDataPermission(event,this)"><span class="account-data-item-name">韩春区域</span><span class="account-data-arrow">›</span></div>
+                <div class="account-data-item" data-value="yun-feng-region" data-label="云凤区域" data-parent="east-area" data-child-level="5" onclick="focusAccountDataItem(this)"><input class="account-data-checkbox" type="checkbox" onchange="toggleAccountDataPermission(event,this)"><span class="account-data-item-name">云凤区域</span><span class="account-data-arrow">›</span></div>
+                <div class="account-data-item" data-value="mei-mei-region" data-label="梅梅区域" data-parent="east-area" data-child-level="5" onclick="focusAccountDataItem(this)"><input class="account-data-checkbox" type="checkbox" onchange="toggleAccountDataPermission(event,this)"><span class="account-data-item-name">梅梅区域</span><span class="account-data-arrow">›</span></div>
+                <div class="account-data-item is-hidden" data-value="foshan-region" data-label="佛山区域" data-parent="gu-wei-area" data-child-level="5" onclick="focusAccountDataItem(this)"><input class="account-data-checkbox" type="checkbox" onchange="toggleAccountDataPermission(event,this)"><span class="account-data-item-name">佛山区域</span><span class="account-data-arrow">›</span></div>
+                <div class="account-data-item is-hidden" data-value="guangzhou-region" data-label="广州区域" data-parent="gu-wei-area" data-child-level="5" onclick="focusAccountDataItem(this)"><input class="account-data-checkbox" type="checkbox" onchange="toggleAccountDataPermission(event,this)"><span class="account-data-item-name">广州区域</span><span class="account-data-arrow">›</span></div>
+              </div>
+              <div class="account-data-col" data-level="5">
+                <div class="account-data-item" data-value="nanjing-pukou" data-label="南京浦口店" data-parent="east-region" onclick="focusAccountDataItem(this)"><input class="account-data-checkbox" type="checkbox" onchange="toggleAccountDataPermission(event,this)"><span class="account-data-item-name">南京浦口店</span></div>
+                <div class="account-data-item" data-value="kunshan-yushan" data-label="昆山玉山店" data-parent="east-region" onclick="focusAccountDataItem(this)"><input class="account-data-checkbox" type="checkbox" onchange="toggleAccountDataPermission(event,this)"><span class="account-data-item-name">昆山玉山店</span></div>
+                <div class="account-data-item" data-value="yangzhou-hanjiang" data-label="扬州邗江店" data-parent="east-region" onclick="focusAccountDataItem(this)"><input class="account-data-checkbox" type="checkbox" onchange="toggleAccountDataPermission(event,this)"><span class="account-data-item-name">扬州邗江店</span></div>
+                <div class="account-data-item" data-value="changzhou-tianning" data-label="常州天宁店" data-parent="east-region" onclick="focusAccountDataItem(this)"><input class="account-data-checkbox" type="checkbox" onchange="toggleAccountDataPermission(event,this)"><span class="account-data-item-name">常州天宁店</span></div>
+                <div class="account-data-item" data-value="xuzhou-yunlong" data-label="徐州云龙店" data-parent="east-region" onclick="focusAccountDataItem(this)"><input class="account-data-checkbox" type="checkbox" onchange="toggleAccountDataPermission(event,this)"><span class="account-data-item-name">徐州云龙店</span></div>
+                <div class="account-data-item is-hidden" data-value="shanghai-xuhui" data-label="上海徐汇店" data-parent="wen-li-region" onclick="focusAccountDataItem(this)"><input class="account-data-checkbox" type="checkbox" onchange="toggleAccountDataPermission(event,this)"><span class="account-data-item-name">上海徐汇店</span></div>
+                <div class="account-data-item is-hidden" data-value="shanghai-jingan" data-label="上海静安店" data-parent="wen-li-region" onclick="focusAccountDataItem(this)"><input class="account-data-checkbox" type="checkbox" onchange="toggleAccountDataPermission(event,this)"><span class="account-data-item-name">上海静安店</span></div>
+                <div class="account-data-item is-hidden" data-value="foshan-nanhai" data-label="佛山南海店" data-parent="foshan-region" onclick="focusAccountDataItem(this)"><input class="account-data-checkbox" type="checkbox" onchange="toggleAccountDataPermission(event,this)"><span class="account-data-item-name">佛山南海店</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="permission-scope-row">
+          <div class="permission-scope-label">信息</div>
+          <select class="form-control permission-scope-select"><option value="" selected>请选择</option><option>仅自身</option><option>含下属</option><option>本门店</option><option>全公司</option></select>
+        </div>
+        <div class="permission-scope-row">
+          <div class="permission-scope-label">报表</div>
+          <select class="form-control permission-scope-select"><option value="" selected>请选择</option><option>仅自身</option><option>含下属</option><option>本门店</option><option>全公司</option></select>
+        </div>
+        </div>
+        <div class="alert alert-info" style="margin-top:14px">部门用于限定组织范围；信息和报表分别控制业务明细与统计看板的数据可见级别。</div>
+      </div>
     </div>
     <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('modal-account-permission')">取消</button><button class="btn btn-primary" onclick="closeModal('modal-account-permission')">确定</button></div>
   </div>
@@ -2816,6 +2929,7 @@ prompt_guard: 请将以上两个项目的关怀重点融合在一条话术中，
       <div class="role-section-title">角色基本信息</div>
       <div class="role-basic-form">
         <div class="form-row"><label class="form-label required">名称</label><input class="form-control" placeholder="请输入角色名称"></div>
+        <div class="form-row"><label class="form-label required">角色类型</label><select class="form-control"><option>门店角色</option><option>总部角色</option></select></div>
         <div class="form-row"><label class="form-label">描述</label><textarea class="form-control" rows="3" placeholder="请输入角色描述"></textarea></div>
       </div>
       <div class="tabs" style="margin-bottom:20px">
@@ -2849,13 +2963,7 @@ prompt_guard: 请将以上两个项目的关怀重点融合在一条话术中，
         </div>
       </div>
       <div class="tab-panel" id="add-role-data-perm-tab">
-        <div class="role-data-form">
-          <div class="form-group"><label class="form-label">搜索日期</label><select class="form-control"><option>请选择</option><option>最近7天</option><option>最近30天</option></select></div>
-          <div class="form-group"><label class="form-label">部门</label><select class="form-control"><option>请输入</option><option>贝颜 / 贝颜事业部 / 慧娟大区</option></select></div>
-          <div class="form-group"><label class="form-label">门店</label><select class="form-control"><option>请选择</option><option>全部门店</option><option>南京浦口店</option></select></div>
-          <div class="form-group"><label class="form-label">信息归属</label><select class="form-control"><option>请选择</option><option>按客户归属门店</option><option>按服务员工</option></select></div>
-          <div class="form-group"><label class="form-label">报表归属</label><select class="form-control"><option>请选择</option><option>汇总 + 明细</option><option>仅本人相关</option></select></div>
-        </div>
+        <div class="role-data-form permission-scope-host" data-permission-prefix="add-role"></div>
       </div>
     </div>
     <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('modal-add-role')">取消</button><button class="btn btn-primary" onclick="closeModal('modal-add-role')">确定</button></div>
@@ -2869,6 +2977,7 @@ prompt_guard: 请将以上两个项目的关怀重点融合在一条话术中，
     <div class="modal-body">
       <div class="role-basic-form">
         <div class="form-row"><label class="form-label required">名称</label><input class="form-control" value="大区总监"></div>
+        <div class="form-row"><label class="form-label required">角色类型</label><select class="form-control"><option>门店角色</option><option selected>总部角色</option></select></div>
         <div class="form-row"><label class="form-label">描述</label><textarea class="form-control" rows="3">管理大区内所有门店及人员</textarea></div>
       </div>
       <div class="tabs" style="margin-bottom:20px">
@@ -2902,15 +3011,7 @@ prompt_guard: 请将以上两个项目的关怀重点融合在一条话术中，
         </div>
       </div>
       <div class="tab-panel" id="role-data-perm-tab">
-        <div class="role-data-form">
-          <div class="form-group"><label class="form-label">组织范围</label><select class="form-control"><option>请选择</option><option selected>当前大区及下级区域/门店</option><option>全公司</option><option>仅本人所属门店</option><option>仅本人</option></select></div>
-          <div class="form-group"><label class="form-label">部门</label><select class="form-control"><option>请输入</option><option selected>贝颜 / 贝颜事业部 / 慧娟大区</option><option>市场中心</option><option>稽核部</option><option>软件业务部</option></select></div>
-          <div class="form-group"><label class="form-label">门店</label><select class="form-control"><option>请选择</option><option selected>当前大区全部门店</option><option>南京浦口店</option><option>上海浦东店</option><option>昆明五华店</option></select></div>
-          <div class="form-group"><label class="form-label">客户数据范围</label><select class="form-control"><option>请选择</option><option selected>客户基础信息 + 消费/预约/疗程进度</option><option>仅客户基础信息</option><option>脱敏查看</option></select></div>
-          <div class="form-group"><label class="form-label">预约/消费/疗程归属</label><select class="form-control"><option>请选择</option><option selected>按客户归属门店</option><option>按预约门店</option><option>按服务员工</option></select></div>
-          <div class="form-group"><label class="form-label">AI任务与回访数据</label><select class="form-control"><option>请选择</option><option selected>可查看本范围内AI任务和回访结果</option><option>仅查看统计结果</option><option>不可查看</option></select></div>
-          <div class="form-group"><label class="form-label">报表归属</label><select class="form-control"><option>请选择</option><option selected>大区汇总 + 下级门店明细</option><option>仅汇总</option><option>仅本人相关</option></select></div>
-        </div>
+        <div class="role-data-form permission-scope-host" data-permission-prefix="edit-role"></div>
       </div>
     </div>
     <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('modal-edit-role')">取消</button><button class="btn btn-primary" onclick="closeModal('modal-edit-role')">确定</button></div>
@@ -4022,6 +4123,12 @@ function filterCategoryType(type) {
   });
 }
 
+function filterRoleType(type) {
+  document.querySelectorAll('#page-role [data-role-type]').forEach(function(row) {
+    row.style.display = !type || row.getAttribute('data-role-type') === type ? '' : 'none';
+  });
+}
+
 function openDatasourceModal(btn) {
   var row = btn ? btn.closest('tr') : null;
   var cells = row ? row.querySelectorAll('td') : [];
@@ -4177,6 +4284,11 @@ document.addEventListener('click', function(e) {
   }
   if (!e.target.closest('.org-picker')) {
     document.querySelectorAll('.org-picker.open').forEach(function(picker) {
+      picker.classList.remove('open');
+    });
+  }
+  if (!e.target.closest('.account-data-picker')) {
+    document.querySelectorAll('.account-data-picker.open').forEach(function(picker) {
       picker.classList.remove('open');
     });
   }
@@ -4359,6 +4471,106 @@ function filterRolePermissionTree(input) {
     });
   });
 }
+
+function escapeAttr(text) {
+  return String(text || '').replace(/[&<>"']/g, function(ch) {
+    return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch];
+  });
+}
+
+function getPermissionConfigFromElement(el) {
+  return el ? el.closest('.permission-scope-config') : null;
+}
+
+function renderAccountDataSelected(config) {
+  config = config || document.querySelector('#account-data-permission-tab .permission-scope-config');
+  if (!config) return;
+  var selectedWrap = config.querySelector('.account-data-selected');
+  if (!selectedWrap) return;
+  var checkedItems = Array.prototype.slice.call(config.querySelectorAll('.account-data-item .account-data-checkbox:checked')).map(function(input) {
+    var item = input.closest('.account-data-item');
+    return {
+      value: item ? item.getAttribute('data-value') : '',
+      label: item ? item.getAttribute('data-label') || item.textContent.trim() : ''
+    };
+  });
+  if (!checkedItems.length) {
+    selectedWrap.innerHTML = '<span class="account-data-empty">请选择部门、区域或门店</span>';
+    return;
+  }
+  selectedWrap.innerHTML = checkedItems.map(function(item) {
+    return '<span class="chip account-data-chip" data-value="' + escapeAttr(item.value) + '">' +
+      '<span class="account-data-chip-text">' + escapeAttr(item.label) + '</span>' +
+      '<button type="button" class="account-data-chip-remove" onclick="removeAccountDataPermission(event,\'' + escapeAttr(item.value) + '\')">×</button>' +
+      '</span>';
+  }).join('');
+}
+
+function focusAccountDataItem(item) {
+  if (!item) return;
+  var col = item.closest('.account-data-col');
+  if (col) {
+    col.querySelectorAll('.account-data-item').forEach(function(option) {
+      option.classList.toggle('active', option === item);
+    });
+  }
+  var childLevel = item.getAttribute('data-child-level');
+  if (!childLevel) return;
+  var cascader = item.closest('.account-data-cascader');
+  var value = item.getAttribute('data-value');
+  var levelNum = parseInt(childLevel, 10);
+  cascader.querySelectorAll('.account-data-col').forEach(function(nextCol) {
+    var nextLevel = parseInt(nextCol.getAttribute('data-level'), 10);
+    if (nextLevel < levelNum) return;
+    nextCol.querySelectorAll('.account-data-item').forEach(function(nextItem) {
+      var shouldShow = nextLevel === levelNum ? nextItem.getAttribute('data-parent') === value : false;
+      nextItem.classList.toggle('is-hidden', !shouldShow);
+      nextItem.classList.remove('active');
+    });
+    var firstVisible = nextCol.querySelector('.account-data-item:not(.is-hidden)');
+    if (firstVisible) firstVisible.classList.add('active');
+  });
+}
+
+function toggleAccountDataPicker(event, trigger) {
+  event.stopPropagation();
+  var picker = trigger.closest('.account-data-picker');
+  if (!picker) return;
+  document.querySelectorAll('.account-data-picker.open').forEach(function(item) {
+    if (item !== picker) item.classList.remove('open');
+  });
+  picker.classList.toggle('open');
+}
+
+function toggleAccountDataPermission(event, checkbox) {
+  event.stopPropagation();
+  var item = checkbox.closest('.account-data-item');
+  var config = getPermissionConfigFromElement(checkbox);
+  focusAccountDataItem(item);
+  renderAccountDataSelected(config);
+}
+
+function removeAccountDataPermission(event, value) {
+  if (event) event.stopPropagation();
+  var config = getPermissionConfigFromElement(event ? event.target : null) || document.querySelector('#account-data-permission-tab .permission-scope-config');
+  var input = config ? config.querySelector('.account-data-item[data-value="' + value + '"] .account-data-checkbox') : null;
+  if (input) input.checked = false;
+  renderAccountDataSelected(config);
+}
+
+function initPermissionScopeHosts() {
+  var source = document.querySelector('#account-data-permission-tab .permission-scope-config');
+  if (!source) return;
+  document.querySelectorAll('.permission-scope-host').forEach(function(host) {
+    var clone = source.cloneNode(true);
+    host.innerHTML = '';
+    host.appendChild(clone);
+    renderAccountDataSelected(clone);
+  });
+  renderAccountDataSelected(source);
+}
+
+initPermissionScopeHosts();
 
 var currentProductDetailName = '自动化招聘';
 var currentProductDetailData = {
