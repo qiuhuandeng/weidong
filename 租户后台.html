@@ -7,6 +7,11 @@
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; background: #f0f2f5; color: #333; font-size: 14px; }
+  .ui-toast-host { position: fixed; right: 24px; top: 72px; z-index: 5000; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+  .ui-toast { min-width: 220px; max-width: 360px; padding: 10px 14px; border-radius: 6px; background: #fff; color: #1a2332; border: 1px solid #d9e0e8; box-shadow: 0 8px 24px rgba(15, 35, 58, .14); font-size: 13px; transform: translateX(12px); opacity: 0; transition: all .18s ease; }
+  .ui-toast.show { transform: translateX(0); opacity: 1; }
+  .ui-toast.success { border-left: 3px solid #52c41a; }
+  .ui-toast.info { border-left: 3px solid #1677ff; }
 
   /* ===== LAYOUT ===== */
   .layout { display: flex; height: 100vh; overflow: hidden; }
@@ -265,7 +270,8 @@
   .org-dept-name { display: flex; align-items: center; gap: 8px; height: 46px; min-height: 0; color: #1a2332; }
   .org-dept-name.level-1 { padding-left: 22px; }
   .org-dept-name.level-2 { padding-left: 58px; }
-  .org-dept-toggle { width: 16px; height: 16px; border: 1px solid #d9e0e8; border-radius: 2px; background: #fff; color: #1677ff; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; line-height: 1; flex-shrink: 0; cursor: pointer; padding: 0; }
+  .org-dept-toggle { width: 16px; height: 16px; border: 1px solid #d9e0e8; border-radius: 2px; background: #fff; color: #64748b; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; line-height: 1; flex-shrink: 0; cursor: pointer; padding: 0; font-weight: 600; }
+  .org-dept-toggle:hover { border-color: #c8d1dc; background: #fafbfc; color: #1a2332; }
   .org-dept-toggle.empty { visibility: hidden; width: 16px; height: 16px; background: transparent; border-color: transparent; color: transparent; cursor: default; }
   .org-status-tag { display: inline-flex; align-items: center; justify-content: center; height: 24px; padding: 0 10px; border: 1px solid #95de64; border-radius: 3px; background: #f6ffed; color: #52c41a; font-size: 12px; }
   .org-status-tag.disabled { border-color: #d9d9d9; background: #f5f5f5; color: #8c9bab; }
@@ -2973,7 +2979,7 @@
       <div class="confirm-text">确定要删除该条记录吗？</div>
       <div class="confirm-sub">此操作不可撤销，请谨慎操作</div>
     </div>
-    <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('modal-del-confirm')">取消</button><button class="btn btn-danger" onclick="closeModal('modal-del-confirm')">确认删除</button></div>
+    <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('modal-del-confirm')">取消</button><button class="btn btn-danger" onclick="confirmDeleteRow()">确认删除</button></div>
   </div>
 </div>
 
@@ -5255,7 +5261,13 @@ function showPage(pageId, options) {
   renderRecentPageTabs(pageId);
 }
 
+var pendingDeleteRow = null;
+
 function openModal(id) {
+  if (id === 'modal-del-confirm') {
+    var trigger = window.event && window.event.target ? window.event.target : null;
+    pendingDeleteRow = trigger ? trigger.closest('tr') : null;
+  }
   var m = document.getElementById(id);
   if (m) m.classList.add('show');
   if (id === 'modal-add-trigger') updateTriggerScenarioFields();
@@ -5274,6 +5286,7 @@ function openModal(id) {
 function closeModal(id) {
   var m = document.getElementById(id);
   if (m) m.classList.remove('show');
+  if (id === 'modal-del-confirm') pendingDeleteRow = null;
 }
 
 var activeSalesStoreTrigger = null;
@@ -7131,16 +7144,24 @@ function renderCustomerTagTable() {
   body.innerHTML = rows.map(function(row) {
     var statusAction = row.status === '启用' ? '停用' : '启用';
     var statusTag = row.status === '启用' ? '<span class="tag tag-green">启用</span>' : '<span class="tag tag-gray">停用</span>';
-    return '<tr>' +
+    return '<tr data-tag-group-name="' + escapeAttr(row.name) + '">' +
       '<td><div class="tag-table-name">' + escapeAttr(row.name) + '</div></td>' +
       '<td><div class="tag-value-chips">' + row.values.map(function(value) { return '<span class="tag-value-chip">' + escapeAttr(value) + '</span>'; }).join('') + '</div></td>' +
       '<td>' + escapeAttr(row.mark) + '</td>' +
       '<td>' + escapeAttr(row.creator) + '</td>' +
       '<td><div class="tag-store-scope">' + escapeAttr(row.store) + '<div><button class="sales-store-link" onclick="openSalesStoreModal(\'标签组\',\'' + escapeAttr(row.name) + '\',this)">' + escapeAttr(row.storeDesc) + '</button></div></div></td>' +
       '<td>' + statusTag + '</td>' +
-      '<td><button class="org-action-link" onclick="openModal(\'modal-edit-tag\')">编辑</button> <button class="org-action-link" onclick="openModal(\'modal-disable-tag\')">' + statusAction + '</button></td>' +
+      '<td><button class="org-action-link" onclick="openModal(\'modal-edit-tag\')">编辑</button> <button class="org-action-link" onclick="toggleCustomerTagGroupStatus(\'' + escapeAttr(row.name) + '\')">' + statusAction + '</button></td>' +
       '</tr>';
   }).join('');
+}
+
+function toggleCustomerTagGroupStatus(name) {
+  var row = customerTagGroups.find(function(item) { return item.name === name; });
+  if (!row) return;
+  row.status = row.status === '启用' ? '停用' : '启用';
+  renderCustomerTagTree();
+  renderCustomerTagTable();
 }
 
 function refreshTagValueRows(tbody) {
@@ -7326,8 +7347,319 @@ function renderAccountTable() {
   }
   body.innerHTML = rows.map(function(row) {
     var checked = row.status === '启用' ? ' checked' : '';
-    return '<tr><td>' + escapeAttr(row.id) + '</td><td>' + escapeAttr(row.name) + '</td><td>' + escapeAttr(row.ding) + '</td><td>' + escapeAttr(row.phone) + '</td><td>' + escapeAttr(row.dept) + '</td><td>' + escapeAttr(row.role) + '</td><td>' + escapeAttr(row.join) + '</td><td>' + escapeAttr(row.leave) + '</td><td><div class="account-status-cell">禁用 <label class="switch"><input type="checkbox"' + checked + '><span class="switch-slider"></span></label> 启用</div></td><td><div class="account-table-actions"><span class="account-action-link" onclick="openModal(\'modal-edit-account\')">编辑</span><span class="account-action-link" onclick="openModal(\'modal-account-permission\')">权限</span><span class="account-action-link" onclick="openModal(\'modal-del-confirm\')">删除</span><span class="account-action-link">设置超管</span></div></td></tr>';
+    var superText = row.superAdmin === '是' ? '取消超管' : '设置超管';
+    return '<tr data-account-id="' + escapeAttr(row.id) + '" data-account-name="' + escapeAttr(row.name) + '" data-account-phone="' + escapeAttr(row.phone) + '" data-account-dept="' + escapeAttr(row.dept) + '"><td>' + escapeAttr(row.id) + '</td><td>' + escapeAttr(row.name) + '</td><td>' + escapeAttr(row.ding) + '</td><td>' + escapeAttr(row.phone) + '</td><td>' + escapeAttr(row.dept) + '</td><td>' + escapeAttr(row.role) + '</td><td>' + escapeAttr(row.join) + '</td><td>' + escapeAttr(row.leave) + '</td><td><div class="account-status-cell">禁用 <label class="switch"><input type="checkbox"' + checked + '><span class="switch-slider"></span></label> 启用</div></td><td><div class="account-table-actions"><span class="account-action-link" onclick="openModal(\'modal-edit-account\')">编辑</span><span class="account-action-link" onclick="openModal(\'modal-account-permission\')">权限</span><span class="account-action-link" onclick="openModal(\'modal-del-confirm\')">删除</span><span class="account-action-link" onclick="toggleAccountSuperAdmin(this.closest(\'tr\'))">' + superText + '</span></div></td></tr>';
   }).join('');
+}
+
+function syncAccountRowStatus(input) {
+  var row = input ? input.closest('tr[data-account-id]') : null;
+  if (!row) return false;
+  var nextStatus = input.checked ? '启用' : '禁用';
+  var found = accountTableRows.find(function(item) {
+    return item.id === row.getAttribute('data-account-id') &&
+      item.name === row.getAttribute('data-account-name') &&
+      item.phone === row.getAttribute('data-account-phone') &&
+      item.dept === row.getAttribute('data-account-dept');
+  });
+  if (found) found.status = nextStatus;
+  renderAccountTable();
+  return true;
+}
+
+function removeAccountRow(row) {
+  if (!row || !row.hasAttribute('data-account-id')) return false;
+  var index = accountTableRows.findIndex(function(item) {
+    return item.id === row.getAttribute('data-account-id') &&
+      item.name === row.getAttribute('data-account-name') &&
+      item.phone === row.getAttribute('data-account-phone') &&
+      item.dept === row.getAttribute('data-account-dept');
+  });
+  if (index > -1) accountTableRows.splice(index, 1);
+  renderAccountTable();
+  return true;
+}
+
+function toggleAccountSuperAdmin(row) {
+  if (!row || !row.hasAttribute('data-account-id')) return;
+  var found = accountTableRows.find(function(item) {
+    return item.id === row.getAttribute('data-account-id') &&
+      item.name === row.getAttribute('data-account-name') &&
+      item.phone === row.getAttribute('data-account-phone') &&
+      item.dept === row.getAttribute('data-account-dept');
+  });
+  if (!found) return;
+  found.superAdmin = found.superAdmin === '是' ? '否' : '是';
+  renderAccountTable();
+}
+
+function isNeutralFilterValue(value) {
+  if (!value) return true;
+  return value.indexOf('全部') === 0 || value.indexOf('请选择') === 0 || value.indexOf('条/页') > -1;
+}
+
+function getGenericFilterScope(el) {
+  if (!el) return null;
+  return el.closest('.panel') || el.closest('.page') || el.closest('.modal-body');
+}
+
+function getGenericFilterControls(scope) {
+  if (!scope) return [];
+  return Array.prototype.slice.call(scope.querySelectorAll('.search-input, .search-select')).filter(function(control) {
+    if (control.closest('.pagination')) return false;
+    if (control.closest('.city-filter')) return false;
+    if (control.closest('.store-dept-filter')) return false;
+    if (control.closest('.account-data-picker')) return false;
+    if (control.id && (
+      control.id.indexOf('customer-tag-') === 0 ||
+      control.id.indexOf('account-') === 0 ||
+      control.id.indexOf('publish-') === 0
+    )) return false;
+    return true;
+  });
+}
+
+function getControlFilterText(control) {
+  if (!control) return '';
+  if (control.tagName === 'SELECT') {
+    var text = control.options[control.selectedIndex] ? control.options[control.selectedIndex].textContent.trim() : '';
+    return isNeutralFilterValue(text) ? '' : text;
+  }
+  return control.value ? control.value.trim() : '';
+}
+
+function genericFilterTable(trigger) {
+  var scope = getGenericFilterScope(trigger);
+  if (!scope || scope.id === 'page-account' || scope.id === 'page-dict-customer-tag') return false;
+  var table = scope.querySelector('table');
+  var tbody = table ? table.querySelector('tbody') : null;
+  if (!tbody) return false;
+  var rows = Array.prototype.slice.call(tbody.querySelectorAll('tr')).filter(function(row) {
+    return !row.hasAttribute('data-empty-row');
+  });
+  var filters = getGenericFilterControls(scope).map(getControlFilterText).filter(Boolean);
+  var visibleCount = 0;
+  rows.forEach(function(row) {
+    var switchInput = row.querySelector('.switch input');
+    var switchText = switchInput ? (switchInput.checked ? '启用' : '禁用') : '';
+    var text = (row.textContent + switchText).replace(/\s+/g, '');
+    var matched = filters.every(function(filter) {
+      return text.indexOf(filter.replace(/\s+/g, '')) > -1;
+    });
+    row.style.display = matched ? '' : 'none';
+    if (matched) visibleCount++;
+  });
+  var paginationTotal = scope.querySelector('.pagination span');
+  if (paginationTotal && paginationTotal.textContent.indexOf('共') > -1) {
+    paginationTotal.textContent = '共 ' + visibleCount + ' 条';
+  }
+  return true;
+}
+
+function resetGenericFilters(btn) {
+  var scope = getGenericFilterScope(btn);
+  if (!scope) return;
+  getGenericFilterControls(scope).forEach(function(control) {
+    if (control.tagName === 'SELECT') {
+      control.selectedIndex = 0;
+    } else {
+      control.value = '';
+    }
+  });
+  genericFilterTable(btn);
+}
+
+function confirmDeleteRow() {
+  var row = pendingDeleteRow;
+  closeModal('modal-del-confirm');
+  if (!row) return;
+  if (removeAccountRow(row)) return;
+  var scope = getGenericFilterScope(row);
+  var tbody = row.parentElement;
+  row.remove();
+  if (scope) {
+    genericFilterTable(scope);
+    var visibleRows = tbody ? Array.prototype.slice.call(tbody.querySelectorAll('tr')).filter(function(item) {
+      return item.style.display !== 'none' && !item.hasAttribute('data-empty-row');
+    }) : [];
+    if (tbody && !visibleRows.length) {
+      var colCount = tbody.closest('table') && tbody.closest('table').querySelectorAll('thead th').length || 1;
+      tbody.insertAdjacentHTML('beforeend', '<tr data-empty-row><td colspan="' + colCount + '" class="empty">暂无数据</td></tr>');
+    }
+  }
+}
+
+function bindRowContextModal(btn, modalId) {
+  var row = btn ? btn.closest('tr') : null;
+  if (!row) {
+    openModal(modalId);
+    return;
+  }
+  var firstStrong = row.querySelector('strong');
+  var firstCell = row.cells && row.cells[0] ? row.cells[0].textContent.trim().split(/\s+/)[0] : '';
+  var name = firstStrong ? firstStrong.textContent.trim() : firstCell;
+  openModal(modalId);
+  var modal = document.getElementById(modalId);
+  var title = modal ? modal.querySelector('.modal-title') : null;
+  if (title && name && title.textContent.indexOf('—') === -1) {
+    title.textContent = title.textContent + ' — ' + name;
+  }
+}
+
+var customerTagModalGroupMap = {
+  '消费力': ['客户价值', '复购状态'],
+  '客户类型': ['项目偏好', '消费决策权'],
+  '职业': ['项目偏好'],
+  '敏感话题': ['消费决策权'],
+  '价格敏感度': ['客户价值'],
+  '消费观': ['复购状态', '消费决策权']
+};
+
+function initCustomerTagModalGroups() {
+  var modal = document.getElementById('modal-edit-customer-tags');
+  if (!modal) return;
+  modal.querySelectorAll('.customer-tag-group-card').forEach(function(card) {
+    var name = card.querySelector('.customer-tag-group-name');
+    if (name) card.setAttribute('data-modal-tag-group', name.textContent.trim());
+  });
+  var active = modal.querySelector('.customer-tag-category-item.active');
+  filterCustomerTagModalGroups(active);
+  syncCustomerTagModalSelected();
+}
+
+function filterCustomerTagModalGroups(item) {
+  var modal = document.getElementById('modal-edit-customer-tags');
+  if (!modal || !item) return;
+  var label = item.childNodes[0] ? item.childNodes[0].textContent.trim() : item.textContent.trim();
+  modal.querySelectorAll('.customer-tag-category-item').forEach(function(node) {
+    node.classList.toggle('active', node === item);
+  });
+  var allow = customerTagModalGroupMap[label] || [];
+  modal.querySelectorAll('.customer-tag-group-card').forEach(function(card) {
+    var group = card.getAttribute('data-modal-tag-group');
+    card.style.display = !allow.length || allow.indexOf(group) > -1 ? '' : 'none';
+  });
+}
+
+function syncCustomerTagModalSelected() {
+  var modal = document.getElementById('modal-edit-customer-tags');
+  var selected = modal ? modal.querySelector('.customer-tag-selected .selector-main') : null;
+  if (!modal || !selected) return;
+  var values = Array.prototype.slice.call(modal.querySelectorAll('.customer-tag-option input:checked')).map(function(input) {
+    return input.parentElement.textContent.trim();
+  });
+  selected.innerHTML = values.length ? values.map(function(value) {
+    return '<span class="chip">' + escapeAttr(value) + ' <button class="chip-remove" type="button" onclick="removeAudienceChip(this)">×</button></span>';
+  }).join('') : '<span class="text-muted">暂未选择标签</span>';
+}
+
+function showToast(message, type) {
+  var host = document.querySelector('.ui-toast-host');
+  if (!host) {
+    host = document.createElement('div');
+    host.className = 'ui-toast-host';
+    document.body.appendChild(host);
+  }
+  var toast = document.createElement('div');
+  toast.className = 'ui-toast ' + (type || 'info');
+  toast.textContent = message;
+  host.appendChild(toast);
+  requestAnimationFrame(function() { toast.classList.add('show'); });
+  setTimeout(function() {
+    toast.classList.remove('show');
+    setTimeout(function() { toast.remove(); }, 220);
+  }, 1800);
+}
+
+function activatePaginationButton(btn) {
+  var pagination = btn ? btn.closest('.pagination') : null;
+  if (!pagination || btn.textContent.trim() === '…' || btn.textContent.trim() === '...') return false;
+  pagination.querySelectorAll('.page-btn').forEach(function(item) { item.classList.remove('active'); });
+  btn.classList.add('active');
+  return true;
+}
+
+function cloneTableOrCard(btn) {
+  var row = btn.closest('tr');
+  if (row && row.parentElement) {
+    var clone = row.cloneNode(true);
+    var firstStrong = clone.querySelector('strong');
+    if (firstStrong && firstStrong.textContent.indexOf('副本') === -1) firstStrong.textContent += ' 副本';
+    row.parentElement.insertBefore(clone, row.nextElementSibling);
+    genericFilterTable(row);
+    showToast('已复制一条记录', 'success');
+    return true;
+  }
+  var card = btn.closest('.rule-card, .persona-card');
+  if (card && card.parentElement) {
+    var cardClone = card.cloneNode(true);
+    var name = cardClone.querySelector('.rule-name');
+    if (name && name.textContent.indexOf('副本') === -1) name.textContent += ' 副本';
+    card.parentElement.insertBefore(cardClone, card.nextElementSibling);
+    showToast('已复制配置卡片', 'success');
+    return true;
+  }
+  return false;
+}
+
+function toggleRecallRuleStatus(btn) {
+  var row = btn ? btn.closest('tr') : null;
+  var statusCell = row ? row.cells[5] : null;
+  var tag = statusCell ? statusCell.querySelector('.tag') : null;
+  var desc = statusCell ? statusCell.querySelector('.text-muted') : null;
+  if (!tag) return false;
+  var disabling = btn.textContent.trim() === '停用';
+  tag.className = 'tag ' + (disabling ? 'tag-gray' : 'tag-green');
+  tag.textContent = disabling ? '已停用' : '已发布';
+  if (desc) desc.textContent = disabling ? '暂停发送' : '范围：华东区域';
+  btn.textContent = disabling ? '启用' : '停用';
+  showToast(disabling ? '规则已停用' : '规则已启用', 'success');
+  return true;
+}
+
+function moveRoutingStep(btn, direction) {
+  var row = btn ? btn.closest('.time-node-row') : null;
+  var container = row ? row.parentElement : null;
+  if (!row || !container) return false;
+  if (direction < 0 && row.previousElementSibling && row.previousElementSibling.classList.contains('time-node-row')) {
+    container.insertBefore(row, row.previousElementSibling);
+  }
+  if (direction > 0 && row.nextElementSibling && row.nextElementSibling.classList.contains('time-node-row')) {
+    container.insertBefore(row.nextElementSibling, row);
+  }
+  Array.prototype.slice.call(container.querySelectorAll('.time-node-row')).forEach(function(item, index) {
+    var label = item.querySelector('.tag');
+    if (label) label.textContent = '第' + (index + 1) + '步';
+  });
+  return true;
+}
+
+function handlePlainButton(btn) {
+  if (!btn || btn.getAttribute('onclick')) return false;
+  var text = btn.textContent.trim();
+  if (btn.classList.contains('page-btn')) return activatePaginationButton(btn);
+  if (text === '复制') return cloneTableOrCard(btn);
+  if (text === '停用' || text === '启用') return toggleRecallRuleStatus(btn);
+  if (text === '上移') return moveRoutingStep(btn, -1);
+  if (text === '下移') return moveRoutingStep(btn, 1);
+  if (text === '设为默认') {
+    var grid = btn.closest('.persona-grid');
+    if (grid) grid.querySelectorAll('.panel-actions > button').forEach(function(item) { item.classList.remove('btn-primary'); item.classList.add('btn-default'); item.textContent = '设为默认'; });
+    btn.classList.remove('btn-default');
+    btn.classList.add('btn-primary');
+    btn.textContent = '默认';
+    showToast('已设为默认人设', 'success');
+    return true;
+  }
+  if (/^(保存|提交|开始|一键|导出|下载|上传|查看|配置|新增|查找)/.test(text)) {
+    showToast(text + '操作已触发', 'success');
+    return true;
+  }
+  if (text === '更多') {
+    showToast('更多操作已展开到编辑入口', 'info');
+    return true;
+  }
+  return false;
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -7343,6 +7675,7 @@ document.addEventListener('DOMContentLoaded', function() {
   refreshTagValueRows(document.getElementById('add-tag-value-list'));
   refreshTagValueRows(document.getElementById('edit-tag-value-list'));
   renderAccountTable();
+  initCustomerTagModalGroups();
 
   document.addEventListener('click', function(e) {
     var accountToggle = e.target.closest('#page-account .tree-toggle');
@@ -7359,6 +7692,11 @@ document.addEventListener('DOMContentLoaded', function() {
     var accountTreeNode = e.target.closest('#page-account .tree-node');
     if (accountTreeNode) {
       selectAccountOrgNode(accountTreeNode);
+      return;
+    }
+    var customerTagModalCategory = e.target.closest('#modal-edit-customer-tags .customer-tag-category-item');
+    if (customerTagModalCategory) {
+      filterCustomerTagModalGroups(customerTagModalCategory);
       return;
     }
     if (!e.target.closest('.category-parent-picker')) {
@@ -7552,9 +7890,26 @@ document.addEventListener('DOMContentLoaded', function() {
     if (removeBtn) {
       removeAudienceCondition(removeBtn.closest('.condition-row'));
     }
+    var plainButton = e.target.closest('button');
+    if (plainButton && handlePlainButton(plainButton)) {
+      return;
+    }
+    var genericResetBtn = e.target.closest('button');
+    if (genericResetBtn && genericResetBtn.textContent.trim() === '重置' && genericResetBtn.closest('.page')) {
+      resetGenericFilters(genericResetBtn);
+      return;
+    }
+    var genericSearchBtn = e.target.closest('button');
+    if (genericSearchBtn && /^(搜索|查询)$/.test(genericSearchBtn.textContent.trim()) && genericSearchBtn.closest('.page')) {
+      genericFilterTable(genericSearchBtn);
+      return;
+    }
   });
 
   document.addEventListener('input', function(e) {
+    if (e.target.classList.contains('search-input') && e.target.closest('.page') && !e.target.closest('#page-account') && e.target.id !== 'customer-tag-search-input') {
+      genericFilterTable(e.target);
+    }
     if (!e.target.classList.contains('city-filter-search')) return;
     var keyword = e.target.value.trim().toLowerCase();
     var filter = e.target.closest('.city-filter');
@@ -7592,12 +7947,27 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   document.addEventListener('change', function(e) {
+    if (e.target && e.target.matches('#modal-edit-customer-tags .customer-tag-option input')) {
+      syncCustomerTagModalSelected();
+      return;
+    }
+    if (e.target && e.target.matches('#page-account .switch input')) {
+      syncAccountRowStatus(e.target);
+      return;
+    }
     if (e.target && e.target.closest('#page-account .account-filter-bar')) {
       renderAccountTable();
       return;
     }
     if (e.target && (e.target.id === 'customer-tag-status-filter' || e.target.id === 'customer-tag-mark-filter')) {
       renderCustomerTagTable();
+    }
+    if (e.target && e.target.matches('.page table .switch input') && !e.target.closest('#page-account')) {
+      genericFilterTable(e.target);
+      return;
+    }
+    if (e.target.classList.contains('search-select') && e.target.closest('.page') && !e.target.closest('#page-account') && !e.target.closest('#page-dict-customer-tag')) {
+      genericFilterTable(e.target);
     }
   });
 });
