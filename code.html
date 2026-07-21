@@ -1,0 +1,2000 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ERP 批量开团控制台</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Custom styling for scrollbar and styling tweaks -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans CJK SC", sans-serif;
+        }
+        /* Custom scrollbar for better ERP appearance */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        .animate-drawer-in {
+            animation: drawerIn 0.22s ease-out forwards;
+        }
+        @keyframes drawerIn {
+            from { transform: translateX(28px); opacity: 0.85; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col antialiased">
+
+    <!-- Top Header Navigation -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 px-6 py-3.5 flex items-center justify-between">
+        <div class="flex items-center space-x-4">
+            <div class="bg-indigo-600 text-white p-2 rounded-lg">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+            </div>
+            <div>
+                <h1 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                    智能排期控制中心
+                    <span class="bg-indigo-50 text-indigo-700 text-xs px-2.5 py-0.5 rounded-full font-medium">B2B/ERP旗舰版</span>
+                </h1>
+                <p class="text-xs text-slate-500">“计调配规则，系统算结果，计调确认，系统执行”</p>
+            </div>
+        </div>
+
+        <!-- Mode Toggle Tabs -->
+        <div class="flex bg-slate-100 p-1 rounded-lg border border-slate-200">
+            <button onclick="switchGlobalMode('create')" id="btn-mode-create" class="px-4 py-1.5 rounded-md text-sm font-medium transition-all shadow-sm bg-white text-slate-800">
+                ⚡ 批量开新团
+            </button>
+            <button onclick="switchGlobalMode('modify')" id="btn-mode-modify" class="px-4 py-1.5 rounded-md text-sm font-medium transition-all text-slate-600 hover:text-slate-900">
+                🔄 批量修改已有团
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Workspace Container -->
+    <main class="flex-1 max-w-[1600px] w-full mx-auto px-4 py-6 flex flex-col gap-6 mb-24">
+        
+        <!-- ================= PAGE 1: BATCH TOUR CREATION ================= -->
+        <div id="page-create" class="grid grid-cols-1 gap-6 items-start">
+            
+            <!-- RULES CONFIGURATION -->
+            <section class="max-w-5xl w-full mx-auto flex flex-col gap-5">
+                
+                <!-- STEP 1: PRODUCT & SCHEME SELECTION -->
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm transition-all hover:shadow-md">
+                    <div class="flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
+                        <h2 class="font-bold text-slate-900 flex items-center gap-2 text-sm uppercase tracking-wider">
+                            <span class="w-6 h-6 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center font-bold text-xs">1</span>
+                            选择目标线路与方案
+                        </h2>
+                        <span class="text-xs text-indigo-600 font-semibold">精准一主线多方案</span>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 mb-1.5">排期模式</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <label class="border-2 border-indigo-600 bg-indigo-50/30 p-2.5 rounded-lg flex items-center gap-2 cursor-pointer transition-all" id="label-product-single">
+                                    <input type="radio" name="product_mode" value="single" checked class="text-indigo-600 focus:ring-indigo-500" onchange="toggleProductMode('single')">
+                                    <div>
+                                        <div class="text-xs font-bold text-indigo-950">单产品排期</div>
+                                        <div class="text-[10px] text-slate-500">精准、快速、细分方案</div>
+                                    </div>
+                                </label>
+                                <label class="border border-slate-200 hover:border-slate-300 p-2.5 rounded-lg flex items-center gap-2 cursor-pointer transition-all" id="label-product-multi">
+                                    <input type="radio" name="product_mode" value="multi" class="text-indigo-600 focus:ring-indigo-500" onchange="toggleProductMode('multi')">
+                                    <div>
+                                        <div class="text-xs font-bold text-slate-700">多产品同步排期</div>
+                                        <div class="text-[10px] text-slate-500">同一套规则横向生成</div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Dropdown Select Product -->
+                        <div id="single-product-select-box">
+                            <label class="block text-xs font-semibold text-slate-500 mb-1.5">选择线路产品</label>
+                            <select id="select-product" onchange="onProductChange()" class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 p-2.5 font-medium">
+                                <option value="1">【经典欧洲】德法意瑞浪漫10天之旅 (EU10)</option>
+                                <option value="2">【精致日本】东京大阪富士山深度双飞6日游 (JP06)</option>
+                                <option value="3">【璀璨东南亚】泰国曼谷芭提雅亲子纯玩5日游 (TH05)</option>
+                            </select>
+                        </div>
+
+                        <!-- NEW: Dynamic Specific Scheme Selector Cards -->
+                        <div id="scheme-select-box" class="space-y-1.5">
+                            <label class="block text-xs font-semibold text-slate-500">选择产品行程具体方案</label>
+                            <div id="scheme-radio-group" class="space-y-2">
+                                <!-- Rendered dynamically by JS -->
+                            </div>
+                        </div>
+
+                        <!-- Multi Product Checklist (Hidden initially) -->
+                        <div id="multi-product-select-box" class="hidden">
+                            <label class="block text-xs font-semibold text-slate-500 mb-1.5">勾选多个产品（同步配置）</label>
+                            <div class="border border-slate-200 rounded-lg p-3 space-y-2 max-h-40 overflow-y-auto bg-slate-50">
+                                <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                                    <input type="checkbox" value="1" checked onchange="onMultiProductChange()" class="rounded text-indigo-600"> [EU10] 德法意瑞浪漫10天之旅
+                                </label>
+                                <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                                    <input type="checkbox" value="2" checked onchange="onMultiProductChange()" class="rounded text-indigo-600"> [JP06] 东京大阪富士山深度双飞6日游
+                                </label>
+                                <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                                    <input type="checkbox" value="3" onchange="onMultiProductChange()" class="rounded text-indigo-600"> [TH05] 泰国曼谷芭提雅亲子纯玩5日游
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Product Detail Summary Card -->
+                        <div id="product-summary" class="bg-slate-50 border border-slate-200/60 rounded-lg p-3 text-xs space-y-1.5">
+                            <!-- Dynamic Content Rendered here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 2: DATE RULES CONFIGURATION -->
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm transition-all hover:shadow-md">
+                    <div class="flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
+                        <h2 class="font-bold text-slate-900 flex items-center gap-2 text-sm uppercase tracking-wider">
+                            <span class="w-6 h-6 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center font-bold text-xs">2</span>
+                            设置发团日期规则
+                        </h2>
+                        <span class="text-xs text-emerald-600 font-medium">✨ 核心配置</span>
+                    </div>
+
+                    <!-- Date Mode Tabs -->
+                    <div class="flex bg-slate-100 p-1 rounded-lg border border-slate-200/60 mb-4">
+                        <button type="button" onclick="switchDateMode('cycle')" id="tab-date-cycle" class="flex-1 text-center py-2 text-xs font-semibold rounded-md transition-all bg-white text-indigo-600 shadow-sm">
+                            周期规则模式
+                        </button>
+                        <button type="button" onclick="switchDateMode('manual')" id="tab-date-manual" class="flex-1 text-center py-2 text-xs font-semibold rounded-md transition-all text-slate-600 hover:text-slate-900">
+                            多点手动模式
+                        </button>
+                        <button type="button" onclick="switchDateMode('import')" id="tab-date-import" class="flex-1 text-center py-2 text-xs font-semibold rounded-md transition-all text-slate-600 hover:text-slate-900">
+                            Excel解析模式
+                        </button>
+                    </div>
+
+                    <!-- Date Rules Content Container -->
+                    <div>
+                        <!-- Date Option 1: Cycle Mode -->
+                        <div id="date-panel-cycle" class="space-y-4">
+                            <!-- Date Range -->
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 mb-1.5">计划排期区间</label>
+                                <div class="grid grid-cols-2 gap-2 items-center">
+                                    <input type="date" id="cycle-start-date" value="2026-07-01" onchange="runRulesEngine()" class="bg-slate-50 border border-slate-200 text-slate-800 text-xs rounded-lg p-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                    <input type="date" id="cycle-end-date" value="2026-08-31" onchange="runRulesEngine()" class="bg-slate-50 border border-slate-200 text-slate-800 text-xs rounded-lg p-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                </div>
+                                <!-- Shortcut Buttons -->
+                                <div class="flex flex-wrap gap-1.5 mt-2">
+                                    <button type="button" onclick="setShortcutDates('july')" class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded hover:bg-slate-200 hover:text-slate-900 font-medium transition-all">26年7月</button>
+                                    <button type="button" onclick="setShortcutDates('august')" class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded hover:bg-slate-200 hover:text-slate-900 font-medium transition-all">26年8月</button>
+                                    <button type="button" onclick="setShortcutDates('summer')" class="text-[10px] bg-indigo-50 text-indigo-700 px-2.5 py-0.5 rounded hover:bg-indigo-100 font-semibold transition-all">🔥 暑期大档 (7-8月)</button>
+                                </div>
+                            </div>
+
+                            <!-- Weekday Selector -->
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 mb-1.5">发团周期（勾选星期的班期）</label>
+                                <div class="grid grid-cols-7 gap-1">
+                                    <!-- Monday - Sunday toggles -->
+                                    <label class="cursor-pointer text-center py-2 border rounded-lg border-slate-200 bg-slate-50 hover:bg-slate-100 transition-all select-none" id="wd-1">
+                                        <input type="checkbox" value="1" onchange="onWeekdayToggle(1)" class="sr-only">
+                                        <div class="text-xs font-bold text-slate-700">一</div>
+                                    </label>
+                                    <label class="cursor-pointer text-center py-2 border rounded-lg border-slate-200 bg-slate-50 hover:bg-slate-100 transition-all select-none" id="wd-2">
+                                        <input type="checkbox" value="2" onchange="onWeekdayToggle(2)" class="sr-only">
+                                        <div class="text-xs font-bold text-slate-700">二</div>
+                                    </label>
+                                    <label class="cursor-pointer text-center py-2 border rounded-lg border-slate-200 bg-slate-50 hover:bg-slate-100 transition-all select-none" id="wd-3">
+                                        <input type="checkbox" value="3" onchange="onWeekdayToggle(3)" class="sr-only">
+                                        <div class="text-xs font-bold text-slate-700">三</div>
+                                    </label>
+                                    <label class="cursor-pointer text-center py-2 border rounded-lg border-slate-200 bg-slate-50 hover:bg-slate-100 transition-all select-none" id="wd-4">
+                                        <input type="checkbox" value="4" onchange="onWeekdayToggle(4)" class="sr-only">
+                                        <div class="text-xs font-bold text-slate-700">四</div>
+                                    </label>
+                                    <label class="cursor-pointer text-center py-2 border rounded-lg border-slate-200 bg-slate-50 hover:bg-slate-100 transition-all select-none" id="wd-5">
+                                        <input type="checkbox" value="5" onchange="onWeekdayToggle(5)" class="sr-only" checked>
+                                        <div class="text-xs font-bold text-slate-700">五</div>
+                                    </label>
+                                    <label class="cursor-pointer text-center py-2 border rounded-lg border-slate-200 bg-slate-50 hover:bg-slate-100 transition-all select-none" id="wd-6">
+                                        <input type="checkbox" value="6" onchange="onWeekdayToggle(6)" class="sr-only">
+                                        <div class="text-xs font-bold text-slate-700">六</div>
+                                    </label>
+                                    <label class="cursor-pointer text-center py-2 border rounded-lg border-slate-200 bg-slate-50 hover:bg-slate-100 transition-all select-none" id="wd-0">
+                                        <input type="checkbox" value="0" onchange="onWeekdayToggle(0)" class="sr-only">
+                                        <div class="text-xs font-bold text-slate-700">日</div>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Exclusions & Holiday Filter -->
+                            <div class="bg-slate-50 border border-slate-150 p-3 rounded-lg space-y-2.5">
+                                <div class="flex items-center justify-between">
+                                    <label class="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+                                        <span>📅 智能节假日/调休合并处理</span>
+                                    </label>
+                                    <label class="relative inline-flex items-center cursor-pointer scale-90">
+                                        <input type="checkbox" id="exclude-holidays" checked onchange="runRulesEngine()" class="sr-only peer">
+                                        <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
+                                        <span class="ml-2 text-xs text-slate-600 font-medium">一键剔除法定假</span>
+                                    </label>
+                                </div>
+                                <div class="text-[10px] text-slate-400">
+                                    启用后自动排查：元旦、春节、清明、五一、端午、国庆、中秋发团（2026版法定节假日）。遇调休工作日会自动在右侧提示计调决断。
+                                </div>
+                                <div class="border-t border-slate-200/80 pt-2.5">
+                                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">手动增加排除日期（支持手动添加特定不想发团的日子）</label>
+                                    <div class="flex gap-2">
+                                        <input type="date" id="add-exclude-date" class="bg-white border border-slate-200 text-xs rounded p-1 flex-1">
+                                        <button type="button" onclick="addCustomExclude()" class="bg-slate-200 text-slate-800 hover:bg-slate-300 px-3 py-1 text-xs rounded font-medium transition-all">确认排除</button>
+                                    </div>
+                                    <div id="exclude-tags-container" class="flex flex-wrap gap-1 mt-2">
+                                        <!-- Exclusion Tags Rendered here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Date Option 2: Manual Multi-Select Mode -->
+                        <div id="date-panel-manual" class="hidden space-y-4">
+                            <div class="flex items-center justify-between">
+                                <label class="block text-xs font-semibold text-slate-500">点选发团日期 (支持多选跨月)</label>
+                                <span class="text-[10px] text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded font-medium">直接在下方日历点击即可</span>
+                            </div>
+                            <!-- Mini Custom Calendar Grid -->
+                            <div class="border border-slate-200 rounded-lg p-3 bg-white shadow-inner">
+                                <div class="flex items-center justify-between mb-2">
+                                    <button type="button" onclick="changeCalendarMonth(-1)" class="p-1 hover:bg-slate-100 rounded text-slate-600">◀</button>
+                                    <div id="calendar-month-title" class="text-xs font-bold text-slate-800">2026年 7月</div>
+                                    <button type="button" onclick="changeCalendarMonth(1)" class="p-1 hover:bg-slate-100 rounded text-slate-600">▶</button>
+                                </div>
+                                <div class="grid grid-cols-7 gap-1 text-center text-[10px] font-semibold text-slate-400 mb-1">
+                                    <div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div>
+                                </div>
+                                <div id="calendar-days-grid" class="grid grid-cols-7 gap-1">
+                                    <!-- Dynamic Calendar Days rendered here -->
+                                </div>
+                            </div>
+                            <div class="text-[10px] text-slate-400 flex items-center gap-1.5">
+                                <span class="inline-block w-2.5 h-2.5 bg-slate-200 rounded-full"></span> 灰色格子：该产品已有其他正常团，可避免排期重复
+                            </div>
+                        </div>
+
+                        <!-- Date Option 3: Excel Import Mode -->
+                        <div id="date-panel-import" class="hidden space-y-4">
+                            <label class="block text-xs font-semibold text-slate-500">导入排期文件 / 输入特定行数据</label>
+                            <div class="border-2 border-dashed border-slate-200 hover:border-indigo-400 rounded-lg p-4 bg-slate-50 text-center transition-all cursor-pointer relative" onclick="simulateExcelUpload()">
+                                <div class="space-y-1">
+                                    <svg class="w-8 h-8 text-slate-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                                    <div class="text-xs font-bold text-indigo-700">点击自动模拟上传 Excel 排班文件</div>
+                                    <div class="text-[10px] text-slate-500">支持读取：[出发日期]、[默认容量]、[备注字段]</div>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between text-xs border-t border-slate-100 pt-3">
+                                <a href="#" onclick="alert('系统模板已开始下载：batch_tour_template.xlsx')" class="text-indigo-600 font-semibold hover:underline">📥 下载 Excel 官方模板</a>
+                                <button type="button" onclick="loadSampleExcelData()" class="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 px-3 py-1 rounded text-xs font-medium transition-all">📋 载入示例排期数据 (3条)</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 3: BASE PARAMETERS CONFIGURATION -->
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm transition-all hover:shadow-md">
+                    <div class="flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
+                        <h2 class="font-bold text-slate-900 flex items-center gap-2 text-sm uppercase tracking-wider">
+                            <span class="w-6 h-6 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center font-bold text-xs">3</span>
+                            基础参数配置
+                        </h2>
+                        <span class="text-xs text-slate-400">精细化团期设定</span>
+                    </div>
+
+                    <div class="space-y-4">
+                        <!-- Group Capacity Setting -->
+                        <div>
+                            <div class="flex justify-between items-center mb-1">
+                                <label class="block text-xs font-semibold text-slate-700">计划收客容量 (默认人数)</label>
+                                <span class="text-xs text-slate-500">常规班推荐规格</span>
+                            </div>
+                            <div class="flex gap-2">
+                                <input type="number" id="base-capacity" value="30" min="1" max="100" oninput="runRulesEngine()" class="w-32 bg-slate-50 border border-slate-200 text-slate-800 text-xs rounded-lg p-2 font-semibold">
+                                <span class="text-xs text-slate-400 self-center">人 / 团期</span>
+                            </div>
+
+                            <!-- Peak Season Rules -->
+                            <div class="mt-3 bg-indigo-50/20 border border-indigo-100/50 rounded-lg p-3">
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-xs font-bold text-indigo-950 flex items-center gap-1">🚀 旺季扩容特需规则</span>
+                                    <button type="button" onclick="addPeakRule()" class="text-[10px] text-indigo-600 hover:text-indigo-800 font-bold">+ 添加特定时间段</button>
+                                </div>
+                                <div id="peak-rules-container" class="space-y-2">
+                                    <!-- Peak Rules list rendered here -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tour Leader Mode Selector -->
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1.5">带团领队预分配规则</label>
+                            <div class="grid grid-cols-3 gap-2">
+                                <label class="border border-indigo-600 bg-indigo-50/20 p-2 rounded-lg flex flex-col justify-center items-center text-center cursor-pointer" id="lbl-leader-none">
+                                    <input type="radio" name="leader_mode" value="none" checked class="sr-only" onchange="toggleLeaderMode('none')">
+                                    <span class="text-xs font-bold text-indigo-950">暂不指派</span>
+                                    <span class="text-[9px] text-slate-400">后续手动指派</span>
+                                </label>
+                                <label class="border border-slate-200 hover:border-slate-300 p-2 rounded-lg flex flex-col justify-center items-center text-center cursor-pointer" id="lbl-leader-single">
+                                    <input type="radio" name="leader_mode" value="single" class="sr-only" onchange="toggleLeaderMode('single')">
+                                    <span class="text-xs font-bold text-slate-700">统一指定</span>
+                                    <span class="text-[9px] text-slate-400">一员负责全期</span>
+                                </label>
+                                <label class="border border-slate-200 hover:border-slate-300 p-2 rounded-lg flex flex-col justify-center items-center text-center cursor-pointer" id="lbl-leader-robin">
+                                    <input type="radio" name="leader_mode" value="robin" class="sr-only" onchange="toggleLeaderMode('robin')">
+                                    <span class="text-xs font-bold text-slate-700">循环轮排</span>
+                                    <span class="text-[9px] text-slate-400">多名领队依次排</span>
+                                </label>
+                            </div>
+
+                            <!-- Tour Leader Detail Selector Box -->
+                            <div class="mt-3" id="leader-detail-box">
+                                <!-- Dynamic options rendering depending on selection -->
+                            </div>
+                        </div>
+
+                        <!-- OP & Price Selection Group -->
+                        <div class="grid grid-cols-2 gap-3 border-t border-slate-100 pt-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1.5">负责计调负责人</label>
+                                <select id="select-op" class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs rounded-lg p-2 font-medium">
+                                    <option value="current">当前登录计调 (陈小明)</option>
+                                    <option value="op2">资深计调 (王大志)</option>
+                                    <option value="op3">外协组专员 (李爱芳)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1.5">价格继承模式</label>
+                                <select id="select-price" onchange="runRulesEngine()" class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs rounded-lg p-2 font-medium">
+                                    <option value="inherit">继承选定方案基准价</option>
+                                    <option value="increase">临时上涨 10% (旺季)</option>
+                                    <option value="draft_no_price">不带价格 (开团占位)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 4: ADVANCED PARAMETERS (COLLAPSIBLE) -->
+                <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden transition-all hover:shadow-md">
+                    <button type="button" onclick="toggleAdvancedSettings()" class="w-full px-5 py-4 flex items-center justify-between text-left focus:outline-none">
+                        <span class="font-bold text-slate-950 flex items-center gap-2 text-sm uppercase tracking-wider">
+                            <span class="w-6 h-6 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center font-bold text-xs">4</span>
+                            高级细节参数（非必选）
+                        </span>
+                        <span id="advanced-arrow" class="text-xs text-slate-400 transform transition-transform">▼ 展开</span>
+                    </button>
+                    
+                    <div id="advanced-content" class="hidden border-t border-slate-150 p-5 bg-slate-50/50 space-y-4">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1.5">最小起成团人数</label>
+                                <input type="number" id="adv-min-size" value="10" class="w-full bg-white border border-slate-200 text-xs rounded-lg p-2">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1.5">截止报名时机（提前几天）</label>
+                                <input type="number" id="adv-deadline" value="3" class="w-full bg-white border border-slate-200 text-xs rounded-lg p-2">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1.5">初始状态</label>
+                            <div class="flex gap-4">
+                                <label class="flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer">
+                                    <input type="radio" name="adv_status" value="open" checked class="text-indigo-600">
+                                    直接开架销售 (分销同步)
+                                </label>
+                                <label class="flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer">
+                                    <input type="radio" name="adv_status" value="draft" class="text-indigo-600">
+                                    暂存为草稿 (内部筹备)
+                                </label>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1.5">批量团期备注模板</label>
+                            <input type="text" id="adv-remark" placeholder="如：本批次航班信息以CA933为主..." class="w-full bg-white border border-slate-200 text-xs rounded-lg p-2">
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+
+        </div>
+
+
+        <!-- ================= PAGE 2: BATCH MODIFICATION (SCENARIO 4) ================= -->
+        <div id="page-modify" class="hidden bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-6">
+            <div>
+                <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                    🔄 关联已有团期批量修改 (业务场景四)
+                </h2>
+                <p class="text-xs text-slate-500">当航司更改航班时刻，或计调临时休假调岗时，一键批量修改匹配的所有历史已发布团期，避免崩溃的重复操作。</p>
+            </div>
+
+            <!-- Modify Step 1: Search & Filter Existing Tours -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-slate-50 border border-slate-200/60 rounded-xl">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">目标产品</label>
+                    <select id="mod-filter-product" onchange="runModifyFilter()" class="w-full bg-white border border-slate-200 text-xs rounded-lg p-2 font-medium">
+                        <option value="all">所有产品</option>
+                        <option value="1">【经典欧洲】德法意瑞浪漫10天之旅</option>
+                        <option value="2">【精致日本】东京大阪富士山深度双飞6日游</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">时间范围 (出发日期)</label>
+                    <div class="grid grid-cols-2 gap-1.5">
+                        <input type="date" id="mod-filter-start" value="2026-07-01" onchange="runModifyFilter()" class="bg-white border border-slate-200 text-xs rounded-lg p-1.5">
+                        <input type="date" id="mod-filter-end" value="2026-08-31" onchange="runModifyFilter()" class="bg-white border border-slate-200 text-xs rounded-lg p-1.5">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">当前团状态</label>
+                    <select id="mod-filter-status" onchange="runModifyFilter()" class="w-full bg-white border border-slate-200 text-xs rounded-lg p-2 font-medium">
+                        <option value="all">所有正常状态</option>
+                        <option value="open">开放销售中</option>
+                        <option value="draft">内部草稿</option>
+                    </select>
+                </div>
+                <div class="flex items-end">
+                    <button type="button" onclick="runModifyFilter()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-xs px-4 py-2 rounded-lg transition-all">
+                        🔍 检索匹配现有团
+                    </button>
+                </div>
+            </div>
+
+            <!-- Existing Tours Selector Container -->
+            <div class="border border-slate-200 rounded-lg overflow-hidden">
+                <div class="bg-slate-50 px-4 py-2 border-b border-slate-200 flex justify-between items-center">
+                    <span class="text-xs font-bold text-slate-800">第一步：勾选需要统一修改的团期 (检索出 <span id="mod-count" class="text-indigo-600">3</span> 个团)</span>
+                    <button type="button" onclick="toggleSelectAllModTours()" class="text-xs text-indigo-600 hover:text-indigo-800 font-bold">全选/取消全选</button>
+                </div>
+                <div class="divide-y divide-slate-100 max-h-56 overflow-y-auto" id="mod-tours-list">
+                    <!-- Javascript generated list of existing tours to modify -->
+                </div>
+            </div>
+
+            <!-- Modify fields box -->
+            <div class="bg-indigo-50/20 border border-indigo-100/50 p-5 rounded-xl space-y-4">
+                <span class="text-xs font-bold text-indigo-950 flex items-center gap-1.5">
+                    ⚙️ 第二步：配置变更细节（支持以下多维度合并修改）
+                </span>
+                
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <!-- Trip Duration Alter -->
+                    <div class="border border-slate-200/80 bg-white p-3 rounded-lg">
+                        <label class="block text-xs font-bold text-slate-700 mb-2">🗓️ 返程日统一变动</label>
+                        <div class="space-y-1.5">
+                            <label class="flex items-center gap-1.5 text-xs text-slate-600">
+                                <input type="radio" name="mod_date_type" value="shift" checked class="text-indigo-600">
+                                <span>按原基础统一加减天数</span>
+                            </label>
+                            <div class="flex items-center gap-1.5 pl-5">
+                                <span class="text-xs text-slate-400">顺延</span>
+                                <input type="number" id="mod-date-shift" value="1" class="w-16 border rounded p-1 text-center text-xs">
+                                <span class="text-xs text-slate-400">天</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Change Leader -->
+                    <div class="border border-slate-200/80 bg-white p-3 rounded-lg">
+                        <label class="block text-xs font-bold text-slate-700 mb-2">👤 变更负责领队</label>
+                        <select id="mod-new-leader" class="w-full border rounded p-2 text-xs">
+                            <option value="keep">-- 保持原指派不变 --</option>
+                            <option value="L1">张极度</option>
+                            <option value="L2">林秋怡</option>
+                            <option value="L3">陈建国</option>
+                        </select>
+                    </div>
+
+                    <!-- Change Capacity -->
+                    <div class="border border-slate-200/80 bg-white p-3 rounded-lg">
+                        <label class="block text-xs font-bold text-slate-700 mb-2">👥 变更班期最大容量</label>
+                        <div class="flex items-center gap-2">
+                            <input type="number" id="mod-new-capacity" placeholder="如 35" class="w-24 border rounded p-1.5 text-xs">
+                            <span class="text-xs text-slate-400">人</span>
+                        </div>
+                    </div>
+
+                    <!-- Change Status -->
+                    <div class="border border-slate-200/80 bg-white p-3 rounded-lg">
+                        <label class="block text-xs font-bold text-slate-700 mb-2">🚦 统一改变团期状态</label>
+                        <select id="mod-new-status" class="w-full border rounded p-2 text-xs">
+                            <option value="keep">-- 保持原状态不变 --</option>
+                            <option value="open">开放销售中 (下架改上架)</option>
+                            <option value="draft">转换为草稿 (封盘销售)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex justify-end pt-3">
+                    <button type="button" onclick="executeBatchModification()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm px-6 py-2.5 rounded-lg transition-all shadow-md">
+                        🔥 确认更改所选团期并执行覆盖
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- RIGHT DRAWER: GENERATED RESULT PREVIEW & CONFLICT CHECK -->
+    <div id="preview-drawer" class="hidden fixed inset-0 z-50">
+        <div class="absolute inset-0 bg-slate-950/45" onclick="closePreviewDrawer()"></div>
+        <aside class="absolute right-0 top-0 h-full w-full lg:w-[980px] max-w-full bg-white shadow-2xl flex flex-col animate-drawer-in">
+            <div class="px-6 py-4 border-b border-slate-200 flex items-start justify-between gap-4 shrink-0">
+                <div>
+                    <h2 class="font-bold text-slate-900 text-base">生成结果预览与冲突检测</h2>
+                    <p class="text-xs text-slate-500 mt-1">规则及选定方案实时推算。可在生成前直接微调容量、方案或剔除个别班期。</p>
+                </div>
+                <button type="button" onclick="closePreviewDrawer()" class="text-slate-400 hover:text-slate-700 transition-all p-1 rounded hover:bg-slate-100">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <div class="flex-1 overflow-y-auto bg-slate-50 p-5 space-y-5">
+                <!-- Step 1 -->
+                <section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="px-5 py-4 border-b border-slate-100 flex items-center gap-3">
+                        <span class="w-7 h-7 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-sm font-bold">1</span>
+                        <div>
+                            <h3 class="text-sm font-bold text-slate-900">选择目标线路与方案</h3>
+                            <p class="text-xs text-slate-400 mt-0.5">确认本次批量排期的产品与行程方案</p>
+                        </div>
+                    </div>
+                    <div class="p-5 space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 mb-1.5">选择线路产品</label>
+                            <div class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm font-semibold text-slate-800 flex items-center justify-between">
+                                <span>【璀璨东南亚】泰国曼谷芭提雅亲子纯玩5日游 (TH05)</span>
+                                <span class="text-slate-400">⌄</span>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 mb-1.5">选择产品行程具体方案</label>
+                            <div class="space-y-2">
+                                <div class="border border-slate-200 rounded-lg p-3 flex items-center justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <span class="w-4 h-4 rounded-full border border-slate-300 bg-white"></span>
+                                        <div>
+                                            <div class="text-xs font-bold text-slate-800">方案A：德法意瑞纯玩无自费（全五星酒店）</div>
+                                            <div class="text-[11px] text-slate-500 mt-0.5">行程时长：10天 | 基准底价：<strong class="text-indigo-600">¥15800</strong> | 方案推荐容量：30人</div>
+                                        </div>
+                                    </div>
+                                    <span class="text-[10px] font-semibold text-indigo-700 bg-indigo-50 px-2.5 py-0.5 rounded-full">天数: 10D</span>
+                                </div>
+                                <div class="border-2 border-indigo-500 bg-indigo-50/20 rounded-lg p-3 flex items-center justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <span class="w-4 h-4 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px]">✓</span>
+                                        <div>
+                                            <div class="text-xs font-bold text-slate-800">方案B：欧罗巴经典超值游（赠送塞纳河游船）</div>
+                                            <div class="text-[11px] text-slate-500 mt-0.5">行程时长：10天 | 基准底价：<strong class="text-indigo-600">¥12800</strong> | 方案推荐容量：35人</div>
+                                        </div>
+                                    </div>
+                                    <span class="text-[10px] font-semibold text-indigo-700 bg-indigo-50 px-2.5 py-0.5 rounded-full">天数: 10D</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Step 2 -->
+                <section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-3">
+                            <span class="w-7 h-7 rounded-full bg-indigo-600 text-white flex items-center justify-center text-sm font-bold">2</span>
+                            <div>
+                                <h3 class="text-sm font-bold text-slate-900">出发日期规则</h3>
+                                <p class="text-xs text-slate-400 mt-0.5">设置排期方式，生成结果在下方实时预览</p>
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-3">
+                            <label class="flex items-center gap-1.5 text-xs text-slate-600 cursor-pointer select-none">
+                                <input type="checkbox" id="chk-skip-duplicates" checked onchange="runRulesEngine()" class="rounded text-indigo-600">
+                                <span>跳过重复日期</span>
+                            </label>
+                            <label class="flex items-center gap-1.5 text-xs text-slate-600 cursor-pointer select-none">
+                                <input type="checkbox" id="chk-filter-conflicts" onchange="runRulesEngine()" class="rounded text-red-600">
+                                <span class="text-red-600 font-medium">仅看异常</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="p-5 space-y-4">
+                        <div class="grid grid-cols-3 gap-2 bg-slate-100 p-1 rounded-lg">
+                            <button type="button" class="bg-white text-indigo-600 shadow-sm rounded-md py-2 text-xs font-bold">周期规则</button>
+                            <button type="button" class="text-slate-500 rounded-md py-2 text-xs font-bold">手动选日期</button>
+                            <button type="button" class="text-slate-500 rounded-md py-2 text-xs font-bold">导入Excel</button>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-3 items-end">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 mb-1.5">排期开始日期</label>
+                                <div class="border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700 bg-white">2025 / 04 / 01</div>
+                            </div>
+                            <div class="hidden md:block text-xs text-slate-400 pb-2">至</div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 mb-1.5">排期结束日期</label>
+                                <div class="border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700 bg-white">2025 / 09 / 30</div>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 mb-2">每周出发星期</label>
+                            <div class="flex flex-wrap gap-4 text-sm text-slate-600">
+                                <span class="flex items-center gap-1.5"><span class="w-4 h-4 border border-slate-300 rounded"></span>周一</span>
+                                <span class="flex items-center gap-1.5"><span class="w-4 h-4 border border-slate-300 rounded"></span>周二</span>
+                                <span class="flex items-center gap-1.5"><span class="w-4 h-4 border border-slate-300 rounded"></span>周三</span>
+                                <span class="flex items-center gap-1.5"><span class="w-4 h-4 border border-slate-300 rounded"></span>周四</span>
+                                <span class="flex items-center gap-1.5"><span class="w-4 h-4 bg-indigo-600 text-white rounded flex items-center justify-center text-[10px]">✓</span>周五</span>
+                                <span class="flex items-center gap-1.5"><span class="w-4 h-4 bg-indigo-600 text-white rounded flex items-center justify-center text-[10px]">✓</span>周六</span>
+                                <span class="flex items-center gap-1.5"><span class="w-4 h-4 border border-slate-300 rounded"></span>周日</span>
+                            </div>
+                        </div>
+
+                        <!-- Preview Statistics Banner -->
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                            <div class="bg-indigo-50 border border-indigo-100/60 p-2.5 rounded-lg text-center">
+                                <div class="text-[10px] font-semibold text-indigo-700 uppercase">预排团期</div>
+                                <div id="stat-total" class="text-xl font-extrabold text-indigo-950">0</div>
+                            </div>
+                            <div class="bg-slate-50 border border-slate-100 p-2.5 rounded-lg text-center">
+                                <div class="text-[10px] font-semibold text-slate-500 uppercase">自动忽略</div>
+                                <div id="stat-skipped" class="text-xl font-extrabold text-slate-600">0</div>
+                            </div>
+                            <div class="bg-amber-50 border border-amber-100/60 p-2.5 rounded-lg text-center">
+                                <div class="text-[10px] font-semibold text-amber-700 uppercase">异常警告</div>
+                                <div id="stat-warnings" class="text-xl font-extrabold text-amber-600">0</div>
+                            </div>
+                            <div class="bg-emerald-50 border border-emerald-100/60 p-2.5 rounded-lg text-center">
+                                <div class="text-[10px] font-semibold text-emerald-700 uppercase">总计锁位数</div>
+                                <div id="stat-total-seats" class="text-xl font-extrabold text-emerald-800">0</div>
+                            </div>
+                        </div>
+
+                        <!-- Generated Tours Table/Card container -->
+                        <div class="overflow-x-auto relative min-h-[300px] border border-slate-200 rounded-lg">
+                            <table class="w-full text-left text-xs border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-50 text-slate-500 uppercase font-semibold border-b border-slate-200">
+                                        <th class="py-2.5 px-2">序号</th>
+                                        <th class="py-2.5 px-2">产品/方案</th>
+                                        <th class="py-2.5 px-2">出发日期</th>
+                                        <th class="py-2.5 px-2">返程日期</th>
+                                        <th class="py-2.5 px-2">容量</th>
+                                        <th class="py-2.5 px-2">领队员</th>
+                                        <th class="py-2.5 px-2">团号预览</th>
+                                        <th class="py-2.5 px-2">检测状态</th>
+                                        <th class="py-2.5 px-2 text-right">操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="preview-table-body" class="divide-y divide-slate-100">
+                                    <!-- Rows dynamically populated by JS -->
+                                </tbody>
+                            </table>
+
+                            <div id="empty-preview-placeholder" class="hidden absolute inset-0 flex flex-col items-center justify-center text-center p-8 bg-slate-50/50 rounded-lg">
+                                <svg class="w-12 h-12 text-slate-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                <p class="text-sm font-bold text-slate-700">暂无计算结果预览</p>
+                                <p class="text-xs text-slate-400 mt-1 max-w-sm">请在主页面指定产品与方案、配置星期发团频次，或使用日历手动标记发团日。</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Step 3 -->
+                <section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="px-5 py-4 border-b border-slate-100 flex items-center gap-3">
+                        <span class="w-7 h-7 rounded-full bg-indigo-600 text-white flex items-center justify-center text-sm font-bold">3</span>
+                        <div>
+                            <h3 class="text-sm font-bold text-slate-900">名额与价格</h3>
+                            <p class="text-xs text-slate-400 mt-0.5">设置销售价格与渠道初始名额</p>
+                        </div>
+                    </div>
+                    <div class="p-5 space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div><label class="block text-xs font-semibold text-slate-500 mb-1">市场价</label><input class="w-full border border-slate-200 rounded p-2 text-xs" placeholder="如 ¥13,800"></div>
+                            <div><label class="block text-xs font-semibold text-slate-500 mb-1">同行价</label><input class="w-full border border-slate-200 rounded p-2 text-xs" placeholder="如 ¥12,300"></div>
+                            <div><label class="block text-xs font-semibold text-slate-500 mb-1">儿童价</label><input class="w-full border border-slate-200 rounded p-2 text-xs" value="0"></div>
+                            <div><label class="block text-xs font-semibold text-slate-500 mb-1">老人价</label><input class="w-full border border-slate-200 rounded p-2 text-xs" value="0"></div>
+                            <div><label class="block text-xs font-semibold text-slate-500 mb-1">单房差</label><input class="w-full border border-slate-200 rounded p-2 text-xs" value="0"></div>
+                        </div>
+                        <div class="border border-slate-200 rounded-lg p-4">
+                            <div class="flex items-center justify-between mb-3">
+                                <h4 class="text-xs font-bold text-slate-800">初始渠道余位</h4>
+                                <span class="text-[10px] text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">分配正常</span>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                <div class="bg-slate-50 border border-slate-200 rounded p-3"><label class="block text-xs text-slate-500 mb-1">门市渠道</label><input class="w-full border border-slate-200 rounded p-1.5 text-xs" value="7"></div>
+                                <div class="bg-slate-50 border border-slate-200 rounded p-3"><label class="block text-xs text-slate-500 mb-1">携程</label><input class="w-full border border-slate-200 rounded p-1.5 text-xs" value="6"></div>
+                                <div class="bg-slate-50 border border-slate-200 rounded p-3"><label class="block text-xs text-slate-500 mb-1">飞猪</label><input class="w-full border border-slate-200 rounded p-1.5 text-xs" value="4"></div>
+                                <div class="bg-slate-50 border border-slate-200 rounded p-3"><label class="block text-xs text-slate-500 mb-1">同程</label><input class="w-full border border-slate-200 rounded p-1.5 text-xs" value="3"></div>
+                                <div class="bg-slate-50 border border-slate-200 rounded p-3"><label class="block text-xs text-slate-500 mb-1">直营渠道</label><input class="w-full border border-slate-200 rounded p-1.5 text-xs" value="5"></div>
+                                <div class="bg-slate-50 border border-slate-200 rounded p-3"><label class="block text-xs text-slate-500 mb-1">代理渠道</label><input class="w-full border border-slate-200 rounded p-1.5 text-xs" value="5"></div>
+                            </div>
+                            <div class="mt-3 bg-slate-50 px-3 py-2 rounded text-xs text-slate-600">已分配名额：<strong>30</strong>　容量上限：<strong>30</strong>　分配正常</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Step 4 -->
+                <section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-3">
+                            <span class="w-7 h-7 rounded-full bg-indigo-600 text-white flex items-center justify-center text-sm font-bold">4</span>
+                            <div>
+                                <h3 class="text-sm font-bold text-slate-900">执行与投放</h3>
+                                <p class="text-xs text-slate-400 mt-0.5">配置计调、领队、投放范围与集合信息</p>
+                            </div>
+                        </div>
+                        <span class="text-[10px] text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">继承配置</span>
+                    </div>
+                    <div class="p-5 space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div><label class="block text-xs font-semibold text-slate-500 mb-1">计调</label><select class="w-full border border-slate-200 rounded p-2 text-xs"><option>周伟</option></select></div>
+                            <div><label class="block text-xs font-semibold text-slate-500 mb-1">领队</label><select class="w-full border border-slate-200 rounded p-2 text-xs"><option>待分配</option></select></div>
+                            <div><label class="block text-xs font-semibold text-slate-500 mb-1">投放门市</label><select class="w-full border border-slate-200 rounded p-2 text-xs"><option>全部门市</option></select></div>
+                            <div><label class="block text-xs font-semibold text-slate-500 mb-1">投放渠道</label><select class="w-full border border-slate-200 rounded p-2 text-xs"><option>全部渠道</option></select></div>
+                            <div><label class="block text-xs font-semibold text-slate-500 mb-1">出发地</label><select class="w-full border border-slate-200 rounded p-2 text-xs"><option>北京</option></select></div>
+                            <div><label class="block text-xs font-semibold text-slate-500 mb-1">集合地点</label><input class="w-full border border-slate-200 rounded p-2 text-xs" value="北京首都国际机场T3航站楼F区"></div>
+                        </div>
+                        <div class="space-y-2 text-xs text-slate-600">
+                            <label class="flex items-center gap-2"><input type="checkbox" checked class="rounded text-indigo-600">继承线路默认执行资料</label>
+                            <label class="flex items-center gap-2"><input type="checkbox" checked class="rounded text-indigo-600">继承渠道授权</label>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 mb-1">备注</label>
+                            <textarea class="w-full border border-slate-200 rounded p-2 text-xs min-h-[90px]" placeholder="请输入备注"></textarea>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <div class="border-t border-slate-200 px-6 py-4 flex justify-end gap-2 shrink-0 bg-white">
+                <button type="button" onclick="closePreviewDrawer()" class="border border-slate-200 hover:bg-slate-50 text-xs font-semibold py-2 px-5 rounded-lg transition-all text-slate-600">
+                    关闭
+                </button>
+                <button type="button" onclick="submitFinalTours()" class="bg-indigo-600 hover:bg-indigo-700 text-xs font-bold py-2 px-6 rounded-lg transition-all text-white">
+                    确认发团
+                </button>
+            </div>
+        </aside>
+    </div>
+
+    <!-- FIXED STICKY FOOTER ACTION BAR -->
+    <footer class="fixed bottom-0 left-0 right-0 bg-slate-900 text-white border-t border-slate-800 z-40 px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-4">
+            <div class="bg-indigo-600/30 text-indigo-400 px-3 py-2 rounded-lg border border-indigo-500/20 text-xs">
+                <span class="font-bold text-white">当前选中：</span>
+                <span id="footer-summary-text">德法意瑞浪漫10天之旅</span>
+            </div>
+            <div class="text-xs text-slate-400">
+                ⚡ 本次大规则将产出：<strong class="text-emerald-400 text-sm font-extrabold" id="footer-tours-count">0</strong> 个团期 
+                (<span id="footer-warns-count" class="text-amber-400">0 项冲突待定</span>)
+            </div>
+        </div>
+
+        <div class="flex gap-2.5 w-full md:w-auto">
+            <button type="button" onclick="cancelWorkflow()" class="flex-1 md:flex-none border border-slate-700 hover:bg-slate-800 text-xs font-semibold py-2.5 px-5 rounded-lg transition-all text-slate-300">
+                取消放弃
+            </button>
+            <button type="button" onclick="openPreviewDrawer()" class="flex-1 md:flex-none bg-white/10 hover:bg-white/15 border border-slate-700 text-xs font-semibold py-2.5 px-5 rounded-lg transition-all text-white">
+                查看生成结果
+            </button>
+            <button type="button" onclick="saveTours('draft')" class="flex-1 md:flex-none bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-semibold py-2.5 px-5 rounded-lg transition-all text-indigo-300">
+                保存为草稿 (不销售)
+            </button>
+            <button type="button" id="btn-submit" onclick="submitFinalTours()" class="flex-1 md:flex-none bg-indigo-600 hover:bg-indigo-700 text-xs font-bold py-2.5 px-8 rounded-lg transition-all shadow-lg shadow-indigo-600/20 text-white">
+                立即发团并开放销售 🚀
+            </button>
+        </div>
+    </footer>
+
+    <!-- MODAL: EXECUTION SUCCESS & FEEDBACK (SCENARIO 5) -->
+    <div id="success-modal" class="hidden fixed inset-0 bg-slate-950/70 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-4 transform transition-all scale-100">
+            <div class="flex items-center gap-3 border-b border-slate-100 pb-3 text-emerald-600">
+                <div class="bg-emerald-50 p-2 rounded-full">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+                <h3 class="text-lg font-bold">批量开团动作处理完毕</h3>
+            </div>
+            
+            <div class="space-y-2.5 py-2">
+                <div class="text-sm font-semibold text-slate-800">批量任务执行情况摘要：</div>
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                        <span class="text-slate-500">正常上线团期：</span>
+                        <div id="modal-success-cnt" class="text-lg font-bold text-emerald-600">0</div>
+                    </div>
+                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                        <span class="text-slate-500">待补充异常/草稿：</span>
+                        <div id="modal-warning-cnt" class="text-lg font-bold text-amber-600">0</div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs space-y-1 text-slate-600">
+                    <p class="font-bold text-slate-800 mb-1">💡 ERP 系统后续流转建议操作：</p>
+                    <p>• 针对部分“领队忙/锁位不足”团期，已自动转换标记为 <strong>[待处理]</strong>。</p>
+                    <p>• 销售团队以及分销小程序已完成产品列表更新。</p>
+                </div>
+            </div>
+
+            <!-- Downstream links (Scenario 5.3) -->
+            <div class="grid grid-cols-3 gap-2 pt-2 border-t border-slate-100">
+                <button type="button" onclick="closeModalAndRedirect('flights')" class="bg-slate-100 hover:bg-slate-200 text-[11px] text-slate-700 font-bold py-2 rounded transition-all text-center">
+                    ✈️ 批量关联锁位
+                </button>
+                <button type="button" onclick="closeModalAndRedirect('poster')" class="bg-indigo-50 hover:bg-indigo-100 text-[11px] text-indigo-700 font-bold py-2 rounded transition-all text-center">
+                    🎨 批量海报生成
+                </button>
+                <button type="button" onclick="closeModalAndRedirect('close')" class="bg-slate-900 hover:bg-slate-800 text-[11px] text-white font-bold py-2 rounded transition-all text-center">
+                    返回列表
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ========================================== -->
+    <!--          JAVASCRIPT CONTROLLER            -->
+    <!-- ========================================== -->
+    <script>
+        // MOCK DATABASE & CONSTANTS WITH NEW SCHEMES
+        const PRODUCTS = {
+            "1": { 
+                id: "1", 
+                code: "EU10", 
+                name: "欧洲经典法国+瑞士+意大利10日游", 
+                count: 12, 
+                status: "已上架",
+                schemes: [
+                    { id: "1A", name: "方案A：德法意瑞纯玩无自费 (全五星酒店)", days: 10, basePrice: 15800, capacity: 30 },
+                    { id: "1B", name: "方案B：欧罗巴经典超值游 (赠送塞纳河游船)", days: 10, basePrice: 12800, capacity: 35 }
+                ]
+            },
+            "2": { 
+                id: "2", 
+                code: "JP06", 
+                name: "日本本州双古都精选6日游", 
+                count: 8, 
+                status: "已上架",
+                schemes: [
+                    { id: "2A", name: "方案A：本州全景温泉游 (一晚私汤+迪士尼)", days: 6, basePrice: 8800, capacity: 25 },
+                    { id: "2B", name: "方案B：东京大阪特惠畅玩版 (1天自由活动)", days: 6, basePrice: 6999, capacity: 30 }
+                ]
+            },
+            "3": { 
+                id: "3", 
+                code: "TH05", 
+                name: "泰国曼谷+芭提雅纯玩5日游", 
+                count: 22, 
+                status: "已上架",
+                schemes: [
+                    { id: "3A", name: "方案A：奢华游艇无购物游 (含网红沙美岛)", days: 5, basePrice: 4599, capacity: 30 },
+                    { id: "3B", name: "方案B：经典曼芭亲子水乐园版", days: 5, basePrice: 3299, capacity: 32 }
+                ]
+            }
+        };
+
+        const LEADERS = [
+            { id: "L1", name: "张极度" },
+            { id: "L2", name: "林秋怡" },
+            { id: "L3", name: "陈建国" }
+        ];
+
+        // Known schedule conflicts for mock leader (張極度 is away on these dates)
+        const MOCK_LEADER_CONFLICT_RANGES = [
+            { leaderId: "L1", start: "2026-07-08", end: "2026-07-17" }
+        ];
+
+        // 2026 Statutory Holidays in China (Mock data for rule exclusion)
+        const STATUTORY_HOLIDAYS_2026 = [
+            "2026-05-01", "2026-05-02", "2026-05-03", // 五一
+            "2026-10-01", "2026-10-02", "2026-10-03", "2026-10-04", "2026-10-05" // 国庆
+        ];
+
+        // Flight seat limits simulation
+        const FLIGHT_SEATS_LOCK = {
+            "2026-07-10": 25, // only 25 seats
+            "2026-07-17": 28,
+            "2026-07-24": 40
+        };
+
+        // Existing tour dates (for duplicate creation detection)
+        const EXISTING_TOUR_DATES = {
+            "1": ["2026-07-10", "2026-08-14"],
+            "2": ["2026-07-15"],
+            "3": []
+        };
+
+        // STATE OBJECT (REACTIVE STATE ENGINE)
+        let state = {
+            globalMode: 'create', // 'create' | 'modify'
+            productMode: 'single', // 'single' | 'multi'
+            selectedProducts: ["1"], // Array of IDs
+            selectedSchemeId: "1A", // NEW: Selected Scheme ID under single mode
+            dateMode: 'cycle', // 'cycle' | 'manual' | 'import'
+            
+            // Cycle sub-parameters
+            cycle: {
+                start: '2026-07-01',
+                end: '2026-08-31',
+                weekdays: [5], // Default Friday
+                excludeHolidays: true,
+                manualExcludes: []
+            },
+
+            // Manual sub-parameters
+            manual: {
+                currentCalYear: 2026,
+                currentCalMonth: 7, // 1-indexed (July)
+                selectedDates: [] // Array of string dates "YYYY-MM-DD"
+            },
+
+            // Imported data
+            importedRows: [],
+
+            // Parameter configurations
+            capacity: 30,
+            peakRules: [
+                { start: '2026-07-15', end: '2026-08-25', capacity: 35 } // Summer peak auto-expansion
+            ],
+            leaderMode: 'none', // 'none' | 'single' | 'robin'
+            singleLeaderId: 'L1',
+            robinLeaderIds: ['L1', 'L2', 'L3'],
+
+            // Output queue
+            previewTours: [],
+            manuallyOverriddenTours: {} // id map to overrides (capacity, leader, schemeId, deleted)
+        };
+
+        // INITIALIZE SYSTEM
+        window.onload = function() {
+            onProductChange(); // trigger first computation
+        };
+
+        function openPreviewDrawer() {
+            runRulesEngine();
+            document.getElementById('preview-drawer').classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+        }
+
+        function closePreviewDrawer() {
+            document.getElementById('preview-drawer').classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
+
+        // SWAP BROAD WORKFLOW MODES
+        function switchGlobalMode(mode) {
+            state.globalMode = mode;
+            document.getElementById('btn-mode-create').className = mode === 'create' 
+                ? 'px-4 py-1.5 rounded-md text-sm font-medium transition-all shadow-sm bg-white text-slate-800' 
+                : 'px-4 py-1.5 rounded-md text-sm font-medium transition-all text-slate-600 hover:text-slate-900';
+            document.getElementById('btn-mode-modify').className = mode === 'modify' 
+                ? 'px-4 py-1.5 rounded-md text-sm font-medium transition-all shadow-sm bg-white text-slate-800' 
+                : 'px-4 py-1.5 rounded-md text-sm font-medium transition-all text-slate-600 hover:text-slate-900';
+
+            if (mode === 'create') {
+                document.getElementById('page-create').classList.remove('hidden');
+                document.getElementById('page-modify').classList.add('hidden');
+                document.querySelector('footer').classList.remove('hidden');
+            } else {
+                document.getElementById('page-create').classList.add('hidden');
+                document.getElementById('page-modify').classList.remove('hidden');
+                document.querySelector('footer').classList.add('hidden'); // modify has its own save section
+                initModifyPage();
+            }
+        }
+
+        // TOGGLE TARGET PRODUCT SELECTION MODE
+        function toggleProductMode(mode) {
+            state.productMode = mode;
+            
+            const singleBox = document.getElementById('single-product-select-box');
+            const schemeBox = document.getElementById('scheme-select-box');
+            const multiBox = document.getElementById('multi-product-select-box');
+            const lblSingle = document.getElementById('label-product-single');
+            const lblMulti = document.getElementById('label-product-multi');
+
+            if (mode === 'single') {
+                singleBox.classList.remove('hidden');
+                schemeBox.classList.remove('hidden');
+                multiBox.classList.add('hidden');
+                lblSingle.className = "border-2 border-indigo-600 bg-indigo-50/30 p-2.5 rounded-lg flex items-center gap-2 cursor-pointer transition-all";
+                lblMulti.className = "border border-slate-200 hover:border-slate-300 p-2.5 rounded-lg flex items-center gap-2 cursor-pointer transition-all";
+                const pVal = document.getElementById('select-product').value;
+                state.selectedProducts = [pVal];
+            } else {
+                singleBox.classList.add('hidden');
+                schemeBox.classList.add('hidden');
+                multiBox.classList.remove('hidden');
+                lblSingle.className = "border border-slate-200 hover:border-slate-300 p-2.5 rounded-lg flex items-center gap-2 cursor-pointer transition-all";
+                lblMulti.className = "border-2 border-indigo-600 bg-indigo-50/30 p-2.5 rounded-lg flex items-center gap-2 cursor-pointer transition-all";
+                gatherSelectedMultiProducts();
+            }
+            onProductChange();
+        }
+
+        function gatherSelectedMultiProducts() {
+            const checkedCheckboxes = document.querySelectorAll('#multi-product-select-box input:checked');
+            state.selectedProducts = Array.from(checkedCheckboxes).map(cb => cb.value);
+        }
+
+        function onMultiProductChange() {
+            gatherSelectedMultiProducts();
+            onProductChange();
+        }
+
+        // ACTION WHEN SELECTION CRITERIA CHANGES
+        function onProductChange() {
+            const schemeBox = document.getElementById('scheme-select-box');
+            
+            if (state.productMode === 'single') {
+                const prodId = state.selectedProducts[0];
+                const prod = PRODUCTS[prodId];
+                
+                // Keep selected scheme valid under newly selected product
+                if (!state.selectedSchemeId || !state.selectedSchemeId.startsWith(prodId)) {
+                    state.selectedSchemeId = prod.schemes[0].id;
+                }
+                
+                renderSchemesList(prod);
+                schemeBox.classList.remove('hidden');
+            } else {
+                schemeBox.classList.add('hidden');
+            }
+
+            renderProductSummary();
+
+            // Trigger calendar redraw in case existing dates indicators need update
+            if (state.dateMode === 'manual') {
+                renderManualCalendar();
+            }
+
+            runRulesEngine();
+        }
+
+        // RENDER INTERACTIVE SCHEME SELECTION CARDS
+        function renderSchemesList(product) {
+            const container = document.getElementById('scheme-radio-group');
+            container.innerHTML = product.schemes.map(s => {
+                const isSelected = state.selectedSchemeId === s.id;
+                const activeClass = isSelected 
+                    ? "border-indigo-600 bg-indigo-50/20" 
+                    : "border-slate-200 hover:border-slate-300 bg-white";
+                const checkIcon = isSelected 
+                    ? '<span class="w-4 h-4 rounded-full bg-indigo-600 flex items-center justify-center text-[10px] text-white">✓</span>' 
+                    : '<span class="w-4 h-4 rounded-full border border-slate-300 block bg-white"></span>';
+
+                return `
+                    <div onclick="selectScheme('${s.id}')" class="border p-3 rounded-lg flex items-center justify-between cursor-pointer transition-all ${activeClass}">
+                        <div class="flex items-center gap-3">
+                            ${checkIcon}
+                            <div>
+                                <div class="text-xs font-bold text-slate-800">${s.name}</div>
+                                <div class="text-[10px] text-slate-500 mt-0.5">
+                                    行程时长：<strong>${s.days}天</strong> | 基准底价：<strong class="text-indigo-600">¥${s.basePrice}</strong> | 方案推荐容量：<strong>${s.capacity}人</strong>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-[10px] font-semibold text-indigo-700 bg-indigo-50 px-2.5 py-0.5 rounded-full">天数: ${s.days}D</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function selectScheme(schemeId) {
+            state.selectedSchemeId = schemeId;
+            
+            // Auto-update base capacity input based on the chosen scheme's recommendation to enhance workflow speed
+            const prodId = state.selectedProducts[0];
+            const prod = PRODUCTS[prodId];
+            const scheme = prod.schemes.find(s => s.id === schemeId);
+            if (scheme) {
+                document.getElementById('base-capacity').value = scheme.capacity;
+            }
+            
+            onProductChange();
+        }
+
+        // REDRAW INFO SUMMARY CARD
+        function renderProductSummary() {
+            const container = document.getElementById('product-summary');
+            if (state.selectedProducts.length === 0) {
+                container.innerHTML = `<span class="text-red-500 font-bold">⚠️ 请先至少勾选一个线路产品！</span>`;
+                return;
+            }
+
+            let text = "";
+            if (state.productMode === 'single') {
+                const prod = PRODUCTS[state.selectedProducts[0]];
+                const scheme = prod.schemes.find(s => s.id === state.selectedSchemeId) || prod.schemes[0];
+                text = `
+                    <div class="flex justify-between font-bold text-slate-800">
+                        <span>📋 当前单品：${prod.name}</span>
+                        <span class="text-indigo-600">${prod.status}</span>
+                    </div>
+                    <div class="border-t border-slate-150 my-1.5 pt-1.5">
+                        <span class="text-indigo-700 font-bold">[排产应用：${scheme.name.split('：')[0]}]</span>
+                        <p class="text-[11px] text-slate-500 mt-0.5">${scheme.name.split('：')[1]}</p>
+                    </div>
+                    <div class="grid grid-cols-3 gap-1 text-slate-500 mt-1">
+                        <span>方案时长：<strong>${scheme.days} 天</strong></span>
+                        <span>已有活跃团：<strong>${prod.count} 个</strong></span>
+                        <span>参考底价：<strong class="text-slate-800">¥${scheme.basePrice}</strong></span>
+                    </div>
+                `;
+                document.getElementById('footer-summary-text').innerText = `${prod.name} - ${scheme.name.split('：')[0]}`;
+            } else {
+                text = `
+                    <div class="font-bold text-slate-800">📋 多产品并行模式（共选 ${state.selectedProducts.length} 款线路）</div>
+                    <div class="text-[10px] text-slate-400 mt-0.5">多产品排期时，系统默认采用各产品的 [方案 A] 规格进行统一推算：</div>
+                    <div class="flex gap-2 flex-wrap mt-1.5">
+                        ${state.selectedProducts.map(id => {
+                            const p = PRODUCTS[id];
+                            return `<span class="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded text-[10px] font-bold">${p.code}-方案A (${p.schemes[0].days}天)</span>`;
+                        }).join('')}
+                    </div>
+                `;
+                document.getElementById('footer-summary-text').innerText = `[多产品] 等 ${state.selectedProducts.length} 线路`;
+            }
+            container.innerHTML = text;
+        }
+
+        // SWAP LEFT INPUT METHOD TABS
+        function switchDateMode(mode) {
+            state.dateMode = mode;
+            const tabs = ['cycle', 'manual', 'import'];
+            tabs.forEach(t => {
+                const el = document.getElementById(`tab-date-${t}`);
+                if (t === mode) {
+                    el.className = "flex-1 text-center py-2 text-xs font-semibold rounded-md transition-all bg-white text-indigo-600 shadow-sm";
+                    document.getElementById(`date-panel-${t}`).classList.remove('hidden');
+                } else {
+                    el.className = "flex-1 text-center py-2 text-xs font-semibold rounded-md transition-all text-slate-600 hover:text-slate-900";
+                    document.getElementById(`date-panel-${t}`).classList.add('hidden');
+                }
+            });
+
+            if (mode === 'manual') {
+                renderManualCalendar();
+            }
+
+            runRulesEngine();
+        }
+
+        // SHORTCUT BUTTON SELECTIONS FOR CYCLE MODE
+        function setShortcutDates(type) {
+            const startInput = document.getElementById('cycle-start-date');
+            const endInput = document.getElementById('cycle-end-date');
+            if (type === 'july') {
+                startInput.value = '2026-07-01';
+                endInput.value = '2026-07-31';
+            } else if (type === 'august') {
+                startInput.value = '2026-08-01';
+                endInput.value = '2026-08-31';
+            } else if (type === 'summer') {
+                startInput.value = '2026-07-01';
+                endInput.value = '2026-08-31';
+            }
+            runRulesEngine();
+        }
+
+        // EXCLUDE DATES HANDLING
+        function addCustomExclude() {
+            const dateVal = document.getElementById('add-exclude-date').value;
+            if (!dateVal) return;
+            if (!state.cycle.manualExcludes.includes(dateVal)) {
+                state.cycle.manualExcludes.push(dateVal);
+                renderExcludeTags();
+                runRulesEngine();
+            }
+            document.getElementById('add-exclude-date').value = "";
+        }
+
+        function removeExcludeTag(date) {
+            state.cycle.manualExcludes = state.cycle.manualExcludes.filter(d => d !== date);
+            renderExcludeTags();
+            runRulesEngine();
+        }
+
+        function renderExcludeTags() {
+            const container = document.getElementById('exclude-tags-container');
+            container.innerHTML = state.cycle.manualExcludes.map(date => `
+                <span class="bg-red-50 text-red-700 px-2 py-0.5 rounded flex items-center gap-1 text-[10px] font-bold">
+                    ${date}
+                    <button type="button" onclick="removeExcludeTag('${date}')" class="text-red-500 hover:text-red-800">×</button>
+                </span>
+            `).join('');
+        }
+
+        // DAY OF WEEK CHECKBOX MULTI-TOGGLE
+        function onWeekdayToggle(day) {
+            const el = document.getElementById(`wd-${day}`);
+            const chk = el.querySelector('input');
+            chk.checked = !chk.checked;
+
+            if (chk.checked) {
+                el.className = "cursor-pointer text-center py-2 border-2 rounded-lg border-indigo-600 bg-indigo-50/20 hover:bg-indigo-50 transition-all select-none";
+                if (!state.cycle.weekdays.includes(day)) {
+                    state.cycle.weekdays.push(day);
+                }
+            } else {
+                el.className = "cursor-pointer text-center py-2 border rounded-lg border-slate-200 bg-slate-50 hover:bg-slate-100 transition-all select-none";
+                state.cycle.weekdays = state.cycle.weekdays.filter(d => d !== day);
+            }
+            runRulesEngine();
+        }
+
+        // LEADER MODE OPTIONS UI SWAPPING
+        function toggleLeaderMode(mode) {
+            state.leaderMode = mode;
+            const modes = ['none', 'single', 'robin'];
+            modes.forEach(m => {
+                const el = document.getElementById(`lbl-leader-${m}`);
+                if (m === mode) {
+                    el.className = "border-2 border-indigo-600 bg-indigo-50/20 p-2 rounded-lg flex flex-col justify-center items-center text-center cursor-pointer";
+                } else {
+                    el.className = "border border-slate-200 hover:border-slate-300 p-2 rounded-lg flex flex-col justify-center items-center text-center cursor-pointer";
+                }
+            });
+
+            const detailContainer = document.getElementById('leader-detail-box');
+            if (mode === 'none') {
+                detailContainer.innerHTML = ``;
+            } else if (mode === 'single') {
+                detailContainer.innerHTML = `
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">选择特定领队（本批次统一由此人带团）</label>
+                    <select id="single-leader-select" onchange="state.singleLeaderId = this.value; runRulesEngine();" class="w-full bg-slate-50 border border-slate-200 text-xs rounded p-2">
+                        ${LEADERS.map(l => `<option value="${l.id}" ${state.singleLeaderId === l.id ? 'selected' : ''}>${l.name}</option>`).join('')}
+                    </select>
+                `;
+            } else if (mode === 'robin') {
+                detailContainer.innerHTML = `
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">勾选多名领队进入轮流指排池</label>
+                    <div class="border border-slate-200 rounded p-2 bg-slate-50 space-y-1">
+                        ${LEADERS.map(l => `
+                            <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                                <input type="checkbox" value="${l.id}" ${state.robinLeaderIds.includes(l.id) ? 'checked' : ''} onchange="onRobinLeaderCheck('${l.id}', this.checked)" class="rounded text-indigo-600">
+                                ${l.name}
+                            </label>
+                        `).join('')}
+                    </div>
+                `;
+            }
+            runRulesEngine();
+        }
+
+        function onRobinLeaderCheck(leaderId, checked) {
+            if (checked) {
+                if (!state.robinLeaderIds.includes(leaderId)) state.robinLeaderIds.push(leaderId);
+            } else {
+                state.robinLeaderIds = state.robinLeaderIds.filter(id => id !== leaderId);
+            }
+            runRulesEngine();
+        }
+
+        // PEAK SEASON EXTRA RULES CONTROLLERS
+        function addPeakRule() {
+            state.peakRules.push({ start: '2026-07-20', end: '2026-08-20', capacity: 35 });
+            renderPeakRules();
+            runRulesEngine();
+        }
+
+        function removePeakRule(idx) {
+            state.peakRules.splice(idx, 1);
+            renderPeakRules();
+            runRulesEngine();
+        }
+
+        function updatePeakRule(idx, field, value) {
+            state.peakRules[idx][field] = value;
+            runRulesEngine();
+        }
+
+        function renderPeakRules() {
+            const container = document.getElementById('peak-rules-container');
+            container.innerHTML = state.peakRules.map((rule, idx) => `
+                <div class="flex items-center gap-1 bg-white border border-slate-200 p-1.5 rounded text-[11px] justify-between">
+                    <div class="flex items-center gap-1">
+                        <input type="date" value="${rule.start}" onchange="updatePeakRule(${idx}, 'start', this.value)" class="border rounded p-0.5 text-[10px]">
+                        <span class="text-slate-400">至</span>
+                        <input type="date" value="${rule.end}" onchange="updatePeakRule(${idx}, 'end', this.value)" class="border rounded p-0.5 text-[10px]">
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <span class="text-[10px] text-slate-500">容量</span>
+                        <input type="number" value="${rule.capacity}" oninput="updatePeakRule(${idx}, 'capacity', parseInt(this.value)||30)" class="w-10 border rounded p-0.5 text-center text-[10px] font-bold">
+                        <button type="button" onclick="removePeakRule(${idx})" class="text-red-500 hover:text-red-800 ml-1">×</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // ADVANCED SETTINGS ACCORDION TOGGLE
+        function toggleAdvancedSettings() {
+            const content = document.getElementById('advanced-content');
+            const arrow = document.getElementById('advanced-arrow');
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                arrow.innerText = "▲ 折叠";
+            } else {
+                content.classList.add('hidden');
+                arrow.innerText = "▼ 展开";
+            }
+        }
+
+        // REDRAW CUSTOM INTERNAL CALENDAR (MANUAL SELECTION MODE)
+        function changeCalendarMonth(offset) {
+            state.manual.currentCalMonth += offset;
+            if (state.manual.currentCalMonth > 12) {
+                state.manual.currentCalMonth = 1;
+                state.manual.currentCalYear++;
+            } else if (state.manual.currentCalMonth < 1) {
+                state.manual.currentCalMonth = 12;
+                state.manual.currentCalYear--;
+            }
+            renderManualCalendar();
+        }
+
+        function renderManualCalendar() {
+            const grid = document.getElementById('calendar-days-grid');
+            const title = document.getElementById('calendar-month-title');
+            grid.innerHTML = "";
+
+            const year = state.manual.currentCalYear;
+            const month = state.manual.currentCalMonth;
+            title.innerText = `${year}年 ${month}月`;
+
+            // Dates calculation
+            const firstDayIndex = new Date(year, month - 1, 1).getDay(); // Sun is 0, Mon is 1...
+            const totalDays = new Date(year, month, 0).getDate();
+
+            // Render empty cells for leading alignment padding
+            for (let i = 0; i < firstDayIndex; i++) {
+                grid.innerHTML += `<div class="p-2 text-center text-transparent">.</div>`;
+            }
+
+            // Fetch mock existing dates to show as indicator
+            const activeProdId = state.selectedProducts[0] || "1";
+            const existingDates = EXISTING_TOUR_DATES[activeProdId] || [];
+
+            // Draw dates of current month
+            for (let day = 1; day <= totalDays; day++) {
+                const dateString = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const hasExisting = existingDates.includes(dateString);
+                const isSelected = state.manual.selectedDates.includes(dateString);
+
+                let cellClass = "p-2 text-center text-xs font-semibold rounded cursor-pointer transition-all ";
+                let indicatorsMarkup = "";
+
+                if (isSelected) {
+                    cellClass += "bg-indigo-600 text-white shadow-sm hover:bg-indigo-700";
+                } else if (hasExisting) {
+                    cellClass += "bg-slate-200 text-slate-500 hover:bg-slate-300";
+                    indicatorsMarkup = `<span class="block text-[8px] leading-tight text-indigo-700 font-bold">已开团</span>`;
+                } else {
+                    cellClass += "bg-slate-50 text-slate-700 hover:bg-indigo-50";
+                }
+
+                grid.innerHTML += `
+                    <div onclick="toggleManualDateSelection('${dateString}')" class="${cellClass}">
+                        <div>${day}</div>
+                        ${indicatorsMarkup}
+                    </div>
+                `;
+            }
+        }
+
+        function toggleManualDateSelection(dateString) {
+            const idx = state.manual.selectedDates.indexOf(dateString);
+            if (idx > -1) {
+                state.manual.selectedDates.splice(idx, 1);
+            } else {
+                state.manual.selectedDates.push(dateString);
+            }
+            renderManualCalendar();
+            runRulesEngine();
+        }
+
+        // SIMULATED EXCEL UPLOAD TRIGGERS (SCENARIO 2.2 MODE C)
+        function simulateExcelUpload() {
+            loadSampleExcelData();
+            alert("📁 系统已成功模拟加载 Excel 文件 'summer_group_plan_2026.xlsx' 并自动提取 3 组行记录！");
+        }
+
+        function loadSampleExcelData() {
+            state.importedRows = [
+                { date: "2026-07-06", capacity: 30, remark: "CA933首发联络组" },
+                { date: "2026-07-13", capacity: 35, remark: "避开高峰扩建专团" },
+                { date: "2026-07-20", capacity: 30, remark: "正常主力班次" }
+            ];
+            runRulesEngine();
+        }
+
+
+        // =========================================================================
+        //                 🚀 THE CORE INTELLIGENT RULES ENGINE 🚀
+        // =========================================================================
+        function runRulesEngine() {
+            if (state.selectedProducts.length === 0) {
+                renderEmptyPreview();
+                return;
+            }
+
+            // Sync global state config directly from form elements
+            state.capacity = parseInt(document.getElementById('base-capacity').value) || 30;
+            state.cycle.start = document.getElementById('cycle-start-date').value;
+            state.cycle.end = document.getElementById('cycle-end-date').value;
+            state.cycle.excludeHolidays = document.getElementById('exclude-holidays').checked;
+
+            let candidateDates = [];
+
+            // 1. GATHER ALL RAW DATES DEPENDING ON MODE
+            if (state.dateMode === 'cycle') {
+                if (!state.cycle.start || !state.cycle.end) return;
+                let cur = new Date(state.cycle.start);
+                const end = new Date(state.cycle.end);
+
+                while (cur <= end) {
+                    const formatted = cur.toISOString().split('T')[0];
+                    const dayOfWeek = cur.getDay(); // 0 is Sun, 1 is Mon...
+
+                    // Check Weekday alignment rule
+                    if (state.cycle.weekdays.includes(dayOfWeek)) {
+                        let isExcluded = false;
+
+                        // Check Manual date exclusion rule
+                        if (state.cycle.manualExcludes.includes(formatted)) {
+                            isExcluded = true;
+                        }
+
+                        // Check Automatic Statutory Holidays exclusion rule
+                        if (state.cycle.excludeHolidays && STATUTORY_HOLIDAYS_2026.includes(formatted)) {
+                            isExcluded = true;
+                        }
+
+                        if (!isExcluded) {
+                            candidateDates.push(formatted);
+                        }
+                    }
+                    // increment date by 1 day
+                    cur.setDate(cur.getDate() + 1);
+                }
+            } else if (state.dateMode === 'manual') {
+                candidateDates = [...state.manual.selectedDates].sort();
+            } else if (state.dateMode === 'import') {
+                candidateDates = state.importedRows.map(row => row.date);
+            }
+
+            // 2. CONSTRUCT BATCH OUTPUT ARRAY ACROSS TARGET PRODUCTS
+            let toursList = [];
+            let skippedDuplicateCount = 0;
+
+            const filterConflictsOnly = document.getElementById('chk-filter-conflicts').checked;
+            const skipDuplicates = document.getElementById('chk-skip-duplicates').checked;
+
+            // Loop and assign leaders sequentially
+            let leaderRoundRobinIndex = 0;
+
+            state.selectedProducts.forEach(productId => {
+                const prod = PRODUCTS[productId];
+                
+                candidateDates.forEach(dateStr => {
+                    const idKey = `${productId}_${dateStr}`;
+                    
+                    // If manually deleted, ignore
+                    if (state.manuallyOverriddenTours[idKey]?.deleted) {
+                        return;
+                    }
+
+                    // A. Fetch Active Scheme (incorporating Manual Override if existing)
+                    let activeScheme = prod.schemes[0]; // default fallback
+                    if (state.productMode === 'single') {
+                        activeScheme = prod.schemes.find(s => s.id === state.selectedSchemeId) || prod.schemes[0];
+                    }
+
+                    const manualOver = state.manuallyOverriddenTours[idKey];
+                    if (manualOver && manualOver.schemeId) {
+                        activeScheme = prod.schemes.find(s => s.id === manualOver.schemeId) || activeScheme;
+                    }
+
+                    // B. Calculate Trip End Date using ACTIVE SCHEME'S days!
+                    const startDateObj = new Date(dateStr);
+                    const endDateObj = new Date(startDateObj);
+                    endDateObj.setDate(startDateObj.getDate() + (activeScheme.days - 1));
+                    const returnDateStr = endDateObj.toISOString().split('T')[0];
+
+                    // C. Determine Base & Peak Capacity Rules
+                    let finalCap = state.capacity;
+                    let isSpecialPeakRule = false;
+                    
+                    state.peakRules.forEach(rule => {
+                        if (dateStr >= rule.start && dateStr <= rule.end) {
+                            finalCap = rule.capacity;
+                            isSpecialPeakRule = true;
+                        }
+                    });
+
+                    // If Excel imported has custom row capacity
+                    if (state.dateMode === 'import') {
+                        const row = state.importedRows.find(r => r.date === dateStr);
+                        if (row && row.capacity) finalCap = row.capacity;
+                    }
+
+                    // D. Pre-assignment of Tour Leaders
+                    let assignedLeader = { name: "暂不分配", hasConflict: false, conflictDetails: "" };
+                    
+                    if (state.leaderMode === 'single') {
+                        const leadObj = LEADERS.find(l => l.id === state.singleLeaderId);
+                        if (leadObj) {
+                            assignedLeader.name = leadObj.name;
+                            // Check Single leader schedule conflict
+                            const hasConflict = checkLeaderScheduleConflict(leadObj.id, dateStr, returnDateStr);
+                            if (hasConflict) {
+                                assignedLeader.hasConflict = true;
+                                assignedLeader.conflictDetails = `领队档期冲突（已被其他团占用）`;
+                            }
+                        }
+                    } else if (state.leaderMode === 'robin') {
+                        if (state.robinLeaderIds.length > 0) {
+                            // Cycle through leaders and check schedule
+                            let attempts = 0;
+                            let leaderFound = false;
+
+                            while (attempts < state.robinLeaderIds.length && !leaderFound) {
+                                const activeLeaderId = state.robinLeaderIds[leaderRoundRobinIndex];
+                                leaderRoundRobinIndex = (leaderRoundRobinIndex + 1) % state.robinLeaderIds.length;
+                                
+                                const leadObj = LEADERS.find(l => l.id === activeLeaderId);
+                                if (leadObj) {
+                                    const hasConflict = checkLeaderScheduleConflict(leadObj.id, dateStr, returnDateStr);
+                                    if (!hasConflict) {
+                                        assignedLeader.name = leadObj.name;
+                                        leaderFound = true;
+                                    } else {
+                                        // Keep details of conflict and try next
+                                        assignedLeader.name = `${leadObj.name} (档期冲突)`;
+                                        assignedLeader.hasConflict = true;
+                                        assignedLeader.conflictDetails = `领队 ${leadObj.name} 档期冲突`;
+                                    }
+                                }
+                                attempts++;
+                            }
+                        }
+                    }
+
+                    // E. Calculate Automatic Codename / Tour No incorporating Scheme specification
+                    const yymmdd = dateStr.replace(/-/g, '').substring(2);
+                    const schemeCodeSuffix = activeScheme.id.substring(1); // e.g. "A" or "B"
+                    const tourNo = `${prod.code}${schemeCodeSuffix}-${yymmdd}-01`;
+
+                    // F. Detect Conflicts
+                    let warnings = [];
+                    let isDuplicate = false;
+
+                    // I. Duplicate Tour Check
+                    const existingTours = EXISTING_TOUR_DATES[productId] || [];
+                    if (existingTours.includes(dateStr)) {
+                        isDuplicate = true;
+                        warnings.push({ type: 'danger', text: '该日期已存在开架销售的相同团期' });
+                    }
+
+                    // II. Leader Conflict Check
+                    if (assignedLeader.hasConflict) {
+                        warnings.push({ type: 'warning', text: assignedLeader.conflictDetails });
+                    }
+
+                    // III. Holiday Warnings Info Check
+                    if (STATUTORY_HOLIDAYS_2026.includes(dateStr)) {
+                        warnings.push({ type: 'info', text: '📅 出发日为2026国家法定节假日' });
+                    }
+
+                    // IV. Airline Seat Allotment Capacity Warning Check (Supply chain integration)
+                    if (FLIGHT_SEATS_LOCK[dateStr] !== undefined) {
+                        const availableSeats = FLIGHT_SEATS_LOCK[dateStr];
+                        if (finalCap > availableSeats) {
+                            warnings.push({ type: 'warning', text: `✈️ 航班锁位仅余 ${availableSeats} 席（少于计划容量 ${finalCap}）` });
+                        }
+                    }
+
+                    // Apply manual overrides if user modified this specific line manually (Scenario 4.3)
+                    if (manualOver) {
+                        if (manualOver.capacity !== undefined) finalCap = manualOver.capacity;
+                        if (manualOver.leader !== undefined) assignedLeader.name = manualOver.leader;
+                    }
+
+                    const tourObj = {
+                        id: idKey,
+                        productId: productId,
+                        productName: prod.name,
+                        productCode: prod.code,
+                        schemeId: activeScheme.id,
+                        schemeName: activeScheme.name,
+                        schemeCodeName: activeScheme.name.split('：')[0], // e.g. "方案A"
+                        date: dateStr,
+                        weekDay: getWeekdayChinese(startDateObj.getDay()),
+                        returnDate: returnDateStr,
+                        capacity: finalCap,
+                        leader: assignedLeader.name,
+                        tourNo: tourNo,
+                        warnings: warnings,
+                        isDuplicate: isDuplicate,
+                        isSpecialPeak: isSpecialPeakRule
+                    };
+
+                    // G. Skip Logic Filter
+                    if (isDuplicate && skipDuplicates) {
+                        skippedDuplicateCount++;
+                    } else {
+                        if (filterConflictsOnly) {
+                            if (warnings.length > 0) {
+                                toursList.push(tourObj);
+                            }
+                        } else {
+                            toursList.push(tourObj);
+                        }
+                    }
+                });
+            });
+
+            state.previewTours = toursList;
+
+            // 3. RENDER RESULTS & STATS TO VIEW DOM
+            renderPreviewTable(skippedDuplicateCount);
+        }
+
+        function checkLeaderScheduleConflict(leaderId, startStr, endStr) {
+            const conflicts = MOCK_LEADER_CONFLICT_RANGES.filter(c => c.leaderId === leaderId);
+            for (let c of conflicts) {
+                // If overlap
+                if (startStr <= c.end && endStr >= c.start) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function getWeekdayChinese(day) {
+            const map = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
+            return map[day];
+        }
+
+        // REDRAW EMPTY VIEW CAPABILITY
+        function renderEmptyPreview() {
+            document.getElementById('preview-table-body').innerHTML = "";
+            document.getElementById('empty-preview-placeholder').classList.remove('hidden');
+            updateStatsUI(0, 0, 0, 0);
+        }
+
+        // UPDATE STATS UI BANNERS
+        function updateStatsUI(total, skipped, warnings, seats) {
+            document.getElementById('stat-total').innerText = total;
+            document.getElementById('stat-skipped').innerText = skipped;
+            document.getElementById('stat-warnings').innerText = warnings;
+            document.getElementById('stat-total-seats').innerText = seats;
+
+            // Sync sticky bottom footer info
+            document.getElementById('footer-tours-count').innerText = total;
+            document.getElementById('footer-warns-count').innerText = `${warnings} 项冲突异常待审核`;
+        }
+
+        // RENDER INTERACTIVE LIVE RESULTS TABLE
+        function renderPreviewTable(skippedDuplicateCount) {
+            const tbody = document.getElementById('preview-table-body');
+            const placeholder = document.getElementById('empty-preview-placeholder');
+
+            if (state.previewTours.length === 0) {
+                tbody.innerHTML = "";
+                placeholder.classList.remove('hidden');
+                updateStatsUI(0, skippedDuplicateCount, 0, 0);
+                return;
+            }
+
+            placeholder.classList.add('hidden');
+            let markup = "";
+            let totalWarningsCount = 0;
+            let totalLockedSeats = 0;
+
+            state.previewTours.forEach((tour, idx) => {
+                totalLockedSeats += tour.capacity;
+                if (tour.warnings.length > 0) totalWarningsCount++;
+
+                // Build status labels column markup
+                let warningLabels = `<span class="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded text-[10px] font-bold">✓ 状态良好</span>`;
+                if (tour.warnings.length > 0) {
+                    warningLabels = tour.warnings.map(w => {
+                        let colorClass = "bg-amber-50 text-amber-700 border border-amber-100";
+                        if (w.type === 'danger') colorClass = "bg-red-50 text-red-700 border border-red-100";
+                        if (w.type === 'info') colorClass = "bg-sky-50 text-sky-700 border border-sky-100";
+                        return `<span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-medium ${colorClass} mr-1 mb-1">${w.text}</span>`;
+                    }).join('');
+                }
+
+                const trClass = tour.isDuplicate ? "bg-red-50/20" : (tour.warnings.some(w=>w.type==='warning') ? "bg-amber-50/10" : "");
+
+                markup += `
+                    <tr class="${trClass} hover:bg-slate-50 transition-colors">
+                        <td class="py-2 px-2 font-medium text-slate-500">${idx + 1}</td>
+                        <td class="py-2 px-2">
+                            <div class="flex flex-col gap-0.5">
+                                <span class="bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded text-[10px] font-bold w-max">${tour.productCode}</span>
+                                <span class="text-[10px] text-slate-500 font-semibold truncate max-w-[120px]" title="${tour.schemeName}">${tour.schemeCodeName}</span>
+                            </div>
+                        </td>
+                        <td class="py-2 px-2">
+                            <div class="font-semibold text-slate-800">${tour.date}</div>
+                            <div class="text-[10px] text-slate-400">${tour.weekDay}</div>
+                        </td>
+                        <td class="py-2 px-2 text-slate-600">${tour.returnDate}</td>
+                        <td class="py-2 px-2">
+                            <span class="font-bold ${tour.isSpecialPeak ? 'text-indigo-600 font-extrabold' : 'text-slate-800'}">${tour.capacity}</span>
+                            ${tour.isSpecialPeak ? '<span class="block text-[8px] text-indigo-500 font-medium">暑假特需</span>' : ''}
+                        </td>
+                        <td class="py-2 px-2 text-slate-700 font-medium">${tour.leader}</td>
+                        <td class="py-2 px-2 font-mono text-slate-700 font-bold">${tour.tourNo}</td>
+                        <td class="py-2 px-2 max-w-[200px]">${warningLabels}</td>
+                        <td class="py-2 px-2 text-right space-x-1.5">
+                            <button type="button" onclick="openInlineRowEdit('${tour.id}', ${idx})" class="text-indigo-600 hover:text-indigo-900 font-bold hover:underline text-[11px]">编辑</button>
+                            <button type="button" onclick="deleteTourFromQueue('${tour.id}')" class="text-red-500 hover:text-red-800 font-semibold hover:underline text-[11px]">剔除</button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tbody.innerHTML = markup;
+            updateStatsUI(state.previewTours.length, skippedDuplicateCount, totalWarningsCount, totalLockedSeats);
+        }
+
+        // SCENARIO 4.3: ROW-INLINE INTERACTIVE EDIT DIALOG (SUPPORTING DETAILED SCHEME REASSIGNMENTS)
+        function openInlineRowEdit(id, index) {
+            const tour = state.previewTours[index];
+            const prod = PRODUCTS[tour.productId];
+            
+            // A. Optional Scheme specification override
+            let schemePromptText = `[行内微调] 请选择对应行程方案：\n`;
+            prod.schemes.forEach((s, idx) => {
+                schemePromptText += `  输入 [${idx + 1}]：${s.name} (${s.days}天 - ¥${s.basePrice})\n`;
+            });
+            schemePromptText += `当前指派：${tour.schemeName}。\n若不更改直接按“回车”进入下一步。`;
+            
+            const schemeInput = prompt(schemePromptText, "");
+            let selectedSchemeId = null;
+            if (schemeInput !== null && schemeInput.trim() !== "") {
+                const parsedIdx = parseInt(schemeInput) - 1;
+                if (parsedIdx >= 0 && parsedIdx < prod.schemes.length) {
+                    selectedSchemeId = prod.schemes[parsedIdx].id;
+                } else {
+                    alert("方案序号输入无效，将保持原指派。");
+                }
+            }
+
+            // B. Optional capacity adjustment override
+            const newCap = prompt(`[行内微调] 请输入该班期计划最大收客人数 (当前: ${tour.capacity}人)：`, tour.capacity);
+            if (newCap === null) return;
+
+            const parsedCap = parseInt(newCap);
+            if (isNaN(parsedCap) || parsedCap <= 0) {
+                alert("请输入合法的数字！");
+                return;
+            }
+
+            // C. Optional tour leader change override
+            const newLeader = prompt(`[行内微调] 请输入指派的领队姓名 (当前: ${tour.leader})：`, tour.leader);
+            if (newLeader === null) return;
+
+            // Save overrides to persistent preview cache
+            if (!state.manuallyOverriddenTours[id]) {
+                state.manuallyOverriddenTours[id] = {};
+            }
+            state.manuallyOverriddenTours[id].capacity = parsedCap;
+            state.manuallyOverriddenTours[id].leader = newLeader;
+            if (selectedSchemeId) {
+                state.manuallyOverriddenTours[id].schemeId = selectedSchemeId;
+            }
+
+            runRulesEngine();
+        }
+
+        // REMOVE TARGET TOUR FROM CURRENT QUEUE
+        function deleteTourFromQueue(id) {
+            if (!state.manuallyOverriddenTours[id]) {
+                state.manuallyOverriddenTours[id] = {};
+            }
+            state.manuallyOverriddenTours[id].deleted = true;
+            runRulesEngine();
+        }
+
+
+        // =========================================================================
+        //                 🔄 BATCH MODIFICATION ENGINE (SCENARIO 4)
+        // =========================================================================
+        let modifyState = {
+            allExistingTours: [
+                { id: "E1001", code: "EU10", name: "欧洲经典法国+瑞士+意大利10日游", date: "2026-07-10", returnDate: "2026-07-19", capacity: 30, leader: "张极度", status: "open", checked: true },
+                { id: "E1002", code: "EU10", name: "欧洲经典法国+瑞士+意大利10日游", date: "2026-08-14", returnDate: "2026-08-23", capacity: 30, leader: "林秋怡", status: "open", checked: true },
+                { id: "E1003", code: "JP06", name: "日本本州双古都精选6日游", date: "2026-07-15", returnDate: "2026-07-20", capacity: 30, leader: "陈建国", status: "open", checked: true }
+            ]
+        };
+
+        function initModifyPage() {
+            runModifyFilter();
+        }
+
+        // TRIGGER FILTER ON EXISTING TOURS DATABASE
+        function runModifyFilter() {
+            const prodFilter = document.getElementById('mod-filter-product').value;
+            const startStr = document.getElementById('mod-filter-start').value;
+            const endStr = document.getElementById('mod-filter-end').value;
+            const statusFilter = document.getElementById('mod-filter-status').value;
+
+            const filtered = modifyState.allExistingTours.filter(t => {
+                const isProductMatch = prodFilter === 'all' || (prodFilter === '1' && t.code === 'EU10') || (prodFilter === '2' && t.code === 'JP06');
+                const isDateMatch = (!startStr || t.date >= startStr) && (!endStr || t.date <= endStr);
+                const isStatusMatch = statusFilter === 'all' || t.status === statusFilter;
+                return isProductMatch && isDateMatch && isStatusMatch;
+            });
+
+            renderModifyList(filtered);
+        }
+
+        function renderModifyList(list) {
+            const container = document.getElementById('mod-tours-list');
+            document.getElementById('mod-count').innerText = list.length;
+
+            if (list.length === 0) {
+                container.innerHTML = `<div class="p-6 text-center text-slate-400 text-xs">没有找到符合筛选条件的已有团期！请拓宽筛选器日期范围。</div>`;
+                return;
+            }
+
+            container.innerHTML = list.map(t => `
+                <label class="flex items-center justify-between p-3.5 hover:bg-slate-50 cursor-pointer text-xs select-none">
+                    <div class="flex items-center gap-3">
+                        <input type="checkbox" id="chk-mod-${t.id}" ${t.checked ? 'checked' : ''} onchange="onToggleIndividualModTour('${t.id}', this.checked)" class="rounded text-indigo-600 focus:ring-indigo-500">
+                        <div>
+                            <span class="bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded text-[10px] font-bold mr-1.5">${t.code}</span>
+                            <span class="font-bold text-slate-800">${t.name}</span>
+                        </div>
+                    </div>
+                    <div class="flex gap-4 items-center text-slate-500 font-medium">
+                        <span>出发日: <strong class="text-slate-800">${t.date}</strong></span>
+                        <span>返程日: <strong class="text-slate-800">${t.returnDate}</strong></span>
+                        <span>容量: <strong>${t.capacity}人</strong></span>
+                        <span>当前领队: <strong>${t.leader}</strong></span>
+                        <span class="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full text-[10px] font-bold">销售中</span>
+                    </div>
+                </label>
+            `).join('');
+        }
+
+        function onToggleIndividualModTour(id, checked) {
+            const tour = modifyState.allExistingTours.find(t => t.id === id);
+            if (tour) tour.checked = checked;
+        }
+
+        // BULK CHECK SELECT ALL CAPABILITY
+        let allModToursChecked = true;
+        function toggleSelectAllModTours() {
+            allModToursChecked = !allModToursChecked;
+            modifyState.allExistingTours.forEach(t => t.checked = allModToursChecked);
+            runModifyFilter();
+        }
+
+        // CONFIRM SAVING BATCH ALTERATIONS (SCENARIO 4 EXECUTION)
+        function executeBatchModification() {
+            const checkedTours = modifyState.allExistingTours.filter(t => t.checked);
+            if (checkedTours.length === 0) {
+                alert("❌ 请在第一步列表中至少勾选一个你想进行批量修改的团期！");
+                return;
+            }
+
+            const shiftDays = parseInt(document.getElementById('mod-date-shift').value) || 0;
+            const newLeaderVal = document.getElementById('mod-new-leader').value;
+            const newCapacityVal = document.getElementById('mod-new-capacity').value;
+            const newStatusVal = document.getElementById('mod-new-status').value;
+
+            let logMessage = `🔧 批量字段覆盖任务已异步执行！\n\n`;
+            logMessage += `目标修改团数：${checkedTours.length} 个\n`;
+            
+            checkedTours.forEach(t => {
+                // Shift return date
+                if (shiftDays !== 0) {
+                    const d = new Date(t.returnDate);
+                    d.setDate(d.getDate() + shiftDays);
+                    t.returnDate = d.toISOString().split('T')[0];
+                }
+                // Change Leader
+                if (newLeaderVal !== 'keep') {
+                    const l = LEADERS.find(lead => lead.id === newLeaderVal);
+                    if (l) t.leader = l.name;
+                }
+                // Change Capacity
+                if (newCapacityVal) {
+                    t.capacity = parseInt(newCapacityVal);
+                }
+                // Change Status
+                if (newStatusVal !== 'keep') {
+                    t.status = newStatusVal;
+                }
+            });
+
+            logMessage += `更改结果已同步至供应商网络，各直分销网店同步刷新。\n数据变动历史已记入计调日志审计中心。`;
+            alert(logMessage);
+            runModifyFilter();
+        }
+
+
+        // =========================================================================
+        //                   SUBMISSION & FOOTER NAVIGATION ACTIONS
+        // =========================================================================
+        function cancelWorkflow() {
+            if (confirm("🚨 您确定要放弃本次批量排期的规则设置，直接返回团期管理大厅吗？\n(当前排期配置将丢失，不会被写入系统)")) {
+                alert("已清除临时数据，返回团期列表面。");
+            }
+        }
+
+        function saveTours(status) {
+            if (state.previewTours.length === 0) {
+                alert("❌ 当前没有根据规则运算出来的预览团期！请先在左侧输入发团频次规则。");
+                return;
+            }
+            showCompletionModal(state.previewTours.length, 0);
+        }
+
+        function submitFinalTours() {
+            if (state.previewTours.length === 0) {
+                alert("❌ 当前没有根据规则运算出来的预览团期！请先在左侧输入发团频次规则。");
+                return;
+            }
+
+            const total = state.previewTours.length;
+            const warnings = state.previewTours.filter(t => t.warnings.length > 0).length;
+
+            if (warnings > 0) {
+                const proceed = confirm(`⚠️ 当前有 ${warnings} 个团期可能存在航班锁位不足或领队冲突。\n点击[确定]生成这些团期会自动打上"待人工确认"标记并隔离暂不销售，其余健康班期正常上线发团，是否继续？`);
+                if (!proceed) return;
+            }
+
+            showCompletionModal(total - warnings, warnings);
+        }
+
+        // MODAL ACTION POPUPS
+        function showCompletionModal(success, warnings) {
+            document.getElementById('modal-success-cnt').innerText = success;
+            document.getElementById('modal-warning-cnt').innerText = warnings;
+            document.getElementById('success-modal').classList.remove('hidden');
+        }
+
+        function closeModalAndRedirect(action) {
+            document.getElementById('success-modal').classList.add('hidden');
+            if (action === 'flights') {
+                alert("正在跳转到：机票管理 → 航司切位资源分配模块...");
+            } else if (action === 'poster') {
+                alert("正在跳转到：分销工具 → 智能宣传物料&收客海报批量生成中心...");
+            } else {
+                alert("返回团期列表，系统已刷新数据。");
+            }
+        }
+    </script>
+</body>
+</html>

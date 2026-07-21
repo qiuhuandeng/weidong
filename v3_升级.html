@@ -5,30 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>预约排客看板</title>
     <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        brand: {
-                            50: '#f0f7ff',
-                            100: '#e0effe',
-                            500: '#3b82f6',
-                            600: '#2563eb',
-                            700: '#1d4ed8',
-                        },
-                        status: {
-                            unpaid: '#3b82f6', // 已预约未到店 (蓝)
-                            arrived: '#10b981', // 已预约已到店 (绿)
-                            compressed: '#f59e0b', // 压缩接待/改约 (橙)
-                            occupied: '#64748b' // 占用/不可约
-                        }
-                    }
-                }
-            }
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style type="text/tailwindcss">
+        @theme {
+            --color-brand-50: #f0f7ff;
+            --color-brand-100: #e0effe;
+            --color-brand-500: #3b82f6;
+            --color-brand-600: #2563eb;
+            --color-brand-700: #1d4ed8;
+            --color-status-unpaid: #3b82f6;
+            --color-status-arrived: #10b981;
+            --color-status-compressed: #f59e0b;
+            --color-status-occupied: #64748b;
         }
-    </script>
+    </style>
     <style>
         /* 避免本地打开时发生高度塌陷 */
         html, body {
@@ -377,7 +367,7 @@
 
                 <!-- 操作卡片列表：大触控区、易于单手操作 -->
                 <div class="space-y-3 pb-6">
-                    <!-- 1. 新增预约 -->
+                    <!-- 1. 快速预约 -->
                     <button onclick="triggerNewBookingFromMenu()" class="w-full bg-white active:scale-[0.98] border border-slate-100 hover:border-blue-100 p-4 rounded-2xl flex items-center space-x-4 transition-all text-left shadow-sm">
                         <div class="w-11 h-11 rounded-xl bg-[#EFF6FF] text-[#3B82F6] flex items-center justify-center flex-none">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -385,7 +375,7 @@
                             </svg>
                         </div>
                         <div class="flex-1">
-                            <p class="text-slate-900 font-bold text-sm">新增预约</p>
+                            <p class="text-slate-900 font-bold text-sm">快速预约</p>
                             <p class="text-slate-400 text-[11px] mt-0.5">选择床位及服务时段快速下单</p>
                         </div>
                     </button>
@@ -478,7 +468,7 @@
 
         <!-- ==================== STREAMING_CHUNK: Designing Multi-step Booking Form ... ==================== -->
         <!-- ==================== 6. 新建/编辑预约“二级页面”（完全摒弃弹窗，右侧滑入 z-40） ==================== -->
-        <div id="booking-drawer" class="absolute inset-0 bg-white z-40 flex flex-col transition-transform duration-300 ease-out transform translate-x-full pointer-events-none">
+        <div id="booking-drawer" class="absolute inset-0 bg-white z-40 flex flex-col transition-transform duration-300 ease-out transform translate-x-full pointer-events-none overflow-hidden">
             
             <!-- 顶部二级页面固定的高质感导航栏 -->
             <header class="bg-gradient-to-r from-blue-900 to-indigo-950 text-white px-4 py-3 flex items-center justify-between flex-none z-30 shadow">
@@ -494,77 +484,67 @@
                 </button>
             </header>
 
-            <!-- 滑动容器，存放第一步和第二步 (彻底修复手机端的 flex 高度塌陷溢出 bug, 移除 h-full, 加入 flex-1 min-h-0) -->
-            <div class="flex-1 min-h-0 flex w-[200%] transition-transform duration-300 ease-out" id="drawer-steps-container">
+            <!-- 滑动容器：手机/电脑都裁切隐藏页，避免客户弹窗与项目页互相露出 -->
+            <div class="flex-1 min-h-0 relative overflow-hidden bg-[#F5F7FA]" id="drawer-steps-container">
                 
-                <!-- ==================== 第一步 (基本信息与客户选择，完全复刻 image_4642be.png 与 image_46af1f.png) ==================== -->
-                <div class="w-1/2 h-full flex flex-col p-4 overflow-hidden bg-white">
-                    
-                    <!-- 1. 预约门店 -->
-                    <div class="flex justify-between items-center py-3 border-b border-slate-100 active:bg-slate-50 px-1 flex-none">
-                        <span class="text-xs text-slate-800 font-bold"><span class="text-rose-500 mr-0.5">*</span>预约门店</span>
-                        <span class="text-xs text-slate-500 flex items-center font-medium">
-                            福州晋安店
-                            <svg class="w-4 h-4 ml-1 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                        </span>
-                    </div>
+                <!-- ==================== 第一步 (快速新建预约表单：手机端单列，PC 端仍由外层抽屉承载) ==================== -->
+                <div id="booking-step-form" class="absolute inset-0 h-full flex flex-col p-4 md:p-5 overflow-hidden bg-[#F5F7FA] transition-transform duration-300 ease-out">
+                    <div class="flex-1 overflow-y-auto no-scrollbar pb-3">
+                        <div class="bg-white rounded-[20px] md:rounded-[24px] shadow-[0_10px_25px_-5px_rgba(0,0,0,0.03),0_8px_10px_-6px_rgba(0,0,0,0.01)] border border-slate-100 overflow-hidden">
+                            <!-- 手机/电脑共用：客户必须放在最上方，后续可约时间依赖客户资料刷新 -->
+                            <button onclick="openCustomerPicker()" class="w-full flex items-center justify-between gap-3 px-4 py-3.5 border-b border-slate-100 active:bg-slate-50 transition-colors text-left">
+                                <span class="text-xs text-slate-800 font-bold flex-none"><span class="text-rose-500 mr-0.5">*</span>选择客户</span>
+                                <span class="flex items-center justify-end gap-1.5 min-w-0">
+                                    <span id="selected-customer-label" class="text-xs text-[#94A3B8] font-medium truncate max-w-[13rem]">请选择</span>
+                                    <svg class="w-4 h-4 text-slate-300 flex-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M9 5l7 7-7 7"/></svg>
+                                </span>
+                            </button>
 
-                    <!-- 2. 选择日期 -->
-                    <div class="flex justify-between items-center py-3 border-b border-slate-100 px-1 flex-none">
-                        <span class="text-xs text-slate-800 font-bold"><span class="text-rose-500 mr-0.5">*</span>日 期：</span>
-                        <input id="form-date" type="date" value="2026-06-30" class="text-xs text-slate-600 font-bold bg-transparent outline-none text-right">
-                    </div>
-
-                    <!-- 3. 预约时间 (时间下拉选择框) -->
-                    <div class="flex justify-between items-center py-3 border-b border-slate-100 px-1 mb-4 flex-none">
-                        <span class="text-xs text-slate-800 font-bold"><span class="text-rose-500 mr-0.5">*</span>预约时间：</span>
-                        <div class="relative flex items-center">
-                            <select id="form-start" class="appearance-none pr-6 pl-2 py-1 text-xs text-slate-600 font-bold border border-slate-200 rounded bg-white focus:outline-none focus:ring-1 focus:ring-brand-500 text-right">
-                                <!-- 动态生成时间选择器内容 -->
-                            </select>
-                            <svg class="w-3.5 h-3.5 text-slate-400 absolute right-2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                        </div>
-                    </div>
-
-                    <!-- 4. 选择预约客户区域 (自适应分配剩余纵向空间) -->
-                    <div class="flex-1 flex flex-col overflow-hidden">
-                        <div class="flex items-center justify-between mb-2 flex-none">
-                            <span class="text-xs font-bold text-slate-800">选择预约客户</span>
-                            <!-- 新建预约 与 已有预约 tab切换键 -->
-                            <div class="flex rounded-md border border-slate-200 overflow-hidden bg-slate-100 p-0.5 text-[11px] font-semibold">
-                                <button id="booking-tab-new" onclick="toggleBookingTab('new')" class="px-3 py-1 rounded bg-brand-500 text-white shadow-sm transition-all">新建预约</button>
-                                <button id="booking-tab-exist" onclick="toggleBookingTab('exist')" class="px-3 py-1 rounded text-slate-500 hover:text-slate-800 transition-all">已有预约</button>
-                            </div>
-                        </div>
-
-                        <!-- 检索关键字输入框 (带有放大镜触发搜索按钮) -->
-                        <div class="relative mb-2.5 flex-none">
-                            <input id="customer-search" onkeydown="handleSearchKeyDown(event)" type="text" placeholder="请输入关键字" class="w-full pl-3 pr-12 py-1.5 border border-slate-200 rounded-full text-xs focus:ring-1 focus:ring-brand-500 outline-none text-slate-700 bg-slate-50">
-                            <!-- 点击此按钮，或者键盘敲击 Enter 键才会真正载入下面的列表 -->
-                            <button onclick="triggerCustomerSearch()" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-brand-600 transition-all flex items-center justify-center p-1">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                            <button id="service-picker-row" onclick="openServicePickerFromStep1()" class="w-full flex items-center justify-between gap-3 px-4 py-3.5 active:bg-slate-50 transition-colors text-left">
+                                <span class="text-xs text-slate-800 font-bold flex-none"><span class="text-rose-500 mr-0.5">*</span>预约项目</span>
+                                <span class="flex items-center justify-end gap-1.5 min-w-0">
+                                    <span id="selected-service-label" class="text-xs text-[#94A3B8] font-medium truncate max-w-[13rem]">请选择</span>
+                                    <svg id="service-picker-arrow" class="w-4 h-4 text-slate-300 flex-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M9 5l7 7-7 7"/></svg>
+                                </span>
                             </button>
                         </div>
 
-                        <!-- 检索分类选择条件 -->
-                        <div class="flex items-center space-x-1 mb-2 text-[10px] text-slate-400 font-medium overflow-x-auto no-scrollbar flex-none">
-                            <span class="flex-none text-slate-500">客户：</span>
-                            <button id="search-filter-name" onclick="setSearchFilter('name')" class="px-2 py-0.5 rounded bg-brand-500 text-white">姓名</button>
-                            <button id="search-filter-phone" onclick="setSearchFilter('phone')" class="px-2 py-0.5 rounded bg-slate-100 text-slate-600">手机</button>
-                            <button id="search-filter-wechat" onclick="setSearchFilter('wechat')" class="px-2 py-0.5 rounded bg-slate-100 text-slate-600">微信</button>
-                            <button id="search-filter-member" onclick="setSearchFilter('member')" class="px-2 py-0.5 rounded bg-slate-100 text-slate-600">会员号</button>
+                        <div id="customer-required-hint" class="mt-3 px-4 py-3 rounded-[20px] bg-[#EFF6FF] border border-[#BFDBFE] text-xs text-[#2563EB] font-semibold">
+                            请先选择客户，系统将根据客户资料刷新下方可约时间。
                         </div>
 
-                        <!-- 动态生成的客户名片列表 (默认显示空白占位，输入点击搜索后方可拉出，仅让这个子区域滚动) -->
-                        <div class="flex-1 overflow-y-auto space-y-2 no-scrollbar pr-1 pb-1" id="customer-cards-list-box">
-                            <!-- JS 动态注入高拟真卡片 -->
+                        <div id="appointment-time-section" class="mt-3 bg-white rounded-[20px] md:rounded-[24px] shadow-[0_10px_25px_-5px_rgba(0,0,0,0.03),0_8px_10px_-6px_rgba(0,0,0,0.01)] border border-slate-100 overflow-hidden opacity-50 transition-all">
+                            <!-- 预约门店 -->
+                            <div class="flex justify-between items-center px-4 py-3 border-b border-slate-100">
+                                <span class="text-xs text-slate-800 font-bold"><span class="text-rose-500 mr-0.5">*</span>预约门店</span>
+                                <span id="form-store-label" class="text-xs text-slate-500 flex items-center font-medium">
+                                    福州晋安店
+                                    <svg class="w-4 h-4 ml-1 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                                </span>
+                            </div>
+
+                            <!-- 选择日期 -->
+                            <div class="flex justify-between items-center px-4 py-3 border-b border-slate-100">
+                                <span class="text-xs text-slate-800 font-bold"><span class="text-rose-500 mr-0.5">*</span>日 期：</span>
+                                <input id="form-date" type="date" value="2026-06-30" class="text-xs text-slate-600 font-bold bg-transparent outline-none text-right">
+                            </div>
+
+                            <!-- 预约时间：客户选择后启用，避免未识别客户就计算可约时段 -->
+                            <div class="flex justify-between items-center px-4 py-3">
+                                <span class="text-xs text-slate-800 font-bold"><span class="text-rose-500 mr-0.5">*</span>预约时间：</span>
+                                <div class="relative flex items-center">
+                                    <select id="form-start" disabled class="appearance-none pr-6 pl-2 py-1 text-xs text-slate-600 font-bold border border-slate-200 rounded bg-white focus:outline-none focus:ring-1 focus:ring-brand-500 text-right disabled:bg-slate-100 disabled:text-slate-400">
+                                        <!-- 动态生成时间选择器内容 -->
+                                    </select>
+                                    <svg class="w-3.5 h-3.5 text-slate-400 absolute right-2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- 下一步底栏按钮 (默认隐藏，选择某个客户后，带着过渡动画高度变为 auto 并淡入出现。max-h 由 20 扩容为 32 防止在手机端裁剪) -->
-                    <div id="step1-next-btn-container" class="border-t border-slate-100 flex-none bg-white z-10 transition-all duration-300 max-h-0 opacity-0 overflow-hidden">
-                        <button onclick="goToStep(2)" id="step1-next-btn" class="w-full py-2.5 bg-brand-600 hover:bg-brand-700 active:scale-95 text-white font-bold rounded-xl text-center text-xs transition-all shadow-md">
-                            下一步
+                    <div class="border-t border-slate-200/70 flex-none bg-[#F5F7FA] z-10 pt-3">
+                        <button onclick="saveBooking()" id="booking-submit-btn" disabled class="w-full py-3 bg-slate-200 text-slate-400 font-bold rounded-2xl text-center text-sm transition-all disabled:cursor-not-allowed">
+                            确定
                         </button>
                     </div>
 
@@ -572,7 +552,7 @@
 
                 <!-- ==================== STREAMING_CHUNK: Service selection screen (image_4651ba.jpg) ... ==================== -->
                 <!-- ==================== 第二步 (服务详情与床位分配，完全还原 image_4651ba.jpg) ==================== -->
-                <div class="w-1/2 h-full flex flex-col overflow-hidden bg-slate-50">
+                <div id="booking-step-service" class="absolute inset-0 h-full flex flex-col overflow-hidden bg-slate-50 transition-transform duration-300 ease-out" style="transform: translateX(100%);">
                     
                     <!-- 1. 顶部四大板块切换 tabs -->
                     <div class="flex justify-around items-center border-b border-slate-200 bg-white text-slate-500 text-xs font-semibold flex-none">
@@ -646,7 +626,7 @@
                             <span class="flex-none">合计：</span>
                             <span id="step2-total-price" class="text-[#F04438] font-black text-base tracking-tight">--</span>
                         </div>
-                        <button onclick="saveBooking()" disabled class="w-28 bg-slate-200 text-slate-400 font-bold text-sm transition-all disabled:cursor-not-allowed" id="step2-bottom-action-btn">
+                        <button onclick="confirmServiceSelection()" disabled class="w-28 bg-slate-200 text-slate-400 font-bold text-sm transition-all disabled:cursor-not-allowed" id="step2-bottom-action-btn">
                             请选择项目
                         </button>
                     </div>
@@ -654,8 +634,46 @@
                 </div>
 
             </div>
-        </div>
 
+            <!-- ==================== 客户选择弹窗：覆盖在预约抽屉内，移动端全屏列表，PC 端随外层抽屉宽度自适应 ==================== -->
+            <div id="customer-picker-modal" class="absolute inset-0 z-50 w-full overflow-hidden bg-[#F5F7FA] flex flex-col transform translate-x-full transition-transform duration-300 ease-out pointer-events-none">
+                <div class="bg-[#F5F7FA] px-3 pt-4 pb-2 flex-none">
+                    <div class="flex items-center justify-between mb-3">
+                        <button onclick="closeCustomerPicker()" class="text-xs font-semibold text-slate-500 hover:text-slate-900 flex items-center">
+                            <svg class="w-4 h-4 mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M15 19l-7-7 7-7"/></svg>
+                            返回
+                        </button>
+                        <h3 class="text-sm font-black text-slate-900">选择客户</h3>
+                        <button onclick="closeCustomerPicker()" class="text-xs font-semibold text-[#3B82F6]">取消</button>
+                    </div>
+
+                    <div class="bg-white rounded-xl p-3 shadow-[0_10px_25px_-5px_rgba(0,0,0,0.03),0_8px_10px_-6px_rgba(0,0,0,0.01)] border border-slate-100">
+                        <div class="flex items-center gap-2">
+                            <input id="customer-search" onkeydown="handleSearchKeyDown(event)" type="text" placeholder="请输入姓名" class="flex-1 min-w-0 px-3 py-2.5 border border-slate-100 rounded-full text-sm focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none text-slate-700 bg-slate-50">
+                            <button onclick="triggerCustomerSearch()" class="px-4 py-2.5 bg-[#3B82F6] hover:bg-[#2563EB] active:scale-95 text-white text-xs font-bold rounded-full shadow-sm transition-all flex-none">
+                                搜索
+                            </button>
+                        </div>
+
+                        <div class="mt-3 flex items-center gap-2 text-xs text-slate-500 font-bold overflow-x-auto no-scrollbar">
+                            <button id="search-filter-name" onclick="setSearchFilter('name')" class="px-3 py-1.5 rounded-full bg-[#EFF6FF] text-[#3B82F6]">姓名</button>
+                            <button id="search-filter-phone" onclick="setSearchFilter('phone')" class="px-3 py-1.5 rounded-full bg-slate-100 text-slate-600">手机</button>
+                            <button id="search-filter-wechat" onclick="setSearchFilter('wechat')" class="px-3 py-1.5 rounded-full bg-slate-100 text-slate-600">微信</button>
+                            <button id="search-filter-member" onclick="setSearchFilter('member')" class="px-3 py-1.5 rounded-full bg-slate-100 text-slate-600">会员号</button>
+                        </div>
+                    </div>
+
+                    <div class="mt-3 grid grid-cols-2 rounded-xl bg-slate-100 p-1 text-xs font-bold text-slate-500 shadow-inner">
+                        <button id="booking-tab-new" onclick="toggleBookingTab('new')" class="py-2 rounded-lg bg-white text-[#3B82F6] shadow-sm transition-all">新建预约</button>
+                        <button id="booking-tab-exist" onclick="toggleBookingTab('exist')" class="py-2 rounded-lg text-slate-500 transition-all">已有预约</button>
+                    </div>
+                </div>
+
+                <div class="flex-1 overflow-y-auto space-y-2 no-scrollbar px-3 pb-3 pt-3 bg-[#F5F7FA]" id="customer-cards-list-box">
+                    <!-- JS 动态注入图 1 风格客户卡片 -->
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- ==================== 7. 自定义提示/帮助对话框 ==================== -->
@@ -685,12 +703,12 @@
 
         // 客户字典名录（完全对接 image_4642be.png）
         const CUSTOMERS_DATABASE = [
-            { id: "c1", name: "蒋霞蕾007", phone: "139****9410", isNew: true, store: "上海徐汇店", orderNo: "o1908231002415532" },
-            { id: "c2", name: "周扬", phone: "186****5475", isNew: true, store: "上海徐汇店", orderNo: "o1908281952387769" },
-            { id: "c3", name: "王霞", phone: "132****8718", isNew: true, store: "上海徐汇店", orderNo: "o1908291138568398" },
-            { id: "c4", name: "杨经花007", phone: "139****4569", isNew: true, store: "上海徐汇店", orderNo: "o1908291140148404" },
-            { id: "c5", name: "杨洁007x", phone: "138****3081", isNew: true, store: "上海徐汇店", orderNo: "o1908291903039758" },
-            { id: "c6", name: "李方007x", phone: "150****7236", isNew: true, store: "上海徐汇店", orderNo: "o1908291907479779" }
+            { id: "c1", name: "杨经花007", phone: "139****4569", isNew: true, store: "上海徐汇店", orderNo: "o1908291140148404" },
+            { id: "c2", name: "杨洁007x", phone: "138****3081", isNew: true, store: "上海徐汇店", orderNo: "o1908291903039758" },
+            { id: "c3", name: "李方007x", phone: "150****7236", isNew: true, store: "上海徐汇店", orderNo: "o1908291907479779" },
+            { id: "c4", name: "徐冬梅072", phone: "132****2053", isNew: true, store: "上海徐汇店", orderNo: "o1908300912053014" },
+            { id: "c5", name: "陶银霜", phone: "134****5991", isNew: true, store: "上海徐汇店", orderNo: "o1908301031599172" },
+            { id: "c6", name: "陆小琴072", phone: "136****2280", isNew: true, store: "上海徐汇店", orderNo: "o1908301122280226" }
         ];
 
         // 丰富的高拟真项目库数据（完全对接 image_4651ba.jpg）
@@ -732,11 +750,12 @@
         const hideCancelled = true; // 强力永久自动隐藏已取消预约
 
         // 表单内控制变量 (图 1 / 2 状态)
-        let formBookingTab = "new"; // new, exist
+        let formBookingTab = "all"; // all, new, exist
         let searchFilterType = "name"; // name, phone, wechat, member
         let selectedCustomerObj = null; // 当前所选的客户资料
         let editingBookingId = null;
         let hasSearched = false; // 是否在搜索框里触发过点击搜索动作
+        let isExistingAppointmentCustomer = false; // 快速预约中是否选中已有预约客户
 
         // 页面流程导航状态 (1 代表第一步，2 代表第二步)
         let currentStep = 1;
@@ -894,26 +913,15 @@
         }
 
         // ==================== STREAMING_CHUNK: Customer interactive logic integration ... ====================
-        // 渲染图 1 形式的客户检索卡片名册 (只有当 hasSearched = true 且进行了搜索后才渲染，否则渲染提示)
+        // 渲染图 1 形式的客户检索卡片名册
         function renderCustomerSelectionCards(filteredList = CUSTOMERS_DATABASE) {
             const listContainer = document.getElementById("customer-cards-list-box");
+            if (!listContainer) return;
             listContainer.innerHTML = "";
-
-            // 如果还没点击搜索，展示空白提示页面
-            if (!hasSearched) {
-                listContainer.innerHTML = `
-                    <div class="flex flex-col items-center justify-center py-16 text-center text-slate-400 select-none">
-                        <div class="text-4xl mb-3">🔍</div>
-                        <p class="text-xs font-bold text-slate-700 leading-normal">请输入关键字并点击搜索</p>
-                        <p class="text-[10px] text-slate-400 mt-1">支持通过姓名、手机号等维度精准查找</p>
-                    </div>
-                `;
-                return;
-            }
 
             if (filteredList.length === 0) {
                 // 如果没有搜索结果，支持快捷输入
-                const searchKeyword = document.getElementById("customer-search").value.trim();
+                const searchKeyword = document.getElementById("customer-search")?.value.trim() || "";
                 listContainer.innerHTML = `
                     <div class="p-4 bg-slate-50 border border-dashed border-slate-200 rounded-xl text-center">
                         <p class="text-xs text-slate-400">未找到相关客户</p>
@@ -929,29 +937,30 @@
 
             filteredList.forEach((customer) => {
                 const isSelected = selectedCustomerObj && selectedCustomerObj.id === customer.id;
+                const shouldShowOrderNo = formBookingTab === "exist";
                 const card = document.createElement("div");
                 
-                card.className = `p-3 bg-white border rounded-xl flex items-center justify-between transition-all duration-200 active:scale-[0.99] ${
-                    isSelected ? 'border-brand-500 ring-2 ring-brand-500/10 bg-brand-50/10' : 'border-slate-100 hover:border-slate-200'
+                card.className = `p-3 bg-white border rounded-xl shadow-[0_8px_18px_-8px_rgba(15,23,42,0.08)] transition-all duration-200 active:scale-[0.99] ${
+                    isSelected ? 'border-brand-500 ring-2 ring-brand-500/10 bg-brand-50/20' : 'border-white hover:border-slate-200'
                 }`;
 
                 card.innerHTML = `
-                    <div class="flex-1 min-w-0 pr-2 pointer-events-none">
-                        <div class="flex items-center space-x-1.5">
-                            <span class="text-xs font-bold text-slate-900 truncate">${customer.name}</span>
-                            <span class="text-[10px] text-slate-500 font-medium">${customer.phone}</span>
-                            ${customer.isNew ? '<span class="bg-amber-100 text-amber-700 text-[8px] font-extrabold px-1 py-0.2 rounded-sm scale-90">新</span>' : ''}
+                    <div class="flex items-center justify-between gap-3">
+                        <div class="flex-1 min-w-0 pointer-events-none">
+                            <div class="flex items-center gap-1.5 min-w-0">
+                                <span class="text-sm font-black text-slate-950 truncate">${customer.name}</span>
+                                <span class="text-xs text-slate-400 font-bold flex-none">${customer.phone}</span>
+                                ${customer.isNew ? '<span class="bg-[#F59E0B]/20 text-[#B45309] text-[10px] font-black px-1.5 py-0.5 rounded flex-none">新</span>' : ''}
+                            </div>
+                            <div class="mt-1 flex items-center gap-2 text-[11px] text-slate-400 font-medium">
+                                <span class="truncate">${customer.store}</span>
+                                ${shouldShowOrderNo ? `<span class="h-3 w-px bg-slate-200 flex-none"></span><span class="truncate">订单号：${customer.orderNo}</span>` : ''}
+                            </div>
                         </div>
-                        <div class="mt-1 flex items-center justify-between text-[10px] text-slate-400">
-                            <span class="truncate">订单号: ${customer.orderNo}</span>
-                            <span class="flex-none ml-2 font-medium">${customer.store}</span>
-                        </div>
-                    </div>
-                    <div class="flex-none">
-                        <button onclick="selectCustomer('${customer.id}')" class="px-3.5 py-1 text-xs font-bold rounded-lg border shadow-sm transition-all active:scale-95 ${
+                        <button onclick="selectCustomer('${customer.id}')" class="flex-none px-4 py-2 text-xs font-bold rounded-lg border shadow-sm transition-all active:scale-95 ${
                             isSelected 
                                 ? 'bg-emerald-500 border-emerald-500 text-white' 
-                                : 'bg-white border-blue-200 text-brand-600 hover:bg-blue-50'
+                                : 'bg-[#3B82F6] border-[#3B82F6] text-white hover:bg-[#2563EB]'
                         }">
                             ${isSelected ? '已选' : '选择'}
                         </button>
@@ -973,28 +982,119 @@
 
         // 按钮点击触发检索
         function triggerCustomerSearch() {
-            const keyword = document.getElementById("customer-search").value.trim();
-            if (keyword === "") {
-                hasSearched = false;
-            } else {
-                hasSearched = true;
-            }
+            hasSearched = true;
             filterCustomerList();
+        }
+
+        // 打开客户选择弹窗：默认展示当前 tab 的示例数据，搜索框用于过滤
+        function openCustomerPicker() {
+            const modal = document.getElementById("customer-picker-modal");
+            const input = document.getElementById("customer-search");
+            if (!modal) return;
+
+            formBookingTab = "new";
+            hasSearched = true;
+            if (input) input.value = "";
+            setSearchFilter("name");
+            toggleBookingTab("new");
+            filterCustomerList();
+
+            modal.classList.remove("translate-x-full", "pointer-events-none");
+            setTimeout(() => input?.focus(), 180);
+        }
+
+        function closeCustomerPicker() {
+            const modal = document.getElementById("customer-picker-modal");
+            if (!modal) return;
+            modal.classList.add("translate-x-full", "pointer-events-none");
+        }
+
+        // 第一屏表单状态：客户决定可约时间，项目决定最终是否可提交
+        function refreshBookingFormState() {
+            const customerLabel = document.getElementById("selected-customer-label");
+            const serviceLabel = document.getElementById("selected-service-label");
+            const storeLabel = document.getElementById("form-store-label");
+            const requiredHint = document.getElementById("customer-required-hint");
+            const timeSection = document.getElementById("appointment-time-section");
+            const startSelect = document.getElementById("form-start");
+            const submitBtn = document.getElementById("booking-submit-btn");
+            const serviceRow = document.getElementById("service-picker-row");
+            const serviceArrow = document.getElementById("service-picker-arrow");
+
+            if (selectedCustomerObj) {
+                customerLabel.innerText = `${selectedCustomerObj.name} ${selectedCustomerObj.phone}`;
+                customerLabel.className = "text-xs text-slate-700 font-semibold truncate max-w-[13rem]";
+                storeLabel.innerHTML = `
+                    ${selectedCustomerObj.store || "福州晋安店"}
+                    <svg class="w-4 h-4 ml-1 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                `;
+                requiredHint.classList.add("hidden");
+                timeSection.classList.remove("opacity-50");
+                startSelect.disabled = false;
+            } else {
+                customerLabel.innerText = "请选择";
+                customerLabel.className = "text-xs text-[#94A3B8] font-medium truncate max-w-[13rem]";
+                storeLabel.innerHTML = `
+                    福州晋安店
+                    <svg class="w-4 h-4 ml-1 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                `;
+                requiredHint.classList.remove("hidden");
+                timeSection.classList.add("opacity-50");
+                startSelect.disabled = true;
+            }
+
+            if (selectedServiceObj) {
+                serviceLabel.innerText = selectedServiceObj.name;
+                serviceLabel.className = "text-xs text-slate-700 font-semibold truncate max-w-[13rem]";
+            } else {
+                serviceLabel.innerText = "请选择";
+                serviceLabel.className = "text-xs text-[#94A3B8] font-medium truncate max-w-[13rem]";
+            }
+
+            if (isExistingAppointmentCustomer) {
+                serviceRow.disabled = true;
+                serviceRow.className = "w-full flex items-center justify-between gap-3 px-4 py-3.5 cursor-not-allowed bg-slate-50 text-left";
+                serviceArrow.classList.add("hidden");
+            } else {
+                serviceRow.disabled = false;
+                serviceRow.className = "w-full flex items-center justify-between gap-3 px-4 py-3.5 active:bg-slate-50 transition-colors text-left";
+                serviceArrow.classList.remove("hidden");
+            }
+
+            const readyToSubmit = Boolean(selectedCustomerObj && selectedServiceObj);
+            submitBtn.disabled = !readyToSubmit;
+            submitBtn.className = readyToSubmit
+                ? "w-full py-3 bg-[#3B82F6] hover:bg-[#2563EB] active:scale-95 text-white font-bold rounded-2xl text-center text-sm transition-all shadow-[0_10px_20px_-12px_rgba(59,130,246,0.9)]"
+                : "w-full py-3 bg-slate-200 text-slate-400 font-bold rounded-2xl text-center text-sm transition-all disabled:cursor-not-allowed";
+        }
+
+        function openServicePickerFromStep1() {
+            if (isExistingAppointmentCustomer) return;
+            goToStep(2);
+        }
+
+        function confirmServiceSelection() {
+            if (!selectedServiceObj) return;
+            refreshBookingFormState();
+            goToStep(1);
         }
 
         // 切换第一步和第二步页面滑轨（二级页面状态，并完美更新顶部返回按键文本）
         function goToStep(stepNum) {
             currentStep = stepNum;
-            const container = document.getElementById("drawer-steps-container");
+            const formStep = document.getElementById("booking-step-form");
+            const serviceStep = document.getElementById("booking-step-service");
             const backText = document.getElementById("back-btn-text");
             if (stepNum === 1) {
-                container.style.transform = "translateX(0%)";
+                formStep.style.transform = "translateX(0%)";
+                serviceStep.style.transform = "translateX(100%)";
                 backText.innerText = "返回"; // 对应退回看板大盘
                 document.getElementById("drawer-title").innerText = editingBookingId ? "编辑/更新预约" : "快捷新建预约";
+                refreshBookingFormState();
             } else if (stepNum === 2) {
-                if (!selectedCustomerObj) return;
-                
-                container.style.transform = "translateX(-50%)";
+                closeCustomerPicker();
+                formStep.style.transform = "translateX(-100%)";
+                serviceStep.style.transform = "translateX(0%)";
                 backText.innerText = "上一步"; // 对应退回 Step 1 客户
                 document.getElementById("drawer-title").innerText = "选择预约项目";
             }
@@ -1009,21 +1109,31 @@
             }
         }
 
-        // 选择某个客户动作 (修复并升级：弹窗下方出现下一步按钮)
+        // 选择某个客户动作：回填第一屏，并关闭客户弹窗
         function selectCustomer(customerId) {
-            const customer = CUSTOMERS_DATABASE.find(c => c.id === customerId);
+            const customer = getQuickCustomerOptions().find(c => c.id === customerId);
             if (!customer) return;
 
             selectedCustomerObj = customer;
+            isExistingAppointmentCustomer = Boolean(customer.fromExistingBooking);
+            if (isExistingAppointmentCustomer) {
+                selectedServiceObj = getServiceFromExistingBooking(customer);
+                if (customer.bookingDurationSlots) {
+                    document.getElementById("form-duration").value = String(customer.bookingDurationSlots);
+                }
+                if (customer.bookingStatus) {
+                    document.getElementById("form-status").value = customer.bookingStatus;
+                }
+                updateStep2ConfirmBar();
+            } else {
+                selectedServiceObj = null;
+                document.getElementById("form-duration").value = "2";
+                document.getElementById("form-status").value = "unpaid";
+                updateStep2ConfirmBar();
+            }
             filterCustomerList();
-
-            // 唤醒底部“下一步”按钮容器的高亮出现动画
-            const nextContainer = document.getElementById("step1-next-btn-container");
-            nextContainer.classList.remove("max-h-0", "opacity-0", "overflow-hidden");
-            nextContainer.classList.add("max-h-32", "opacity-100", "mt-2");
-
-            const nextBtn = document.getElementById("step1-next-btn");
-            nextBtn.innerText = `已选客户: ${customer.name} (点击进入下一步)`;
+            closeCustomerPicker();
+            refreshBookingFormState();
         }
 
         // 手动快捷录入客户
@@ -1043,13 +1153,22 @@
         // 选择搜索方式（姓名、手机、微信、会员号）
         function setSearchFilter(type) {
             searchFilterType = type;
+            const input = document.getElementById("customer-search");
+            const placeholderMap = {
+                name: "请输入姓名",
+                phone: "请输入手机",
+                wechat: "请输入微信",
+                member: "请输入会员号"
+            };
+            if (input) input.placeholder = placeholderMap[type] || "请输入关键字";
             const filters = ['name', 'phone', 'wechat', 'member'];
             filters.forEach(f => {
                 const btn = document.getElementById(`search-filter-${f}`);
+                if (!btn) return;
                 if (f === type) {
-                    btn.className = "px-2 py-0.5 rounded bg-brand-500 text-white font-semibold";
+                    btn.className = "px-3 py-1.5 rounded-full bg-[#EFF6FF] text-[#3B82F6] font-semibold";
                 } else {
-                    btn.className = "px-2 py-0.5 rounded bg-slate-100 text-slate-600 font-medium hover:bg-slate-200";
+                    btn.className = "px-3 py-1.5 rounded-full bg-slate-100 text-slate-600 font-medium hover:bg-slate-200";
                 }
             });
             // 只有当已经搜索过时，切换模式才联动重算结果
@@ -1063,12 +1182,16 @@
             formBookingTab = tab;
             const tabNew = document.getElementById("booking-tab-new");
             const tabExist = document.getElementById("booking-tab-exist");
+            if (!tabNew || !tabExist) {
+                filterCustomerList();
+                return;
+            }
             if (tab === 'new') {
-                tabNew.className = "px-3 py-1 rounded bg-brand-500 text-white shadow-sm transition-all";
-                tabExist.className = "px-3 py-1 rounded text-slate-500 hover:text-slate-800 transition-all";
+                tabNew.className = "py-2 rounded-lg bg-white text-[#3B82F6] shadow-sm transition-all";
+                tabExist.className = "py-2 rounded-lg text-slate-500 transition-all";
             } else {
-                tabNew.className = "px-3 py-1 rounded text-slate-500 hover:text-slate-800 transition-all";
-                tabExist.className = "px-3 py-1 rounded bg-brand-500 text-white shadow-sm transition-all";
+                tabNew.className = "py-2 rounded-lg text-slate-500 transition-all";
+                tabExist.className = "py-2 rounded-lg bg-white text-[#3B82F6] shadow-sm transition-all";
             }
             // 只有当已经搜索过时，切换模式才联动重算结果
             if (hasSearched) {
@@ -1076,15 +1199,47 @@
             }
         }
 
+        function getQuickCustomerOptions() {
+            if (formBookingTab === "exist") {
+                return bookings
+                    .filter(booking => booking.status !== "cancelled" && booking.status !== "occupied")
+                    .map(booking => ({
+                        id: `exist_${booking.id}`,
+                        name: booking.guestName,
+                        phone: booking.isNewGuest ? "新客" : "老客",
+                        isNew: booking.isNewGuest,
+                        store: "厦门百星湖里店",
+                        orderNo: `YY${String(booking.id).padStart(6, "0")}`,
+                        fromExistingBooking: true,
+                        bookingService: booking.service,
+                        bookingDurationSlots: booking.durationSlots,
+                        bookingStatus: booking.status
+                    }));
+            }
+            return [...CUSTOMERS_DATABASE];
+        }
+
+        function getServiceFromExistingBooking(customer) {
+            const matchedService = SERVICES_DATABASE.find(service => service.name === customer.bookingService);
+            if (matchedService) return matchedService;
+            return {
+                id: `existing_service_${customer.id}`,
+                category: "皮肤",
+                type: "develop",
+                name: customer.bookingService || "已有预约项目",
+                base: "已有预约带入项目",
+                tags: ["已有预约"],
+                price: "0.00"
+            };
+        }
+
         // 智能模糊过滤老客名册
         function filterCustomerList() {
-            const keyword = document.getElementById("customer-search").value.toLowerCase().trim();
-            let result = [...CUSTOMERS_DATABASE];
+            const keyword = document.getElementById("customer-search")?.value.toLowerCase().trim() || "";
+            let result = getQuickCustomerOptions();
 
             if (formBookingTab === "new") {
                 result = result.filter(c => c.isNew === true);
-            } else {
-                result = result.filter(c => c.isNew === false);
             }
 
             if (keyword) {
@@ -1118,32 +1273,32 @@
             });
         }
 
-        // 打开“二级排班页面” (重置时，彻底隐藏下一步按钮)
+        // 打开“二级排班页面”
         function openBookingDrawer(bedId, startTime) {
             editingBookingId = null;
             selectedCustomerObj = null;
             selectedServiceObj = null;
+            isExistingAppointmentCustomer = false;
             hasSearched = false; // 重置未搜索状态
+            formBookingTab = "all";
+            closeCustomerPicker();
 
             document.getElementById("drawer-title").innerText = "快捷新建预约";
             document.getElementById("delete-btn").classList.add("hidden");
             
-            // 初始化输入框并重置“下一步”按钮容器为完全隐藏
-            document.getElementById("customer-search").value = "";
-            const nextContainer = document.getElementById("step1-next-btn-container");
-            nextContainer.classList.add("max-h-0", "opacity-0", "overflow-hidden");
-            nextContainer.classList.remove("max-h-32", "opacity-100", "mt-2");
+            // 初始化客户弹窗搜索框
+            const customerSearch = document.getElementById("customer-search");
+            if (customerSearch) customerSearch.value = "";
 
             // 重设第二步表单
             document.getElementById("form-bed").value = bedId;
+            document.getElementById("form-start").value = startTime;
             document.getElementById("form-duration").value = "2"; // 1小时
             document.getElementById("form-status").value = "unpaid";
             document.getElementById("service-search-input").value = "";
 
             updateStep2ConfirmBar();
-
-            // 刷新第一步列表 (此时会显示未搜索的空白占位符)
-            toggleBookingTab("new");
+            refreshBookingFormState();
             filterCustomerList();
 
             // 刷新项目选择列表
@@ -1160,6 +1315,7 @@
         function openBookingDrawerForEdit(booking) {
             editingBookingId = booking.id;
             hasSearched = true; // 编辑已有预约时，已经有了固定客户，默认视为已搜索
+            isExistingAppointmentCustomer = false;
 
             document.getElementById("drawer-title").innerText = "编辑/更新预约";
             document.getElementById("delete-btn").classList.remove("hidden");
@@ -1196,16 +1352,17 @@
             document.getElementById("form-duration").value = booking.durationSlots;
             document.getElementById("form-status").value = booking.status;
 
-            // 直接划出二级页面并定位在 Step 2
+            // 直接划出二级页面并定位在项目页，保留已有预约的删除入口
             const drawer = document.getElementById("booking-drawer");
             drawer.classList.remove("translate-x-full", "pointer-events-none");
-            goToStep(2); // 编辑预约直接直达第 2 步
+            goToStep(2);
         }
 
         // 关闭二级页面（向右滑走）
         function closeBookingDrawer() {
             const drawer = document.getElementById("booking-drawer");
             drawer.classList.add("translate-x-full", "pointer-events-none");
+            closeCustomerPicker();
         }
 
         // 取消添加操作
@@ -1214,13 +1371,7 @@
         }
 
         function getServiceActionLabel() {
-            const actionMap = {
-                develop: "确认开发",
-                gift: "确认赠送",
-                maintain: "确认维护",
-                upgrade: "确认升级"
-            };
-            return actionMap[currentServiceType] || "确认预约";
+            return "确定";
         }
 
         function updateStep2ConfirmBar() {
