@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>店长工作台</title>
+  <link rel="stylesheet" href="../shared/css/base.css">
+  <link rel="stylesheet" href="../shared/css/components.css">
+  <link rel="stylesheet" href="../shared/css/layout.css">
+  <style>
+    .home-top {
+      border-bottom: 0;
+      background: rgb(249 250 251 / 92%);
+      box-shadow: none;
+    }
+
+    .level-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      height: 28px;
+      padding: 0 10px;
+      border-radius: var(--radius-full);
+      background: #fffbeb;
+      color: #b45309;
+      font-size: var(--font-size-helper);
+      font-weight: var(--font-weight-semibold);
+    }
+
+    .manager-avatar {
+      display: inline-flex;
+      width: 36px;
+      height: 36px;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-full);
+      background: var(--color-primary);
+      color: #fff;
+      font-weight: var(--font-weight-bold);
+    }
+
+    .performance-card {
+      gap: var(--space-4);
+      padding: var(--space-5);
+      border: 0;
+      box-shadow: 0 12px 32px rgb(17 24 39 / 8%);
+    }
+
+    .performance-card__top,
+    .performance-card__bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-3);
+    }
+
+    .performance-card__label,
+    .performance-card__target,
+    .performance-note {
+      color: var(--color-text-secondary);
+      font-size: var(--font-size-helper);
+    }
+
+    .performance-amount {
+      color: var(--color-text);
+      font-size: 36px;
+      font-variant-numeric: tabular-nums;
+      font-weight: 800;
+      letter-spacing: 0;
+      line-height: 1.05;
+    }
+
+    .performance-note {
+      margin-top: -6px;
+    }
+
+    .mini-stat {
+      min-width: 0;
+      flex: 1 1 0;
+      padding-top: var(--space-3);
+      border-top: 1px solid var(--color-border);
+    }
+
+    .mini-stat__value {
+      color: var(--color-text);
+      font-size: var(--font-size-body);
+      font-variant-numeric: tabular-nums;
+      font-weight: var(--font-weight-bold);
+      line-height: 1.35;
+    }
+
+    .mini-stat__label {
+      color: var(--color-text-secondary);
+      font-size: var(--font-size-helper);
+      line-height: 1.35;
+    }
+
+    .priority-card {
+      gap: var(--space-3);
+    }
+
+    .priority-card__badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+    }
+
+    .priority-card__title {
+      color: var(--color-text);
+      font-size: var(--font-size-body);
+      font-weight: var(--font-weight-bold);
+      line-height: 1.35;
+    }
+
+    .priority-card__desc {
+      color: var(--color-text-secondary);
+      font-size: var(--font-size-helper);
+      line-height: 1.45;
+    }
+
+    .board-scroll {
+      display: grid;
+      grid-auto-columns: minmax(150px, 42%);
+      grid-auto-flow: column;
+      gap: var(--space-3);
+      margin-right: calc(var(--space-4) * -1);
+      margin-left: calc(var(--space-4) * -1);
+      padding: 0 var(--space-4) var(--space-1);
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+    }
+
+    .board-card {
+      min-height: 150px;
+      align-items: flex-start;
+      justify-content: space-between;
+      scroll-snap-align: start;
+    }
+
+    .board-card__ring {
+      position: relative;
+      width: 58px;
+      height: 58px;
+    }
+
+    .board-card__ring span {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      color: var(--color-text);
+      font-size: var(--font-size-helper);
+      font-weight: var(--font-weight-bold);
+    }
+
+    .modal-detail-list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+      color: var(--color-text-secondary);
+      font-size: var(--font-size-body);
+      line-height: 1.55;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="top-bar home-top">
+      <div class="top-bar__left">
+        <h1 class="top-bar__title" id="storeName">朝阳大悦城店</h1>
+      </div>
+      <div class="top-bar__right">
+        <span class="level-badge" id="storeLevel">金牌</span>
+        <span class="manager-avatar" id="managerAvatar" aria-label="店长头像">林</span>
+      </div>
+    </header>
+
+    <main class="app-page app-page--with-top-bar app-page--with-tab-bar">
+      <div class="app-content">
+        <section class="card performance-card" aria-label="今日经营主卡片">
+          <div class="performance-card__top">
+            <span class="performance-card__label">今日业绩</span>
+            <span class="performance-card__target" id="todayTarget">目标 ¥35,000</span>
+          </div>
+          <div class="performance-amount">¥<span id="todayActual" data-prefix="" data-grouping="true">0</span></div>
+          <div class="progress-bar" id="todayProgressBar" aria-label="今日业绩进度">
+            <div class="progress-bar__track">
+              <div class="progress-bar__fill"></div>
+            </div>
+          </div>
+          <p class="performance-note" id="performanceNote">下午3位预约客户到店后可达标</p>
+          <div class="performance-card__bottom">
+            <div class="mini-stat">
+              <div class="mini-stat__value" id="monthStat">¥486,000 / ¥680,000</div>
+              <div class="mini-stat__label">本月累计（71%）</div>
+            </div>
+            <div class="mini-stat">
+              <div class="mini-stat__value" id="incomeStat">¥47,200 <span class="metric__trend metric__trend--up">↑</span></div>
+              <div class="mini-stat__label">预估月收入</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="page-section">
+          <div class="section-title">
+            <h2 class="section-title__main">今日重点关注</h2>
+            <a class="section-title__action" href="customer.html">共5项 &gt;</a>
+          </div>
+          <div class="stack gap-3" id="priorityList"></div>
+        </section>
+
+        <section class="page-section">
+          <div class="section-title">
+            <h2 class="section-title__main">经营看板</h2>
+          </div>
+          <div class="board-scroll no-scrollbar" id="boardList" aria-label="经营看板入口"></div>
+        </section>
+      </div>
+    </main>
+
+    <nav class="tab-bar" aria-label="底部导航">
+      <a class="tab-bar__item is-active" href="index.html" aria-current="page">
+        <span class="tab-bar__icon">⌂</span>
+        <span>首页</span>
+      </a>
+      <a class="tab-bar__item" href="customer.html">
+        <span class="tab-bar__icon">◇</span>
+        <span>客户</span>
+      </a>
+      <a class="tab-bar__item" href="team.html">
+        <span class="tab-bar__icon">◎</span>
+        <span>团队</span>
+      </a>
+      <a class="tab-bar__item" href="operations.html">
+        <span class="tab-bar__icon">□</span>
+        <span>运营</span>
+      </a>
+      <a class="tab-bar__item" href="#">
+        <span class="tab-bar__icon">○</span>
+        <span>我的</span>
+      </a>
+    </nav>
+  </div>
+
+  <div class="modal" id="priorityModal" hidden>
+    <div class="modal__backdrop"></div>
+    <div class="modal__sheet">
+      <div class="modal__handle"></div>
+      <div class="modal__header">
+        <h3 class="modal__title" id="priorityModalTitle">事项详情</h3>
+        <button class="modal__close" type="button" data-modal-close="priorityModal" aria-label="关闭">×</button>
+      </div>
+      <div class="modal__body">
+        <div class="modal-detail-list" id="priorityModalBody"></div>
+      </div>
+      <div class="modal__footer">
+        <button class="btn btn--primary btn--block" type="button" data-modal-close="priorityModal">知道了</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../shared/js/app.js"></script>
+  <script src="../shared/js/components.js"></script>
+  <script src="../shared/js/charts.js"></script>
+  <script src="./js/manager-data.js"></script>
+  <script>
+    (function () {
+      var data = window.ManagerData;
+
+      function money(value) {
+        return "¥" + BeautyApp.formatNumber(value);
+      }
+
+      function renderStore() {
+        document.getElementById("storeName").textContent = data.store.name;
+        document.getElementById("storeLevel").textContent = data.store.level;
+        document.getElementById("managerAvatar").textContent = data.store.managerInitial;
+      }
+
+      function renderPerformance() {
+        var item = data.todayPerformance;
+        document.getElementById("todayTarget").textContent = "目标 " + money(item.target);
+        document.getElementById("performanceNote").textContent = item.note;
+        document.getElementById("monthStat").textContent = money(item.monthActual) + " / " + money(item.monthTarget);
+        document.getElementById("incomeStat").innerHTML = money(item.estimatedIncome) + ' <span class="metric__trend metric__trend--up">↑</span>';
+        animateNumber(document.getElementById("todayActual"), item.actual, 900);
+        animateProgress(document.getElementById("todayProgressBar"), item.progress, 900);
+      }
+
+      function renderPriorities() {
+        var list = document.getElementById("priorityList");
+        list.innerHTML = data.priorities.map(function (item) {
+          var badges = item.badges.map(function (badge) {
+            return '<span class="badge badge--' + badge.type + '">' + badge.text + "</span>";
+          }).join("");
+
+          return [
+            '<article class="card card--strip card--strip-' + item.strip + ' priority-card">',
+            '<div class="priority-card__badges">' + badges + "</div>",
+            '<h3 class="priority-card__title">' + item.title + "</h3>",
+            '<p class="priority-card__desc">' + item.description + "</p>",
+            '<div><button class="btn btn--secondary btn--sm" type="button" data-priority-open="' + item.id + '">' + item.buttonText + "</button></div>",
+            "</article>"
+          ].join("");
+        }).join("");
+      }
+
+      function renderBoards() {
+        var list = document.getElementById("boardList");
+        list.innerHTML = data.boards.map(function (item) {
+          return [
+            '<a class="card card--clickable board-card" href="' + item.href + '">',
+            '<div class="board-card__ring">',
+            '<canvas id="board-' + item.id + '-ring" width="58" height="58"></canvas>',
+            "<span>" + item.percent + "%</span>",
+            "</div>",
+            "<div>",
+            '<h3 class="card__title">' + item.title + "</h3>",
+            '<span class="badge badge--' + item.badgeType + '">' + item.badge + "</span>",
+            "</div>",
+            "</a>"
+          ].join("");
+        }).join("");
+
+        data.boards.forEach(function (item) {
+          drawRingChart("board-" + item.id + "-ring", item.percent, item.color, 58);
+        });
+      }
+
+      function bindPriorityModal() {
+        document.addEventListener("click", function (event) {
+          var button = event.target.closest("[data-priority-open]");
+          if (!button) return;
+
+          var item = data.priorities.find(function (priority) {
+            return priority.id === button.dataset.priorityOpen;
+          });
+          if (!item) return;
+
+          document.getElementById("priorityModalTitle").textContent = item.detailTitle;
+          document.getElementById("priorityModalBody").innerHTML = item.detail.map(function (line) {
+            return "<p>" + line + "</p>";
+          }).join("");
+          openModal("priorityModal");
+        });
+      }
+
+      BeautyApp.ready(function () {
+        renderStore();
+        renderPriorities();
+        renderBoards();
+        renderPerformance();
+        bindPriorityModal();
+      });
+    })();
+  </script>
+</body>
+</html>

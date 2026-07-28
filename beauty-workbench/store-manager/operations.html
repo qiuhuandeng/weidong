@@ -1,0 +1,429 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>运营保障</title>
+  <link rel="stylesheet" href="../shared/css/base.css">
+  <link rel="stylesheet" href="../shared/css/components.css">
+  <link rel="stylesheet" href="../shared/css/layout.css">
+  <style>
+    .completion-pill {
+      display: inline-flex;
+      align-items: center;
+      height: 30px;
+      padding: 0 10px;
+      border-radius: var(--radius-full);
+      background: var(--color-primary-soft);
+      color: var(--color-primary);
+      font-size: var(--font-size-helper);
+      font-weight: var(--font-weight-bold);
+    }
+
+    .check-list {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .check-item {
+      position: relative;
+      display: grid;
+      grid-template-columns: 28px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: var(--space-2);
+      min-height: 44px;
+      padding: var(--space-2) 0;
+    }
+
+    .check-item + .check-item {
+      border-top: 1px solid var(--color-border);
+    }
+
+    .check-input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .check-box {
+      display: inline-flex;
+      width: 22px;
+      height: 22px;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid #d1d5db;
+      border-radius: 7px;
+      color: #fff;
+      font-size: 14px;
+      font-weight: var(--font-weight-bold);
+      transition:
+        background-color var(--duration-fast) var(--ease-standard),
+        border-color var(--duration-fast) var(--ease-standard),
+        transform var(--duration-fast) var(--ease-standard);
+    }
+
+    .check-label {
+      min-width: 0;
+      color: var(--color-text);
+      font-size: var(--font-size-body);
+      line-height: 1.4;
+      transition:
+        color var(--duration-base) var(--ease-standard),
+        text-decoration-color var(--duration-base) var(--ease-standard);
+    }
+
+    .check-meta {
+      color: var(--color-text-muted);
+      font-size: var(--font-size-badge);
+      white-space: nowrap;
+    }
+
+    .check-item.is-done .check-box {
+      background: var(--color-success);
+      border-color: var(--color-success);
+      transform: scale(1.03);
+    }
+
+    .check-item.is-done .check-box::before {
+      content: "✓";
+    }
+
+    .check-item.is-done .check-label {
+      color: var(--color-text-muted);
+      text-decoration: line-through;
+      text-decoration-thickness: 2px;
+      text-decoration-color: rgb(156 163 175 / 70%);
+    }
+
+    .bonus-card {
+      position: relative;
+    }
+
+    .bonus-points {
+      color: var(--color-primary);
+      font-size: var(--font-size-helper);
+      font-weight: var(--font-weight-bold);
+      white-space: nowrap;
+    }
+
+    .float-points {
+      position: fixed;
+      z-index: 320;
+      padding: 4px 9px;
+      border-radius: var(--radius-full);
+      background: var(--color-primary);
+      color: #fff;
+      font-size: var(--font-size-helper);
+      font-weight: var(--font-weight-bold);
+      pointer-events: none;
+      animation: points-up 900ms var(--ease-standard) both;
+    }
+
+    @keyframes points-up {
+      from {
+        opacity: 0;
+        transform: translate3d(-50%, 8px, 0) scale(0.92);
+      }
+      25% {
+        opacity: 1;
+      }
+      to {
+        opacity: 0;
+        transform: translate3d(-50%, -34px, 0) scale(1);
+      }
+    }
+
+    .warning-card {
+      display: grid;
+      grid-template-columns: 42px minmax(0, 1fr);
+      gap: var(--space-3);
+    }
+
+    .warning-icon {
+      display: inline-flex;
+      width: 42px;
+      height: 42px;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-full);
+      background: #fffbeb;
+      color: var(--color-warning);
+      font-size: 20px;
+      font-weight: var(--font-weight-bold);
+    }
+
+    .warning-card--success .warning-icon {
+      background: var(--color-success-soft);
+      color: var(--color-success);
+    }
+
+    .warning-title {
+      color: var(--color-text);
+      font-size: var(--font-size-body);
+      font-weight: var(--font-weight-bold);
+      line-height: 1.4;
+    }
+
+    .warning-desc {
+      margin: 4px 0 var(--space-3);
+      color: var(--color-text-secondary);
+      font-size: var(--font-size-helper);
+      line-height: 1.5;
+    }
+
+    .modal-warning-detail {
+      padding: var(--space-3);
+      background: #f9fafb;
+      border-radius: var(--radius-sm);
+      color: var(--color-text-secondary);
+      font-size: var(--font-size-body);
+      line-height: 1.55;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="top-bar">
+      <div class="top-bar__left">
+        <h1 class="top-bar__title">运营保障</h1>
+      </div>
+      <div class="top-bar__right">
+        <span class="completion-pill" id="completionCount">5/8</span>
+      </div>
+    </header>
+
+    <main class="app-page app-page--with-top-bar app-page--with-tab-bar">
+      <div class="app-content">
+        <section class="card">
+          <div class="card__header">
+            <h2 class="card__title">必做事项</h2>
+            <span class="badge badge--danger" id="requiredBadge">3项未完成</span>
+          </div>
+          <div class="check-list" id="requiredList">
+            <label class="check-item is-done">
+              <input class="check-input" type="checkbox" data-required checked>
+              <span class="check-box"></span>
+              <span class="check-label">晨会已完成</span>
+              <span class="check-meta">09:30前</span>
+            </label>
+            <label class="check-item is-done">
+              <input class="check-input" type="checkbox" data-required checked>
+              <span class="check-box"></span>
+              <span class="check-label">昨日财务对账已完成</span>
+              <span class="check-meta">10:00前</span>
+            </label>
+            <label class="check-item is-done">
+              <input class="check-input" type="checkbox" data-required checked>
+              <span class="check-box"></span>
+              <span class="check-label">接诊录音上传完毕（系统自动检测✓）</span>
+              <span class="check-meta">自动</span>
+            </label>
+            <label class="check-item is-done">
+              <input class="check-input" type="checkbox" data-required checked>
+              <span class="check-box"></span>
+              <span class="check-label">客户标签更新完毕（自动检测✓）</span>
+              <span class="check-meta">自动</span>
+            </label>
+            <label class="check-item is-done">
+              <input class="check-input" type="checkbox" data-required checked>
+              <span class="check-box"></span>
+              <span class="check-label">下周排班已提交</span>
+              <span class="check-meta">15:00前</span>
+            </label>
+            <label class="check-item">
+              <input class="check-input" type="checkbox" data-required>
+              <span class="check-box"></span>
+              <span class="check-label">夕会待完成</span>
+              <span class="check-meta">18:00前</span>
+            </label>
+            <label class="check-item">
+              <input class="check-input" type="checkbox" data-required>
+              <span class="check-box"></span>
+              <span class="check-label">新人带教日志待填写</span>
+              <span class="check-meta">20:00前</span>
+            </label>
+            <label class="check-item">
+              <input class="check-input" type="checkbox" data-required>
+              <span class="check-box"></span>
+              <span class="check-label">本周客户回访总结待完成</span>
+              <span class="check-meta">周日前</span>
+            </label>
+          </div>
+        </section>
+
+        <section class="card bonus-card">
+          <div class="card__header">
+            <h2 class="card__title">加分事项</h2>
+            <span class="badge badge--info">可选</span>
+          </div>
+          <div class="check-list">
+            <label class="check-item">
+              <input class="check-input" type="checkbox" data-bonus="20">
+              <span class="check-box"></span>
+              <span class="check-label">完成AI销冠案例学习（本周新增3篇）</span>
+              <span class="bonus-points">+20经验</span>
+            </label>
+            <label class="check-item">
+              <input class="check-input" type="checkbox" data-bonus="30">
+              <span class="check-box"></span>
+              <span class="check-label">上传优秀服务案例</span>
+              <span class="bonus-points">+30经验</span>
+            </label>
+            <label class="check-item">
+              <input class="check-input" type="checkbox" data-bonus="10">
+              <span class="check-box"></span>
+              <span class="check-label">完成门店朋友圈素材更新</span>
+              <span class="bonus-points">+10经验</span>
+            </label>
+          </div>
+        </section>
+
+        <section class="page-section">
+          <div class="section-title">
+            <h2 class="section-title__main">运营预警</h2>
+          </div>
+          <div class="stack gap-3">
+            <article class="card card--strip card--strip-warning warning-card">
+              <span class="warning-icon">日</span>
+              <div class="min-w-0">
+                <h3 class="warning-title">周三下午14:00-16:00床位空置率偏高</h3>
+                <p class="warning-desc">连续3周该时段利用率&lt;40%，建议调整预约引导或增加该时段活动</p>
+                <button class="btn btn--secondary btn--sm" type="button" data-warning="bed">查看排班建议</button>
+              </div>
+            </article>
+
+            <article class="card card--strip card--strip-warning warning-card">
+              <span class="warning-icon">包</span>
+              <div class="min-w-0">
+                <h3 class="warning-title">玻尿酸库存预计5天后不足</h3>
+                <p class="warning-desc">当前库存12支，近7日日均消耗2.1支</p>
+                <button class="btn btn--secondary btn--sm" type="button" data-warning="stock">发起补货申请</button>
+              </div>
+            </article>
+
+            <article class="card card--strip card--strip-success warning-card warning-card--success">
+              <span class="warning-icon">话</span>
+              <div class="min-w-0">
+                <h3 class="warning-title">今日晨会建议话题</h3>
+                <p class="warning-desc">昨日表现突出的王丽顾问可做经验分享；关注张悦近期状态</p>
+                <button class="btn btn--secondary btn--sm" type="button" data-warning="meeting">查看晨会话题详情</button>
+              </div>
+            </article>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <nav class="tab-bar" aria-label="底部导航">
+      <a class="tab-bar__item" href="index.html"><span class="tab-bar__icon">⌂</span><span>首页</span></a>
+      <a class="tab-bar__item" href="customer.html"><span class="tab-bar__icon">◇</span><span>客户</span></a>
+      <a class="tab-bar__item" href="team.html"><span class="tab-bar__icon">◎</span><span>团队</span></a>
+      <a class="tab-bar__item is-active" href="operations.html" aria-current="page"><span class="tab-bar__icon">□</span><span>运营</span></a>
+      <a class="tab-bar__item" href="#"><span class="tab-bar__icon">○</span><span>我的</span></a>
+    </nav>
+  </div>
+
+  <div class="modal" id="warningModal" hidden>
+    <div class="modal__backdrop"></div>
+    <div class="modal__sheet">
+      <div class="modal__handle"></div>
+      <div class="modal__header">
+        <h3 class="modal__title" id="warningTitle">预警详情</h3>
+        <button class="modal__close" type="button" data-modal-close="warningModal" aria-label="关闭">×</button>
+      </div>
+      <div class="modal__body">
+        <div class="modal-warning-detail" id="warningDetail"></div>
+      </div>
+      <div class="modal__footer">
+        <button class="btn btn--primary btn--block" type="button" data-modal-close="warningModal">我知道了</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../shared/js/app.js"></script>
+  <script src="../shared/js/components.js"></script>
+  <script src="../shared/js/charts.js"></script>
+  <script>
+    (function () {
+      var warningMap = {
+        bed: {
+          title: "床位空置排班建议",
+          detail: "建议将周三14:00-16:00设置为老客复诊优先时段，并由顾问在前一日集中触达项目到期客户。若连续两周仍低于50%，可尝试增加该时段护理体验权益。"
+        },
+        stock: {
+          title: "玻尿酸补货申请",
+          detail: "按近7日日均2.1支消耗计算，当前12支库存预计5天后低于安全线。建议立即发起20支补货申请，并同步本周医美预约明细给采购审核。"
+        },
+        meeting: {
+          title: "今日晨会话题详情",
+          detail: "建议安排王丽分享本周高客单成交中的需求追问方法，再由主任补充张女士术后反馈的处理标准。晨会控制在12分钟内，最后明确今日客户风险跟进责任人。"
+        }
+      };
+
+      function updateRequiredStatus(silent) {
+        var items = Array.prototype.slice.call(document.querySelectorAll("[data-required]"));
+        var done = items.filter(function (input) { return input.checked; }).length;
+        var total = items.length;
+        var remain = total - done;
+        document.getElementById("completionCount").textContent = done + "/" + total;
+        document.getElementById("requiredBadge").textContent = remain + "项未完成";
+        document.getElementById("requiredBadge").className = "badge " + (remain === 0 ? "badge--success" : "badge--danger");
+
+        if (!silent) showToast("又完成一项！", "success", 1400);
+      }
+
+      function syncItem(input) {
+        var item = input.closest(".check-item");
+        item.classList.toggle("is-done", input.checked);
+      }
+
+      function showPoints(input) {
+        var rect = input.closest(".check-item").getBoundingClientRect();
+        var points = input.dataset.bonus;
+        var bubble = document.createElement("div");
+        bubble.className = "float-points";
+        bubble.textContent = "+" + points + "经验";
+        bubble.style.left = rect.right - 36 + "px";
+        bubble.style.top = rect.top + 12 + "px";
+        document.body.appendChild(bubble);
+        window.setTimeout(function () {
+          bubble.remove();
+        }, 900);
+      }
+
+      function bindEvents() {
+        document.addEventListener("change", function (event) {
+          var input = event.target.closest(".check-input");
+          if (!input) return;
+
+          syncItem(input);
+          if (input.matches("[data-required]")) {
+            updateRequiredStatus(!input.checked);
+          }
+          if (input.matches("[data-bonus]") && input.checked) {
+            showToast("加分事项已完成！", "info", 1400);
+            showPoints(input);
+          }
+        });
+
+        document.addEventListener("click", function (event) {
+          var warning = event.target.closest("[data-warning]");
+          if (!warning) return;
+
+          var data = warningMap[warning.dataset.warning];
+          document.getElementById("warningTitle").textContent = data.title;
+          document.getElementById("warningDetail").textContent = data.detail;
+          openModal("warningModal");
+        });
+      }
+
+      BeautyApp.ready(function () {
+        document.querySelectorAll(".check-input").forEach(syncItem);
+        updateRequiredStatus(true);
+        bindEvents();
+      });
+    })();
+  </script>
+</body>
+</html>
