@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI客户承接与触达优化看板</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: #f0f2f5;
+            color: #333;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            padding: 20px 28px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 { font-size: 22px; }
+        .header .sub { font-size: 12px; opacity: 0.7; margin-top: 4px; }
+        .header .date { font-size: 13px; opacity: 0.8; text-align: right; }
+
+        /* 卡片通用 */
+        .card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 22px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .section-title {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 16px;
+            background: #4f46e5;
+            border-radius: 2px;
+        }
+
+        /* 指标卡 */
+        .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 20px; }
+        .metric-item { background: #fff; border-radius: 10px; padding: 16px; text-align: center; box-shadow: 0 2px 6px rgba(0,0,0,0.04); }
+        .metric-item .val { font-size: 26px; font-weight: 700; color: #1a1a2e; margin: 6px 0 2px; }
+        .metric-item .lbl { font-size: 12px; color: #888; }
+        .metric-item .trend { font-size: 11px; }
+        .up { color: #10b981; }
+        .down { color: #ef4444; }
+
+        /* 漏斗 */
+        .funnel { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px 0; }
+        .funnel-row { display: flex; align-items: center; gap: 12px; width: 100%; max-width: 640px; }
+        .funnel-lbl { width: 110px; text-align: right; font-size: 12px; color: #555; flex-shrink: 0; }
+        .funnel-bar { height: 40px; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 600; font-size: 13px; }
+        .funnel-extra { width: 80px; font-size: 11px; color: #999; flex-shrink: 0; }
+        .funnel-arrow { text-align: center; color: #bbb; font-size: 12px; width: 100%; max-width: 640px; }
+
+        /* 表格 */
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        thead th { background: #f8f9fa; padding: 10px 8px; text-align: center; font-weight: 600; color: #555; border-bottom: 2px solid #e9ecef; white-space: nowrap; }
+        tbody td { padding: 10px 8px; text-align: center; border-bottom: 1px solid #f0f0f0; }
+        tbody tr:hover { background: #f8f9ff; }
+
+        .rank { display: inline-block; width: 22px; height: 22px; line-height: 22px; border-radius: 50%; font-size: 11px; font-weight: 700; color: #fff; }
+        .r1 { background: #f59e0b; }
+        .r2 { background: #8b5cf6; }
+        .r3 { background: #3b82f6; }
+        .r4 { background: #6b7280; }
+        .r5 { background: #ef4444; }
+
+        .tag { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 500; }
+        .tag-green { background: #d1fae5; color: #065f46; }
+        .tag-yellow { background: #fef3c7; color: #92400e; }
+        .tag-red { background: #fee2e2; color: #991b1b; }
+
+        /* 图表 */
+        .overview-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-bottom: 20px; align-items: stretch; }
+        .overview-row .card,
+        .overview-row .chart-box {
+            display: flex;
+            flex-direction: column;
+            height: 360px;
+            margin-bottom: 0;
+            min-width: 0;
+        }
+        .overview-row .card,
+        .overview-row .chart-box { padding: 18px; }
+        .overview-row .section-title,
+        .overview-row .chart-box h4 {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-height: 20px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+        }
+        .overview-row .chart-box h4::before {
+            content: '';
+            width: 4px;
+            height: 16px;
+            background: #4f46e5;
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+        .overview-row .funnel {
+            flex: 1;
+            justify-content: center;
+            gap: 5px;
+            padding: 0;
+        }
+        .overview-row .funnel-row { gap: 10px; }
+        .overview-row .funnel-lbl { width: 92px; }
+        .overview-row .funnel-extra { width: 68px; }
+        .overview-row .funnel-bar { height: 32px; }
+        .overview-row .funnel-arrow { font-size: 11px; line-height: 1.1; }
+        .overview-chart-frame { position: relative; flex: 1; min-height: 0; }
+        .overview-chart-frame canvas { width: 100% !important; height: 100% !important; display: block; }
+        .chart-box { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .chart-box h4 { font-size: 13px; font-weight: 600; margin-bottom: 12px; color: #444; }
+
+        /* 协作流程明细 */
+        .rank-table tbody tr { cursor: default; }
+        .drill-link {
+            border: 1px solid #d7dbff;
+            background: #fff;
+            color: #4f46e5;
+            border-radius: 6px;
+            padding: 4px 10px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .drill-link:hover, .drill-link.active { background: #eef2ff; border-color: #4f46e5; }
+        body.modal-open { overflow: hidden; }
+        .drill-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            background: rgba(15, 23, 42, 0.42);
+        }
+        .drill-modal.active { display: flex; }
+        .drill-dialog {
+            width: min(1120px, 100%);
+            max-height: calc(100vh - 48px);
+            overflow: auto;
+            background: #fff;
+            border-radius: 12px;
+            padding: 22px;
+            box-shadow: 0 24px 70px rgba(15,23,42,0.24);
+        }
+        .modal-close {
+            width: 32px;
+            height: 32px;
+            border: 1px solid #e5e7eb;
+            background: #fff;
+            border-radius: 50%;
+            color: #555;
+            cursor: pointer;
+            font-size: 22px;
+            line-height: 28px;
+            flex-shrink: 0;
+        }
+        .modal-close:hover { background: #f8f9ff; border-color: #c7d2fe; color: #4f46e5; }
+        .drill-head-actions {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+        .drill-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 14px;
+        }
+        .drill-context { color: #888; font-size: 12px; line-height: 1.7; text-align: right; }
+        .strategy-switcher {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 18px;
+        }
+        .strategy-pill {
+            border: none;
+            border-right: 1px solid #e5e7eb;
+            background: #fff;
+            padding: 12px 14px;
+            text-align: left;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .strategy-pill:last-child { border-right: none; }
+        .strategy-pill:hover { background: #f8f9ff; }
+        .strategy-pill.active { background: #eef2ff; box-shadow: inset 0 -3px 0 #4f46e5; }
+        .pill-top { display: flex; justify-content: space-between; gap: 8px; align-items: center; font-size: 11px; color: #888; margin-bottom: 6px; }
+        .pill-name { font-size: 12px; font-weight: 600; color: #333; line-height: 1.35; min-height: 32px; }
+        .pill-rate { font-size: 18px; font-weight: 700; color: #1a1a2e; margin-top: 6px; }
+        .pill-state { font-size: 10px; color: #666; background: #f3f4f6; border-radius: 999px; padding: 2px 7px; white-space: nowrap; }
+        .drill-body {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr);
+            border: 1px solid #edf0f3;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .drill-main { min-width: 0; padding: 16px; }
+        .drill-kpis {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(96px, 1fr));
+            border: 1px solid #edf0f3;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 14px;
+        }
+        .drill-kpi { padding: 10px 12px; border-right: 1px solid #edf0f3; }
+        .drill-kpi:last-child { border-right: none; }
+        .drill-kpi .k { font-size: 11px; color: #888; margin-bottom: 4px; }
+        .drill-kpi .v { font-size: 18px; font-weight: 700; color: #1a1a2e; }
+        .drill-title { font-size: 13px; font-weight: 600; margin-bottom: 10px; color: #444; }
+        .detail-table tbody td { padding-top: 12px; padding-bottom: 12px; }
+        .detail-name { text-align: left; font-weight: 600; color: #333; }
+        .detail-sub { display: block; font-size: 10px; color: #999; margin-top: 2px; font-weight: 400; }
+        .delta-good { color: #10b981; font-weight: 700; }
+        .delta-mid { color: #f59e0b; font-weight: 700; }
+        .delta-bad { color: #ef4444; font-weight: 700; }
+
+        @media (max-width: 768px) {
+            .metrics { grid-template-columns: repeat(2, 1fr); }
+            .overview-row { grid-template-columns: 1fr; }
+            .overview-row .card,
+            .overview-row .chart-box { height: 330px; }
+            .drill-modal { padding: 12px; align-items: flex-start; }
+            .drill-dialog { max-height: calc(100vh - 24px); padding: 16px; }
+            .header { flex-direction: column; gap: 8px; }
+            .drill-head { flex-direction: column; }
+            .drill-head-actions { width: 100%; justify-content: space-between; }
+            .drill-context { text-align: left; }
+            .strategy-switcher { grid-template-columns: 1fr; }
+            .strategy-pill { border-right: none; border-bottom: 1px solid #e5e7eb; }
+            .strategy-pill:last-child { border-bottom: none; }
+            .drill-body { grid-template-columns: 1fr; }
+            .drill-kpis { grid-template-columns: repeat(2, 1fr); }
+            .drill-kpi { border-right: 1px solid #edf0f3; border-bottom: 1px solid #edf0f3; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div>
+        <h1>AI客户承接与触达优化看板</h1>
+        <div class="sub">协作流程 · 触达方案</div>
+    </div>
+    <div class="date">
+        <div>更新时间：2026-08-03 10:30</div>
+        <div>统计周期：2026-07-28 ~ 08-03</div>
+    </div>
+</div>
+
+<div>
+
+    <!-- 核心指标 -->
+    <div class="metrics">
+        <div class="metric-item">
+            <div class="lbl">本周新增线索</div>
+            <div class="val">523</div>
+            <div class="trend up">↑ 12.3%</div>
+        </div>
+        <div class="metric-item">
+            <div class="lbl">成功触达率</div>
+            <div class="val">96.2%</div>
+            <div class="trend up">↑ 1.1%</div>
+        </div>
+        <div class="metric-item">
+            <div class="lbl">客户回复率</div>
+            <div class="val">38.6%</div>
+            <div class="trend up">↑ 5.2%</div>
+        </div>
+        <div class="metric-item">
+            <div class="lbl">综合转化率</div>
+            <div class="val">17.8%</div>
+            <div class="trend up">↑ 4.8%</div>
+        </div>
+        <div class="metric-item">
+            <div class="lbl">AI直接成交</div>
+            <div class="val">23单</div>
+            <div class="trend up">↑ 8</div>
+        </div>
+        <div class="metric-item">
+            <div class="lbl">转人工后成交</div>
+            <div class="val">70单</div>
+            <div class="trend up">↑ 15</div>
+        </div>
+        <div class="metric-item">
+            <div class="lbl">大盘基准转化率</div>
+            <div class="val" style="color:#999;">13.0%</div>
+            <div class="trend" style="color:#999;">对比基准线</div>
+        </div>
+    </div>
+
+    <!-- 数据漏斗 + 协作流程对比 -->
+    <div class="overview-row">
+        <div class="card">
+            <div class="section-title">客户转化漏斗</div>
+            <div class="funnel">
+                <div class="funnel-row">
+                    <div class="funnel-lbl">新增线索</div>
+                    <div class="funnel-bar" style="width:100%; background:linear-gradient(90deg,#4f46e5,#7c3aed);">523</div>
+                    <div class="funnel-extra"></div>
+                </div>
+                <div class="funnel-arrow">↓ 96.2%</div>
+                <div class="funnel-row">
+                    <div class="funnel-lbl">成功触达</div>
+                    <div class="funnel-bar" style="width:92%; background:linear-gradient(90deg,#6366f1,#8b5cf6);">503</div>
+                    <div class="funnel-extra">异常:20</div>
+                </div>
+                <div class="funnel-arrow">↓ 38.6%</div>
+                <div class="funnel-row">
+                    <div class="funnel-lbl">客户首次回复</div>
+                    <div class="funnel-bar" style="width:58%; background:linear-gradient(90deg,#8b5cf6,#a78bfa);">194</div>
+                    <div class="funnel-extra">未回复:309</div>
+                </div>
+                <div class="funnel-arrow">↓ 52.1%</div>
+                <div class="funnel-row">
+                    <div class="funnel-lbl">有效对话(≥2轮)</div>
+                    <div class="funnel-bar" style="width:36%; background:linear-gradient(90deg,#a78bfa,#c4b5fd);">101</div>
+                    <div class="funnel-extra"></div>
+                </div>
+                <div class="funnel-arrow">↓ 92.1%</div>
+                <div class="funnel-row">
+                    <div class="funnel-lbl">成交客户</div>
+                    <div class="funnel-bar" style="width:22%; background:linear-gradient(90deg,#10b981,#34d399);">93</div>
+                    <div class="funnel-extra">转化率:17.8%</div>
+                </div>
+            </div>
+        </div>
+        <div class="chart-box">
+            <h4>协作流程转化率 vs 大盘基准</h4>
+            <div class="overview-chart-frame">
+                <canvas id="chartBar"></canvas>
+            </div>
+        </div>
+        <div class="chart-box">
+            <h4>SOP后续成交率</h4>
+            <div class="overview-chart-frame">
+                <canvas id="chartSopDeal"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- 协作流程排行 -->
+    <div class="card">
+        <div class="section-title">协作流程排行</div>
+        <div class="table-wrap">
+            <table class="rank-table">
+                <thead>
+                    <tr>
+                        <th>排名</th>
+                        <th style="text-align:left;">协作流程</th>
+                        <th>线索数</th>
+                        <th>回复率</th>
+                        <th>AI轮次</th>
+                        <th>AI成交率</th>
+                        <th>转人工成交率</th>
+                        <th>综合转化率</th>
+                        <th>vs大盘</th>
+                        <th>明细</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="rank r1">1</span></td>
+                        <td style="text-align:left;font-weight:500;">AI促回复→转人工</td>
+                        <td>150</td>
+                        <td>42.0%</td>
+                        <td>1.2</td>
+                        <td>—</td>
+                        <td>45.3%</td>
+                        <td><strong style="color:#10b981;">19.0%</strong></td>
+                        <td style="color:#10b981;">+6.0%</td>
+                        <td><button type="button" class="drill-link" data-drill-link="s1" onclick="openDrillModal('s1')">查看</button></td>
+                    </tr>
+                    <tr>
+                        <td><span class="rank r2">2</span></td>
+                        <td style="text-align:left;font-weight:500;">纯AI全程成交</td>
+                        <td>123</td>
+                        <td>36.6%</td>
+                        <td>5.8</td>
+                        <td>18.7%</td>
+                        <td>—</td>
+                        <td><strong style="color:#10b981;">18.7%</strong></td>
+                        <td style="color:#10b981;">+5.7%</td>
+                        <td><button type="button" class="drill-link" data-drill-link="s2" onclick="openDrillModal('s2')">查看</button></td>
+                    </tr>
+                    <tr>
+                        <td><span class="rank r3">3</span></td>
+                        <td style="text-align:left;font-weight:500;">AI聊5轮→未转化转人工</td>
+                        <td>130</td>
+                        <td>39.2%</td>
+                        <td>4.5</td>
+                        <td>9.2%</td>
+                        <td>28.6%</td>
+                        <td><strong style="color:#3b82f6;">17.7%</strong></td>
+                        <td style="color:#3b82f6;">+4.7%</td>
+                        <td><button type="button" class="drill-link" data-drill-link="s3" onclick="openDrillModal('s3')">查看</button></td>
+                    </tr>
+                    <tr>
+                        <td><span class="rank r4">4</span></td>
+                        <td style="text-align:left;font-weight:500;">人工未转化→转AI→回复后转人工</td>
+                        <td>120</td>
+                        <td>22.5%</td>
+                        <td>3.1</td>
+                        <td>—</td>
+                        <td>33.3%</td>
+                        <td><strong style="color:#f59e0b;">7.5%</strong></td>
+                        <td style="color:#f59e0b;">+7.5%*</td>
+                        <td><button type="button" class="drill-link" data-drill-link="s4" onclick="openDrillModal('s4')">查看</button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <p style="font-size:11px;color:#aaa;margin-top:10px;">* 回流流程对比基准为"人工已放弃客户"，原转化率≈0%，7.5%为纯增量。</p>
+    </div>
+
+    <!-- 触达方案排行 -->
+    <div class="card">
+        <div class="section-title">触达方案排行</div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>排名</th>
+                        <th style="text-align:left;">触达方案</th>
+                        <th>覆盖客户</th>
+                        <th>首日回复率</th>
+                        <th>7日累计回复率</th>
+                        <th>7日成交率</th>
+                        <th>成交客户</th>
+                        <th>平均回复节点</th>
+                        <th>回复条数</th>
+                        <th>拉黑/删除率</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="rank r1">1</span></td>
+                        <td style="text-align:left;font-weight:500;">首日5次触达-销冠话术模板</td>
+                        <td>105</td>
+                        <td><strong style="color:#10b981;">44.8%</strong></td>
+                        <td>52.4%</td>
+                        <td><strong style="color:#10b981;">18.1%</strong></td>
+                        <td>19</td>
+                        <td>第2条后</td>
+                        <td>3.2条</td>
+                        <td>2.9%</td>
+                    </tr>
+                    <tr>
+                        <td><span class="rank r2">2</span></td>
+                        <td style="text-align:left;font-weight:500;">首日3次触达-案例图为主</td>
+                        <td>108</td>
+                        <td><strong style="color:#10b981;">41.7%</strong></td>
+                        <td>49.1%</td>
+                        <td><strong style="color:#10b981;">16.7%</strong></td>
+                        <td>18</td>
+                        <td>第2条后</td>
+                        <td>2.8条</td>
+                        <td>1.9%</td>
+                    </tr>
+                    <tr>
+                        <td><span class="rank r3">3</span></td>
+                        <td style="text-align:left;font-weight:500;">3天递进触达-每天2条</td>
+                        <td>102</td>
+                        <td><strong style="color:#3b82f6;">32.4%</strong></td>
+                        <td>46.1%</td>
+                        <td><strong style="color:#3b82f6;">14.7%</strong></td>
+                        <td>15</td>
+                        <td>第3条后</td>
+                        <td>2.5条</td>
+                        <td>1.0%</td>
+                    </tr>
+                    <tr>
+                        <td><span class="rank r4">4</span></td>
+                        <td style="text-align:left;font-weight:500;">首日2次触达-轻互动</td>
+                        <td>104</td>
+                        <td><strong style="color:#f59e0b;">28.8%</strong></td>
+                        <td>38.5%</td>
+                        <td><strong style="color:#f59e0b;">11.5%</strong></td>
+                        <td>12</td>
+                        <td>第2条后</td>
+                        <td>2.1条</td>
+                        <td>0.9%</td>
+                    </tr>
+                    <tr>
+                        <td><span class="rank r5">5</span></td>
+                        <td style="text-align:left;font-weight:500;">首日5次触达-利益点密集</td>
+                        <td>104</td>
+                        <td><strong style="color:#ef4444;">26.0%</strong></td>
+                        <td>33.7%</td>
+                        <td><strong style="color:#ef4444;">7.7%</strong></td>
+                        <td>8</td>
+                        <td>第3条后</td>
+                        <td>1.8条</td>
+                        <td style="color:#ef4444;font-weight:600;">5.8%</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <p style="font-size:11px;color:#aaa;margin-top:10px;">7日成交率统计加微后7天内由SOP持续跟进带来的成交结果。每个方案覆盖≥100客户后方可判定排名。</p>
+    </div>
+
+    <!-- 协作流程明细弹窗 -->
+    <div class="drill-modal" id="strategy-drill-modal" aria-hidden="true" onclick="handleDrillModalBackdrop(event)">
+        <div class="drill-dialog" role="dialog" aria-modal="true" aria-labelledby="drillModalTitle">
+            <div class="drill-head">
+                <div>
+                    <div class="section-title" id="drillModalTitle">协作流程明细</div>
+                    <div class="drill-context" style="text-align:left;" id="drillSubtitle">AI促回复→转人工 · 转人工承接明细</div>
+                </div>
+                <div class="drill-head-actions">
+                    <div class="drill-context" id="drillContext">当前流程：流程一 · 样本150人 · 综合转化率19.0%</div>
+                    <button type="button" class="modal-close" aria-label="关闭" onclick="closeDrillModal()">×</button>
+                </div>
+            </div>
+
+            <div class="strategy-switcher">
+                <button type="button" class="strategy-pill active" data-drill-key="s1" onclick="selectDrillStrategy('s1')">
+                    <div class="pill-top"><span>流程一</span><span class="pill-state">扩量</span></div>
+                    <div class="pill-name">AI促回复→转人工</div>
+                    <div class="pill-rate">19.0%</div>
+                </button>
+                <button type="button" class="strategy-pill" data-drill-key="s2" onclick="selectDrillStrategy('s2')">
+                    <div class="pill-top"><span>流程二</span><span class="pill-state">扩量</span></div>
+                    <div class="pill-name">纯AI全程成交</div>
+                    <div class="pill-rate">18.7%</div>
+                </button>
+                <button type="button" class="strategy-pill" data-drill-key="s3" onclick="selectDrillStrategy('s3')">
+                    <div class="pill-top"><span>流程三</span><span class="pill-state">保留</span></div>
+                    <div class="pill-name">AI聊5轮→未转化转人工</div>
+                    <div class="pill-rate">17.7%</div>
+                </button>
+                <button type="button" class="strategy-pill" data-drill-key="s4" onclick="selectDrillStrategy('s4')">
+                    <div class="pill-top"><span>流程四</span><span class="pill-state">测试中</span></div>
+                    <div class="pill-name">人工未转化→转AI→回复后转人工</div>
+                    <div class="pill-rate">7.5%</div>
+                </button>
+            </div>
+
+            <div class="drill-body">
+                <div class="drill-main">
+                    <div class="drill-kpis">
+                        <div class="drill-kpi"><div class="k">线索数</div><div class="v" id="drillLeads">150</div></div>
+                        <div class="drill-kpi"><div class="k">回复率</div><div class="v" id="drillOpenRate">42.0%</div></div>
+                        <div class="drill-kpi"><div class="k">AI轮次</div><div class="v" id="drillRounds">1.2</div></div>
+                        <div class="drill-kpi"><div class="k">成交单</div><div class="v" id="drillDeals">29</div></div>
+                        <div class="drill-kpi"><div class="k">vs大盘</div><div class="v" id="drillLift" style="color:#10b981;">+6.0%</div></div>
+                    </div>
+
+                    <div class="drill-title" id="drillTableTitle">销售承接效果</div>
+                    <div class="table-wrap">
+                        <table class="detail-table">
+                            <thead>
+                                <tr>
+                                    <th style="text-align:left;">承接对象</th>
+                                    <th>接收客户</th>
+                                    <th>响应/介入</th>
+                                    <th>成交单</th>
+                                    <th>转化率</th>
+                                    <th>原始基准</th>
+                                    <th>增量</th>
+                                    <th>诊断</th>
+                                </tr>
+                            </thead>
+                            <tbody id="drillRows"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const drillStrategies = {
+    s1: {
+        subtitle: 'AI促回复→转人工 · 转人工承接明细',
+        context: '当前流程：流程一 · 样本150人 · 综合转化率19.0%',
+        tableTitle: '销售承接效果',
+        leads: '150',
+        openRate: '42.0%',
+        rounds: '1.2',
+        deals: '29',
+        lift: '+6.0%',
+        liftColor: '#10b981',
+        rows: [
+            { name: '销售A', sub: '企微号001', customers: '28人', response: '2.1min', deals: '13', rate: '44.6%', base: '14.2%', delta: '+30.4%', level: 'good', note: '优先放量' },
+            { name: '销售B', sub: '企微号002', customers: '22人', response: '5.4min', deals: '8', rate: '36.4%', base: '12.8%', delta: '+23.6%', level: 'mid', note: '稳定承接' },
+            { name: '销售C', sub: '企微号003', customers: '18人', response: '12.7min', deals: '4', rate: '22.2%', base: '11.5%', delta: '+10.7%', level: 'bad', note: '响应偏慢' }
+        ]
+    },
+    s2: {
+        subtitle: '纯AI全程成交 · AI账号承接明细',
+        context: '当前流程：流程二 · 样本123人 · 综合转化率18.7%',
+        tableTitle: 'AI账号成交效果',
+        leads: '123',
+        openRate: '36.6%',
+        rounds: '5.8',
+        deals: '23',
+        lift: '+5.7%',
+        liftColor: '#10b981',
+        rows: [
+            { name: 'AI账号A', sub: '企微号001', customers: '45人', response: '0.4min', deals: '9', rate: '20.0%', base: '13.0%', delta: '+7.0%', level: 'good', note: '话术稳定' },
+            { name: 'AI账号B', sub: '企微号002', customers: '41人', response: '0.5min', deals: '8', rate: '19.5%', base: '13.0%', delta: '+6.5%', level: 'good', note: '可继续放量' },
+            { name: 'AI账号C', sub: '企微号003', customers: '37人', response: '0.6min', deals: '6', rate: '16.2%', base: '13.0%', delta: '+3.2%', level: 'mid', note: '优化逼单节点' }
+        ]
+    },
+    s3: {
+        subtitle: 'AI聊5轮→未转化转人工 · 二段式承接明细',
+        context: '当前流程：流程三 · 样本130人 · 综合转化率17.7%',
+        tableTitle: '转人工承接效果',
+        leads: '130',
+        openRate: '39.2%',
+        rounds: '4.5',
+        deals: '23',
+        lift: '+4.7%',
+        liftColor: '#3b82f6',
+        rows: [
+            { name: '销售A', sub: '企微号001', customers: '20人', response: '3.4min', deals: '7', rate: '35.0%', base: '14.0%', delta: '+21.0%', level: 'good', note: '承接质量高' },
+            { name: '销售B', sub: '企微号002', customers: '18人', response: '7.1min', deals: '5', rate: '27.8%', base: '12.6%', delta: '+15.2%', level: 'mid', note: '跟进可加强' },
+            { name: '销售C', sub: '企微号003', customers: '13人', response: '10.3min', deals: '3', rate: '23.1%', base: '11.8%', delta: '+11.3%', level: 'mid', note: '样本偏少' }
+        ]
+    },
+    s4: {
+        subtitle: '人工未转化→转AI→回复后转人工 · 回流客户明细',
+        context: '当前流程：流程四 · 样本120人 · 综合转化率7.5%',
+        tableTitle: '回流承接效果',
+        leads: '120',
+        openRate: '22.5%',
+        rounds: '3.1',
+        deals: '9',
+        lift: '+7.5%',
+        liftColor: '#f59e0b',
+        rows: [
+            { name: '销售A', sub: '回流池001', customers: '10人', response: '6.8min', deals: '4', rate: '40.0%', base: '≈0%', delta: '+40.0%', level: 'good', note: '适合回收' },
+            { name: '销售B', sub: '回流池002', customers: '9人', response: '9.2min', deals: '3', rate: '33.3%', base: '≈0%', delta: '+33.3%', level: 'mid', note: '继续观察' },
+            { name: '销售C', sub: '回流池003', customers: '8人', response: '14.0min', deals: '2', rate: '25.0%', base: '≈0%', delta: '+25.0%', level: 'mid', note: '响应需兜底' }
+        ]
+    }
+};
+
+function selectDrillStrategy(key) {
+    const data = drillStrategies[key];
+    if (!data) return;
+
+    document.querySelectorAll('[data-drill-key]').forEach(el => el.classList.toggle('active', el.dataset.drillKey === key));
+    document.querySelectorAll('[data-drill-link]').forEach(el => el.classList.toggle('active', el.dataset.drillLink === key));
+
+    document.getElementById('drillSubtitle').textContent = data.subtitle;
+    document.getElementById('drillContext').textContent = data.context;
+    document.getElementById('drillTableTitle').textContent = data.tableTitle;
+    document.getElementById('drillLeads').textContent = data.leads;
+    document.getElementById('drillOpenRate').textContent = data.openRate;
+    document.getElementById('drillRounds').textContent = data.rounds;
+    document.getElementById('drillDeals').textContent = data.deals;
+    document.getElementById('drillLift').textContent = data.lift;
+    document.getElementById('drillLift').style.color = data.liftColor;
+
+    document.getElementById('drillRows').innerHTML = data.rows.map(row => `
+        <tr>
+            <td class="detail-name">${row.name}<span class="detail-sub">${row.sub}</span></td>
+            <td>${row.customers}</td>
+            <td>${row.response}</td>
+            <td>${row.deals}</td>
+            <td><strong>${row.rate}</strong></td>
+            <td style="color:#999;">${row.base}</td>
+            <td class="delta-${row.level}">${row.delta}</td>
+            <td>${row.note}</td>
+        </tr>
+    `).join('');
+}
+
+function openDrillModal(key) {
+    selectDrillStrategy(key);
+    const modal = document.getElementById('strategy-drill-modal');
+    if (!modal) return;
+    modal.classList.add('active');
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('modal-open');
+    const closeButton = modal.querySelector('.modal-close');
+    if (closeButton) closeButton.focus({ preventScroll: true });
+}
+
+function closeDrillModal() {
+    const modal = document.getElementById('strategy-drill-modal');
+    if (!modal) return;
+    modal.classList.remove('active');
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('modal-open');
+}
+
+function handleDrillModalBackdrop(event) {
+    if (event.target === event.currentTarget) {
+        closeDrillModal();
+    }
+}
+
+document.addEventListener('keydown', event => {
+    if (event.key === 'Escape') {
+        closeDrillModal();
+    }
+});
+
+// 协作流程对比柱状图
+new Chart(document.getElementById('chartBar'), {
+    type: 'bar',
+    data: {
+        labels: ['AI促回复→转人工', '纯AI成交', 'AI聊5轮→转人工', '人工未转化→AI'],
+        datasets: [{
+            label: '综合转化率',
+            data: [19.0, 18.7, 17.7, 7.5],
+            backgroundColor: ['#10b981','#8b5cf6','#3b82f6','#f59e0b'],
+            categoryPercentage: 0.72,
+            barPercentage: 0.82,
+            maxBarThickness: 16,
+            borderRadius: 6
+        },{
+            label: '大盘基准 13%',
+            data: [13, 13, 13, 13],
+            backgroundColor: 'rgba(229,231,235,0.6)',
+            categoryPercentage: 0.72,
+            barPercentage: 0.82,
+            maxBarThickness: 16,
+            borderRadius: 6
+        }]
+    },
+    options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: { padding: { top: 4, right: 4, bottom: 0, left: 0 }},
+        plugins: { legend: { position:'bottom', labels:{ usePointStyle:true, padding:10, font:{ size:11 }}}},
+        scales: {
+            x: { beginAtZero:true, max:25, ticks:{ callback: v=>v+'%' }},
+            y: { grid: { display: false }, ticks: { font: { size: 10 }}}
+        }
+    }
+});
+
+// SOP后续成交率
+new Chart(document.getElementById('chartSopDeal'), {
+    type: 'bar',
+    data: {
+        labels: ['销冠话术', '案例图', '3天递进', '轻互动', '利益点密集'],
+        datasets: [{
+            label: '7日成交率',
+            data: [18.1, 16.7, 14.7, 11.5, 7.7],
+            backgroundColor: ['#10b981','#10b981','#3b82f6','#f59e0b','#ef4444'],
+            categoryPercentage: 0.72,
+            barPercentage: 0.82,
+            maxBarThickness: 18,
+            borderRadius: 6
+        }]
+    },
+    options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: { padding: { top: 4, right: 4, bottom: 0, left: 0 }},
+        plugins: { legend: { position:'bottom', labels:{ usePointStyle:true, padding:10, font:{ size:11 }}}},
+        scales: {
+            x: { beginAtZero:true, max:22, ticks:{ callback: v=>v+'%' }},
+            y: { grid: { display: false }, ticks: { font: { size: 10 }}}
+        }
+    }
+});
+
+</script>
+
+</body>
+</html>

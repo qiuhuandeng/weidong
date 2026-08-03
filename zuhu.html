@@ -829,6 +829,54 @@
   .recall-action-publish:hover { border-color: #4096ff; color: #4096ff; background: #f0f7ff; }
   .recall-action-disable { border-color: #ff7875; color: #cf1322; background: #fff; }
   .recall-action-disable:hover { border-color: #ff4d4f; color: #ff4d4f; background: #fff1f0; }
+  .online-policy-stack { display: block; }
+  .online-page-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .online-page-header h2 { margin-bottom: 0; }
+  .online-policy-tabs { margin: 0; padding: 0 18px; border-bottom: 1px solid #eef2f7; }
+  .online-policy-tabs .tab { border: 0; border-bottom: 2px solid transparent; background: transparent; font-family: inherit; }
+  .online-policy-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .online-rule-workspace { display: grid; grid-template-columns: 260px minmax(0, 1fr); min-height: 520px; }
+  .online-strategy-classify { border-right: 1px solid #eef2f7; background: #fafbfc; }
+  .online-strategy-classify-title { padding: 14px 16px; border-bottom: 1px solid #eef2f7; color: #1a2332; font-size: 14px; font-weight: 700; }
+  .online-strategy-classify-list { padding: 10px; display: grid; gap: 8px; }
+  .online-strategy-tab { width: 100%; padding: 12px; border: 1px solid transparent; border-radius: 6px; background: transparent; text-align: left; cursor: pointer; transition: all .18s ease; }
+  .online-strategy-tab:hover { background: #fff; border-color: #e3e9f2; }
+  .online-strategy-tab.active { background: #fff; border-color: #91caff; box-shadow: 0 0 0 2px rgba(22,119,255,.06); }
+  .online-strategy-tab-main { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+  .online-strategy-tab-name { color: #1a2332; font-size: 13px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .online-strategy-tab-meta { color: #64748b; font-size: 12px; }
+  .online-rule-content { min-width: 0; background: #fff; }
+  .online-rule-pane { display: block; }
+  .online-rule-pane.is-hidden { display: none; }
+  .online-rule-list-table table { min-width: 820px; table-layout: fixed; }
+  .online-rule-list-table th:nth-child(1), .online-rule-list-table td:nth-child(1) { width: 120px; }
+  .online-rule-list-table th:nth-child(2), .online-rule-list-table td:nth-child(2) { width: 170px; }
+  .online-rule-list-table th:nth-child(3), .online-rule-list-table td:nth-child(3) { width: 180px; }
+  .online-rule-list-table th:nth-child(4), .online-rule-list-table td:nth-child(4) { width: 120px; }
+  .online-rule-list-table th:nth-child(5), .online-rule-list-table td:nth-child(5) { width: 110px; }
+  .online-event-name { color: #1a2332; font-weight: 700; }
+  .online-rule-time { color: #1a2332; font-size: 13px; font-weight: 700; white-space: nowrap; }
+  .online-rule-template { color: #64748b; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .online-muted-events { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .online-muted-events .tag { margin-right: 0; }
+  .online-empty-cell { color: #a8b3c2; }
+  @media (max-width: 980px) {
+    .online-rule-workspace { grid-template-columns: 1fr; }
+    .online-strategy-classify { border-right: 0; border-bottom: 1px solid #eef2f7; }
+    .online-strategy-classify-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (max-width: 640px) {
+    .online-strategy-classify-list { grid-template-columns: 1fr; }
+  }
+  .online-assignment-table table { min-width: 980px; table-layout: fixed; }
+  .online-assignment-table th:nth-child(1), .online-assignment-table td:nth-child(1) { width: 120px; }
+  .online-assignment-table th:nth-child(2), .online-assignment-table td:nth-child(2) { width: 180px; }
+  .online-assignment-table th:nth-child(3), .online-assignment-table td:nth-child(3) { width: 150px; }
+  .online-assignment-table th:nth-child(4), .online-assignment-table td:nth-child(4) { width: 210px; }
+  .online-assignment-table th:nth-child(5), .online-assignment-table td:nth-child(5) { width: 230px; }
+  .online-assignment-select { height: 32px; padding-top: 4px; padding-bottom: 4px; }
+  .online-account-code { color: #64748b; font-size: 12px; }
+  .online-coverage { color: #64748b; font-size: 12px; }
   table tbody td:last-child .btn,
   table tbody td:last-child .btn.btn-sm {
     min-width: 0; height: auto; padding: 0; border: 0; border-radius: 0; background: transparent;
@@ -2598,25 +2646,74 @@
 
     <!-- ==================== 客户触达：线上客服规则 ==================== -->
     <div class="page" id="page-online-trigger">
-      <div class="page-header"><h2>线上客服</h2><p>配置线上客服事件触发、任务节点、下发方式和终止条件。</p></div>
-      <div class="panel">
-        <div class="panel-header">
-          <span class="panel-title">线上客服规则列表</span>
-          <div class="panel-actions">
-            <input class="search-input" placeholder="搜索规则名称" style="width:180px">
-            <select class="search-select"><option>全部业务场景</option><option>新客加微邀约</option><option>预约后催排客</option><option>排客成功到店提醒</option><option>未到店唤醒</option></select>
-            <button class="btn btn-primary" onclick="openModal('modal-online-trigger')">+ 新建规则</button>
+      <div class="page-header online-page-header"><h2>线上客服</h2><div class="online-policy-actions"><button class="btn btn-default btn-sm" type="button" onclick="openModal('modal-online-strategy')">+ 新建策略</button><button class="btn btn-primary btn-sm" type="button" onclick="openModal('modal-online-trigger')">新增规则</button></div></div>
+      <div class="online-policy-stack">
+        <div class="panel">
+          <div class="tabs online-policy-tabs">
+            <button class="tab active" type="button" onclick="switchTab(this,'online-policy-rules')">策略事件规则</button>
+            <button class="tab" type="button" onclick="switchTab(this,'online-policy-assignments')">员工账号分配</button>
           </div>
-        </div>
-        <div class="table-wrap automation-rule-table">
-          <table>
-            <thead><tr><th>规则名称</th><th>业务场景</th><th>触发事件</th><th>任务节点</th><th>发布范围</th><th>启用</th><th>操作</th></tr></thead>
-            <tbody>
-              <tr><td><strong>加微后强邀约策略A</strong></td><td>新客加微邀约</td><td><span class="tag tag-blue">加微</span></td><td><span class="automation-task-summary">10 分钟、30 分钟</span></td><td><div class="automation-publish-state"><span class="tag tag-green">已发布</span><button class="publish-range-link" type="button" onclick="openModal('modal-online-published-range')">2账号</button></div></td><td><label class="switch"><input type="checkbox" checked><span class="switch-slider"></span></label></td><td><div class="automation-rule-actions"><button class="btn btn-default btn-sm" onclick="openModal('modal-online-trigger')">编辑</button></div></td></tr>
-              <tr><td><strong>预约后30分钟催排客</strong></td><td>预约后催排客</td><td><span class="tag tag-blue">预约</span></td><td><span class="automation-task-summary">30 分钟、120 分钟</span></td><td><span class="tag tag-orange">草稿</span></td><td><label class="switch"><input type="checkbox"><span class="switch-slider"></span></label></td><td><div class="automation-rule-actions"><button class="btn btn-default btn-sm recall-action-publish" onclick="openPublishRuleModal('线上客服自动化')">发布</button><button class="btn btn-default btn-sm" onclick="openModal('modal-online-trigger')">编辑</button></div></td></tr>
-              <tr><td><strong>到店前2小时提醒</strong></td><td>排客成功到店提醒</td><td><span class="tag tag-blue">排客</span></td><td><span class="automation-task-summary">2 小时</span></td><td><span class="tag tag-orange">草稿</span></td><td><label class="switch"><input type="checkbox"><span class="switch-slider"></span></label></td><td><div class="automation-rule-actions"><button class="btn btn-default btn-sm recall-action-publish" onclick="openPublishRuleModal('线上客服自动化')">发布</button><button class="btn btn-default btn-sm" onclick="openModal('modal-online-trigger')">编辑</button></div></td></tr>
-            </tbody>
-          </table>
+          <div class="tab-panel active" id="online-policy-rules">
+            <div class="online-rule-workspace">
+              <aside class="online-strategy-classify">
+                <div class="online-strategy-classify-title">策略分类</div>
+                <div class="online-strategy-classify-list">
+                  <button class="online-strategy-tab active" type="button" data-online-strategy-tab onclick="selectOnlineRuleStrategy(this,'strategy-a')"><div class="online-strategy-tab-main"><span class="online-strategy-tab-name">新客转化策略 A</span><span class="tag tag-green">启用</span></div><div class="online-strategy-tab-meta">8/10 事件 · 2账号</div></button>
+                  <button class="online-strategy-tab" type="button" data-online-strategy-tab onclick="selectOnlineRuleStrategy(this,'strategy-b')"><div class="online-strategy-tab-main"><span class="online-strategy-tab-name">新客转化策略 B</span><span class="tag tag-green">启用</span></div><div class="online-strategy-tab-meta">5/10 事件 · 3账号</div></button>
+                  <button class="online-strategy-tab" type="button" data-online-strategy-tab onclick="selectOnlineRuleStrategy(this,'strategy-observe')"><div class="online-strategy-tab-main"><span class="online-strategy-tab-name">未到店观察策略</span><span class="tag tag-orange">草稿</span></div><div class="online-strategy-tab-meta">4/10 事件 · 1账号</div></button>
+                </div>
+              </aside>
+              <section class="online-rule-content">
+                <div class="online-rule-pane" data-online-rule-pane="strategy-a">
+                  <div class="table-wrap online-rule-list-table"><table><thead><tr><th>事件类型</th><th>任务时间</th><th>内容模板</th><th>下发方式</th><th>员工账号</th><th>操作</th></tr></thead><tbody>
+                    <tr><td><span class="online-event-name">加微</span></td><td><span class="online-rule-time">10分钟、30分钟</span></td><td><div class="online-rule-template">加微强邀约</div></td><td>AI客服</td><td><button class="publish-range-link" type="button" onclick="openModal('modal-online-published-range')">2账号</button></td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-online-trigger')">编辑</button></td></tr>
+                    <tr><td><span class="online-event-name">下单</span></td><td><span class="online-rule-time">5分钟</span></td><td><div class="online-rule-template">订单确认</div></td><td>AI客服</td><td><button class="publish-range-link" type="button" onclick="openModal('modal-online-published-range')">2账号</button></td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-online-trigger')">编辑</button></td></tr>
+                    <tr><td><span class="online-event-name">预约</span></td><td><span class="online-rule-time">30分钟、120分钟</span></td><td><div class="online-rule-template">预约催排客</div></td><td>AI客服</td><td><button class="publish-range-link" type="button" onclick="openModal('modal-online-published-range')">2账号</button></td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-online-trigger')">编辑</button></td></tr>
+                    <tr><td><span class="online-event-name">排客</span></td><td><span class="online-rule-time">2小时</span></td><td><div class="online-rule-template">到店提醒</div></td><td>AI客服</td><td><button class="publish-range-link" type="button" onclick="openModal('modal-online-published-range')">2账号</button></td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-online-trigger')">编辑</button></td></tr>
+                    <tr><td><span class="online-event-name">改约</span></td><td><span class="online-rule-time">15分钟</span></td><td><div class="online-rule-template">改约确认</div></td><td>直接下发</td><td><button class="publish-range-link" type="button" onclick="openModal('modal-online-published-range')">2账号</button></td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-online-trigger')">编辑</button></td></tr>
+                    <tr><td><span class="online-event-name">预约超时</span></td><td><span class="online-rule-time">1小时、次日10:00</span></td><td><div class="online-rule-template">二次唤醒</div></td><td>AI客服</td><td><button class="publish-range-link" type="button" onclick="openModal('modal-online-published-range')">2账号</button></td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-online-trigger')">编辑</button></td></tr>
+                    <tr><td><span class="online-event-name">到店</span></td><td><span class="online-rule-time">2小时</span></td><td><div class="online-rule-template">到店回访</div></td><td>AI客服</td><td><button class="publish-range-link" type="button" onclick="openModal('modal-online-published-range')">2账号</button></td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-online-trigger')">编辑</button></td></tr>
+                    <tr><td><span class="online-event-name">结算</span></td><td><span class="online-rule-time">1天</span></td><td><div class="online-rule-template">满意度回访</div></td><td>AI客服</td><td><button class="publish-range-link" type="button" onclick="openModal('modal-online-published-range')">2账号</button></td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-online-trigger')">编辑</button></td></tr>
+                    <tr><td><span class="online-empty-cell">未配置事件</span></td><td colspan="4"><div class="online-muted-events"><span class="tag tag-gray">取消排客</span><span class="tag tag-gray">流退</span></div></td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-online-trigger')">新增</button></td></tr>
+                  </tbody></table></div>
+                </div>
+                <div class="online-rule-pane is-hidden" data-online-rule-pane="strategy-b">
+                  <div class="table-wrap online-rule-list-table"><table><thead><tr><th>事件类型</th><th>任务时间</th><th>内容模板</th><th>下发方式</th><th>员工账号</th><th>操作</th></tr></thead><tbody>
+                    <tr><td><span class="online-event-name">加微</span></td><td><span class="online-rule-time">20分钟、90分钟</span></td><td><div class="online-rule-template">需求确认</div></td><td>AI客服</td><td><button class="publish-range-link" type="button" onclick="openModal('modal-online-published-range')">3账号</button></td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-online-trigger')">编辑</button></td></tr>
+                    <tr><td><span class="online-event-name">预约</span></td><td><span class="online-rule-time">60分钟、次日10:00</span></td><td><div class="online-rule-template">温和确认</div></td><td>AI客服</td><td><button class="publish-range-link" type="button" onclick="openModal('modal-online-published-range')">3账号</button></td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-online-trigger')">编辑</button></td></tr>
+                    <tr><td><span class="online-event-name">改约</span></td><td><span class="online-rule-time">30分钟</span></td><td><div class="online-rule-template">改约安抚</div></td><td>AI客服</td><td><button class="publish-range-link" type="button" onclick="openModal('modal-online-published-range')">3账号</button></td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-online-trigger')">编辑</button></td></tr>
+                    <tr><td><span class="online-event-name">预约超时</span></td><td><span class="online-rule-time">次日10:00</span></td><td><div class="online-rule-template">低打扰唤醒</div></td><td>AI客服</td><td><button class="publish-range-link" type="button" onclick="openModal('modal-online-published-range')">3账号</button></td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-online-trigger')">编辑</button></td></tr>
+                    <tr><td><span class="online-event-name">流退</span></td><td><span class="online-rule-time">次日10:00</span></td><td><div class="online-rule-template">需求复核</div></td><td>AI客服</td><td><button class="publish-range-link" type="button" onclick="openModal('modal-online-published-range')">3账号</button></td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-online-trigger')">编辑</button></td></tr>
+                    <tr><td><span class="online-empty-cell">未配置事件</span></td><td colspan="4"><div class="online-muted-events"><span class="tag tag-gray">下单</span><span class="tag tag-gray">排客</span><span class="tag tag-gray">取消排客</span><span class="tag tag-gray">到店</span><span class="tag tag-gray">结算</span></div></td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-online-trigger')">新增</button></td></tr>
+                  </tbody></table></div>
+                </div>
+                <div class="online-rule-pane is-hidden" data-online-rule-pane="strategy-observe">
+                  <div class="table-wrap online-rule-list-table"><table><thead><tr><th>事件类型</th><th>任务时间</th><th>内容模板</th><th>下发方式</th><th>员工账号</th><th>操作</th></tr></thead><tbody>
+                    <tr><td><span class="online-event-name">取消排客</span></td><td><span class="online-rule-time">30分钟</span></td><td><div class="online-rule-template">原因确认</div></td><td>AI客服</td><td><button class="publish-range-link" type="button" onclick="openModal('modal-online-published-range')">1账号</button></td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-online-trigger')">编辑</button></td></tr>
+                    <tr><td><span class="online-event-name">预约超时</span></td><td><span class="online-rule-time">次日10:00</span></td><td><div class="online-rule-template">未到店唤醒</div></td><td>AI客服</td><td><button class="publish-range-link" type="button" onclick="openModal('modal-online-published-range')">1账号</button></td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-online-trigger')">编辑</button></td></tr>
+                    <tr><td><span class="online-event-name">到店</span></td><td><span class="online-rule-time">4小时</span></td><td><div class="online-rule-template">轻回访</div></td><td>AI客服</td><td><button class="publish-range-link" type="button" onclick="openModal('modal-online-published-range')">1账号</button></td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-online-trigger')">编辑</button></td></tr>
+                    <tr><td><span class="online-event-name">流退</span></td><td><span class="online-rule-time">次日10:00</span></td><td><div class="online-rule-template">流退观察</div></td><td>AI客服</td><td><button class="publish-range-link" type="button" onclick="openModal('modal-online-published-range')">1账号</button></td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-online-trigger')">编辑</button></td></tr>
+                    <tr><td><span class="online-empty-cell">未配置事件</span></td><td colspan="4"><div class="online-muted-events"><span class="tag tag-gray">加微</span><span class="tag tag-gray">下单</span><span class="tag tag-gray">预约</span><span class="tag tag-gray">排客</span><span class="tag tag-gray">改约</span><span class="tag tag-gray">结算</span></div></td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-online-trigger')">新增</button></td></tr>
+                  </tbody></table></div>
+                </div>
+              </section>
+            </div>
+          </div>
+          <div class="tab-panel" id="online-policy-assignments">
+            <div class="table-wrap online-assignment-table">
+              <table>
+                <thead><tr><th>员工</th><th>企微账号</th><th>部门</th><th>当前策略</th><th>规则覆盖</th></tr></thead>
+                <tbody>
+                <tr><td><strong>赵敏</strong></td><td><span class="online-account-code">wxwork_zhaomin</span></td><td>北京业务部</td><td><select class="form-control online-assignment-select" onchange="updateOnlineAssignmentStrategy(this)"><option value="group-a">新客转化策略 A</option><option value="group-b" selected>新客转化策略 B</option><option value="group-observe">未到店观察策略</option><option value="">未分配</option></select></td><td><span class="online-coverage" data-assignment-coverage>5条规则：加微、预约、改约、流退</span></td></tr>
+                <tr><td><strong>周悦</strong></td><td><span class="online-account-code">wxwork_zhouyue</span></td><td>新客承接组</td><td><select class="form-control online-assignment-select" onchange="updateOnlineAssignmentStrategy(this)"><option value="group-a" selected>新客转化策略 A</option><option value="group-b">新客转化策略 B</option><option value="group-observe">未到店观察策略</option><option value="">未分配</option></select></td><td><span class="online-coverage" data-assignment-coverage>8条规则：加微、预约、排客、预约超时</span></td></tr>
+                <tr><td><strong>林晓妹</strong></td><td><span class="online-account-code">wxwork_linxiao</span></td><td>线上客服组</td><td><select class="form-control online-assignment-select" onchange="updateOnlineAssignmentStrategy(this)"><option value="group-a">新客转化策略 A</option><option value="group-b" selected>新客转化策略 B</option><option value="group-observe">未到店观察策略</option><option value="">未分配</option></select></td><td><span class="online-coverage" data-assignment-coverage>5条规则：加微、预约、改约、流退</span></td></tr>
+                <tr><td><strong>陈洁</strong></td><td><span class="online-account-code">wxwork_chenjie</span></td><td>线上客服组</td><td><select class="form-control online-assignment-select" onchange="updateOnlineAssignmentStrategy(this)"><option value="group-a">新客转化策略 A</option><option value="group-b" selected>新客转化策略 B</option><option value="group-observe">未到店观察策略</option><option value="">未分配</option></select></td><td><span class="online-coverage" data-assignment-coverage>5条规则：加微、预约、改约、流退</span></td></tr>
+                <tr><td><strong>王珂</strong></td><td><span class="online-account-code">wxwork_wangke</span></td><td>售后观察组</td><td><select class="form-control online-assignment-select" onchange="updateOnlineAssignmentStrategy(this)"><option value="group-a">新客转化策略 A</option><option value="group-b">新客转化策略 B</option><option value="group-observe" selected>未到店观察策略</option><option value="">未分配</option></select></td><td><span class="online-coverage" data-assignment-coverage>4条规则：取消排客、预约超时、到店、流退</span></td></tr>
+                <tr><td><strong>刘晨</strong></td><td><span class="online-account-code">wxwork_liuchen</span></td><td>兼职客服</td><td><select class="form-control online-assignment-select" onchange="updateOnlineAssignmentStrategy(this)"><option value="group-a">新客转化策略 A</option><option value="group-b">新客转化策略 B</option><option value="group-observe">未到店观察策略</option><option value="" selected>未分配</option></select></td><td><span class="online-coverage" data-assignment-coverage>0条规则</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -4690,6 +4787,18 @@ Z6a7b8c9d0e1f2g3h4i5j6k7l8m9n0o1p2q3r4s5t6u7v8w9x0y1z2AQAB
   </div>
 </div>
 
+<!-- 线上客服：新建策略 -->
+<div class="modal-overlay" id="modal-online-strategy">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title">新建策略</span><button class="modal-close" onclick="closeModal('modal-online-strategy')">×</button></div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label required">策略名称</label><input class="form-control" placeholder="请输入策略名称"></div>
+      <div class="form-group"><label class="form-label required">策略描述</label><textarea class="form-control" rows="3" placeholder="请输入策略描述"></textarea></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('modal-online-strategy')">取消</button><button class="btn btn-primary" onclick="closeModal('modal-online-strategy')">保存策略</button></div>
+  </div>
+</div>
+
 <!-- 线上客服：触发规则绑定企微账号 -->
 <div class="modal-overlay" id="modal-online-trigger-wecom-bind">
   <div class="modal modal-lg">
@@ -5454,6 +5563,25 @@ function openOnlineTriggerWecomBind(name) {
   var target = document.getElementById('online-trigger-bind-target');
   if (target) target.textContent = name || '加微后强邀约策略A';
   openModal('modal-online-trigger-wecom-bind');
+}
+
+function selectOnlineRuleStrategy(btn, strategyKey) {
+  var panel = document.getElementById('online-policy-rules');
+  if (!panel || !strategyKey) return;
+  panel.querySelectorAll('[data-online-strategy-tab]').forEach(function(item) {
+    item.classList.toggle('active', item === btn);
+  });
+  panel.querySelectorAll('[data-online-rule-pane]').forEach(function(pane) {
+    pane.classList.toggle('is-hidden', pane.getAttribute('data-online-rule-pane') !== strategyKey);
+  });
+}
+
+function updateOnlineAssignmentStrategy(select) {
+  var row = select ? select.closest('tr') : null;
+  var coverage = row ? row.querySelector('[data-assignment-coverage]') : null;
+  if (!coverage) return;
+  var value = select.value;
+  coverage.textContent = value === 'group-a' ? '8条规则：加微、预约、排客、预约超时' : value === 'group-b' ? '5条规则：加微、预约、改约、流退' : value === 'group-observe' ? '4条规则：取消排客、预约超时、到店、流退' : '0条规则';
 }
 
 function closeModal(id) {
