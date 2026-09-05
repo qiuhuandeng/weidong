@@ -1,0 +1,2288 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>策略流量实验</title>
+    <style>
+        :root {
+            --bg: #f5f7fb;
+            --panel: #fff;
+            --line: #e5eaf2;
+            --line-strong: #d5dce8;
+            --head: #f8fafd;
+            --text: #1f2633;
+            --muted: #6b7280;
+            --soft: #9aa3af;
+            --blue: #2f75ff;
+            --blue-strong: #1d5fd8;
+            --blue-soft: #edf4ff;
+            --green: #16b887;
+            --green-soft: #e9f9f3;
+            --orange: #ff9f43;
+            --orange-soft: #fff4e6;
+            --red: #ef4444;
+            --red-soft: #fff0f0;
+            --purple: #8b78ff;
+            --shadow: 0 8px 24px rgba(31, 38, 51, 0.05);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { min-height: 100%; }
+        body {
+            min-width: 1360px;
+            background: var(--bg);
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+            letter-spacing: 0;
+        }
+        button, input, select { font: inherit; }
+        button { cursor: pointer; }
+
+        .app-shell {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .topbar {
+            height: 56px;
+            position: sticky;
+            top: 0;
+            z-index: 30;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 0 24px;
+            background: #fff;
+            border-bottom: 1px solid var(--line);
+        }
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 0;
+        }
+        .brand-mark {
+            width: 28px;
+            height: 28px;
+            border-radius: 7px;
+            background: linear-gradient(135deg, var(--blue), var(--green));
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.32);
+        }
+        .brand h1 {
+            color: #172033;
+            font-size: 16px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+        .page-meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 650;
+        }
+        .status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--green);
+            box-shadow: 0 0 0 3px rgba(22, 184, 135, 0.12);
+        }
+        .top-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .ghost-btn,
+        .primary-btn,
+        .text-btn {
+            height: 30px;
+            border-radius: 5px;
+            padding: 0 12px;
+            font-size: 12px;
+            font-weight: 750;
+        }
+        .ghost-btn {
+            border: 1px solid var(--line);
+            background: #fff;
+            color: #394150;
+        }
+        .ghost-btn:hover {
+            border-color: #b9cffc;
+            color: var(--blue-strong);
+            background: #f8fbff;
+        }
+        .primary-btn {
+            border: 1px solid var(--blue);
+            background: var(--blue);
+            color: #fff;
+            box-shadow: 0 8px 16px rgba(47, 117, 255, 0.16);
+        }
+        .text-btn {
+            border: 0;
+            background: transparent;
+            color: var(--blue-strong);
+            padding: 0 4px;
+        }
+        .text-btn:hover { text-decoration: underline; }
+
+        .workspace {
+            padding: 16px 20px 28px;
+        }
+        .filter-card,
+        .tabs-card,
+        .panel {
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--panel);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+        .filter-card { margin-bottom: 12px; }
+        .filter-row {
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 8px 16px;
+        }
+        .filter-left,
+        .filter-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .filter-label {
+            color: #303846;
+            font-size: 13px;
+            font-weight: 800;
+        }
+        .segmented {
+            display: inline-flex;
+            align-items: center;
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            overflow: hidden;
+            background: #fff;
+        }
+        .quick-btn {
+            height: 28px;
+            border: 0;
+            border-right: 1px solid var(--line);
+            background: #fff;
+            color: #4b5563;
+            padding: 0 12px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .quick-btn:last-child { border-right: 0; }
+        .quick-btn.active {
+            color: var(--blue-strong);
+            background: var(--blue-soft);
+        }
+        .select,
+        .input {
+            height: 30px;
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            background: #fff;
+            color: #293241;
+            padding: 0 10px;
+            font-size: 12px;
+            font-weight: 650;
+            outline: none;
+        }
+        .input { width: 118px; }
+        .select:focus,
+        .input:focus {
+            border-color: #b9cffc;
+            box-shadow: 0 0 0 3px rgba(47, 117, 255, 0.08);
+        }
+
+        .tabs-card {
+            margin-bottom: 12px;
+        }
+        .module-tabs {
+            height: 52px;
+            display: flex;
+            align-items: stretch;
+            justify-content: center;
+            gap: 24px;
+            padding: 0 20px;
+        }
+        .module-tab {
+            min-width: 132px;
+            position: relative;
+            border: 0;
+            background: transparent;
+            color: #303846;
+            font-size: 15px;
+            font-weight: 800;
+        }
+        .module-tab.active {
+            color: var(--blue-strong);
+        }
+        .module-tab.active::after {
+            content: "";
+            position: absolute;
+            left: 24px;
+            right: 24px;
+            bottom: 0;
+            height: 3px;
+            border-radius: 3px 3px 0 0;
+            background: var(--blue);
+        }
+
+        .view { display: block; }
+        .view.hidden { display: none; }
+        .grid {
+            display: grid;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .grid.cards-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+        .grid.cards-5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+        .metric-card {
+            min-height: 96px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+            box-shadow: var(--shadow);
+            padding: 14px 16px;
+        }
+        .metric-name {
+            color: #566176;
+            font-size: 12px;
+            font-weight: 800;
+        }
+        .metric-value {
+            margin-top: 10px;
+            color: #0f172a;
+            font-size: 30px;
+            line-height: 1;
+            font-weight: 900;
+            font-variant-numeric: tabular-nums;
+        }
+        .metric-sub {
+            margin-top: 8px;
+            color: var(--soft);
+            font-size: 12px;
+            font-weight: 650;
+        }
+        .metric-value.green { color: var(--green); }
+        .metric-value.orange { color: var(--orange); }
+        .metric-value.red { color: var(--red); }
+        .metric-value.blue { color: var(--blue-strong); }
+
+        .panel { margin-bottom: 12px; }
+        .panel-head {
+            min-height: 46px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 11px 14px;
+            border-bottom: 1px solid var(--line);
+            background: #fff;
+        }
+        .panel-title {
+            position: relative;
+            padding-left: 12px;
+            color: #1f2633;
+            font-size: 14px;
+            font-weight: 850;
+        }
+        .panel-title::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 50%;
+            width: 3px;
+            height: 15px;
+            border-radius: 2px;
+            background: var(--blue);
+            transform: translateY(-50%);
+        }
+        .panel-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .table-wrap {
+            overflow-x: auto;
+            background: #fff;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+        th, td {
+            height: 40px;
+            padding: 0 12px;
+            border-bottom: 1px solid #edf1f6;
+            color: #172033;
+            font-size: 12px;
+            font-weight: 700;
+            text-align: left;
+            white-space: nowrap;
+        }
+        th {
+            height: 42px;
+            color: #3c4658;
+            background: var(--head);
+            font-weight: 850;
+        }
+        tbody tr:hover td { background: #f8fbff; }
+        tbody tr.highlight td { background: #eef5ff; }
+        .num {
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+        .center { text-align: center; }
+        .name-cell strong {
+            display: block;
+            overflow: hidden;
+            color: #111827;
+            text-overflow: ellipsis;
+        }
+        .name-cell span {
+            display: block;
+            margin-top: 3px;
+            overflow: hidden;
+            color: var(--soft);
+            font-size: 11px;
+            font-weight: 650;
+            text-overflow: ellipsis;
+        }
+        .badge {
+            height: 22px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            padding: 0 8px;
+            font-size: 11px;
+            font-weight: 850;
+        }
+        .badge.running,
+        .badge.win {
+            color: #0d9669;
+            background: var(--green-soft);
+        }
+        .badge.full,
+        .badge.watch {
+            color: #a06403;
+            background: var(--orange-soft);
+        }
+        .badge.disabled,
+        .badge.eliminated {
+            color: #d92d20;
+            background: var(--red-soft);
+        }
+        .badge.draft,
+        .badge.manual {
+            color: #4f5b6f;
+            background: #eef2f7;
+        }
+        .progress {
+            height: 8px;
+            border-radius: 8px;
+            background: #edf1f6;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            border-radius: inherit;
+            background: var(--blue);
+        }
+        .progress-fill.green { background: var(--green); }
+        .progress-fill.orange { background: var(--orange); }
+        .progress-fill.red { background: var(--red); }
+
+        .split-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 380px;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .status-panel {
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+        .status-row {
+            display: grid;
+            grid-template-columns: 92px minmax(0, 1fr) 48px;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            border-bottom: 1px solid #edf1f6;
+        }
+        .status-row:last-child { border-bottom: 0; }
+        .status-label {
+            color: #445066;
+            font-size: 12px;
+            font-weight: 850;
+        }
+        .status-count {
+            color: #172033;
+            font-size: 12px;
+            font-weight: 900;
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .chart-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 340px;
+            gap: 12px;
+        }
+        .scatter-card,
+        .tier-card {
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+        .scatter-head,
+        .tier-head {
+            min-height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--line);
+            color: #293241;
+            font-size: 13px;
+            font-weight: 850;
+        }
+        .scatter-wrap {
+            padding: 14px;
+        }
+        .scatter {
+            width: 100%;
+            height: 330px;
+            display: block;
+        }
+        .legend {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .legend-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .legend-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+        .tier-list {
+            padding: 12px;
+            display: grid;
+            gap: 10px;
+        }
+        .tier-item {
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 12px;
+            background: #fbfcff;
+        }
+        .tier-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: #172033;
+            font-size: 13px;
+            font-weight: 850;
+        }
+        .tier-value {
+            margin-top: 10px;
+            color: #0f172a;
+            font-size: 26px;
+            line-height: 1;
+            font-weight: 900;
+        }
+        .tier-meta {
+            margin-top: 8px;
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.45;
+            font-weight: 650;
+        }
+
+        .drawer-mask {
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            display: none;
+            justify-content: flex-end;
+            background: rgba(15, 23, 42, 0.32);
+        }
+        .drawer-mask.show { display: flex; }
+        .drawer {
+            width: 720px;
+            max-width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background: #fff;
+            box-shadow: -16px 0 40px rgba(15, 23, 42, 0.18);
+        }
+        .drawer.wide { width: 820px; }
+        .drawer-head {
+            min-height: 64px;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 18px 20px 12px;
+            border-bottom: 1px solid var(--line);
+        }
+        .drawer-title {
+            color: #172033;
+            font-size: 18px;
+            line-height: 1.2;
+            font-weight: 900;
+        }
+        .drawer-subtitle {
+            margin-top: 6px;
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 650;
+        }
+        .drawer-close {
+            width: 28px;
+            height: 28px;
+            border: 0;
+            background: transparent;
+            color: #8b95a5;
+            font-size: 28px;
+            line-height: 1;
+        }
+        .drawer-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px 20px 20px;
+            background: #f8fafc;
+        }
+        .drawer-footer {
+            min-height: 58px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 10px;
+            padding: 12px 20px;
+            border-top: 1px solid var(--line);
+            background: #fff;
+        }
+        .form-section {
+            margin-bottom: 12px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+            overflow: hidden;
+        }
+        .form-section-head {
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--line);
+            color: #293241;
+            font-size: 13px;
+            font-weight: 850;
+        }
+        .form-section-body {
+            padding: 12px;
+        }
+        .field-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+        .field-grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .field label {
+            display: block;
+            margin-bottom: 6px;
+            color: #445066;
+            font-size: 12px;
+            font-weight: 800;
+        }
+        .field input,
+        .field select {
+            width: 100%;
+            height: 34px;
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            background: #fff;
+            color: #172033;
+            padding: 0 10px;
+            font-size: 12px;
+            font-weight: 700;
+            outline: none;
+        }
+        .field input:focus,
+        .field select:focus {
+            border-color: #b9cffc;
+            box-shadow: 0 0 0 3px rgba(47, 117, 255, 0.08);
+        }
+        .strategy-picks {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 8px;
+            margin-top: 12px;
+        }
+        .pick {
+            min-height: 40px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fbfcff;
+            padding: 8px 10px;
+            color: #293241;
+            font-size: 12px;
+            font-weight: 800;
+        }
+        .pick span {
+            display: block;
+            margin-top: 3px;
+            color: var(--soft);
+            font-size: 11px;
+            font-weight: 650;
+        }
+        .algorithm-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 8px;
+        }
+        .algorithm-card {
+            min-height: 86px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fbfcff;
+            padding: 10px;
+        }
+        .algorithm-card.active {
+            border-color: #a9c4ff;
+            background: #f4f8ff;
+            box-shadow: inset 0 0 0 1px rgba(47, 117, 255, 0.08);
+        }
+        .algorithm-card strong {
+            display: block;
+            color: #172033;
+            font-size: 12px;
+            margin-bottom: 6px;
+        }
+        .algorithm-card span {
+            display: block;
+            color: var(--muted);
+            font-size: 11px;
+            line-height: 1.45;
+            font-weight: 650;
+        }
+        .mini-table th,
+        .mini-table td {
+            height: 34px;
+            font-size: 11px;
+        }
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .detail-card {
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+            padding: 12px;
+        }
+        .detail-label {
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 800;
+        }
+        .detail-value {
+            margin-top: 8px;
+            color: #0f172a;
+            font-size: 22px;
+            line-height: 1;
+            font-weight: 900;
+        }
+        .history-card {
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+            margin-bottom: 12px;
+            overflow: hidden;
+        }
+        .history-chart {
+            width: 100%;
+            height: 170px;
+            display: block;
+        }
+        .phase-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .phase-card {
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+        .phase-card-head {
+            min-height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--line);
+            color: #293241;
+            font-size: 13px;
+            font-weight: 850;
+        }
+        .phase-card-body {
+            padding: 12px 14px;
+        }
+        .rule-pill-list {
+            display: grid;
+            gap: 10px;
+        }
+        .rule-pill {
+            display: grid;
+            grid-template-columns: 86px minmax(0, 1fr) 72px;
+            align-items: center;
+            gap: 10px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fbfcff;
+            padding: 10px;
+        }
+        .rule-pill strong {
+            color: #172033;
+            font-size: 12px;
+            font-weight: 850;
+        }
+        .rule-pill span {
+            color: var(--muted);
+            font-size: 11px;
+            line-height: 1.45;
+            font-weight: 650;
+        }
+        .script-compare-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .script-card {
+            min-height: 210px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+        .script-card-head {
+            min-height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--line);
+            color: #293241;
+            font-size: 13px;
+            font-weight: 850;
+        }
+        .script-card-body {
+            padding: 13px 14px;
+            color: #445066;
+            font-size: 12px;
+            line-height: 1.75;
+            font-weight: 700;
+        }
+        .script-metrics {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 8px;
+            margin-top: 12px;
+        }
+        .script-metric {
+            border-radius: 8px;
+            background: #f8fafc;
+            padding: 8px;
+        }
+        .script-metric span {
+            display: block;
+            color: var(--muted);
+            font-size: 11px;
+            font-weight: 800;
+        }
+        .script-metric strong {
+            display: block;
+            margin-top: 5px;
+            color: #0f172a;
+            font-size: 18px;
+            line-height: 1;
+            font-weight: 900;
+        }
+        .simulator-layout {
+            display: grid;
+            grid-template-columns: 360px minmax(0, 1fr);
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .impact-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 10px;
+        }
+        .impact-card {
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fbfcff;
+            padding: 12px;
+        }
+        .impact-label {
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 800;
+        }
+        .impact-value {
+            margin-top: 8px;
+            color: #0f172a;
+            font-size: 24px;
+            line-height: 1;
+            font-weight: 900;
+        }
+        .impact-delta {
+            margin-top: 7px;
+            color: var(--green);
+            font-size: 12px;
+            font-weight: 850;
+        }
+        .impact-delta.down {
+            color: var(--red);
+        }
+
+        @media (max-width: 1500px) {
+            .grid.cards-5 { grid-template-columns: repeat(5, minmax(180px, 1fr)); }
+            .module-tabs { gap: 18px; }
+            .algorithm-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+    </style>
+</head>
+<body>
+<div class="app-shell">
+    <header class="topbar">
+        <div class="brand">
+            <div class="brand-mark" aria-hidden="true"></div>
+            <h1>策略流量实验</h1>
+            <div class="page-meta"><span class="status-dot"></span><span>数据更新时间 2026-08-17 09:30</span></div>
+        </div>
+        <div class="top-actions">
+            <button class="ghost-btn" type="button">导出</button>
+            <button class="ghost-btn" type="button">刷新</button>
+            <button class="primary-btn" type="button" onclick="openRuleDrawer('new')">新建规则</button>
+        </div>
+    </header>
+
+    <main class="workspace">
+        <section class="filter-card">
+            <div class="filter-row">
+                <div class="filter-left">
+                    <span class="filter-label">日期</span>
+                    <div class="segmented">
+                        <button class="quick-btn" type="button">昨天</button>
+                        <button class="quick-btn active" type="button">今天</button>
+                        <button class="quick-btn" type="button">近7天</button>
+                    </div>
+                    <select class="select" aria-label="规则筛选">
+                        <option>全量策略开口率倾斜实验</option>
+                        <option>新版话术预约金实验</option>
+                        <option>价格承接专项定额</option>
+                    </select>
+                    <select class="select" aria-label="策略组筛选">
+                        <option>全部策略组</option>
+                        <option>新版策略组</option>
+                        <option>价格承接组</option>
+                        <option>转人工铺垫组</option>
+                    </select>
+                </div>
+                <div class="filter-right">
+                    <span class="filter-label">今日可用客户量</span>
+                    <input class="input" type="text" value="3,200" aria-label="今日可用客户量">
+                    <button class="primary-btn" type="button">重新计算</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="tabs-card">
+            <div class="module-tabs" role="tablist">
+                <button class="module-tab active" type="button" data-tab="rules" onclick="switchTab('rules')">规则管理</button>
+                <button class="module-tab" type="button" data-tab="targets" onclick="switchTab('targets')">今日分配</button>
+                <button class="module-tab" type="button" data-tab="analysis" onclick="switchTab('analysis')">策略验证</button>
+                <button class="module-tab" type="button" data-tab="tiering" onclick="switchTab('tiering')">自动沉淀</button>
+                <button class="module-tab" type="button" data-tab="versions" onclick="switchTab('versions')">话术版本</button>
+                <button class="module-tab" type="button" data-tab="simulation" onclick="switchTab('simulation')">规则模拟</button>
+            </div>
+        </section>
+
+        <section class="view" id="rulesView">
+            <div class="grid cards-4">
+                <article class="metric-card">
+                    <div class="metric-name">运行中规则</div>
+                    <div class="metric-value blue">1</div>
+                    <div class="metric-sub">当前控制今日流量</div>
+                </article>
+                <article class="metric-card">
+                    <div class="metric-name">参与测试策略</div>
+                    <div class="metric-value">100</div>
+                    <div class="metric-sub">停用策略不参与分配</div>
+                </article>
+                <article class="metric-card">
+                    <div class="metric-name">今日计划客户数</div>
+                    <div class="metric-value">3,200</div>
+                    <div class="metric-sub">按规则计算后生成</div>
+                </article>
+                <article class="metric-card">
+                    <div class="metric-name">自动淘汰策略</div>
+                    <div class="metric-value red">7</div>
+                    <div class="metric-sub">达到最低样本且低于止损线</div>
+                </article>
+            </div>
+
+            <section class="panel">
+                <div class="panel-head">
+                    <div class="panel-title">策略规则列表</div>
+                    <div class="panel-actions">
+                        <select class="select" aria-label="状态筛选">
+                            <option>全部状态</option>
+                            <option>运行中</option>
+                            <option>草稿</option>
+                            <option>已暂停</option>
+                            <option>已结束</option>
+                        </select>
+                        <button class="primary-btn" type="button" onclick="openRuleDrawer('new')">新建规则</button>
+                    </div>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <colgroup>
+                            <col style="width: 210px">
+                            <col style="width: 88px">
+                            <col style="width: 92px">
+                            <col style="width: 140px">
+                            <col style="width: 120px">
+                            <col style="width: 96px">
+                            <col style="width: 106px">
+                            <col style="width: 118px">
+                            <col style="width: 118px">
+                            <col style="width: 118px">
+                            <col style="width: 98px">
+                            <col style="width: 150px">
+                        </colgroup>
+                        <thead>
+                            <tr>
+                                <th>规则名称</th>
+                                <th>状态</th>
+                                <th class="num">参与策略</th>
+                                <th>分配算法</th>
+                                <th>考核指标</th>
+                                <th>统计周期</th>
+                                <th class="num">日上限</th>
+                                <th class="num">累计上限</th>
+                                <th class="num">今日计划</th>
+                                <th class="num">今日已分配</th>
+                                <th class="num">淘汰策略</th>
+                                <th class="center">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ruleTableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+        </section>
+
+        <section class="view hidden" id="targetsView">
+            <div class="grid cards-5">
+                <article class="metric-card">
+                    <div class="metric-name">今日可分配客户数</div>
+                    <div class="metric-value">3,200</div>
+                    <div class="metric-sub">来自当前运行规则</div>
+                </article>
+                <article class="metric-card">
+                    <div class="metric-name">今日已分配</div>
+                    <div class="metric-value blue">2,186</div>
+                    <div class="metric-sub">实时命中策略客户</div>
+                </article>
+                <article class="metric-card">
+                    <div class="metric-name">剩余可分配</div>
+                    <div class="metric-value green">1,014</div>
+                    <div class="metric-sub">未达到今日目标</div>
+                </article>
+                <article class="metric-card">
+                    <div class="metric-name">已加满策略</div>
+                    <div class="metric-value orange">18</div>
+                    <div class="metric-sub">今日配额用完或累计满量</div>
+                </article>
+                <article class="metric-card">
+                    <div class="metric-name">测试淘汰策略</div>
+                    <div class="metric-value red">7</div>
+                    <div class="metric-sub">停止继续接收客户</div>
+                </article>
+            </div>
+
+            <div class="split-grid">
+                <section class="panel" style="margin-bottom:0;">
+                    <div class="panel-head">
+                        <div class="panel-title">策略每日目标表</div>
+                        <div class="panel-actions">
+                            <button class="ghost-btn" type="button">只看异常</button>
+                            <button class="ghost-btn" type="button">导出明细</button>
+                        </div>
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <colgroup>
+                                <col style="width: 210px">
+                                <col style="width: 92px">
+                                <col style="width: 98px">
+                                <col style="width: 98px">
+                                <col style="width: 98px">
+                                <col style="width: 98px">
+                                <col style="width: 98px">
+                                <col style="width: 98px">
+                                <col style="width: 98px">
+                                <col style="width: 120px">
+                                <col style="width: 170px">
+                                <col style="width: 72px">
+                            </colgroup>
+                            <thead>
+                                <tr>
+                                    <th>策略</th>
+                                    <th>状态</th>
+                                    <th class="num">今日目标</th>
+                                    <th class="num">已分配</th>
+                                    <th class="num">剩余</th>
+                                    <th class="num">累计加微</th>
+                                    <th class="num">近7天开口率</th>
+                                    <th class="num">预约金率</th>
+                                    <th class="center">最低样本</th>
+                                    <th class="center">淘汰线</th>
+                                    <th>业务原因</th>
+                                    <th class="center">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="targetTableBody"></tbody>
+                        </table>
+                    </div>
+                </section>
+                <aside class="status-panel">
+                    <div class="scatter-head">状态分布</div>
+                    <div id="statusDistribution"></div>
+                </aside>
+            </div>
+        </section>
+
+        <section class="view hidden" id="analysisView">
+            <div class="grid cards-4">
+                <article class="metric-card">
+                    <div class="metric-name">胜出组</div>
+                    <div class="metric-value green">12</div>
+                    <div class="metric-sub">开口率与预约金率双高</div>
+                </article>
+                <article class="metric-card">
+                    <div class="metric-name">观察组</div>
+                    <div class="metric-value orange">63</div>
+                    <div class="metric-sub">继续低流量测试</div>
+                </article>
+                <article class="metric-card">
+                    <div class="metric-name">淘汰组</div>
+                    <div class="metric-value red">7</div>
+                    <div class="metric-sub">已停止自动分配</div>
+                </article>
+                <article class="metric-card">
+                    <div class="metric-name">样本不足</div>
+                    <div class="metric-value">18</div>
+                    <div class="metric-sub">未达到最低样本阈值</div>
+                </article>
+            </div>
+
+            <div class="chart-grid">
+                <section class="scatter-card">
+                    <div class="scatter-head">
+                        <span>策略表现分布</span>
+                        <div class="legend">
+                            <span class="legend-item" style="color:#16b887"><span class="legend-dot"></span>胜出组</span>
+                            <span class="legend-item" style="color:#ff9f43"><span class="legend-dot"></span>观察组</span>
+                            <span class="legend-item" style="color:#ef4444"><span class="legend-dot"></span>淘汰组</span>
+                        </div>
+                    </div>
+                    <div class="scatter-wrap">
+                        <svg class="scatter" viewBox="0 0 760 330" role="img" aria-label="策略表现散点图">
+                            <defs>
+                                <pattern id="grid" width="80" height="48" patternUnits="userSpaceOnUse">
+                                    <path d="M 80 0 L 0 0 0 48" fill="none" stroke="#edf1f6" stroke-width="1"/>
+                                </pattern>
+                            </defs>
+                            <rect x="52" y="16" width="680" height="260" fill="url(#grid)"></rect>
+                            <line x1="52" y1="276" x2="732" y2="276" stroke="#d5dce8"/>
+                            <line x1="52" y1="16" x2="52" y2="276" stroke="#d5dce8"/>
+                            <text x="386" y="318" fill="#6b7280" font-size="12" font-weight="700" text-anchor="middle">客户开口率</text>
+                            <text x="14" y="150" fill="#6b7280" font-size="12" font-weight="700" transform="rotate(-90 14 150)" text-anchor="middle">预约金交纳率</text>
+                            <text x="48" y="295" fill="#9aa3af" font-size="11" text-anchor="end">0%</text>
+                            <text x="735" y="295" fill="#9aa3af" font-size="11">30%</text>
+                            <text x="42" y="280" fill="#9aa3af" font-size="11" text-anchor="end">0%</text>
+                            <text x="42" y="22" fill="#9aa3af" font-size="11" text-anchor="end">12%</text>
+                            <g id="scatterPoints"></g>
+                        </svg>
+                    </div>
+                </section>
+                <aside class="tier-card">
+                    <div class="tier-head">梯队分布</div>
+                    <div class="tier-list">
+                        <div class="tier-item">
+                            <div class="tier-title"><span>胜出组</span><span class="badge win">12个</span></div>
+                            <div class="tier-value">16.8%</div>
+                            <div class="tier-meta">平均预约金交纳率，累计样本均已超过最低阈值。</div>
+                        </div>
+                        <div class="tier-item">
+                            <div class="tier-title"><span>观察组</span><span class="badge watch">63个</span></div>
+                            <div class="tier-value">8.7%</div>
+                            <div class="tier-meta">继续分配低流量，等待更多样本进入判断。</div>
+                        </div>
+                        <div class="tier-item">
+                            <div class="tier-title"><span>淘汰组</span><span class="badge eliminated">7个</span></div>
+                            <div class="tier-value">1.4%</div>
+                            <div class="tier-meta">达到最低样本后低于止损线，今日目标为0。</div>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+
+            <section class="panel">
+                <div class="panel-head">
+                    <div class="panel-title">策略表现排行</div>
+                    <div class="panel-actions">
+                        <select class="select" aria-label="梯队筛选">
+                            <option>全部梯队</option>
+                            <option>胜出组</option>
+                            <option>观察组</option>
+                            <option>淘汰组</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <colgroup>
+                            <col style="width: 220px">
+                            <col style="width: 120px">
+                            <col style="width: 98px">
+                            <col style="width: 92px">
+                            <col style="width: 92px">
+                            <col style="width: 92px">
+                            <col style="width: 110px">
+                            <col style="width: 110px">
+                            <col style="width: 92px">
+                            <col style="width: 92px">
+                            <col style="width: 80px">
+                        </colgroup>
+                        <thead>
+                            <tr>
+                                <th>策略</th>
+                                <th>策略组</th>
+                                <th class="num">累计加微</th>
+                                <th class="num">开口数</th>
+                                <th class="num">开口率</th>
+                                <th class="num">预约金数</th>
+                                <th class="num">预约金率</th>
+                                <th class="num">平均成交轮次</th>
+                                <th class="center">梯队</th>
+                                <th class="center">状态</th>
+                                <th class="center">详情</th>
+                            </tr>
+                        </thead>
+                        <tbody id="analysisTableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+        </section>
+
+        <section class="view hidden" id="tieringView">
+            <div class="grid cards-4">
+                <article class="metric-card">
+                    <div class="metric-name">标准话术候选</div>
+                    <div class="metric-value green">12</div>
+                    <div class="metric-sub">可沉淀为日常策略</div>
+                </article>
+                <article class="metric-card">
+                    <div class="metric-name">继续观察策略</div>
+                    <div class="metric-value orange">63</div>
+                    <div class="metric-sub">保留低流量测试</div>
+                </article>
+                <article class="metric-card">
+                    <div class="metric-name">待优化重测</div>
+                    <div class="metric-value red">7</div>
+                    <div class="metric-sub">停止分配后进入话术优化</div>
+                </article>
+                <article class="metric-card">
+                    <div class="metric-name">今日自动流转</div>
+                    <div class="metric-value blue">9</div>
+                    <div class="metric-sub">由数据触发梯队变更</div>
+                </article>
+            </div>
+
+            <div class="phase-grid">
+                <section class="phase-card">
+                    <div class="phase-card-head">胜出组规则</div>
+                    <div class="phase-card-body">
+                        <div class="rule-pill-list">
+                            <div class="rule-pill">
+                                <strong>样本</strong>
+                                <span>累计加微达到 100 人以上</span>
+                                <span class="badge win">必达</span>
+                            </div>
+                            <div class="rule-pill">
+                                <strong>开口率</strong>
+                                <span>近7天开口率不低于 20%</span>
+                                <span class="badge win">高</span>
+                            </div>
+                            <div class="rule-pill">
+                                <strong>预约金</strong>
+                                <span>预约金交纳率不低于 7%</span>
+                                <span class="badge win">高</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <section class="phase-card">
+                    <div class="phase-card-head">观察组规则</div>
+                    <div class="phase-card-body">
+                        <div class="rule-pill-list">
+                            <div class="rule-pill">
+                                <strong>样本</strong>
+                                <span>达到最低样本但未满足胜出条件</span>
+                                <span class="badge watch">观察</span>
+                            </div>
+                            <div class="rule-pill">
+                                <strong>配额</strong>
+                                <span>单策略保持 10-30 个日配额</span>
+                                <span class="badge watch">低量</span>
+                            </div>
+                            <div class="rule-pill">
+                                <strong>周期</strong>
+                                <span>连续观察 3-7 天后再流转</span>
+                                <span class="badge watch">等待</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <section class="phase-card">
+                    <div class="phase-card-head">淘汰组规则</div>
+                    <div class="phase-card-body">
+                        <div class="rule-pill-list">
+                            <div class="rule-pill">
+                                <strong>样本</strong>
+                                <span>累计加微达到 20 人以上</span>
+                                <span class="badge eliminated">必达</span>
+                            </div>
+                            <div class="rule-pill">
+                                <strong>止损</strong>
+                                <span>开口率低于 5% 自动暂停</span>
+                                <span class="badge eliminated">触发</span>
+                            </div>
+                            <div class="rule-pill">
+                                <strong>处理</strong>
+                                <span>进入优化池，改版后重新测试</span>
+                                <span class="badge eliminated">重测</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <section class="panel">
+                <div class="panel-head">
+                    <div class="panel-title">策略沉淀队列</div>
+                    <div class="panel-actions">
+                        <select class="select" aria-label="沉淀状态">
+                            <option>全部动作</option>
+                            <option>沉淀为标准话术</option>
+                            <option>继续观察</option>
+                            <option>优化后重测</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <colgroup>
+                            <col style="width: 220px">
+                            <col style="width: 98px">
+                            <col style="width: 180px">
+                            <col style="width: 92px">
+                            <col style="width: 92px">
+                            <col style="width: 98px">
+                            <col style="width: 150px">
+                            <col style="width: 110px">
+                            <col style="width: 90px">
+                        </colgroup>
+                        <thead>
+                            <tr>
+                                <th>策略</th>
+                                <th class="center">当前梯队</th>
+                                <th>触发条件</th>
+                                <th class="num">样本量</th>
+                                <th class="num">开口率</th>
+                                <th class="num">预约金率</th>
+                                <th>建议动作</th>
+                                <th class="center">入库状态</th>
+                                <th class="center">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tieringTableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+        </section>
+
+        <section class="view hidden" id="versionsView">
+            <div class="grid cards-4">
+                <article class="metric-card">
+                    <div class="metric-name">正在对比策略</div>
+                    <div class="metric-value blue">18</div>
+                    <div class="metric-sub">存在两个及以上话术版本</div>
+                </article>
+                <article class="metric-card">
+                    <div class="metric-name">显著提升版本</div>
+                    <div class="metric-value green">5</div>
+                    <div class="metric-sub">P值小于0.05</div>
+                </article>
+                <article class="metric-card">
+                    <div class="metric-name">继续观察版本</div>
+                    <div class="metric-value orange">9</div>
+                    <div class="metric-sub">样本或差异不足</div>
+                </article>
+                <article class="metric-card">
+                    <div class="metric-name">建议回滚版本</div>
+                    <div class="metric-value red">4</div>
+                    <div class="metric-sub">主指标低于旧版</div>
+                </article>
+            </div>
+
+            <div class="script-compare-grid" id="scriptVersionCards"></div>
+
+            <section class="panel">
+                <div class="panel-head">
+                    <div class="panel-title">显著性检验</div>
+                    <div class="panel-actions">
+                        <select class="select" aria-label="检验指标">
+                            <option>预约金交纳率</option>
+                            <option>客户开口率</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <colgroup>
+                            <col style="width: 210px">
+                            <col style="width: 110px">
+                            <col style="width: 110px">
+                            <col style="width: 110px">
+                            <col style="width: 110px">
+                            <col style="width: 110px">
+                            <col style="width: 110px">
+                            <col style="width: 130px">
+                            <col style="width: 140px">
+                        </colgroup>
+                        <thead>
+                            <tr>
+                                <th>对比策略</th>
+                                <th class="num">旧版样本</th>
+                                <th class="num">旧版预约金率</th>
+                                <th class="num">新版样本</th>
+                                <th class="num">新版预约金率</th>
+                                <th class="num">提升幅度</th>
+                                <th class="num">P值</th>
+                                <th class="center">显著性</th>
+                                <th>处理动作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="significanceTableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+        </section>
+
+        <section class="view hidden" id="simulationView">
+            <div class="grid cards-4">
+                <article class="metric-card">
+                    <div class="metric-name">模拟规则数</div>
+                    <div class="metric-value blue">4</div>
+                    <div class="metric-sub">可切换算法与上限</div>
+                </article>
+                <article class="metric-card">
+                    <div class="metric-name">推荐提额策略</div>
+                    <div class="metric-value green">16</div>
+                    <div class="metric-sub">得分高且未达上限</div>
+                </article>
+                <article class="metric-card">
+                    <div class="metric-name">推荐降额策略</div>
+                    <div class="metric-value orange">22</div>
+                    <div class="metric-sub">观察组或样本不足</div>
+                </article>
+                <article class="metric-card">
+                    <div class="metric-name">推荐归零策略</div>
+                    <div class="metric-value red">7</div>
+                    <div class="metric-sub">已触发淘汰线</div>
+                </article>
+            </div>
+
+            <div class="simulator-layout">
+                <section class="phase-card">
+                    <div class="phase-card-head">规则变更模拟</div>
+                    <div class="phase-card-body">
+                        <div class="field-grid">
+                            <div class="field">
+                                <label>分配算法</label>
+                                <select id="simulationAlgorithm" onchange="renderRuleImpact()">
+                                    <option value="tilt">按开口率倾斜</option>
+                                    <option value="rank">按胜率排名</option>
+                                    <option value="average">平均分配</option>
+                                    <option value="manual">自定义手动配额</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label>单策略日上限</label>
+                                <select id="simulationDailyCap" onchange="renderRuleImpact()">
+                                    <option value="50">50</option>
+                                    <option value="40">40</option>
+                                    <option value="30">30</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label>主考核指标</label>
+                                <select id="simulationMetric" onchange="renderRuleImpact()">
+                                    <option value="open">客户开口率</option>
+                                    <option value="pay">预约金交纳率</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label>最低样本阈值</label>
+                                <select id="simulationMinSample" onchange="renderRuleImpact()">
+                                    <option value="20">20</option>
+                                    <option value="30">30</option>
+                                    <option value="50">50</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <section class="phase-card">
+                    <div class="phase-card-head">变更影响</div>
+                    <div class="phase-card-body">
+                        <div class="impact-grid" id="impactCards"></div>
+                    </div>
+                </section>
+            </div>
+
+            <section class="panel">
+                <div class="panel-head">
+                    <div class="panel-title">策略自动推荐配额</div>
+                    <div class="panel-actions">
+                        <button class="ghost-btn" type="button" onclick="renderQuotaRecommendations()">重新生成</button>
+                    </div>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <colgroup>
+                            <col style="width: 220px">
+                            <col style="width: 110px">
+                            <col style="width: 92px">
+                            <col style="width: 92px">
+                            <col style="width: 92px">
+                            <col style="width: 110px">
+                            <col style="width: 110px">
+                            <col style="width: 170px">
+                            <col style="width: 90px">
+                        </colgroup>
+                        <thead>
+                            <tr>
+                                <th>策略</th>
+                                <th class="center">梯队</th>
+                                <th class="num">当前配额</th>
+                                <th class="num">推荐配额</th>
+                                <th class="num">变化</th>
+                                <th class="num">综合得分</th>
+                                <th class="center">动作</th>
+                                <th>推荐依据</th>
+                                <th class="center">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="quotaRecommendationBody"></tbody>
+                    </table>
+                </div>
+            </section>
+        </section>
+    </main>
+</div>
+
+<div class="drawer-mask" id="ruleDrawerMask">
+    <aside class="drawer wide" role="dialog" aria-modal="true" aria-labelledby="ruleDrawerTitle">
+        <div class="drawer-head">
+            <div>
+                <div class="drawer-title" id="ruleDrawerTitle">新建策略测试规则</div>
+                <div class="drawer-subtitle" id="ruleDrawerSubtitle">业务配置规则，系统每日自动计算策略目标</div>
+            </div>
+            <button class="drawer-close" type="button" aria-label="关闭" onclick="closeRuleDrawer()">×</button>
+        </div>
+        <div class="drawer-body">
+            <section class="form-section">
+                <div class="form-section-head">1. 策略范围</div>
+                <div class="form-section-body">
+                    <div class="field-grid three">
+                        <div class="field">
+                            <label>规则名称</label>
+                            <input type="text" value="全量策略开口率倾斜实验">
+                        </div>
+                        <div class="field">
+                            <label>策略范围</label>
+                            <select>
+                                <option>全部100种策略</option>
+                                <option>新版策略组</option>
+                                <option>指定策略</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label>生效状态</label>
+                            <select>
+                                <option>保存并启用</option>
+                                <option>保存草稿</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="strategy-picks">
+                        <div class="pick">已选策略 <span>100 个</span></div>
+                        <div class="pick">可参与策略 <span>92 个</span></div>
+                        <div class="pick">停用/已淘汰 <span>8 个</span></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="form-section">
+                <div class="form-section-head">2. 分配算法</div>
+                <div class="form-section-body">
+                    <div class="algorithm-grid">
+                        <div class="algorithm-card">
+                            <strong>平均分配</strong>
+                            <span>可用测试流量平均分给所有启用策略。</span>
+                        </div>
+                        <div class="algorithm-card active">
+                            <strong>按开口率/预约率倾斜</strong>
+                            <span>近N天表现越好，获得的今日客户数越多。</span>
+                        </div>
+                        <div class="algorithm-card">
+                            <strong>按胜率排名给量</strong>
+                            <span>前N名获得满额，后排策略少给或不给。</span>
+                        </div>
+                        <div class="algorithm-card">
+                            <strong>自定义手动配额</strong>
+                            <span>业务直接为每个策略配置固定客户数。</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="form-section">
+                <div class="form-section-head">3. 指标与周期</div>
+                <div class="form-section-body">
+                    <div class="field-grid three">
+                        <div class="field">
+                            <label>主考核指标</label>
+                            <select>
+                                <option>客户开口率</option>
+                                <option>预约金交纳率</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label>统计周期</label>
+                            <select>
+                                <option>最近7天</option>
+                                <option>当天</option>
+                                <option>最近3天</option>
+                                <option>最近15天</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label>总每日测试流量</label>
+                            <input type="text" value="3,200">
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="form-section">
+                <div class="form-section-head">4. 每日与累计上限</div>
+                <div class="form-section-body">
+                    <div class="field-grid three">
+                        <div class="field">
+                            <label>单策略日上限</label>
+                            <input type="text" value="50">
+                        </div>
+                        <div class="field">
+                            <label>单策略累计上限</label>
+                            <input type="text" value="500">
+                        </div>
+                        <div class="field">
+                            <label>剩余流量处理</label>
+                            <select>
+                                <option>补给表现较好策略</option>
+                                <option>保留不分配</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="form-section">
+                <div class="form-section-head">5. 止损淘汰</div>
+                <div class="form-section-body">
+                    <div class="field-grid three">
+                        <div class="field">
+                            <label>最低样本阈值</label>
+                            <input type="text" value="20">
+                        </div>
+                        <div class="field">
+                            <label>开口率淘汰线</label>
+                            <input type="text" value="5%">
+                        </div>
+                        <div class="field">
+                            <label>淘汰后处理</label>
+                            <select>
+                                <option>暂停分配，允许人工恢复</option>
+                                <option>永久停用</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="form-section">
+                <div class="form-section-head">模拟今日分配</div>
+                <div class="table-wrap">
+                    <table class="mini-table">
+                        <thead>
+                            <tr>
+                                <th>策略</th>
+                                <th class="num">累计加微</th>
+                                <th class="num">近7天开口率</th>
+                                <th class="num">预约金率</th>
+                                <th class="num">今日计算结果</th>
+                                <th>状态</th>
+                            </tr>
+                        </thead>
+                        <tbody id="simulationTableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+        <div class="drawer-footer">
+            <button class="ghost-btn" type="button" onclick="closeRuleDrawer()">关闭</button>
+            <button class="ghost-btn" type="button">保存草稿</button>
+            <button class="primary-btn" type="button">保存并启用</button>
+        </div>
+    </aside>
+</div>
+
+<div class="drawer-mask" id="strategyDrawerMask">
+    <aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="strategyDrawerTitle">
+        <div class="drawer-head">
+            <div>
+                <div class="drawer-title" id="strategyDrawerTitle">策略详情</div>
+                <div class="drawer-subtitle" id="strategyDrawerSubtitle">-</div>
+            </div>
+            <button class="drawer-close" type="button" aria-label="关闭" onclick="closeStrategyDrawer()">×</button>
+        </div>
+        <div class="drawer-body" id="strategyDrawerBody"></div>
+        <div class="drawer-footer">
+            <button class="ghost-btn" type="button" onclick="closeStrategyDrawer()">关闭</button>
+            <button class="ghost-btn" type="button">暂停策略</button>
+            <button class="primary-btn" type="button">编辑策略</button>
+        </div>
+    </aside>
+</div>
+
+<script>
+const rules = [
+    { name: '全量策略开口率倾斜实验', status: '运行中', statusClass: 'running', count: 100, algorithm: '按开口率倾斜', metric: '客户开口率', period: '近7天', dailyCap: 50, totalCap: 500, target: 3200, used: 2186, eliminated: 7 },
+    { name: '新版话术预约金实验', status: '草稿', statusClass: 'draft', count: 18, algorithm: '平均分配', metric: '预约金交纳率', period: '近3天', dailyCap: 40, totalCap: 300, target: 0, used: 0, eliminated: 0 },
+    { name: '价格承接专项定额', status: '已暂停', statusClass: 'manual', count: 12, algorithm: '自定义手动配额', metric: '预约金交纳率', period: '近15天', dailyCap: 30, totalCap: 400, target: 0, used: 0, eliminated: 2 },
+    { name: '老策略胜率排名', status: '已结束', statusClass: 'draft', count: 42, algorithm: '按胜率排名', metric: '客户开口率', period: '近7天', dailyCap: 50, totalCap: 500, target: 0, used: 0, eliminated: 11 }
+];
+
+const strategies = [
+    { id: 'S-A01', name: '首问需求确认版', group: '新版策略组', status: '测试中', statusClass: 'running', todayTarget: 50, todayUsed: 42, total: 150, openRate: 25.0, payRate: 8.0, minSample: true, lossLine: false, reason: '开口率最高，给满日上限', tier: '胜出组', tierClass: 'win', openCount: 38, payCount: 12, avgRound: 5.8, trend: [18, 20, 21, 22, 24, 25, 25] },
+    { id: 'S-A02', name: '价格区间承接版', group: '价格承接组', status: '测试中', statusClass: 'running', todayTarget: 44, todayUsed: 31, total: 132, openRate: 22.7, payRate: 7.6, minSample: true, lossLine: false, reason: '价格疑问承接稳定', tier: '胜出组', tierClass: 'win', openCount: 30, payCount: 10, avgRound: 6.1, trend: [16, 18, 19, 21, 22, 22, 23] },
+    { id: 'S-A03', name: '案例证明跟进版', group: '新版策略组', status: '测试中', statusClass: 'running', todayTarget: 36, todayUsed: 29, total: 118, openRate: 18.6, payRate: 6.8, minSample: true, lossLine: false, reason: '样本充足，继续观察', tier: '观察组', tierClass: 'watch', openCount: 22, payCount: 8, avgRound: 6.4, trend: [13, 14, 15, 16, 17, 18, 19] },
+    { id: 'S-B01', name: '直接报价版', group: '价格承接组', status: '测试淘汰', statusClass: 'eliminated', todayTarget: 0, todayUsed: 0, total: 25, openRate: 3.0, payRate: 0.0, minSample: true, lossLine: true, reason: '超过最低样本且开口率低于5%', tier: '淘汰组', tierClass: 'eliminated', openCount: 1, payCount: 0, avgRound: 3.2, trend: [5, 4, 4, 3, 3, 3, 3] },
+    { id: 'S-C01', name: '沉默客户追问版', group: '唤醒策略组', status: '测试中', statusClass: 'running', todayTarget: 20, todayUsed: 8, total: 10, openRate: 0.0, payRate: 0.0, minSample: false, lossLine: false, reason: '未达到最低样本，继续给量观察', tier: '样本不足', tierClass: 'draft', openCount: 0, payCount: 0, avgRound: 0, trend: [0, 0, 0, 0, 0, 0, 0] },
+    { id: 'S-C02', name: '转人工铺垫版', group: '转人工铺垫组', status: '已加满', statusClass: 'full', todayTarget: 50, todayUsed: 50, total: 486, openRate: 16.4, payRate: 5.4, minSample: true, lossLine: false, reason: '今日配额已用完', tier: '观察组', tierClass: 'watch', openCount: 80, payCount: 26, avgRound: 6.7, trend: [14, 15, 16, 16, 17, 16, 16] },
+    { id: 'S-D01', name: '优惠权益刺激版', group: '新版策略组', status: '测试中', statusClass: 'running', todayTarget: 30, todayUsed: 18, total: 80, openRate: 15.0, payRate: 5.0, minSample: true, lossLine: false, reason: '表现良好，按比例给量', tier: '观察组', tierClass: 'watch', openCount: 12, payCount: 4, avgRound: 6.9, trend: [12, 13, 13, 14, 15, 15, 15] },
+    { id: 'S-D02', name: '顾虑拆解版', group: '新版策略组', status: '手动停用', statusClass: 'manual', todayTarget: 0, todayUsed: 0, total: 64, openRate: 19.0, payRate: 4.7, minSample: true, lossLine: false, reason: '业务手动关闭该策略', tier: '观察组', tierClass: 'watch', openCount: 12, payCount: 3, avgRound: 7.1, trend: [15, 16, 17, 18, 18, 19, 19] }
+];
+
+const customers = [
+    ['2026-08-17 10:42', '王女士-眼周抗衰', '已开口', '未交预约金', '第5轮'],
+    ['2026-08-17 10:31', '陈女士-水光补水', '已开口', '已交预约金', '第6轮'],
+    ['2026-08-17 10:18', '周女士-祛斑体验', '未开口', '未交预约金', '-'],
+    ['2026-08-17 09:58', '孙女士-新人优惠', '已开口', '已交预约金', '第5轮']
+];
+
+const tieringRows = [
+    { id: 'S-A01', condition: '样本>100，开口率>20%，预约金率>7%', action: '沉淀为标准话术', storeStatus: '待入库' },
+    { id: 'S-A02', condition: '价格承接版本连续3天高于大盘', action: '沉淀为标准话术', storeStatus: '待入库' },
+    { id: 'S-A03', condition: '样本充足，主指标未显著领先', action: '继续观察', storeStatus: '观察中' },
+    { id: 'S-B01', condition: '达到最低样本且开口率低于5%', action: '优化后重测', storeStatus: '已进优化池' },
+    { id: 'S-C01', condition: '未达到最低样本阈值', action: '补足样本', storeStatus: '测试中' },
+    { id: 'S-C02', condition: '累计样本接近上限，今日已加满', action: '继续观察', storeStatus: '观察中' }
+];
+
+const scriptVersions = [
+    { version: 'V1 直接报价版', status: '建议回滚', statusClass: 'eliminated', sample: 214, openRate: 36.9, payRate: 2.8, text: '客户问价格后直接发送套餐价，未先确认项目诉求、预算区间和顾虑点。' },
+    { version: 'V2 价格区间版', status: '继续观察', statusClass: 'watch', sample: 388, openRate: 55.4, payRate: 10.6, text: '先给价格区间和包含内容，再说明可能增项需要面诊确认，最后追问客户主要顾虑。' },
+    { version: 'V3 需求探针版', status: '建议采用', statusClass: 'win', sample: 438, openRate: 61.8, payRate: 11.9, text: '先问客户想改善的部位和到店时间，再给基础体验价、费用边界和二选一预约动作。' }
+];
+
+const significanceRows = [
+    { name: '需求探针 V3 vs V1', oldSample: 420, oldPay: 30, newSample: 438, newPay: 52, action: '采纳新版' },
+    { name: '价格承接 V2 vs V1', oldSample: 360, oldPay: 24, newSample: 388, newPay: 41, action: '继续观察' },
+    { name: '案例证明 V2 vs V1', oldSample: 280, oldPay: 21, newSample: 304, newPay: 29, action: '继续观察' },
+    { name: '直接报价 V2 vs V1', oldSample: 200, oldPay: 9, newSample: 214, newPay: 6, action: '回滚旧版' }
+];
+
+const impactScenarios = {
+    tilt: {
+        title: '按开口率倾斜',
+        values: [
+            ['预计开口率', '20.8%', '+1.6%'],
+            ['预计预约金率', '7.4%', '+0.7%'],
+            ['头部策略流量占比', '38%', '+8%'],
+            ['淘汰策略配额', '0', '持平']
+        ]
+    },
+    rank: {
+        title: '按胜率排名',
+        values: [
+            ['预计开口率', '21.6%', '+2.4%'],
+            ['预计预约金率', '7.9%', '+1.2%'],
+            ['头部策略流量占比', '52%', '+22%'],
+            ['淘汰策略配额', '0', '持平']
+        ]
+    },
+    average: {
+        title: '平均分配',
+        values: [
+            ['预计开口率', '18.9%', '-0.3%'],
+            ['预计预约金率', '6.5%', '-0.2%'],
+            ['头部策略流量占比', '18%', '-12%'],
+            ['淘汰策略配额', '0', '持平']
+        ]
+    },
+    manual: {
+        title: '自定义手动配额',
+        values: [
+            ['预计开口率', '20.1%', '+0.9%'],
+            ['预计预约金率', '7.1%', '+0.4%'],
+            ['头部策略流量占比', '34%', '+4%'],
+            ['淘汰策略配额', '0', '持平']
+        ]
+    }
+};
+
+function formatNumber(value) {
+    return Number(value).toLocaleString('zh-CN');
+}
+
+function percent(value) {
+    return `${Number(value).toFixed(value % 1 === 0 ? 0 : 1)}%`;
+}
+
+function badge(text, className) {
+    return `<span class="badge ${className}">${text}</span>`;
+}
+
+function normalCdf(x) {
+    const sign = x < 0 ? -1 : 1;
+    const z = Math.abs(x) / Math.sqrt(2);
+    const t = 1 / (1 + 0.3275911 * z);
+    const a1 = 0.254829592;
+    const a2 = -0.284496736;
+    const a3 = 1.421413741;
+    const a4 = -1.453152027;
+    const a5 = 1.061405429;
+    const erf = sign * (1 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-z * z));
+    return 0.5 * (1 + erf);
+}
+
+function twoProportionPValue(oldSuccess, oldSample, newSuccess, newSample) {
+    const p1 = oldSuccess / oldSample;
+    const p2 = newSuccess / newSample;
+    const pooled = (oldSuccess + newSuccess) / (oldSample + newSample);
+    const standardError = Math.sqrt(pooled * (1 - pooled) * (1 / oldSample + 1 / newSample));
+    if (!standardError) return 1;
+    const z = (p2 - p1) / standardError;
+    return 2 * (1 - normalCdf(Math.abs(z)));
+}
+
+function strategyById(id) {
+    return strategies.find(item => item.id === id) || strategies[0];
+}
+
+function renderRules() {
+    document.getElementById('ruleTableBody').innerHTML = rules.map(rule => `
+        <tr>
+            <td class="name-cell"><strong>${rule.name}</strong><span>${rule.algorithm} / ${rule.period}</span></td>
+            <td>${badge(rule.status, rule.statusClass)}</td>
+            <td class="num">${rule.count}</td>
+            <td>${rule.algorithm}</td>
+            <td>${rule.metric}</td>
+            <td>${rule.period}</td>
+            <td class="num">${rule.dailyCap}</td>
+            <td class="num">${rule.totalCap}</td>
+            <td class="num">${formatNumber(rule.target)}</td>
+            <td class="num">${formatNumber(rule.used)}</td>
+            <td class="num">${rule.eliminated}</td>
+            <td class="center">
+                <button class="text-btn" type="button" onclick="openRuleDrawer('view')">查看</button>
+                <button class="text-btn" type="button" onclick="openRuleDrawer('edit')">编辑</button>
+                <button class="text-btn" type="button">复制</button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function renderTargets() {
+    document.getElementById('targetTableBody').innerHTML = strategies.map(row => {
+        const remain = Math.max(row.todayTarget - row.todayUsed, 0);
+        const reachedPercent = row.todayTarget ? Math.round(row.todayUsed / row.todayTarget * 100) : 0;
+        return `
+            <tr>
+                <td class="name-cell"><strong>${row.name}</strong><span>${row.id} / ${row.group}</span></td>
+                <td>${badge(row.status, row.statusClass)}</td>
+                <td class="num">${row.todayTarget}</td>
+                <td class="num">${row.todayUsed}</td>
+                <td class="num">${remain}</td>
+                <td class="num">${row.total}</td>
+                <td class="num">${percent(row.openRate)}</td>
+                <td class="num">${percent(row.payRate)}</td>
+                <td class="center">${row.minSample ? '已达' : '未达'}</td>
+                <td class="center">${row.lossLine ? badge('触发', 'eliminated') : badge('未触发', 'running')}</td>
+                <td>
+                    <div style="display:grid;gap:5px;">
+                        <span>${row.reason}</span>
+                        <div class="progress"><div class="progress-fill ${row.statusClass === 'eliminated' ? 'red' : row.statusClass === 'full' ? 'orange' : 'green'}" style="width:${Math.min(reachedPercent, 100)}%"></div></div>
+                    </div>
+                </td>
+                <td class="center"><button class="text-btn" type="button" onclick="openStrategyDrawer('${row.id}')">详情</button></td>
+            </tr>
+        `;
+    }).join('');
+
+    const stats = [
+        ['测试中', 68, '#16b887'],
+        ['已加满', 18, '#ff9f43'],
+        ['测试淘汰', 7, '#ef4444'],
+        ['手动停用', 7, '#8b95a5']
+    ];
+    document.getElementById('statusDistribution').innerHTML = stats.map(item => `
+        <div class="status-row">
+            <div class="status-label">${item[0]}</div>
+            <div class="progress"><div class="progress-fill" style="width:${item[1]}%;background:${item[2]}"></div></div>
+            <div class="status-count">${item[1]}</div>
+        </div>
+    `).join('');
+}
+
+function renderAnalysis() {
+    document.getElementById('analysisTableBody').innerHTML = strategies.map(row => `
+        <tr>
+            <td class="name-cell"><strong>${row.name}</strong><span>${row.id}</span></td>
+            <td>${row.group}</td>
+            <td class="num">${row.total}</td>
+            <td class="num">${row.openCount}</td>
+            <td class="num">${percent(row.openRate)}</td>
+            <td class="num">${row.payCount}</td>
+            <td class="num">${percent(row.payRate)}</td>
+            <td class="num">${row.avgRound || '-'}</td>
+            <td class="center">${badge(row.tier, row.tierClass)}</td>
+            <td class="center">${badge(row.status, row.statusClass)}</td>
+            <td class="center"><button class="text-btn" type="button" onclick="openStrategyDrawer('${row.id}')">查看</button></td>
+        </tr>
+    `).join('');
+
+    const points = strategies.map(row => {
+        const x = 52 + Math.min(row.openRate, 30) / 30 * 680;
+        const y = 276 - Math.min(row.payRate, 12) / 12 * 260;
+        const r = Math.max(7, Math.min(18, Math.sqrt(row.total) * 1.1));
+        const color = row.tierClass === 'win' ? '#16b887' : row.tierClass === 'eliminated' ? '#ef4444' : '#ff9f43';
+        return `<g>
+            <circle cx="${x}" cy="${y}" r="${r}" fill="${color}" opacity="0.78"></circle>
+            <text x="${x}" y="${y - r - 5}" fill="#445066" font-size="11" font-weight="700" text-anchor="middle">${row.id}</text>
+        </g>`;
+    }).join('');
+    document.getElementById('scatterPoints').innerHTML = points;
+}
+
+function renderTiering() {
+    const target = document.getElementById('tieringTableBody');
+    if (!target) return;
+    target.innerHTML = tieringRows.map(item => {
+        const row = strategyById(item.id);
+        return `
+            <tr>
+                <td class="name-cell"><strong>${row.name}</strong><span>${row.id} / ${row.group}</span></td>
+                <td class="center">${badge(row.tier, row.tierClass)}</td>
+                <td>${item.condition}</td>
+                <td class="num">${row.total}</td>
+                <td class="num">${percent(row.openRate)}</td>
+                <td class="num">${percent(row.payRate)}</td>
+                <td>${item.action}</td>
+                <td class="center">${badge(item.storeStatus, item.storeStatus === '待入库' ? 'win' : item.storeStatus === '已进优化池' ? 'eliminated' : 'watch')}</td>
+                <td class="center"><button class="text-btn" type="button" onclick="openStrategyDrawer('${row.id}')">查看</button></td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function renderScriptVersions() {
+    const target = document.getElementById('scriptVersionCards');
+    if (!target) return;
+    target.innerHTML = scriptVersions.map(item => `
+        <article class="script-card">
+            <div class="script-card-head">
+                <span>${item.version}</span>
+                ${badge(item.status, item.statusClass)}
+            </div>
+            <div class="script-card-body">
+                <div>${item.text}</div>
+                <div class="script-metrics">
+                    <div class="script-metric">
+                        <span>样本</span>
+                        <strong>${item.sample}</strong>
+                    </div>
+                    <div class="script-metric">
+                        <span>开口率</span>
+                        <strong>${percent(item.openRate)}</strong>
+                    </div>
+                    <div class="script-metric">
+                        <span>预约金率</span>
+                        <strong>${percent(item.payRate)}</strong>
+                    </div>
+                </div>
+            </div>
+        </article>
+    `).join('');
+}
+
+function renderSignificance() {
+    const target = document.getElementById('significanceTableBody');
+    if (!target) return;
+    target.innerHTML = significanceRows.map(row => {
+        const oldRate = row.oldPay / row.oldSample * 100;
+        const newRate = row.newPay / row.newSample * 100;
+        const lift = newRate - oldRate;
+        const pValue = twoProportionPValue(row.oldPay, row.oldSample, row.newPay, row.newSample);
+        const isSignificant = pValue < 0.05;
+        const isNegative = lift < 0;
+        return `
+            <tr>
+                <td class="name-cell"><strong>${row.name}</strong><span>两比例 z 检验</span></td>
+                <td class="num">${row.oldSample}</td>
+                <td class="num">${percent(oldRate)}</td>
+                <td class="num">${row.newSample}</td>
+                <td class="num">${percent(newRate)}</td>
+                <td class="num" style="color:${isNegative ? 'var(--red)' : 'var(--green)'};font-weight:900;">${isNegative ? '' : '+'}${lift.toFixed(1)}%</td>
+                <td class="num">${pValue < 0.001 ? '<0.001' : pValue.toFixed(3)}</td>
+                <td class="center">${badge(isSignificant ? '显著' : '不显著', isSignificant ? 'win' : 'watch')}</td>
+                <td>${row.action}</td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function renderRuleImpact() {
+    const algorithm = document.getElementById('simulationAlgorithm')?.value || 'tilt';
+    const dailyCap = Number(document.getElementById('simulationDailyCap')?.value || 50);
+    const metric = document.getElementById('simulationMetric')?.value || 'open';
+    const minSample = Number(document.getElementById('simulationMinSample')?.value || 20);
+    const scenario = impactScenarios[algorithm] || impactScenarios.tilt;
+    const capAdjustment = dailyCap === 40 ? -0.2 : dailyCap === 30 ? -0.5 : 0;
+    const metricAdjustment = metric === 'pay' ? 0.3 : 0;
+    const sampleAdjustment = minSample === 50 ? -2 : minSample === 30 ? -1 : 0;
+    document.getElementById('impactCards').innerHTML = scenario.values.map((item, index) => {
+        let value = item[1];
+        let delta = item[2];
+        if (index === 0 || index === 1) {
+            const numeric = parseFloat(value) + capAdjustment + metricAdjustment;
+            value = `${numeric.toFixed(1)}%`;
+        }
+        if (index === 2) {
+            const numeric = parseFloat(value) + sampleAdjustment;
+            value = `${numeric}%`;
+        }
+        const down = delta.startsWith('-');
+        return `
+            <div class="impact-card">
+                <div class="impact-label">${item[0]}</div>
+                <div class="impact-value">${value}</div>
+                <div class="impact-delta ${down ? 'down' : ''}">${delta}</div>
+            </div>
+        `;
+    }).join('');
+}
+
+function quotaForStrategy(row) {
+    if (row.statusClass === 'eliminated' || row.statusClass === 'manual') return 0;
+    if (!row.minSample) return 20;
+    if (row.tierClass === 'win') return 50;
+    if (row.payRate >= 6) return 36;
+    if (row.payRate >= 5) return 30;
+    return 16;
+}
+
+function scoreForStrategy(row) {
+    const sampleScore = Math.min(row.total / 120, 1) * 20;
+    const openScore = Math.min(row.openRate / 25, 1) * 40;
+    const payScore = Math.min(row.payRate / 8, 1) * 40;
+    return Math.round(sampleScore + openScore + payScore);
+}
+
+function renderQuotaRecommendations() {
+    const target = document.getElementById('quotaRecommendationBody');
+    if (!target) return;
+    target.innerHTML = strategies.map(row => {
+        const recommended = quotaForStrategy(row);
+        const change = recommended - row.todayTarget;
+        const action = recommended === 0 ? '归零' : change > 0 ? '提额' : change < 0 ? '降额' : '保持';
+        const actionClass = action === '提额' ? 'win' : action === '归零' ? 'eliminated' : action === '降额' ? 'watch' : 'draft';
+        const basis = row.statusClass === 'eliminated'
+            ? '触发淘汰线'
+            : !row.minSample
+                ? '补足最低样本'
+                : row.tierClass === 'win'
+                    ? '双指标较高'
+                    : row.payRate >= 5
+                        ? '预约金率中位'
+                        : '指标偏弱';
+        return `
+            <tr>
+                <td class="name-cell"><strong>${row.name}</strong><span>${row.id} / ${row.group}</span></td>
+                <td class="center">${badge(row.tier, row.tierClass)}</td>
+                <td class="num">${row.todayTarget}</td>
+                <td class="num">${recommended}</td>
+                <td class="num" style="color:${change < 0 ? 'var(--red)' : change > 0 ? 'var(--green)' : '#172033'};font-weight:900;">${change > 0 ? '+' : ''}${change}</td>
+                <td class="num">${scoreForStrategy(row)}</td>
+                <td class="center">${badge(action, actionClass)}</td>
+                <td>${basis}</td>
+                <td class="center"><button class="text-btn" type="button" onclick="openStrategyDrawer('${row.id}')">查看</button></td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function renderSimulation() {
+    const sample = strategies.slice(0, 6);
+    document.getElementById('simulationTableBody').innerHTML = sample.map(row => `
+        <tr>
+            <td class="name-cell"><strong>${row.name}</strong><span>${row.id}</span></td>
+            <td class="num">${row.total}</td>
+            <td class="num">${percent(row.openRate)}</td>
+            <td class="num">${percent(row.payRate)}</td>
+            <td class="num">${row.todayTarget}</td>
+            <td>${badge(row.status, row.statusClass)}</td>
+        </tr>
+    `).join('');
+}
+
+function switchTab(tab) {
+    document.querySelectorAll('.module-tab').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tab));
+    document.getElementById('rulesView').classList.toggle('hidden', tab !== 'rules');
+    document.getElementById('targetsView').classList.toggle('hidden', tab !== 'targets');
+    document.getElementById('analysisView').classList.toggle('hidden', tab !== 'analysis');
+    document.getElementById('tieringView').classList.toggle('hidden', tab !== 'tiering');
+    document.getElementById('versionsView').classList.toggle('hidden', tab !== 'versions');
+    document.getElementById('simulationView').classList.toggle('hidden', tab !== 'simulation');
+}
+
+function openRuleDrawer(mode) {
+    const title = mode === 'new' ? '新建策略测试规则' : mode === 'edit' ? '编辑策略测试规则' : '查看策略测试规则';
+    document.getElementById('ruleDrawerTitle').textContent = title;
+    document.getElementById('ruleDrawerMask').classList.add('show');
+}
+
+function closeRuleDrawer() {
+    document.getElementById('ruleDrawerMask').classList.remove('show');
+}
+
+function trendPolyline(values, width, height) {
+    const max = Math.max(...values, 1);
+    return values.map((value, index) => {
+        const x = 28 + index * ((width - 56) / (values.length - 1));
+        const y = height - 28 - (value / max) * (height - 58);
+        return `${x},${y}`;
+    }).join(' ');
+}
+
+function openStrategyDrawer(id) {
+    const row = strategyById(id);
+    document.getElementById('strategyDrawerTitle').textContent = row.name;
+    document.getElementById('strategyDrawerSubtitle').textContent = `${row.id} | ${row.group} | ${row.status}`;
+    const remain = Math.max(row.todayTarget - row.todayUsed, 0);
+    const progress = row.todayTarget ? Math.round(row.todayUsed / row.todayTarget * 100) : 0;
+    document.getElementById('strategyDrawerBody').innerHTML = `
+        <div class="detail-grid">
+            <div class="detail-card">
+                <div class="detail-label">今日目标</div>
+                <div class="detail-value">${row.todayTarget}</div>
+            </div>
+            <div class="detail-card">
+                <div class="detail-label">今日已分配</div>
+                <div class="detail-value">${row.todayUsed}</div>
+            </div>
+            <div class="detail-card">
+                <div class="detail-label">剩余可分配</div>
+                <div class="detail-value">${remain}</div>
+            </div>
+            <div class="detail-card">
+                <div class="detail-label">累计加微</div>
+                <div class="detail-value">${row.total}</div>
+            </div>
+            <div class="detail-card">
+                <div class="detail-label">近7天开口率</div>
+                <div class="detail-value">${percent(row.openRate)}</div>
+            </div>
+            <div class="detail-card">
+                <div class="detail-label">预约金交纳率</div>
+                <div class="detail-value">${percent(row.payRate)}</div>
+            </div>
+        </div>
+        <section class="history-card">
+            <div class="scatter-head">近7天开口率趋势</div>
+            <svg class="history-chart" viewBox="0 0 680 170" role="img" aria-label="近7天趋势">
+                <line x1="28" y1="134" x2="652" y2="134" stroke="#d5dce8"/>
+                <line x1="28" y1="24" x2="28" y2="134" stroke="#d5dce8"/>
+                <polyline points="${trendPolyline(row.trend, 680, 170)}" fill="none" stroke="#2f75ff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                ${row.trend.map((value, index) => {
+                    const max = Math.max(...row.trend, 1);
+                    const x = 28 + index * ((680 - 56) / (row.trend.length - 1));
+                    const y = 170 - 28 - (value / max) * (170 - 58);
+                    return `<circle cx="${x}" cy="${y}" r="4" fill="#2f75ff"></circle>`;
+                }).join('')}
+            </svg>
+        </section>
+        <section class="form-section">
+            <div class="form-section-head">当前执行状态</div>
+            <div class="form-section-body">
+                <div style="display:grid;grid-template-columns:100px minmax(0,1fr) 54px;align-items:center;gap:12px;">
+                    <span style="font-size:12px;font-weight:850;color:#445066;">配额进度</span>
+                    <div class="progress"><div class="progress-fill ${row.statusClass === 'eliminated' ? 'red' : row.statusClass === 'full' ? 'orange' : 'green'}" style="width:${Math.min(progress, 100)}%"></div></div>
+                    <strong style="font-size:12px;text-align:right;">${progress}%</strong>
+                </div>
+                <div style="margin-top:12px;color:#445066;font-size:12px;line-height:1.65;font-weight:700;">${row.reason}</div>
+            </div>
+        </section>
+        <section class="form-section">
+            <div class="form-section-head">命中客户明细</div>
+            <div class="table-wrap">
+                <table class="mini-table">
+                    <thead>
+                        <tr>
+                            <th>加微时间</th>
+                            <th>客户备注</th>
+                            <th>是否开口</th>
+                            <th>预约金</th>
+                            <th>成交轮次</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${customers.map(item => `
+                            <tr>
+                                <td>${item[0]}</td>
+                                <td>${item[1]}</td>
+                                <td>${item[2]}</td>
+                                <td>${item[3]}</td>
+                                <td>${item[4]}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        <section class="form-section">
+            <div class="form-section-head">操作日志</div>
+            <div class="form-section-body" style="display:grid;gap:8px;color:#445066;font-size:12px;font-weight:700;">
+                <div>2026-08-17 09:00 系统生成今日目标：${row.todayTarget}</div>
+                <div>2026-08-17 09:01 规则命中：全量策略开口率倾斜实验</div>
+                <div>2026-08-16 21:30 业务复核策略状态：${row.status}</div>
+            </div>
+        </section>
+    `;
+    document.getElementById('strategyDrawerMask').classList.add('show');
+}
+
+function closeStrategyDrawer() {
+    document.getElementById('strategyDrawerMask').classList.remove('show');
+}
+
+function renderAll() {
+    renderRules();
+    renderTargets();
+    renderAnalysis();
+    renderTiering();
+    renderScriptVersions();
+    renderSignificance();
+    renderRuleImpact();
+    renderQuotaRecommendations();
+    renderSimulation();
+}
+
+renderAll();
+try {
+    const params = new URLSearchParams(window.location.search);
+    const tab = params.get('tab');
+    if (['rules', 'targets', 'analysis', 'tiering', 'versions', 'simulation'].includes(tab)) {
+        switchTab(tab);
+    }
+    const ruleDrawer = params.get('ruleDrawer');
+    if (['new', 'edit', 'view'].includes(ruleDrawer)) {
+        openRuleDrawer(ruleDrawer);
+    }
+    const strategyId = params.get('strategy');
+    if (strategyId) {
+        openStrategyDrawer(strategyId);
+    }
+} catch (error) {}
+</script>
+</body>
+</html>

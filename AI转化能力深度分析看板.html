@@ -1,0 +1,1546 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI转化能力深度分析看板</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --panel: #ffffff;
+      --head: #f8fafc;
+      --line: #e5eaf2;
+      --line-strong: #d4dce9;
+      --text: #172033;
+      --muted: #647084;
+      --soft: #98a2b3;
+      --blue: #2f75ff;
+      --blue-strong: #1f5fd6;
+      --blue-soft: #edf4ff;
+      --green: #14a879;
+      --green-soft: #eaf8f3;
+      --orange: #f59e0b;
+      --orange-soft: #fff7e8;
+      --red: #df3f3f;
+      --red-soft: #fff0f0;
+      --cyan: #0ea5b7;
+      --purple: #7c6ff0;
+      --shadow: 0 8px 24px rgba(23, 32, 51, 0.05);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { min-height: 100%; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      letter-spacing: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+    svg { display: block; }
+
+    .app-shell {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .topbar {
+      min-height: 58px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 0 24px;
+      background: #fff;
+      border-bottom: 1px solid var(--line);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+    .brand-mark {
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+      background: linear-gradient(135deg, #2f75ff, #7c6ff0 72%);
+      position: relative;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.42);
+    }
+    .brand-mark::before,
+    .brand-mark::after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.9);
+    }
+    .brand-mark::before {
+      width: 6px;
+      height: 6px;
+      left: 7px;
+      top: 7px;
+    }
+    .brand-mark::after {
+      width: 11px;
+      height: 11px;
+      right: 6px;
+      bottom: 6px;
+      box-shadow: -8px 5px 0 -3px rgba(255,255,255,0.9);
+    }
+    .brand h1 {
+      color: #1b2332;
+      font-size: 16px;
+      font-weight: 850;
+      white-space: nowrap;
+    }
+    .page-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 0 3px rgba(20,168,121,0.13);
+    }
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .icon-btn,
+    .text-btn {
+      height: 30px;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: #394150;
+      border-radius: 5px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 0 10px;
+      font-size: 12px;
+      font-weight: 750;
+      transition: color .15s, border-color .15s, background .15s;
+    }
+    .icon-btn { width: 30px; padding: 0; }
+    .icon-btn svg,
+    .text-btn svg { width: 15px; height: 15px; stroke: currentColor; }
+    .icon-btn:hover,
+    .text-btn:hover {
+      color: var(--blue-strong);
+      border-color: #b9cffc;
+      background: #f8fbff;
+    }
+
+    .workspace {
+      padding: 16px 20px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .filter-panel,
+    .section-panel,
+    .insight-strip {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+    .filter-panel {
+      min-height: 52px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+    }
+    .filter-left,
+    .filter-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .filter-label {
+      color: #303846;
+      font-size: 13px;
+      font-weight: 850;
+      margin-right: 2px;
+    }
+    .segmented {
+      display: inline-flex;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      overflow: hidden;
+      background: #fff;
+    }
+    .seg-btn {
+      height: 28px;
+      min-width: 74px;
+      border: 0;
+      border-right: 1px solid var(--line);
+      background: #fff;
+      color: #4b5563;
+      padding: 0 12px;
+      font-size: 12px;
+      font-weight: 750;
+    }
+    .seg-btn:last-child { border-right: 0; }
+    .seg-btn.active {
+      color: var(--blue-strong);
+      background: var(--blue-soft);
+    }
+    .select-control,
+    .date-range {
+      height: 30px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      color: #293241;
+      padding: 0 10px;
+      font-size: 12px;
+      font-weight: 650;
+      outline: none;
+    }
+    .date-range {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 10px;
+    }
+    .date-range input {
+      width: 94px;
+      border: 0;
+      outline: 0;
+      color: inherit;
+      background: transparent;
+      font-weight: inherit;
+    }
+    .pill {
+      height: 24px;
+      display: inline-flex;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+      color: #4a5568;
+      padding: 0 9px;
+      font-size: 11px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .insight-strip {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      overflow: hidden;
+    }
+    .insight-card {
+      min-height: 104px;
+      padding: 16px 16px 14px;
+      border-right: 1px solid var(--line);
+      background: #fff;
+    }
+    .insight-card:last-child { border-right: 0; }
+    .insight-label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .insight-value {
+      margin-top: 10px;
+      color: #0f172a;
+      font-size: 28px;
+      line-height: 1;
+      font-weight: 900;
+    }
+    .insight-note {
+      margin-top: 9px;
+      color: var(--soft);
+      font-size: 11px;
+      line-height: 1.45;
+    }
+    .good { color: var(--green) !important; }
+    .warn { color: #b77904 !important; }
+    .danger { color: var(--red) !important; }
+
+    .section-panel { overflow: hidden; }
+    .panel-head {
+      min-height: 46px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 0 14px 0 16px;
+      border-bottom: 1px solid var(--line);
+      background: #fff;
+    }
+    .panel-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #1f2633;
+      font-size: 14px;
+      font-weight: 850;
+      white-space: nowrap;
+    }
+    .panel-title::before {
+      content: "";
+      width: 3px;
+      height: 14px;
+      border-radius: 2px;
+      background: var(--blue);
+    }
+    .panel-subtitle,
+    .panel-actions {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 550;
+    }
+    .panel-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    .split-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+      gap: 0;
+    }
+    .compare-table-wrap,
+    .trend-wrap {
+      min-height: 360px;
+    }
+    .compare-table-wrap {
+      border-right: 1px solid var(--line);
+      overflow-x: auto;
+    }
+    .trend-wrap {
+      padding: 16px 18px 12px;
+    }
+    .trend-chart {
+      width: 100%;
+      height: 286px;
+      display: block;
+    }
+    .legend {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #5f6b7b;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .legend-line {
+      width: 18px;
+      height: 3px;
+      border-radius: 2px;
+      background: currentColor;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      position: relative;
+    }
+    table {
+      width: 100%;
+      min-width: 1040px;
+      border-collapse: separate;
+      border-spacing: 0;
+      color: #27303f;
+      font-size: 12px;
+    }
+    .compare-table { min-width: 620px; }
+    th {
+      height: 40px;
+      padding: 8px 10px;
+      background: var(--head);
+      color: #303846;
+      text-align: left;
+      font-weight: 850;
+      white-space: nowrap;
+      border-bottom: 1px solid var(--line);
+    }
+    td {
+      height: 42px;
+      padding: 8px 10px;
+      white-space: nowrap;
+      border-bottom: 1px solid #eef2f7;
+      background: #fff;
+      font-weight: 550;
+    }
+    tbody tr:nth-child(even) td { background: #f9fbfe; }
+    tbody tr:hover td { background: #eef5ff; }
+    .num { text-align: right; font-variant-numeric: tabular-nums; }
+    .strong { color: #111827; font-weight: 850; }
+    .muted { color: var(--muted); }
+    .sticky-col {
+      position: sticky;
+      left: 0;
+      z-index: 5;
+      box-shadow: 8px 0 12px -12px rgba(15, 23, 42, 0.35);
+    }
+    thead .sticky-col { z-index: 8; background: var(--head); }
+    tbody tr:nth-child(even) .sticky-col { background: #f9fbfe; }
+    tbody tr:hover .sticky-col { background: #eef5ff; }
+    .badge {
+      height: 22px;
+      display: inline-flex;
+      align-items: center;
+      border-radius: 12px;
+      padding: 0 8px;
+      font-size: 11px;
+      font-weight: 850;
+      white-space: nowrap;
+    }
+    .badge.good { color: #0c8f68; background: var(--green-soft); }
+    .badge.warn { color: #a06403; background: var(--orange-soft); }
+    .badge.bad { color: #cc3434; background: var(--red-soft); }
+    .badge.neutral { color: #566176; background: #eef2f7; }
+
+    .drill-head {
+      min-height: 42px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      background: #fbfcff;
+    }
+    .drill-title {
+      color: #293241;
+      font-size: 13px;
+      font-weight: 850;
+    }
+
+    .funnel-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 320px;
+      gap: 0;
+    }
+    .funnel-panel {
+      min-height: 430px;
+      padding: 16px;
+      border-right: 1px solid var(--line);
+      background: #fff;
+    }
+    .funnel-panel:last-child { border-right: 0; }
+    .funnel-title {
+      color: #293241;
+      font-size: 13px;
+      font-weight: 850;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .funnel-title span {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .funnel-list {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+    .funnel-row {
+      display: grid;
+      grid-template-columns: 94px minmax(0, 1fr) 58px;
+      align-items: center;
+      gap: 10px;
+    }
+    .funnel-stage {
+      color: #445066;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .funnel-bar {
+      height: 26px;
+      border-radius: 5px;
+      background: #eef2f7;
+      overflow: hidden;
+    }
+    .funnel-fill {
+      height: 100%;
+      min-width: 2px;
+      border-radius: inherit;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      color: #fff;
+      padding-right: 7px;
+      font-size: 11px;
+      font-weight: 850;
+    }
+    .funnel-rate {
+      text-align: right;
+      color: #172033;
+      font-size: 12px;
+      font-weight: 850;
+    }
+    .loss-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcff;
+      padding: 12px;
+      margin-bottom: 10px;
+    }
+    .loss-label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .loss-value {
+      margin-top: 7px;
+      color: #0f172a;
+      font-size: 24px;
+      line-height: 1;
+      font-weight: 900;
+    }
+    .loss-note {
+      margin-top: 8px;
+      color: var(--soft);
+      font-size: 11px;
+      line-height: 1.45;
+    }
+
+    .round-tabs {
+      display: inline-flex;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      overflow: hidden;
+      background: #fff;
+    }
+    .round-tab {
+      height: 28px;
+      min-width: 60px;
+      border: 0;
+      border-right: 1px solid var(--line);
+      background: #fff;
+      color: #4b5563;
+      padding: 0 10px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .round-tab:last-child { border-right: 0; }
+    .round-tab.active {
+      color: var(--blue-strong);
+      background: var(--blue-soft);
+    }
+    .behavior-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 300px;
+      gap: 0;
+    }
+    .finding-panel {
+      padding: 16px;
+      border-left: 1px solid var(--line);
+      background: #fbfcff;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .finding-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      padding: 12px;
+    }
+    .finding-label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .finding-text {
+      margin-top: 8px;
+      color: #263247;
+      font-size: 12px;
+      line-height: 1.65;
+      font-weight: 600;
+    }
+
+    .intent-grid {
+      display: grid;
+      grid-template-columns: 350px minmax(0, 1fr);
+      gap: 0;
+    }
+    .intent-left {
+      padding: 16px;
+      border-right: 1px solid var(--line);
+      background: #fbfcff;
+    }
+    .donut-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 250px;
+      position: relative;
+    }
+    .donut-chart {
+      width: 240px;
+      height: 240px;
+    }
+    .donut-center {
+      position: absolute;
+      text-align: center;
+      color: #172033;
+    }
+    .donut-center strong {
+      display: block;
+      font-size: 28px;
+      line-height: 1;
+      font-weight: 900;
+    }
+    .donut-center span {
+      display: block;
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 750;
+    }
+    .intent-legend {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px 12px;
+      margin-top: 6px;
+    }
+    .intent-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #4b5563;
+      font-size: 11px;
+      font-weight: 750;
+      min-width: 0;
+    }
+    .legend-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      background: currentColor;
+    }
+    .intent-metrics {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      border-bottom: 1px solid var(--line);
+    }
+    .intent-metric {
+      padding: 14px 16px;
+      border-right: 1px solid var(--line);
+      background: #fff;
+    }
+    .intent-metric:last-child { border-right: 0; }
+    .intent-metric-label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .intent-metric-value {
+      margin-top: 10px;
+      color: #0f172a;
+      font-size: 28px;
+      line-height: 1;
+      font-weight: 900;
+    }
+
+    .section-foot {
+      min-height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 9px 14px;
+      border-top: 1px solid var(--line);
+      background: #fbfcff;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 550;
+    }
+    .pill-list {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 1180px) {
+      .insight-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .insight-card:nth-child(2) { border-right: 0; }
+      .insight-card:nth-child(n+3) { border-top: 1px solid var(--line); }
+      .split-grid,
+      .funnel-grid,
+      .behavior-grid,
+      .intent-grid { grid-template-columns: 1fr; }
+      .compare-table-wrap,
+      .funnel-panel,
+      .intent-left { border-right: 0; border-bottom: 1px solid var(--line); }
+      .finding-panel { border-left: 0; border-top: 1px solid var(--line); }
+      .funnel-panel:last-child { border-bottom: 0; }
+    }
+
+    @media (max-width: 760px) {
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 12px 14px;
+      }
+      .brand { flex-wrap: wrap; }
+      .page-meta {
+        flex-basis: 100%;
+        margin-left: 40px;
+      }
+      .workspace { padding: 12px; }
+      .filter-panel,
+      .filter-left,
+      .filter-right {
+        align-items: stretch;
+        flex-direction: column;
+      }
+      .filter-panel { overflow: hidden; }
+      .filter-left,
+      .filter-right,
+      .segmented,
+      .date-range,
+      .select-control { width: 100%; }
+      .segmented,
+      .date-range,
+      .select-control {
+        width: min(100%, calc(100vw - 70px), 320px);
+      }
+      .segmented {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+      .filter-left > *,
+      .filter-right > * {
+        min-width: 0;
+        max-width: 100%;
+      }
+      .seg-btn {
+        flex: 1;
+        min-width: 0;
+        padding: 0 6px;
+      }
+      .date-range input {
+        min-width: 0;
+        width: calc((100% - 22px) / 2);
+      }
+      .insight-strip,
+      .intent-metrics { grid-template-columns: 1fr; }
+      .insight-card,
+      .insight-card:nth-child(2),
+      .intent-metric { border-right: 0; }
+      .insight-card + .insight-card,
+      .intent-metric + .intent-metric { border-top: 1px solid var(--line); }
+      .panel-head {
+        align-items: flex-start;
+        flex-direction: column;
+        padding-top: 12px;
+        padding-bottom: 12px;
+      }
+      .legend { justify-content: flex-start; }
+      .trend-wrap { padding-left: 8px; padding-right: 8px; }
+      .funnel-row { grid-template-columns: 78px minmax(0, 1fr) 52px; }
+      .intent-legend { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="app-shell">
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true"></div>
+      <h1>AI转化能力深度分析看板</h1>
+      <div class="page-meta"><span class="status-dot"></span><span>日级刷新 2026-08-17 09:30</span></div>
+    </div>
+    <div class="top-actions">
+      <button class="icon-btn" type="button" aria-label="刷新">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 12a9 9 0 0 1-15.6 6.1"/><path d="M3 12A9 9 0 0 1 18.6 5.9"/><path d="M18 2v4h-4"/><path d="M6 22v-4h4"/></svg>
+      </button>
+      <button class="text-btn" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+        导出
+      </button>
+      <button class="text-btn" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M8 8h8"/><path d="M8 12h8"/><path d="M8 16h5"/></svg>
+        订阅
+      </button>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <section class="filter-panel" aria-label="筛选条件">
+      <div class="filter-left">
+        <span class="filter-label">日期</span>
+        <div class="segmented" aria-label="快捷日期">
+          <button class="seg-btn" type="button" data-range="7" onclick="setRange('7')">近7天</button>
+          <button class="seg-btn active" type="button" data-range="30" onclick="setRange('30')">近30天</button>
+          <button class="seg-btn" type="button" data-range="month" onclick="setRange('month')">本月</button>
+        </div>
+        <div class="date-range">
+          <input id="startDate" type="text" value="2026-07-19" aria-label="开始日期">
+          <span>至</span>
+          <input id="endDate" type="text" value="2026-08-17" aria-label="结束日期">
+        </div>
+        <select class="select-control" aria-label="策略类型">
+          <option>全部策略</option>
+          <option>纯AI</option>
+          <option>AI开口转人工</option>
+          <option>纯人工</option>
+          <option>大盘</option>
+        </select>
+        <select class="select-control" aria-label="项目">
+          <option>全部项目</option>
+          <option>S10N</option>
+          <option>K10</option>
+          <option>M10</option>
+          <option>S10</option>
+        </select>
+      </div>
+      <div class="filter-right">
+        <span class="pill">整体转化率</span>
+        <span class="pill">轮次漏斗</span>
+        <span class="pill">行为差异</span>
+        <span class="pill">实验追踪</span>
+      </div>
+    </section>
+
+    <section class="insight-strip" aria-label="关键诊断结论">
+      <article class="insight-card">
+        <div class="insight-label">AI现转预约率差距</div>
+        <div class="insight-value danger">-8.7pct</div>
+        <div class="insight-note">纯AI较纯人工低，主要差距集中在第3-5轮。</div>
+      </article>
+      <article class="insight-card">
+        <div class="insight-label">最大流失轮次</div>
+        <div class="insight-value warn">第3轮</div>
+        <div class="insight-note">AI第2轮到第3轮留存下降17.6pct，高于人工降幅。</div>
+      </article>
+      <article class="insight-card">
+        <div class="insight-label">意图识别抽检准确率</div>
+        <div class="insight-value good">86.4%</div>
+        <div class="insight-note">价格、犹豫顾虑、含糊回复三类仍是主要误判源。</div>
+      </article>
+      <article class="insight-card">
+        <div class="insight-label">进行中A/B实验</div>
+        <div class="insight-value">4个</div>
+        <div class="insight-note">第3轮报价时机实验已达到显著性，建议采纳新策略。</div>
+      </article>
+    </section>
+
+    <section class="section-panel" aria-label="AI vs 人工转化率全局对比">
+      <div class="panel-head">
+        <div class="panel-title">AI vs 人工转化率全局对比</div>
+        <div class="panel-actions">
+          <span id="selectedDayLabel">当前下钻日：2026-08-17</span>
+        </div>
+      </div>
+      <div class="split-grid">
+        <div class="compare-table-wrap">
+          <table class="compare-table">
+            <thead>
+              <tr>
+                <th class="sticky-col">指标</th>
+                <th class="num">纯AI</th>
+                <th class="num">AI开口转人工</th>
+                <th class="num">纯人工</th>
+                <th class="num">大盘</th>
+                <th>诊断</th>
+              </tr>
+            </thead>
+            <tbody id="comparisonBody"></tbody>
+          </table>
+        </div>
+        <div class="trend-wrap">
+          <div class="legend">
+            <span class="legend-item" style="color:#7c6ff0"><span class="legend-line"></span>纯AI</span>
+            <span class="legend-item" style="color:#2f75ff"><span class="legend-line"></span>AI开口转人工</span>
+            <span class="legend-item" style="color:#14a879"><span class="legend-line"></span>纯人工</span>
+            <span class="legend-item" style="color:#f59e0b"><span class="legend-line"></span>大盘</span>
+          </div>
+          <svg class="trend-chart" id="conversionTrendChart" role="img" aria-label="近30天四类策略日预约率趋势"></svg>
+        </div>
+      </div>
+      <div class="drill-head">
+        <div class="drill-title">日会话下钻列表</div>
+        <div class="panel-actions">点击趋势图任意日期可切换样本日</div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th class="sticky-col">会话ID</th>
+              <th>客户ID</th>
+              <th>接待账号</th>
+              <th>接待员工</th>
+              <th>策略类型</th>
+              <th class="num">总对话轮次</th>
+              <th>是否开口</th>
+              <th>是否成交</th>
+              <th class="num">成交轮次</th>
+              <th class="num">客户流失轮次</th>
+            </tr>
+          </thead>
+          <tbody id="conversationBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section-panel" aria-label="对话轮次漏斗分析">
+      <div class="panel-head">
+        <div class="panel-title">对话轮次漏斗分析</div>
+        <div class="panel-actions">
+          <span>从加微成功到预约金支付，按轮次观察掉点</span>
+        </div>
+      </div>
+      <div class="funnel-grid">
+        <div class="funnel-panel">
+          <div class="funnel-title">纯AI漏斗 <span>样本 1,286</span></div>
+          <div class="funnel-list" id="aiFunnel"></div>
+        </div>
+        <div class="funnel-panel">
+          <div class="funnel-title">纯人工漏斗 <span>样本 2,408</span></div>
+          <div class="funnel-list" id="humanFunnel"></div>
+        </div>
+        <aside class="funnel-panel">
+          <div class="funnel-title">流失诊断</div>
+          <div class="loss-card">
+            <div class="loss-label">AI最大相对流失</div>
+            <div class="loss-value danger">第3轮</div>
+            <div class="loss-note">AI第3轮留存40.4%，人工第3轮留存64.8%。</div>
+          </div>
+          <div class="loss-card">
+            <div class="loss-label">第3-5轮待复盘会话</div>
+            <div class="loss-value warn">376条</div>
+            <div class="loss-note">其中214条未标注流失原因，需要人工补标签。</div>
+          </div>
+          <div class="loss-card">
+            <div class="loss-label">成交轮次差距</div>
+            <div class="loss-value">+1.8轮</div>
+            <div class="loss-note">纯AI平均成交轮次比销冠样本更长，疑似需求确认效率不足。</div>
+          </div>
+        </aside>
+      </div>
+      <div class="drill-head">
+        <div class="drill-title">流失轮次分布表</div>
+        <div class="panel-actions">用于人工复盘补充流失原因标签</div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th class="sticky-col">会话ID</th>
+              <th>策略类型</th>
+              <th class="num">客户最终回复轮次</th>
+              <th>流失原因标签</th>
+              <th>复盘状态</th>
+            </tr>
+          </thead>
+          <tbody id="lossBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section-panel" aria-label="关键轮次对话行为对比">
+      <div class="panel-head">
+        <div class="panel-title">关键轮次对话行为对比</div>
+        <div class="panel-actions">
+          <div class="round-tabs" id="roundTabs"></div>
+        </div>
+      </div>
+      <div class="behavior-grid">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th class="sticky-col">分析维度</th>
+                <th class="num">AI数据</th>
+                <th class="num">人工销冠数据</th>
+                <th>差异判断</th>
+              </tr>
+            </thead>
+            <tbody id="roundBehaviorBody"></tbody>
+          </table>
+        </div>
+        <aside class="finding-panel">
+          <div class="finding-card">
+            <div class="finding-label">关键发现</div>
+            <div class="finding-text" id="roundFinding"></div>
+          </div>
+          <div class="finding-card">
+            <div class="finding-label">建议动作</div>
+            <div class="finding-text" id="roundAction"></div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="section-panel" aria-label="客户意图识别准确率监控">
+      <div class="panel-head">
+        <div class="panel-title">客户意图识别准确率监控</div>
+        <div class="panel-actions">
+          <span>每日抽检50条AI意图判断</span>
+        </div>
+      </div>
+      <div class="intent-grid">
+        <div class="intent-left">
+          <div class="donut-wrap">
+            <svg class="donut-chart" id="intentDonut" role="img" aria-label="每日AI意图识别分布"></svg>
+            <div class="donut-center"><strong>8类</strong><span>意图分类</span></div>
+          </div>
+          <div class="intent-legend" id="intentLegend"></div>
+        </div>
+        <div>
+          <div class="intent-metrics">
+            <div class="intent-metric">
+              <div class="intent-metric-label">人工复核抽样准确率</div>
+              <div class="intent-metric-value good">86.4%</div>
+            </div>
+            <div class="intent-metric">
+              <div class="intent-metric-label">误判导致流失案例</div>
+              <div class="intent-metric-value danger">17</div>
+            </div>
+            <div class="intent-metric">
+              <div class="intent-metric-label">待复核消息</div>
+              <div class="intent-metric-value warn">38</div>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th class="sticky-col">会话ID</th>
+                  <th class="num">轮次</th>
+                  <th>客户原文</th>
+                  <th>AI识别意图</th>
+                  <th>AI回复内容</th>
+                  <th>客户继续回复</th>
+                  <th>人工复核意图</th>
+                  <th>是否误判</th>
+                </tr>
+              </thead>
+              <tbody id="intentBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-panel" aria-label="单账号单员工效能追踪">
+      <div class="panel-head">
+        <div class="panel-title">单账号/单员工效能追踪</div>
+        <div class="panel-actions">
+          <span>比较同一员工AI转入客户与自然客户表现</span>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th class="sticky-col">员工姓名</th>
+              <th>接待账号ID</th>
+              <th class="num">AI转入客户数</th>
+              <th class="num">自然加微客户数</th>
+              <th class="num">AI转入开口率</th>
+              <th class="num">自然客户开口率</th>
+              <th class="num">AI转入预约率</th>
+              <th class="num">自然客户预约率</th>
+              <th class="num">AI平均成交轮次</th>
+              <th class="num">自然平均成交轮次</th>
+              <th>异常检测</th>
+            </tr>
+          </thead>
+          <tbody id="employeeBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section-panel" aria-label="A/B测试追踪面板">
+      <div class="panel-head">
+        <div class="panel-title">A/B测试追踪面板</div>
+        <div class="panel-actions">
+          <span>每次话术、策略、规则调整都进入实验台账</span>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th class="sticky-col">实验ID</th>
+              <th>开始日期</th>
+              <th>结束日期</th>
+              <th>变更内容描述</th>
+              <th class="num">对照组样本</th>
+              <th class="num">实验组样本</th>
+              <th class="num">对照组转化率</th>
+              <th class="num">实验组转化率</th>
+              <th class="num">P值</th>
+              <th>结论</th>
+            </tr>
+          </thead>
+          <tbody id="experimentBody"></tbody>
+        </table>
+      </div>
+      <div class="section-foot">
+        <span>实验结束后沉淀为策略版本，保留可回滚记录。</span>
+        <div class="pill-list">
+          <span class="pill">采纳 2</span>
+          <span class="pill">继续观察 2</span>
+          <span class="pill">放弃 1</span>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+const comparisonRows = [
+  ['当日新增客户数', '1,286', '1,964', '2,408', '5,658', 'AI样本较昨日 +9.4%'],
+  ['开口率', '72.4%', '78.6%', '84.9%', '79.8%', '纯AI首句吸引力不足'],
+  ['预约率（现转）', '8.7%', '14.8%', '17.4%', '14.6%', 'AI落后人工 8.7pct'],
+  ['预约率（总转）', '12.2%', '18.9%', '22.6%', '18.8%', '后续跟进仍能追回部分客户'],
+  ['平均成交轮次', '7.8', '6.1', '5.4', '6.2', 'AI需求确认链路偏长'],
+  ['平均首次响应时长', '8秒', '11秒', '2分18秒', '1分04秒', 'AI响应快但不等于转化强']
+];
+
+const trendData = [
+  ['7/19', 6.8, 12.9, 16.0, 13.2],
+  ['7/20', 7.0, 13.2, 16.2, 13.4],
+  ['7/21', 6.7, 13.5, 16.5, 13.6],
+  ['7/22', 7.4, 13.4, 16.3, 13.5],
+  ['7/23', 7.2, 13.8, 16.8, 13.9],
+  ['7/24', 7.8, 14.0, 17.0, 14.2],
+  ['7/25', 7.5, 13.9, 17.1, 14.0],
+  ['7/26', 8.1, 14.3, 17.6, 14.5],
+  ['7/27', 8.0, 14.1, 17.2, 14.2],
+  ['7/28', 8.2, 14.5, 17.5, 14.6],
+  ['7/29', 8.4, 14.6, 17.8, 14.7],
+  ['7/30', 8.1, 14.4, 17.4, 14.4],
+  ['7/31', 8.8, 14.9, 17.9, 15.0],
+  ['8/01', 8.5, 15.0, 18.0, 15.1],
+  ['8/02', 8.3, 14.7, 17.8, 14.8],
+  ['8/03', 8.9, 15.2, 18.2, 15.2],
+  ['8/04', 9.1, 15.4, 18.5, 15.5],
+  ['8/05', 8.6, 15.0, 18.1, 15.0],
+  ['8/06', 8.2, 14.6, 17.8, 14.7],
+  ['8/07', 8.8, 15.1, 18.4, 15.3],
+  ['8/08', 9.0, 15.6, 18.7, 15.7],
+  ['8/09', 8.7, 15.2, 18.4, 15.3],
+  ['8/10', 8.4, 14.8, 17.9, 14.9],
+  ['8/11', 8.9, 15.4, 18.3, 15.4],
+  ['8/12', 9.2, 15.7, 18.7, 15.8],
+  ['8/13', 9.0, 15.5, 18.5, 15.6],
+  ['8/14', 8.5, 14.9, 17.9, 15.0],
+  ['8/15', 8.8, 15.1, 18.0, 15.2],
+  ['8/16', 9.1, 15.5, 18.4, 15.6],
+  ['8/17', 8.7, 14.8, 17.4, 14.6]
+];
+
+const conversationsByDay = {
+  '8/17': [
+    ['CV-20260817-1042', 'CU-91728', 'WX-AI-016', 'AI', '纯AI', 8, '是', '否', '-', 5],
+    ['CV-20260817-1037', 'CU-91684', 'WX-HF-031', '林泽明', 'AI开口转人工', 7, '是', '是', 6, '-'],
+    ['CV-20260817-1024', 'CU-91622', 'WX-HR-118', '何婉婷', '纯人工', 5, '是', '是', 4, '-'],
+    ['CV-20260817-1018', 'CU-91597', 'WX-AI-011', 'AI', '纯AI', 4, '是', '否', '-', 3],
+    ['CV-20260817-1002', 'CU-91531', 'WX-HF-044', '潘一凡', 'AI开口转人工', 9, '是', '否', '-', 7],
+    ['CV-20260817-0986', 'CU-91488', 'WX-HR-057', '吴廷凯', '纯人工', 6, '是', '是', 5, '-']
+  ],
+  default: [
+    ['CV-20260812-0871', 'CU-88312', 'WX-AI-008', 'AI', '纯AI', 6, '是', '否', '-', 4],
+    ['CV-20260812-0840', 'CU-88277', 'WX-HF-022', '刘彦君', 'AI开口转人工', 8, '是', '是', 7, '-'],
+    ['CV-20260812-0809', 'CU-88210', 'WX-HR-091', '张雪晴', '纯人工', 5, '是', '是', 4, '-'],
+    ['CV-20260812-0776', 'CU-88163', 'WX-AI-015', 'AI', '纯AI', 3, '是', '否', '-', 2],
+    ['CV-20260812-0742', 'CU-88120', 'WX-HF-018', '郭欣然', 'AI开口转人工', 7, '是', '否', '-', 5]
+  ]
+};
+
+const funnelStages = ['加微成功', '首条已读', '第1轮回复', '第2轮回复', '第3轮回复', '第5轮回复', '第10轮回复', '预约金支付'];
+const aiFunnelValues = [100, 91.2, 66.8, 58.0, 40.4, 27.6, 15.2, 8.7];
+const humanFunnelValues = [100, 93.4, 78.5, 72.4, 64.8, 51.3, 28.6, 17.4];
+
+const lossRows = [
+  ['CV-20260817-1042', '纯AI', 5, '价格疑问未承接', '已标注'],
+  ['CV-20260817-1018', '纯AI', 3, '过早报价', '已标注'],
+  ['CV-20260817-0972', '纯AI', 3, '', '待复盘'],
+  ['CV-20260817-0928', 'AI开口转人工', 4, '员工接手后响应慢', '已标注'],
+  ['CV-20260817-0886', '纯人工', 7, '客户预算不足', '已标注'],
+  ['CV-20260817-0831', '纯AI', 2, '', '待复盘'],
+  ['CV-20260816-1194', '纯AI', 5, '未识别顾虑', '已标注'],
+  ['CV-20260816-1160', 'AI开口转人工', 6, '', '待复盘']
+];
+
+const roundBehavior = {
+  3: {
+    rows: [
+      ['该轮次回复响应时长（中位数）', '8秒', '1分46秒', 'AI更快，但缺少停顿判断'],
+      ['该轮次消息字数（中位数）', '96字', '58字', 'AI更长，信息压迫感偏强'],
+      ['该轮次是否提及价格/活动', '62%', '18%', 'AI报价明显过早'],
+      ['该轮次是否反问客户（引导互动）', '31%', '74%', 'AI互动引导不足'],
+      ['该轮次是否发送图片/链接', '44%', '22%', 'AI素材前置偏多'],
+      ['该轮次后客户继续回复比例', '40.4%', '64.8%', 'AI低24.4pct'],
+      ['该轮次后客户提出价格疑问比例', '28%', '11%', 'AI诱发价格异议']
+    ],
+    finding: 'AI在第3轮主动报价和发送活动信息的比例过高，客户尚未充分表达需求就被推向决策，导致继续回复比例明显低于销冠样本。',
+    action: '第3轮改为需求反问和项目适配判断，不主动报价；价格信息延后到客户明确表达兴趣或第5轮后触发。'
+  },
+  4: {
+    rows: [
+      ['该轮次回复响应时长（中位数）', '9秒', '1分32秒', 'AI响应稳定'],
+      ['该轮次消息字数（中位数）', '88字', '62字', 'AI仍偏长'],
+      ['该轮次是否提及价格/活动', '48%', '26%', 'AI仍高于人工'],
+      ['该轮次是否反问客户（引导互动）', '42%', '69%', 'AI追问不足'],
+      ['该轮次是否发送图片/链接', '39%', '31%', '差距可控'],
+      ['该轮次后客户继续回复比例', '33.2%', '56.7%', 'AI低23.5pct'],
+      ['该轮次后客户提出价格疑问比例', '24%', '15%', 'AI仍诱发异议']
+    ],
+    finding: '第4轮差距来自承接质量，AI容易继续解释项目卖点，但销冠会先复述客户诉求并确认顾虑。',
+    action: '加入“复述客户需求 + 二选一追问”的回复模板，并限制单条消息字数在70字以内。'
+  },
+  5: {
+    rows: [
+      ['该轮次回复响应时长（中位数）', '8秒', '1分58秒', 'AI更快'],
+      ['该轮次消息字数（中位数）', '82字', '67字', '差距收敛'],
+      ['该轮次是否提及价格/活动', '54%', '47%', '报价时机接近'],
+      ['该轮次是否反问客户（引导互动）', '49%', '63%', 'AI仍低'],
+      ['该轮次是否发送图片/链接', '36%', '42%', '人工更会用案例素材'],
+      ['该轮次后客户继续回复比例', '27.6%', '51.3%', 'AI低23.7pct'],
+      ['该轮次后客户提出价格疑问比例', '21%', '19%', '差异不大']
+    ],
+    finding: '到第5轮后报价时机差距缩小，核心差距转为案例证明和预约动作推进不足。',
+    action: '第5轮允许报价，但必须绑定客户诉求、案例素材和低门槛预约动作，避免只给价格表。'
+  }
+};
+
+const intentDistribution = [
+  ['咨询项目内容', 26, '#2f75ff'],
+  ['询问价格', 18, '#f59e0b'],
+  ['表达犹豫/顾虑', 14, '#df3f3f'],
+  ['要求优惠', 9, '#7c6ff0'],
+  ['感兴趣了解更多', 16, '#14a879'],
+  ['拒绝/不需要', 6, '#647084'],
+  ['无关闲聊', 4, '#0ea5b7'],
+  ['含糊回复', 7, '#98a2b3']
+];
+
+const intentRows = [
+  ['CV-20260817-1042', 3, '这个是不是很贵啊', '询问价格', '现在活动价很划算，我发您价格表', '否', '表达犹豫/顾虑', '是'],
+  ['CV-20260817-1018', 2, '我先看看吧', '感兴趣了解更多', '可以的，我给您介绍一下项目优势', '否', '含糊回复', '是'],
+  ['CV-20260817-0981', 4, '做完会不会疼', '咨询项目内容', '项目过程比较舒适', '是', '咨询项目内容', '否'],
+  ['CV-20260817-0928', 5, '有没有优惠', '要求优惠', '目前有新人活动', '是', '要求优惠', '否'],
+  ['CV-20260817-0872', 3, '我没时间', '拒绝/不需要', '那您有空再联系我', '否', '表达犹豫/顾虑', '是'],
+  ['CV-20260817-0826', 1, '嗯', '含糊回复', '您更关注效果还是价格呢', '是', '含糊回复', '否']
+];
+
+const employeeRows = [
+  ['林泽明', 'WX-HF-031', 74, 92, '81.1%', '86.9%', '15.6%', '18.5%', 6.0, 5.3, '正常'],
+  ['何婉婷', 'WX-HR-118', 62, 88, '79.0%', '84.1%', '14.9%', '17.0%', 6.4, 5.6, '正常'],
+  ['潘一凡', 'WX-HF-044', 58, 76, '73.8%', '85.5%', '8.6%', '18.4%', 7.4, 5.2, '需排查'],
+  ['吴廷凯', 'WX-HR-057', 69, 81, '82.6%', '83.9%', '17.2%', '17.8%', 5.8, 5.5, '正常'],
+  ['刘彦君', 'WX-HF-022', 54, 67, '76.0%', '82.1%', '10.4%', '16.6%', 7.0, 5.7, '观察中'],
+  ['张雪晴', 'WX-HR-091', 49, 73, '80.2%', '84.4%', '16.1%', '19.0%', 6.2, 5.1, '正常']
+];
+
+const experimentRows = [
+  ['EXP-202608-031', '2026-08-03', '2026-08-16', '第3轮不主动报价，改为反问客户需求', 1842, 1916, '8.4%', '10.9%', '0.018', '采纳'],
+  ['EXP-202608-029', '2026-08-01', '2026-08-14', '首句加入项目适配问题，减少泛介绍', 1650, 1702, '70.8%', '74.6%', '0.041', '采纳'],
+  ['EXP-202608-027', '2026-07-28', '2026-08-10', '第5轮发送案例图替代价格表', 1398, 1420, '9.1%', '9.8%', '0.214', '继续观察'],
+  ['EXP-202608-026', '2026-07-26', '-', '含糊回复场景增加二选一追问', 1220, 1186, '7.9%', '8.6%', '0.188', '继续观察'],
+  ['EXP-202607-019', '2026-07-12', '2026-07-25', '第2轮提前发送活动链接', 1506, 1492, '8.6%', '7.5%', '0.093', '放弃']
+];
+
+const state = {
+  selectedDay: '8/17',
+  round: 3
+};
+
+function renderComparison() {
+  document.getElementById('comparisonBody').innerHTML = comparisonRows.map(row => `
+    <tr>
+      <td class="sticky-col strong">${row[0]}</td>
+      <td class="num ${row[0].includes('预约率') ? 'danger' : ''}">${row[1]}</td>
+      <td class="num">${row[2]}</td>
+      <td class="num good">${row[3]}</td>
+      <td class="num">${row[4]}</td>
+      <td class="muted">${row[5]}</td>
+    </tr>
+  `).join('');
+}
+
+function drawTrendChart() {
+  const svg = document.getElementById('conversionTrendChart');
+  const width = svg.clientWidth || 760;
+  const height = svg.clientHeight || 286;
+  const pad = { left: 42, right: 24, top: 18, bottom: 32 };
+  const innerW = width - pad.left - pad.right;
+  const innerH = height - pad.top - pad.bottom;
+  const series = [
+    { key: 1, color: '#7c6ff0', label: '纯AI' },
+    { key: 2, color: '#2f75ff', label: 'AI开口转人工' },
+    { key: 3, color: '#14a879', label: '纯人工' },
+    { key: 4, color: '#f59e0b', label: '大盘' }
+  ];
+  const allValues = trendData.flatMap(item => item.slice(1));
+  const min = Math.min(...allValues) - 0.8;
+  const max = Math.max(...allValues) + 0.8;
+  const x = index => pad.left + (innerW / (trendData.length - 1)) * index;
+  const y = value => pad.top + innerH - ((value - min) / Math.max(max - min, 1)) * innerH;
+  const grid = Array.from({ length: 5 }, (_, index) => {
+    const gy = pad.top + (innerH / 4) * index;
+    return `<line x1="${pad.left}" y1="${gy}" x2="${width - pad.right}" y2="${gy}" stroke="#edf1f6" stroke-width="1"/>`;
+  }).join('');
+  const labels = trendData.map((item, index) => {
+    if (index % 5 !== 0 && index !== trendData.length - 1) return '';
+    return `<text x="${x(index)}" y="${height - 10}" text-anchor="middle" fill="#7b8494" font-size="11" font-weight="650">${item[0]}</text>`;
+  }).join('');
+  const lines = series.map(item => {
+    const path = trendData.map((row, index) => `${index === 0 ? 'M' : 'L'}${x(index).toFixed(1)},${y(row[item.key]).toFixed(1)}`).join(' ');
+    return `<path d="${path}" fill="none" stroke="${item.color}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>`;
+  }).join('');
+  const points = trendData.map((row, index) => `
+    <circle cx="${x(index)}" cy="${y(row[1])}" r="${row[0] === state.selectedDay ? 5 : 3}" fill="#7c6ff0" stroke="#fff" stroke-width="2" data-day="${row[0]}" style="cursor:pointer"/>
+  `).join('');
+  svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+  svg.innerHTML = `
+    <rect x="0" y="0" width="${width}" height="${height}" fill="#fff"/>
+    ${grid}
+    <line x1="${pad.left}" y1="${height - pad.bottom}" x2="${width - pad.right}" y2="${height - pad.bottom}" stroke="#d8e0eb" stroke-width="1"/>
+    <text x="${pad.left - 8}" y="${pad.top + 8}" text-anchor="end" fill="#7b8494" font-size="11">高</text>
+    <text x="${pad.left - 8}" y="${height - pad.bottom}" text-anchor="end" fill="#7b8494" font-size="11">低</text>
+    ${lines}
+    ${points}
+    ${labels}
+  `;
+  svg.querySelectorAll('circle[data-day]').forEach(dot => {
+    dot.addEventListener('click', () => selectDay(dot.getAttribute('data-day')));
+  });
+}
+
+function badge(value) {
+  if (value === '是' || value === '采纳' || value === '正常' || value === '已标注') return `<span class="badge good">${value}</span>`;
+  if (value === '否' || value === '放弃' || value === '需排查' || value === '是') return `<span class="badge bad">${value}</span>`;
+  if (value === '继续观察' || value === '观察中' || value === '待复盘') return `<span class="badge warn">${value}</span>`;
+  return `<span class="badge neutral">${value}</span>`;
+}
+
+function renderConversations() {
+  const rows = conversationsByDay[state.selectedDay] || conversationsByDay.default;
+  const dayText = state.selectedDay.includes('/') ? `2026-${state.selectedDay.split('/').map(part => part.padStart(2, '0')).join('-')}` : state.selectedDay;
+  document.getElementById('selectedDayLabel').textContent = `当前下钻日：${dayText}`;
+  document.getElementById('conversationBody').innerHTML = rows.map(row => `
+    <tr>
+      <td class="sticky-col strong">${row[0]}</td>
+      <td>${row[1]}</td>
+      <td>${row[2]}</td>
+      <td>${row[3]}</td>
+      <td>${row[4]}</td>
+      <td class="num">${row[5]}</td>
+      <td>${badge(row[6])}</td>
+      <td>${badge(row[7])}</td>
+      <td class="num">${row[8]}</td>
+      <td class="num ${row[9] !== '-' && row[9] <= 3 ? 'danger' : ''}">${row[9]}</td>
+    </tr>
+  `).join('');
+}
+
+function renderFunnel(id, values, color, sample) {
+  document.getElementById(id).innerHTML = funnelStages.map((stage, index) => `
+    <div class="funnel-row">
+      <div class="funnel-stage">${stage}</div>
+      <div class="funnel-bar"><div class="funnel-fill" style="width:${values[index]}%;background:${color}">${Math.round(sample * values[index] / 100)}</div></div>
+      <div class="funnel-rate">${values[index]}%</div>
+    </div>
+  `).join('');
+}
+
+function renderLossRows() {
+  document.getElementById('lossBody').innerHTML = lossRows.map(row => `
+    <tr>
+      <td class="sticky-col strong">${row[0]}</td>
+      <td>${row[1]}</td>
+      <td class="num ${row[2] <= 3 ? 'danger' : row[2] <= 5 ? 'warn' : ''}">${row[2]}</td>
+      <td>${row[3] || '<span class="muted">未标注</span>'}</td>
+      <td>${badge(row[4])}</td>
+    </tr>
+  `).join('');
+}
+
+function renderRoundTabs() {
+  document.getElementById('roundTabs').innerHTML = [3, 4, 5].map(round => `
+    <button class="round-tab ${state.round === round ? 'active' : ''}" type="button" onclick="selectRound(${round})">第${round}轮</button>
+  `).join('');
+}
+
+function renderRoundBehavior() {
+  const data = roundBehavior[state.round];
+  document.getElementById('roundBehaviorBody').innerHTML = data.rows.map(row => `
+    <tr>
+      <td class="sticky-col strong">${row[0]}</td>
+      <td class="num ${row[1].includes('%') && parseFloat(row[1]) > 50 ? 'warn' : ''}">${row[1]}</td>
+      <td class="num good">${row[2]}</td>
+      <td class="muted">${row[3]}</td>
+    </tr>
+  `).join('');
+  document.getElementById('roundFinding').textContent = data.finding;
+  document.getElementById('roundAction').textContent = data.action;
+}
+
+function drawDonut() {
+  const svg = document.getElementById('intentDonut');
+  const total = intentDistribution.reduce((sum, item) => sum + item[1], 0);
+  const cx = 120;
+  const cy = 120;
+  const r = 88;
+  const stroke = 28;
+  const circumference = 2 * Math.PI * r;
+  let offset = 0;
+  const circles = intentDistribution.map(item => {
+    const length = circumference * (item[1] / total);
+    const node = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${item[2]}" stroke-width="${stroke}" stroke-dasharray="${length} ${circumference - length}" stroke-dashoffset="${-offset}" transform="rotate(-90 ${cx} ${cy})"/>`;
+    offset += length;
+    return node;
+  }).join('');
+  svg.setAttribute('viewBox', '0 0 240 240');
+  svg.innerHTML = `
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#eef2f7" stroke-width="${stroke}"/>
+    ${circles}
+    <circle cx="${cx}" cy="${cy}" r="60" fill="#fff"/>
+  `;
+  document.getElementById('intentLegend').innerHTML = intentDistribution.map(item => `
+    <div class="intent-legend-item" style="color:${item[2]}"><span class="legend-dot"></span><span>${item[0]} ${item[1]}%</span></div>
+  `).join('');
+}
+
+function renderIntentRows() {
+  document.getElementById('intentBody').innerHTML = intentRows.map(row => `
+    <tr>
+      <td class="sticky-col strong">${row[0]}</td>
+      <td class="num">${row[1]}</td>
+      <td>${row[2]}</td>
+      <td>${row[3]}</td>
+      <td>${row[4]}</td>
+      <td>${badge(row[5])}</td>
+      <td>${row[6]}</td>
+      <td>${row[7] === '是' ? '<span class="badge bad">是</span>' : '<span class="badge good">否</span>'}</td>
+    </tr>
+  `).join('');
+}
+
+function renderEmployees() {
+  document.getElementById('employeeBody').innerHTML = employeeRows.map(row => {
+    const aiRate = parseFloat(row[6]);
+    const naturalRate = parseFloat(row[7]);
+    const gap = aiRate - naturalRate;
+    const gapClass = gap < -6 ? 'danger' : gap < -3 ? 'warn' : 'good';
+    return `
+      <tr>
+        <td class="sticky-col strong">${row[0]}</td>
+        <td>${row[1]}</td>
+        <td class="num">${row[2]}</td>
+        <td class="num">${row[3]}</td>
+        <td class="num">${row[4]}</td>
+        <td class="num">${row[5]}</td>
+        <td class="num ${gapClass}">${row[6]}</td>
+        <td class="num">${row[7]}</td>
+        <td class="num ${row[8] > row[9] + 1 ? 'warn' : ''}">${row[8]}</td>
+        <td class="num">${row[9]}</td>
+        <td>${badge(row[10])}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function renderExperiments() {
+  document.getElementById('experimentBody').innerHTML = experimentRows.map(row => {
+    const p = parseFloat(row[8]);
+    const pClass = p < 0.05 ? 'good' : p < 0.1 ? 'warn' : 'muted';
+    return `
+      <tr>
+        <td class="sticky-col strong">${row[0]}</td>
+        <td>${row[1]}</td>
+        <td>${row[2]}</td>
+        <td>${row[3]}</td>
+        <td class="num">${row[4]}</td>
+        <td class="num">${row[5]}</td>
+        <td class="num">${row[6]}</td>
+        <td class="num ${parseFloat(row[7]) > parseFloat(row[6]) ? 'good' : 'danger'}">${row[7]}</td>
+        <td class="num ${pClass}">${row[8]}</td>
+        <td>${badge(row[9])}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function selectDay(day) {
+  state.selectedDay = day;
+  drawTrendChart();
+  renderConversations();
+}
+
+function selectRound(round) {
+  state.round = round;
+  renderRoundTabs();
+  renderRoundBehavior();
+}
+
+function setRange(key) {
+  document.querySelectorAll('.seg-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.range === key));
+  if (key === '7') {
+    document.getElementById('startDate').value = '2026-08-11';
+    document.getElementById('endDate').value = '2026-08-17';
+  } else if (key === 'month') {
+    document.getElementById('startDate').value = '2026-08-01';
+    document.getElementById('endDate').value = '2026-08-17';
+  } else {
+    document.getElementById('startDate').value = '2026-07-19';
+    document.getElementById('endDate').value = '2026-08-17';
+  }
+}
+
+function init() {
+  renderComparison();
+  drawTrendChart();
+  renderConversations();
+  renderFunnel('aiFunnel', aiFunnelValues, '#7c6ff0', 1286);
+  renderFunnel('humanFunnel', humanFunnelValues, '#14a879', 2408);
+  renderLossRows();
+  renderRoundTabs();
+  renderRoundBehavior();
+  drawDonut();
+  renderIntentRows();
+  renderEmployees();
+  renderExperiments();
+  window.addEventListener('resize', drawTrendChart);
+}
+
+init();
+</script>
+</body>
+</html>

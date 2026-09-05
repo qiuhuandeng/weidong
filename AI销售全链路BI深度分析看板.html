@@ -1,0 +1,4867 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI销售全链路BI深度分析看板</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --panel: #ffffff;
+      --head: #f8fafc;
+      --line: #e5eaf2;
+      --line-strong: #d4dce9;
+      --text: #172033;
+      --muted: #647084;
+      --soft: #98a2b3;
+      --blue: #2f75ff;
+      --blue-strong: #1f5fd6;
+      --blue-soft: #edf4ff;
+      --green: #14a879;
+      --green-soft: #eaf8f3;
+      --orange: #f59e0b;
+      --orange-soft: #fff7e8;
+      --red: #df3f3f;
+      --red-soft: #fff0f0;
+      --cyan: #0ea5b7;
+      --cyan-soft: #e9f8fb;
+      --purple: #7c6ff0;
+      --purple-soft: #f1efff;
+      --shadow: 0 8px 24px rgba(23, 32, 51, 0.05);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { min-height: 100%; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      letter-spacing: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+    svg { display: block; }
+
+    .app-shell {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .topbar {
+      min-height: 58px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 0 24px;
+      background: #fff;
+      border-bottom: 1px solid var(--line);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+    .brand-mark {
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+      background: linear-gradient(135deg, #2f75ff, #14a879 72%);
+      position: relative;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.42);
+      flex: 0 0 auto;
+    }
+    .brand-mark::before,
+    .brand-mark::after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.9);
+    }
+    .brand-mark::before {
+      width: 6px;
+      height: 6px;
+      left: 7px;
+      top: 7px;
+    }
+    .brand-mark::after {
+      width: 11px;
+      height: 11px;
+      right: 6px;
+      bottom: 6px;
+      box-shadow: -8px 5px 0 -3px rgba(255,255,255,0.9);
+    }
+    .brand h1 {
+      color: #1b2332;
+      font-size: 16px;
+      font-weight: 850;
+      white-space: nowrap;
+    }
+    .page-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 0 3px rgba(20,168,121,0.13);
+    }
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .icon-btn,
+    .text-btn {
+      height: 30px;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: #394150;
+      border-radius: 5px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 0 10px;
+      font-size: 12px;
+      font-weight: 750;
+      transition: color .15s, border-color .15s, background .15s;
+    }
+    .icon-btn { width: 30px; padding: 0; }
+    .icon-btn svg,
+    .text-btn svg { width: 15px; height: 15px; stroke: currentColor; }
+    .icon-btn:hover,
+    .text-btn:hover {
+      color: var(--blue-strong);
+      border-color: #b9cffc;
+      background: #f8fbff;
+    }
+    .text-btn:disabled,
+    .icon-btn:disabled {
+      color: var(--soft);
+      background: #f8fafc;
+      cursor: not-allowed;
+    }
+
+    .workspace {
+      padding: 16px 20px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .filter-panel,
+    .section-panel,
+    .insight-strip {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+    .filter-panel {
+      min-height: 52px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+    }
+    .filter-left,
+    .filter-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .filter-label {
+      color: #303846;
+      font-size: 13px;
+      font-weight: 850;
+      margin-right: 2px;
+    }
+    .segmented,
+    .round-tabs {
+      display: inline-flex;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      overflow: hidden;
+      background: #fff;
+    }
+    .seg-btn,
+    .round-tab {
+      height: 28px;
+      min-width: 74px;
+      border: 0;
+      border-right: 1px solid var(--line);
+      background: #fff;
+      color: #4b5563;
+      padding: 0 12px;
+      font-size: 12px;
+      font-weight: 750;
+    }
+    .round-tab { min-width: 82px; font-weight: 800; }
+    .seg-btn:last-child,
+    .round-tab:last-child { border-right: 0; }
+    .seg-btn.active,
+    .round-tab.active {
+      color: var(--blue-strong);
+      background: var(--blue-soft);
+    }
+    .select-control,
+    .date-range {
+      height: 30px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      color: #293241;
+      padding: 0 10px;
+      font-size: 12px;
+      font-weight: 650;
+      outline: none;
+    }
+    .date-range {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .date-range input {
+      width: 94px;
+      border: 0;
+      outline: 0;
+      color: inherit;
+      background: transparent;
+      font-weight: inherit;
+    }
+    .pill {
+      height: 24px;
+      display: inline-flex;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+      color: #4a5568;
+      padding: 0 9px;
+      font-size: 11px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .pill.blue { color: var(--blue-strong); background: var(--blue-soft); border-color: #c9dcff; }
+    .pill.green { color: #0c8f68; background: var(--green-soft); border-color: #c5eadf; }
+    .pill.orange { color: #a06403; background: var(--orange-soft); border-color: #fde4b8; }
+    .pill.red { color: #cc3434; background: var(--red-soft); border-color: #ffd4d4; }
+
+    .main-tabs-panel {
+      min-height: 54px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 7px 12px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      overflow-x: auto;
+    }
+    .main-tabs {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-width: max-content;
+    }
+    .main-tab {
+      height: 40px;
+      min-width: 92px;
+      border: 0;
+      border-radius: 7px;
+      background: transparent;
+      color: #31405a;
+      padding: 0 18px;
+      font-size: 13px;
+      font-weight: 850;
+      transition: color .15s, background .15s, box-shadow .15s;
+    }
+    .main-tab:hover {
+      color: var(--blue-strong);
+      background: #f5f8ff;
+    }
+    .main-tab.active {
+      color: #1f3f9d;
+      background: #dfe7ff;
+      box-shadow: inset 0 0 0 1px rgba(47, 117, 255, 0.08);
+    }
+    [data-tab-panel][hidden] {
+      display: none !important;
+    }
+
+    .insight-strip {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      overflow: hidden;
+    }
+    .insight-card {
+      min-height: 112px;
+      padding: 16px 16px 14px;
+      border-right: 1px solid var(--line);
+      background: #fff;
+    }
+    .insight-card:last-child { border-right: 0; }
+    .insight-label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .insight-value {
+      margin-top: 10px;
+      color: #0f172a;
+      font-size: 28px;
+      line-height: 1;
+      font-weight: 900;
+    }
+    .insight-note {
+      margin-top: 9px;
+      color: var(--soft);
+      font-size: 11px;
+      line-height: 1.45;
+      display: none;
+    }
+    .good { color: var(--green) !important; }
+    .warn { color: #b77904 !important; }
+    .danger { color: var(--red) !important; }
+    .blue-text { color: var(--blue-strong) !important; }
+
+    .section-panel {
+      overflow: visible;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      background: transparent;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+    }
+    .section-panel > .panel-head,
+    .section-panel > .summary-line,
+    .section-panel > .split-grid,
+    .section-panel > .same-day-attribution-card,
+    .section-panel > .benchmark-grid,
+    .section-panel > .mirror-funnel-card,
+    .section-panel > .drill-head,
+    .section-panel > .funnel-grid,
+    .section-panel > .attempt-grid,
+    .section-panel > .metric-strip,
+    .section-panel > .analysis-grid,
+    .section-panel > .node-grid,
+    .section-panel > .table-wrap,
+    .section-panel > .table-pagination,
+    .section-panel > .section-foot {
+      overflow: hidden;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+    .panel-head {
+      min-height: 46px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 0 14px 0 16px;
+      border-bottom: 1px solid var(--line);
+      background: #fff;
+    }
+    .section-panel > .panel-head {
+      margin-bottom: -12px;
+      border-bottom: 0;
+      border-radius: 8px 8px 0 0;
+      box-shadow: none;
+    }
+    .section-panel > .panel-head + .summary-line,
+    .section-panel > .panel-head + .split-grid,
+    .section-panel > .panel-head + .benchmark-grid,
+    .section-panel > .panel-head + .drill-head,
+    .section-panel > .panel-head + .metric-strip,
+    .section-panel > .panel-head + .node-grid,
+    .section-panel > .panel-head + .table-wrap {
+      border-top: 0;
+      border-radius: 0 0 8px 8px;
+    }
+    .section-panel > .panel-head + .summary-line {
+      margin-bottom: -12px;
+      border-bottom: 0;
+      border-radius: 0;
+      box-shadow: none;
+    }
+    .section-panel > .panel-head + .drill-head {
+      border-radius: 0;
+      box-shadow: none;
+    }
+    .section-panel > .summary-line + .split-grid,
+    .section-panel > .summary-line + .same-day-attribution-card,
+    .section-panel > .summary-line + .benchmark-grid,
+    .section-panel > .summary-line + .mirror-funnel-card {
+      border-top: 0;
+      border-radius: 0 0 8px 8px;
+    }
+    .panel-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #1f2633;
+      font-size: 14px;
+      font-weight: 850;
+      white-space: nowrap;
+    }
+    .panel-title::before {
+      content: "";
+      width: 3px;
+      height: 14px;
+      border-radius: 2px;
+      background: var(--blue);
+    }
+    .panel-subtitle,
+    .panel-actions {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 550;
+    }
+    .panel-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      font-size: 0;
+    }
+    .panel-actions .select-control,
+    .panel-actions .round-tab,
+    .panel-actions .pill { font-size: 12px; }
+    [data-tab-panel="conversion"] > .panel-head .panel-actions span { font-size: 12px; }
+    .panel-subtitle,
+    .bar-panel-sub,
+    .funnel-title span { display: none !important; }
+
+    .split-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 0.96fr) minmax(0, 1.04fr);
+      gap: 0;
+    }
+    .compare-table-wrap,
+    .trend-wrap {
+      min-height: 360px;
+    }
+    .compare-table-wrap {
+      border-right: 1px solid var(--line);
+      overflow-x: auto;
+    }
+    .trend-wrap {
+      padding: 16px 18px 12px;
+      min-width: 0;
+    }
+    .table-wrap {
+      overflow-x: auto;
+      position: relative;
+    }
+    .section-panel > .source-detail-wrap {
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+    }
+    table {
+      width: 100%;
+      min-width: 1040px;
+      border-collapse: separate;
+      border-spacing: 0;
+      color: #27303f;
+      font-size: 12px;
+    }
+    .compare-table { min-width: 680px; }
+    .source-detail-table {
+      min-width: 1680px;
+    }
+    .sop-summary-table {
+      min-width: 1120px;
+    }
+    .sop-node-table {
+      min-width: 1260px;
+      table-layout: fixed;
+    }
+    .conversion-wide-table {
+      min-width: 1280px;
+      table-layout: fixed;
+    }
+    .loss-customer-table {
+      min-width: 1740px;
+      table-layout: fixed;
+    }
+    .same-day-detail-table {
+      min-width: 920px;
+      table-layout: fixed;
+    }
+    .same-day-detail-table th:nth-child(1),
+    .same-day-detail-table td:nth-child(1) { width: 11%; }
+    .same-day-detail-table th:nth-child(2),
+    .same-day-detail-table td:nth-child(2) { width: 27%; }
+    .same-day-detail-table th:nth-child(3),
+    .same-day-detail-table td:nth-child(3) { width: 22%; }
+    .same-day-detail-table th:nth-child(4),
+    .same-day-detail-table td:nth-child(4) { width: 14%; }
+    .same-day-detail-table th:nth-child(5),
+    .same-day-detail-table td:nth-child(5) { width: 16%; }
+    .same-day-detail-table th:nth-child(6),
+    .same-day-detail-table td:nth-child(6) {
+      width: 10%;
+      text-align: center;
+    }
+    .strategy-full-link-table {
+      min-width: 1000px;
+      table-layout: fixed;
+    }
+    .strategy-full-link-table th:nth-child(1),
+    .strategy-full-link-table td:nth-child(1) { width: 12%; }
+    .strategy-full-link-table th:nth-child(2),
+    .strategy-full-link-table td:nth-child(2) { width: 30%; }
+    .strategy-full-link-table th:nth-child(3),
+    .strategy-full-link-table td:nth-child(3) { width: 10%; }
+    .strategy-full-link-table th:nth-child(n+4),
+    .strategy-full-link-table td:nth-child(n+4) {
+      width: 8%;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+    .sop-node-table th:nth-child(1),
+    .sop-node-table td:nth-child(1) { width: 10%; }
+    .sop-node-table th:nth-child(2),
+    .sop-node-table td:nth-child(2) { width: 18%; }
+    .sop-node-table th:nth-child(3),
+    .sop-node-table td:nth-child(3) { width: 15%; }
+    .sop-node-table th:nth-child(4),
+    .sop-node-table td:nth-child(4) { width: 17%; }
+    .sop-node-table th:nth-child(n+5):nth-child(-n+10),
+    .sop-node-table td:nth-child(n+5):nth-child(-n+10) {
+      width: 7%;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+    .sop-node-table th:nth-child(11),
+    .sop-node-table td:nth-child(11) {
+      width: 8%;
+      text-align: center;
+    }
+    .conversion-wide-table th,
+    .conversion-wide-table td,
+    .loss-customer-table th,
+    .loss-customer-table td {
+      white-space: normal;
+      line-height: 1.45;
+      vertical-align: middle;
+    }
+    .conversion-wide-table .num,
+    .loss-customer-table .num {
+      white-space: nowrap;
+    }
+    th {
+      height: 40px;
+      padding: 8px 10px;
+      background: var(--head);
+      color: #303846;
+      text-align: left;
+      font-weight: 850;
+      white-space: nowrap;
+      border-bottom: 1px solid var(--line);
+    }
+    td {
+      height: 42px;
+      padding: 8px 10px;
+      white-space: nowrap;
+      border-bottom: 1px solid #eef2f7;
+      background: #fff;
+      font-weight: 550;
+    }
+    tbody tr:nth-child(even) td { background: #f9fbfe; }
+    tbody tr:hover td { background: #eef5ff; }
+    .num { text-align: right; font-variant-numeric: tabular-nums; }
+    .source-detail-table thead tr:first-child th[colspan] {
+      text-align: center;
+      border-left: 1px solid var(--line);
+      border-right: 1px solid var(--line);
+    }
+    .source-detail-table thead tr:nth-child(2) th:nth-child(1),
+    .source-detail-table thead tr:nth-child(2) th:nth-child(6),
+    .source-detail-table thead tr:nth-child(2) th:nth-child(11),
+    .source-detail-table thead tr:nth-child(2) th:nth-child(16),
+    .source-detail-table tbody td:nth-child(3),
+    .source-detail-table tbody td:nth-child(8),
+    .source-detail-table tbody td:nth-child(13),
+    .source-detail-table tbody td:nth-child(18) {
+      border-left: 1px solid var(--line);
+    }
+    .source-detail-table thead tr:nth-child(2) th:nth-child(5),
+    .source-detail-table thead tr:nth-child(2) th:nth-child(10),
+    .source-detail-table thead tr:nth-child(2) th:nth-child(15),
+    .source-detail-table thead tr:nth-child(2) th:nth-child(20),
+    .source-detail-table tbody td:nth-child(7),
+    .source-detail-table tbody td:nth-child(12),
+    .source-detail-table tbody td:nth-child(17),
+    .source-detail-table tbody td:nth-child(22) {
+      border-right: 1px solid var(--line);
+    }
+    .strong { color: #111827; font-weight: 850; }
+    .muted { color: var(--muted); }
+    .sticky-col {
+      position: sticky;
+      left: 0;
+      z-index: 5;
+      box-shadow: 8px 0 12px -12px rgba(15, 23, 42, 0.35);
+    }
+    thead .sticky-col { z-index: 8; background: var(--head); }
+    tbody tr:nth-child(even) .sticky-col { background: #f9fbfe; }
+    tbody tr:hover .sticky-col { background: #eef5ff; }
+    .badge {
+      height: 22px;
+      display: inline-flex;
+      align-items: center;
+      border-radius: 12px;
+      padding: 0 8px;
+      font-size: 11px;
+      font-weight: 850;
+      white-space: nowrap;
+    }
+    .badge.good { color: #0c8f68; background: var(--green-soft); }
+    .badge.warn { color: #a06403; background: var(--orange-soft); }
+    .badge.watch { color: #a06403; background: var(--orange-soft); }
+    .badge.bad { color: #cc3434; background: var(--red-soft); }
+    .badge.neutral { color: #566176; background: #eef2f7; }
+    .badge.blue { color: var(--blue-strong); background: var(--blue-soft); }
+
+    .drill-head {
+      min-height: 42px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      background: #fbfcff;
+    }
+    .section-panel > .drill-head {
+      margin-bottom: -12px;
+      border-bottom: 0;
+      border-radius: 8px 8px 0 0;
+      box-shadow: none;
+    }
+    .section-panel > .drill-head + .table-wrap,
+    .section-panel > .drill-head + .funnel-grid,
+    .section-panel > .drill-head + .attempt-grid,
+    .section-panel > .drill-head + .analysis-grid {
+      border-top: 0;
+      border-radius: 0 0 8px 8px;
+    }
+    .section-panel > .table-wrap + .table-pagination {
+      margin-top: -12px;
+      border-top: 0;
+      border-radius: 0 0 8px 8px;
+      box-shadow: none;
+    }
+    .drill-title {
+      color: #293241;
+      font-size: 13px;
+      font-weight: 850;
+    }
+    .summary-line {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--line);
+      background: #fbfcff;
+      color: #293241;
+      font-size: 13px;
+      line-height: 1.55;
+      font-weight: 650;
+    }
+    .summary-line b {
+      color: #172033;
+      font-weight: 900;
+    }
+
+    .same-day-attribution-card {
+      padding: 12px;
+      background: #fff;
+    }
+    .same-day-attribution-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .same-day-card {
+      min-width: 0;
+      padding: 16px;
+      background: #fbfcff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+    .same-day-card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .same-day-card-title {
+      color: #172033;
+      font-size: 13px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+    .sop-performance-list {
+      display: grid;
+      gap: 12px;
+    }
+    .sop-performance-row {
+      display: grid;
+      grid-template-columns: 142px minmax(0, 1fr) 72px;
+      align-items: center;
+      gap: 12px;
+    }
+    .sop-performance-name {
+      color: #172033;
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .sop-performance-meta {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.35;
+      font-weight: 650;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .sop-performance-track {
+      height: 18px;
+      border-radius: 5px;
+      background: #edf2f8;
+      overflow: hidden;
+      position: relative;
+    }
+    .sop-performance-fill {
+      height: 100%;
+      min-width: 2px;
+      border-radius: inherit;
+      background: var(--blue);
+    }
+    .sop-performance-fill.green { background: var(--green); }
+    .sop-performance-fill.orange { background: var(--orange); }
+    .sop-performance-fill.red { background: var(--red); }
+    .sop-performance-kpis {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+    .sop-performance-kpis strong {
+      display: block;
+      margin-top: 3px;
+      color: #172033;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .sop-heatmap {
+      display: grid;
+      gap: 7px;
+    }
+    .heatmap-row {
+      display: grid;
+      grid-template-columns: 122px repeat(5, minmax(44px, 1fr));
+      align-items: center;
+      gap: 6px;
+    }
+    .heatmap-row.header {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .heatmap-sop {
+      color: #172033;
+      font-size: 11px;
+      font-weight: 900;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .heatmap-cell {
+      height: 34px;
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #172033;
+      font-size: 11px;
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+      background: #eef2f7;
+    }
+    .heatmap-cell.level-hot { color: #fff; background: var(--green); }
+    .heatmap-cell.level-good { color: #075f46; background: #9de3ce; }
+    .heatmap-cell.level-mid { background: #dfe7ff; color: #1f3f9d; }
+    .heatmap-cell.level-low { color: #8a5a00; background: #fff0cb; }
+    .heatmap-cell.level-risk { color: #b42323; background: #ffe0e0; }
+    .window-chart {
+      min-height: 228px;
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      align-items: end;
+      gap: 12px;
+      padding-top: 8px;
+    }
+    .window-column {
+      min-width: 0;
+      display: grid;
+      grid-template-rows: 148px auto;
+      gap: 9px;
+    }
+    .window-bar-box {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      border-bottom: 1px solid var(--line);
+    }
+    .window-bar {
+      width: min(100%, 44px);
+      min-height: 6px;
+      border-radius: 5px 5px 0 0;
+      background: var(--blue);
+    }
+    .window-bar.green { background: var(--green); }
+    .window-bar.orange { background: var(--orange); }
+    .window-bar.red { background: var(--red); }
+    .window-label {
+      color: #172033;
+      font-size: 11px;
+      line-height: 1.35;
+      font-weight: 850;
+      text-align: center;
+      min-height: 48px;
+    }
+    .window-label strong {
+      display: block;
+      color: #0f172a;
+      font-size: 12px;
+      line-height: 1.2;
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+    }
+    .window-label span {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 650;
+    }
+
+    .sentence-efficiency {
+      display: grid;
+      gap: 11px;
+    }
+    .sentence-row {
+      display: grid;
+      grid-template-columns: 72px minmax(0, 1fr) 88px;
+      align-items: center;
+      gap: 12px;
+    }
+    .sentence-name {
+      color: #172033;
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+    .sentence-bars {
+      display: grid;
+      gap: 5px;
+    }
+    .sentence-track {
+      height: 11px;
+      border-radius: 5px;
+      background: #edf2f8;
+      overflow: hidden;
+    }
+    .sentence-fill {
+      height: 100%;
+      min-width: 2px;
+      border-radius: inherit;
+      background: var(--green);
+    }
+    .sentence-fill.risk { background: var(--red); }
+    .sentence-kpi {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.45;
+      font-weight: 850;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+    .sentence-kpi strong {
+      color: #172033;
+      font-weight: 900;
+    }
+
+    .funnel-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 330px;
+      gap: 0;
+    }
+    .funnel-grid.two {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    }
+    .funnel-panel {
+      min-height: 430px;
+      padding: 16px;
+      border-right: 1px solid var(--line);
+      background: #fff;
+    }
+    .funnel-panel:last-child { border-right: 0; }
+    .benchmark-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      background: #fff;
+    }
+    .mirror-funnel-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .mirror-funnel-grid .mirror-funnel-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+    .benchmark-card {
+      min-height: 322px;
+      padding: 18px 20px 20px;
+      border-right: 1px solid var(--line);
+    }
+    .benchmark-card:last-child { border-right: 0; }
+    .benchmark-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .benchmark-title {
+      color: #293241;
+      font-size: 13px;
+      font-weight: 850;
+    }
+    .benchmark-legend {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+    }
+    .legend-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      white-space: nowrap;
+    }
+    .legend-chip::before {
+      content: "";
+      width: 18px;
+      height: 7px;
+      border-radius: 4px;
+      background: var(--blue);
+    }
+    .legend-chip.top::before { background: var(--green); }
+    .benchmark-list {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .benchmark-row {
+      display: grid;
+      grid-template-columns: 104px minmax(0, 1fr) 66px;
+      align-items: center;
+      gap: 14px;
+    }
+    .benchmark-row-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .benchmark-name {
+      color: #172033;
+      font-size: 13px;
+      font-weight: 850;
+    }
+    .benchmark-diff {
+      font-size: 12px;
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+    }
+    .paired-bars {
+      display: grid;
+      gap: 6px;
+    }
+    .paired-line {
+      display: grid;
+      grid-template-columns: 64px minmax(0, 1fr) 74px;
+      align-items: center;
+      gap: 8px;
+    }
+    .benchmark-row .paired-line {
+      grid-template-columns: minmax(0, 1fr) 74px;
+    }
+    .paired-label {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 850;
+      white-space: nowrap;
+    }
+    .paired-track {
+      height: 14px;
+      border-radius: 7px;
+      background: #edf2f8;
+      overflow: hidden;
+    }
+    .paired-fill {
+      height: 100%;
+      min-width: 2px;
+      border-radius: inherit;
+      background: var(--blue);
+    }
+    .paired-fill.top { background: var(--green); }
+    .paired-value {
+      text-align: right;
+      color: #172033;
+      font-size: 12px;
+      font-weight: 850;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+    .mirror-funnel-card {
+      padding: 16px 18px 18px;
+      background: #fff;
+      overflow: hidden;
+    }
+    .mirror-funnel-title {
+      color: #172033;
+      font-size: 14px;
+      font-weight: 900;
+      margin-bottom: 10px;
+    }
+    .mirror-funnel {
+      width: 100%;
+      min-width: 0;
+    }
+    .mirror-funnel-head,
+    .mirror-funnel-row {
+      display: grid;
+      grid-template-columns: 78px 42px minmax(0, 1fr) 12px minmax(0, 1fr) 42px;
+      align-items: center;
+      column-gap: 0;
+    }
+    .mirror-funnel-head {
+      height: 22px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 850;
+    }
+    .mirror-head-left { text-align: right; padding-right: 12px; }
+    .mirror-head-right { text-align: left; padding-left: 12px; }
+    .mirror-funnel-body {
+      display: grid;
+      gap: 7px;
+    }
+    .mirror-funnel-row {
+      min-height: 28px;
+    }
+    .mirror-stage-label {
+      color: #3f4b5f;
+      font-size: 11px;
+      font-weight: 850;
+      padding-right: 10px;
+      white-space: nowrap;
+      position: relative;
+    }
+    .mirror-stage-label::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 6px;
+      top: 50%;
+      height: 1px;
+      background: #e8edf4;
+      transform: translateY(-50%);
+      z-index: 0;
+    }
+    .mirror-stage-label span {
+      position: relative;
+      z-index: 1;
+      background: #fff;
+      padding-right: 6px;
+    }
+    .mirror-side {
+      height: 20px;
+      display: flex;
+      align-items: stretch;
+      min-width: 0;
+      overflow: hidden;
+      border-radius: 2px;
+      background: #eef2f7;
+    }
+    .mirror-side.left { justify-content: flex-end; }
+    .mirror-side.right { justify-content: flex-start; }
+    .mirror-value {
+      color: #172033;
+      font-size: 11px;
+      font-weight: 850;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+    .mirror-value.left {
+      padding-right: 8px;
+      text-align: right;
+    }
+    .mirror-value.right {
+      padding-left: 8px;
+      text-align: left;
+    }
+    .mirror-axis {
+      height: 20px;
+      background: linear-gradient(90deg, #f4f7fb 0%, #dbe3ee 50%, #f4f7fb 100%);
+    }
+    .mirror-segment {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      min-width: 2px;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.12);
+    }
+    .mirror-side.left .mirror-segment {
+      justify-content: flex-end;
+      padding: 0 7px 0 10px;
+    }
+    .mirror-side.right .mirror-segment {
+      justify-content: flex-start;
+      padding: 0 10px 0 7px;
+    }
+    .attempt-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      background: #fff;
+    }
+    .attempt-card {
+      min-height: 154px;
+      padding: 16px;
+      border-right: 1px solid var(--line);
+    }
+    .attempt-card:last-child { border-right: 0; }
+    .attempt-title {
+      color: #172033;
+      font-size: 14px;
+      font-weight: 900;
+      margin-bottom: 14px;
+    }
+    .attempt-metric + .attempt-metric { margin-top: 16px; }
+    .attempt-metric-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 7px;
+    }
+    .attempt-metric-name {
+      color: #445066;
+      font-size: 12px;
+      font-weight: 850;
+    }
+    .attempt-diff {
+      font-size: 11px;
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+    }
+    .attempt-lines {
+      display: grid;
+      gap: 5px;
+    }
+    .attempt-line {
+      display: grid;
+      grid-template-columns: 30px minmax(0, 1fr) 46px;
+      align-items: center;
+      gap: 6px;
+    }
+    .attempt-line .paired-track { height: 11px; }
+    .attempt-line .paired-label { font-size: 10px; }
+    .attempt-line .paired-value { font-size: 11px; }
+    .funnel-title {
+      color: #293241;
+      font-size: 13px;
+      font-weight: 850;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .funnel-title span {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .funnel-list {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+    .funnel-row {
+      display: grid;
+      grid-template-columns: 106px minmax(0, 1fr) 60px;
+      align-items: center;
+      gap: 10px;
+    }
+    .funnel-stage {
+      color: #445066;
+      font-size: 12px;
+      font-weight: 800;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .funnel-bar {
+      height: 26px;
+      border-radius: 5px;
+      background: #eef2f7;
+      overflow: hidden;
+    }
+    .funnel-fill {
+      height: 100%;
+      min-width: 2px;
+      border-radius: inherit;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      color: #fff;
+      padding-right: 7px;
+      font-size: 11px;
+      font-weight: 850;
+    }
+    .funnel-rate {
+      text-align: right;
+      color: #172033;
+      font-size: 12px;
+      font-weight: 850;
+    }
+    .compare-funnel-list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .compare-funnel-row {
+      display: grid;
+      grid-template-columns: 92px minmax(0, 1fr) 112px;
+      align-items: center;
+      gap: 10px;
+    }
+    .compare-funnel-bars {
+      display: grid;
+      gap: 5px;
+    }
+    .compare-track {
+      height: 13px;
+      border-radius: 5px;
+      background: #eef2f7;
+      overflow: hidden;
+    }
+    .compare-fill {
+      height: 100%;
+      min-width: 2px;
+      border-radius: inherit;
+    }
+    .compare-rate {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.55;
+      font-weight: 800;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+    .diagnosis-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcff;
+      padding: 12px;
+      margin-bottom: 10px;
+    }
+    .diagnosis-label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .diagnosis-value {
+      margin-top: 7px;
+      color: #0f172a;
+      font-size: 24px;
+      line-height: 1;
+      font-weight: 900;
+    }
+    .diagnosis-note {
+      margin-top: 8px;
+      color: var(--soft);
+      font-size: 11px;
+      line-height: 1.45;
+    }
+
+    .metric-strip {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      background: #fff;
+    }
+    .metric-card {
+      min-height: 116px;
+      padding: 14px 14px 12px;
+      border-right: 1px solid var(--line);
+    }
+    .metric-card:last-child { border-right: 0; }
+    #followupMetrics {
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
+    #followupMetrics .metric-card {
+      min-height: 104px;
+      padding: 12px 12px 10px;
+    }
+    #followupMetrics .metric-value {
+      font-size: 24px;
+    }
+    .metric-label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .metric-value {
+      margin-top: 9px;
+      color: #0f172a;
+      font-size: 25px;
+      line-height: 1;
+      font-weight: 900;
+    }
+    .metric-change {
+      margin-top: 7px;
+      font-size: 11px;
+      font-weight: 850;
+    }
+    .metric-note {
+      margin-top: 7px;
+      color: var(--soft);
+      font-size: 11px;
+      line-height: 1.45;
+      display: none;
+    }
+
+    .conversion-path {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      overflow: hidden;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+    .path-card {
+      min-height: 118px;
+      padding: 14px 14px 12px;
+      border-right: 1px solid var(--line);
+      background: #fff;
+    }
+    .path-card:last-child { border-right: 0; }
+    .path-index {
+      width: 24px;
+      height: 24px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--blue-soft);
+      color: var(--blue-strong);
+      font-size: 12px;
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+    }
+    .path-title {
+      margin-top: 10px;
+      color: #172033;
+      font-size: 13px;
+      font-weight: 900;
+    }
+    .path-text {
+      margin-top: 7px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.55;
+      font-weight: 650;
+    }
+    .conversion-focus-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 12px;
+    }
+    .conversion-focus-panel {
+      min-width: 0;
+      overflow: hidden;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+    .focus-panel-head {
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 0 16px;
+      border-bottom: 1px solid var(--line);
+      background: #fff;
+    }
+    .focus-panel-body {
+      min-height: 364px;
+      padding: 22px 24px 24px;
+      background: #fff;
+    }
+    .conversion-focus-panel .bar-panel-sub {
+      display: block !important;
+      font-size: 13px;
+      font-weight: 650;
+    }
+    .conversion-focus-panel .donut-layout {
+      grid-template-columns: 260px minmax(0, 1fr);
+      min-height: 286px;
+      gap: 34px;
+      padding-top: 10px;
+    }
+    .conversion-focus-panel .donut-chart {
+      width: 236px;
+    }
+    .conversion-focus-panel .donut-hole {
+      width: 116px;
+    }
+    .conversion-focus-panel .donut-hole strong {
+      font-size: 30px;
+    }
+    .conversion-focus-panel .donut-hole span {
+      font-size: 13px;
+    }
+    .conversion-focus-panel .donut-legend {
+      gap: 15px;
+    }
+    .conversion-focus-panel .donut-legend-row {
+      grid-template-columns: 12px minmax(0, 1fr) 64px 72px;
+      gap: 10px;
+    }
+    .conversion-focus-panel .legend-dot {
+      width: 12px;
+      height: 12px;
+    }
+    .conversion-focus-panel .legend-name,
+    .conversion-focus-panel .legend-count,
+    .conversion-focus-panel .legend-value {
+      font-size: 14px;
+    }
+    .focus-bar-list {
+      gap: 18px;
+      padding-top: 18px;
+    }
+    .focus-bar-list .bar-row {
+      grid-template-columns: 96px minmax(0, 1fr) 62px;
+      gap: 16px;
+      min-height: 42px;
+    }
+    .focus-bar-list .bar-name,
+    .focus-bar-list .bar-value {
+      font-size: 13px;
+    }
+    .focus-bar-list .track {
+      height: 24px;
+      border-radius: 5px;
+    }
+
+    .analysis-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.06fr) 330px;
+      gap: 0;
+    }
+    .bar-panel {
+      padding: 16px;
+      border-right: 1px solid var(--line);
+      background: #fff;
+      min-height: 354px;
+    }
+    .bar-panel-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 12px;
+    }
+    .bar-panel-title {
+      color: #293241;
+      font-size: 13px;
+      font-weight: 850;
+    }
+    .bar-panel-sub {
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+      font-weight: 560;
+    }
+    .bar-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .bar-row {
+      display: grid;
+      grid-template-columns: 126px minmax(0, 1fr) 58px;
+      align-items: center;
+      gap: 10px;
+      min-height: 34px;
+    }
+    .bar-name {
+      color: #445066;
+      font-size: 12px;
+      font-weight: 800;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .track {
+      height: 22px;
+      position: relative;
+      border-radius: 5px;
+      background: #eef2f7;
+      overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%;
+      border-radius: inherit;
+      background: var(--blue);
+      min-width: 2px;
+    }
+    .bar-fill.green { background: var(--green); }
+    .bar-fill.orange { background: var(--orange); }
+    .bar-fill.red { background: var(--red); }
+    .bar-fill.purple { background: var(--purple); }
+    .bar-value {
+      text-align: right;
+      color: #172033;
+      font-size: 12px;
+      font-weight: 850;
+    }
+    .baseline-mark {
+      position: absolute;
+      top: -2px;
+      bottom: -2px;
+      width: 2px;
+      background: #172033;
+      opacity: .72;
+    }
+    .finding-panel {
+      padding: 16px;
+      background: #fbfcff;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .finding-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      padding: 12px;
+    }
+    .finding-label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .finding-text {
+      margin-top: 8px;
+      color: #263247;
+      font-size: 12px;
+      line-height: 1.65;
+      font-weight: 600;
+    }
+    .loss-visual-grid {
+      display: grid;
+      grid-template-columns: minmax(360px, .9fr) minmax(0, 1.1fr) 320px;
+      overflow: hidden;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+    .loss-donut-panel,
+    .loss-summary-panel {
+      min-width: 0;
+      padding: 18px;
+      border-right: 1px solid var(--line);
+      background: #fff;
+    }
+    .loss-visual-grid .bar-panel-sub {
+      display: block !important;
+    }
+    .loss-summary-panel {
+      background: #fbfcff;
+    }
+    .donut-layout {
+      display: grid;
+      grid-template-columns: 176px minmax(0, 1fr);
+      align-items: center;
+      gap: 20px;
+      min-height: 246px;
+    }
+    .donut-chart {
+      width: 176px;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.06);
+    }
+    .donut-hole {
+      width: 92px;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      align-content: center;
+      gap: 4px;
+      background: #fff;
+      box-shadow: 0 0 0 1px rgba(219, 226, 238, 0.92);
+    }
+    .donut-hole strong {
+      color: #172033;
+      font-size: 21px;
+      line-height: 1;
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+    }
+    .donut-hole span {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 850;
+    }
+    .donut-legend {
+      display: grid;
+      gap: 10px;
+    }
+    .donut-legend-row {
+      display: grid;
+      grid-template-columns: 10px minmax(0, 1fr) 54px 58px;
+      align-items: center;
+      gap: 8px;
+    }
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    .legend-name {
+      color: #344054;
+      font-size: 12px;
+      font-weight: 850;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .legend-count,
+    .legend-value {
+      color: #172033;
+      text-align: right;
+      font-size: 12px;
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+    .legend-count {
+      color: var(--muted);
+      font-weight: 750;
+    }
+    .loss-summary-list {
+      display: grid;
+      gap: 11px;
+    }
+    .loss-summary-row {
+      display: grid;
+      grid-template-columns: 92px minmax(0, 1fr) 64px;
+      align-items: center;
+      gap: 10px;
+    }
+    .loss-summary-name {
+      color: #344054;
+      font-size: 12px;
+      font-weight: 850;
+      white-space: nowrap;
+    }
+    .loss-summary-track {
+      height: 16px;
+      border-radius: 5px;
+      background: #edf2f8;
+      overflow: hidden;
+    }
+    .loss-summary-fill {
+      height: 100%;
+      min-width: 2px;
+      border-radius: inherit;
+      background: var(--red);
+    }
+    .loss-summary-value {
+      color: #172033;
+      text-align: right;
+      font-size: 12px;
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+    }
+    .reason-rank-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      overflow: hidden;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+    .reason-card {
+      min-width: 0;
+      padding: 16px;
+      border-right: 1px solid var(--line);
+      background: #fff;
+    }
+    .reason-card:last-child { border-right: 0; }
+    .reason-card-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .reason-title {
+      color: #172033;
+      font-size: 13px;
+      font-weight: 900;
+    }
+    .reason-subtitle {
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .reason-visual {
+      display: grid;
+      grid-template-columns: 118px minmax(0, 1fr);
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+    .reason-donut {
+      width: 118px;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.06);
+    }
+    .reason-donut-hole {
+      width: 62px;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      align-content: center;
+      background: #fff;
+      color: #172033;
+      font-size: 14px;
+      font-weight: 900;
+      box-shadow: 0 0 0 1px rgba(219, 226, 238, 0.92);
+    }
+    .reason-bars {
+      display: grid;
+      gap: 9px;
+    }
+    .reason-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 48px;
+      gap: 8px;
+      align-items: center;
+    }
+    .reason-name {
+      color: #344054;
+      font-size: 11px;
+      font-weight: 850;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .reason-track {
+      grid-column: 1 / -1;
+      height: 8px;
+      border-radius: 4px;
+      background: #edf2f8;
+      overflow: hidden;
+    }
+    .reason-fill {
+      height: 100%;
+      min-width: 2px;
+      border-radius: inherit;
+      background: var(--orange);
+    }
+    .reason-value {
+      color: #172033;
+      text-align: right;
+      font-size: 11px;
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+    .reason-actions {
+      display: grid;
+      gap: 8px;
+      padding-top: 10px;
+      border-top: 1px solid var(--line);
+    }
+    .reason-action-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 8px;
+    }
+    .reason-action-name {
+      color: #263247;
+      font-size: 11px;
+      line-height: 1.35;
+      font-weight: 750;
+    }
+    .reason-action-name b {
+      display: block;
+      color: #172033;
+      font-weight: 900;
+    }
+    .reason-action-name span {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-weight: 650;
+    }
+    .loop-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      overflow: hidden;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+    .loop-card {
+      min-height: 166px;
+      padding: 16px;
+      border-right: 1px solid var(--line);
+      background: #fff;
+    }
+    .loop-card:last-child { border-right: 0; }
+    .loop-label {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 850;
+    }
+    .loop-title {
+      margin-top: 8px;
+      color: #172033;
+      font-size: 13px;
+      font-weight: 900;
+    }
+    .loop-text {
+      margin-top: 9px;
+      color: #263247;
+      font-size: 12px;
+      line-height: 1.55;
+      font-weight: 650;
+    }
+    .strategy-chain {
+      display: block;
+      color: #263247;
+      line-height: 1.55;
+      font-weight: 650;
+    }
+    .wake-share-panel {
+      min-width: 0;
+      padding: 16px;
+      background: #fbfcff;
+      border-left: 1px solid var(--line);
+    }
+    .wake-share-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .wake-share-title {
+      color: #172033;
+      font-size: 13px;
+      font-weight: 900;
+    }
+    .wake-share-list {
+      display: grid;
+      grid-template-columns: 150px minmax(0, 1fr);
+      align-items: center;
+      gap: 18px;
+      min-height: 210px;
+    }
+    .wake-pie {
+      width: 144px;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.06);
+    }
+    .wake-pie-hole {
+      width: 74px;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      align-content: center;
+      gap: 3px;
+      background: #fff;
+      box-shadow: 0 0 0 1px rgba(219, 226, 238, 0.9);
+    }
+    .wake-pie-hole strong {
+      color: #172033;
+      font-size: 17px;
+      line-height: 1;
+      font-weight: 900;
+    }
+    .wake-pie-hole span {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 800;
+    }
+    .wake-legend {
+      display: grid;
+      gap: 10px;
+    }
+    .wake-legend-row {
+      display: grid;
+      grid-template-columns: 12px minmax(0, 1fr) 52px;
+      align-items: center;
+      gap: 8px;
+    }
+    .wake-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    .wake-share-day {
+      color: #344054;
+      font-size: 12px;
+      font-weight: 850;
+      white-space: nowrap;
+    }
+    .wake-share-value {
+      color: #172033;
+      text-align: right;
+      font-size: 12px;
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .node-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+    .node-card {
+      padding: 14px;
+      min-height: 154px;
+      border-right: 1px solid var(--line);
+      background: #fff;
+    }
+    .node-card:last-child { border-right: 0; }
+    .node-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      color: #1f2937;
+      font-size: 13px;
+      font-weight: 850;
+    }
+    .node-rate {
+      margin-top: 12px;
+      font-size: 26px;
+      font-weight: 900;
+      line-height: 1;
+    }
+    .node-meta {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.45;
+      font-weight: 650;
+    }
+    .node-health {
+      margin-top: 10px;
+      height: 8px;
+      border-radius: 4px;
+      background: #eef2f7;
+      overflow: hidden;
+    }
+    .node-health span {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      background: var(--blue);
+    }
+    .loss-round-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+    .loss-round-grid .node-card {
+      min-height: 178px;
+    }
+    .loss-round-grid .node-card:nth-child(4) {
+      border-right: 0;
+    }
+    .loss-round-detail {
+      margin-top: 9px;
+      color: #303846;
+      font-size: 12px;
+      line-height: 1.5;
+      font-weight: 650;
+    }
+    .loss-round-detail b {
+      color: #172033;
+      font-weight: 900;
+    }
+
+    .section-foot {
+      min-height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 9px 14px;
+      border-top: 1px solid var(--line);
+      background: #fbfcff;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 550;
+    }
+    .pill-list {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .table-pagination {
+      min-height: 44px;
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      background: #fbfcff;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 750;
+    }
+    .pagination-info {
+      margin-right: auto;
+      color: var(--muted);
+      font-weight: 700;
+    }
+    .pagination-btn {
+      height: 28px;
+      min-width: 28px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      color: #344054;
+      padding: 0 9px;
+      font-size: 12px;
+      font-weight: 850;
+    }
+    .pagination-btn.active {
+      color: var(--blue-strong);
+      background: var(--blue-soft);
+      border-color: #c9dcff;
+    }
+    .pagination-btn:disabled {
+      color: var(--soft);
+      background: #f4f7fb;
+      cursor: not-allowed;
+    }
+    .table-action-btn {
+      height: 26px;
+      border: 1px solid #c9dcff;
+      border-radius: 6px;
+      background: var(--blue-soft);
+      color: var(--blue-strong);
+      padding: 0 10px;
+      font-size: 12px;
+      font-weight: 850;
+      white-space: nowrap;
+    }
+    .table-action-btn:hover {
+      border-color: #9bbcff;
+      background: #e5efff;
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: rgba(15, 23, 42, 0.36);
+    }
+    .modal-backdrop[hidden] { display: none !important; }
+    .modal-panel {
+      width: min(1280px, calc(100vw - 40px));
+      max-height: min(820px, calc(100vh - 40px));
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: 0 24px 60px rgba(15, 23, 42, 0.24);
+    }
+    .modal-head {
+      min-height: 48px;
+      padding: 0 14px 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      border-bottom: 1px solid var(--line);
+      background: #fbfcff;
+    }
+    .modal-title {
+      color: #172033;
+      font-size: 14px;
+      font-weight: 900;
+    }
+    .modal-head .icon-btn {
+      font-size: 20px;
+      line-height: 1;
+    }
+    .modal-table-wrap {
+      overflow: auto;
+      box-shadow: none;
+      border: 0;
+      border-radius: 0;
+    }
+    .preview-table {
+      min-width: 1160px;
+      table-layout: fixed;
+    }
+    .preview-table th:nth-child(1),
+    .preview-table td:nth-child(1) { width: 7%; }
+    .preview-table th:nth-child(2),
+    .preview-table td:nth-child(2) { width: 13%; }
+    .preview-table th:nth-child(3),
+    .preview-table td:nth-child(3) { width: 36%; }
+    .preview-table th:nth-child(4),
+    .preview-table td:nth-child(4) { width: 22%; }
+    .preview-table th:nth-child(5),
+    .preview-table td:nth-child(5) { width: 22%; }
+    .preview-table th,
+    .preview-table td {
+      padding-left: 12px;
+      padding-right: 12px;
+    }
+    .preview-table td {
+      height: 44px;
+      vertical-align: top;
+      white-space: normal;
+      line-height: 1.5;
+    }
+    .preview-table .preview-empty {
+      color: transparent;
+      box-shadow: none;
+    }
+    .preview-link {
+      color: var(--blue-strong);
+      font-weight: 850;
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+    }
+    .chat-modal-panel {
+      width: min(1180px, calc(100vw - 40px));
+    }
+    .chat-review-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(320px, .85fr);
+      gap: 0;
+      min-height: 520px;
+      overflow: hidden;
+    }
+    .chat-transcript {
+      padding: 16px;
+      overflow: auto;
+      border-right: 1px solid var(--line);
+      background: #fff;
+    }
+    .chat-message {
+      max-width: 84%;
+      margin-bottom: 12px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #f8fafc;
+    }
+    .chat-message.ai {
+      margin-left: auto;
+      background: #eef5ff;
+      border-color: #cfe0ff;
+    }
+    .chat-role {
+      margin-bottom: 5px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 850;
+    }
+    .chat-text {
+      color: #172033;
+      font-size: 12px;
+      line-height: 1.6;
+      font-weight: 650;
+    }
+    .chat-analysis-panel {
+      padding: 16px;
+      overflow: auto;
+      background: #fbfcff;
+    }
+    .chat-analysis-card {
+      margin-bottom: 12px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+    .chat-analysis-label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 850;
+    }
+    .chat-analysis-value {
+      margin-top: 7px;
+      color: #172033;
+      font-size: 12px;
+      line-height: 1.65;
+      font-weight: 650;
+    }
+
+    @media (max-width: 1180px) {
+      .insight-strip { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .insight-card:nth-child(3n) { border-right: 0; }
+      .insight-card:nth-child(n+4) { border-top: 1px solid var(--line); }
+      .conversion-path { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .path-card:nth-child(3n) { border-right: 0; }
+      .path-card:nth-child(n+4) { border-top: 1px solid var(--line); }
+      .conversion-focus-grid { grid-template-columns: 1fr; }
+      .split-grid,
+      .funnel-grid,
+      .analysis-grid,
+      .loss-visual-grid { grid-template-columns: 1fr; }
+      .loss-donut-panel,
+      .loss-summary-panel { border-right: 0; border-bottom: 1px solid var(--line); }
+      .reason-rank-grid { grid-template-columns: 1fr; }
+      .reason-card { border-right: 0; border-bottom: 1px solid var(--line); }
+      .reason-card:last-child { border-bottom: 0; }
+      .loop-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .loop-card:nth-child(2n) { border-right: 0; }
+      .loop-card:nth-child(n+3) { border-top: 1px solid var(--line); }
+      .same-day-attribution-grid { grid-template-columns: 1fr; }
+      .loss-round-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .loss-round-grid .node-card:nth-child(2n) { border-right: 0; }
+      .loss-round-grid .node-card:nth-child(n+3) { border-top: 1px solid var(--line); }
+      .chat-review-grid { grid-template-columns: 1fr; }
+      .chat-transcript {
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+      .sop-performance-row { grid-template-columns: 132px minmax(0, 1fr) 72px; }
+      .benchmark-grid { grid-template-columns: 1fr; }
+      .mirror-funnel-grid { grid-template-columns: 1fr; }
+      .attempt-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .compare-table-wrap,
+      .funnel-panel,
+      .bar-panel { border-right: 0; border-bottom: 1px solid var(--line); }
+      .wake-share-panel { border-left: 0; border-top: 1px solid var(--line); }
+      .benchmark-card { border-right: 0; border-bottom: 1px solid var(--line); }
+      .benchmark-card:last-child { border-bottom: 0; }
+      .attempt-card:nth-child(2n) { border-right: 0; }
+      .attempt-card:nth-child(n+3) { border-top: 1px solid var(--line); }
+      .funnel-panel:last-child { border-bottom: 0; }
+      .metric-strip { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      #followupMetrics {
+        grid-template-columns: repeat(6, minmax(132px, 1fr));
+        overflow-x: auto;
+      }
+      .metric-card:nth-child(3n) { border-right: 0; }
+      #followupMetrics .metric-card:nth-child(3n) { border-right: 1px solid var(--line); }
+      #followupMetrics .metric-card:nth-child(6n) { border-right: 0; }
+      .metric-card:nth-child(n+4) { border-top: 1px solid var(--line); }
+      #followupMetrics .metric-card:nth-child(n+4) { border-top: 0; }
+      .node-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .node-card:nth-child(2n) { border-right: 0; }
+      .node-card:nth-child(n+3) { border-top: 1px solid var(--line); }
+    }
+
+    @media (max-width: 760px) {
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 12px 14px;
+      }
+      .brand { flex-wrap: wrap; }
+      .brand h1 { white-space: normal; }
+      .page-meta {
+        flex-basis: 100%;
+        margin-left: 40px;
+      }
+      .workspace { padding: 12px; }
+      .filter-panel,
+      .filter-left,
+      .filter-right {
+        align-items: stretch;
+        flex-direction: column;
+      }
+      .filter-left,
+      .filter-right,
+      .segmented,
+      .round-tabs,
+      .date-range,
+      .select-control { width: 100%; }
+      .segmented,
+      .round-tabs,
+      .date-range,
+      .select-control {
+        width: min(100%, calc(100vw - 70px), 360px);
+      }
+      .segmented,
+      .round-tabs {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .main-tabs-panel {
+        justify-content: flex-start;
+        padding: 6px;
+      }
+      .main-tab {
+        min-width: 84px;
+        padding: 0 12px;
+      }
+      .sop-performance-row {
+        grid-template-columns: 1fr;
+        gap: 7px;
+      }
+      .sop-performance-kpis { text-align: left; }
+      .wake-share-list {
+        grid-template-columns: 1fr;
+        justify-items: center;
+      }
+      .wake-legend { width: 100%; }
+      .conversion-path,
+      .loop-grid { grid-template-columns: 1fr; }
+      .path-card,
+      .loop-card { border-right: 0; border-bottom: 1px solid var(--line); }
+      .path-card:last-child,
+      .loop-card:last-child { border-bottom: 0; }
+      .donut-layout,
+      .reason-visual {
+        grid-template-columns: 1fr;
+        justify-items: center;
+      }
+      .donut-legend { width: 100%; }
+      .sop-heatmap {
+        overflow-x: auto;
+        padding-bottom: 4px;
+      }
+      .heatmap-row { min-width: 540px; }
+      .window-chart {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        align-items: start;
+      }
+      .window-column {
+        grid-template-rows: 104px auto;
+      }
+      .sentence-row {
+        grid-template-columns: 64px minmax(0, 1fr) 78px;
+        gap: 8px;
+      }
+      .seg-btn,
+      .round-tab {
+        min-width: 0;
+        padding: 0 6px;
+      }
+      .date-range input {
+        min-width: 0;
+        width: calc((100% - 22px) / 2);
+      }
+      .insight-strip,
+      .metric-strip,
+      .node-grid,
+      .attempt-grid { grid-template-columns: 1fr; }
+      .insight-card,
+      .insight-card:nth-child(2),
+      .metric-card,
+      .metric-card:nth-child(3n),
+      .node-card,
+      .node-card:nth-child(2n) { border-right: 0; }
+      .insight-card + .insight-card,
+      .metric-card + .metric-card,
+      .node-card + .node-card { border-top: 1px solid var(--line); }
+      .attempt-card,
+      .attempt-card:nth-child(2n) { border-right: 0; }
+      .attempt-card + .attempt-card { border-top: 1px solid var(--line); }
+      .panel-head {
+        align-items: flex-start;
+        flex-direction: column;
+        padding-top: 12px;
+        padding-bottom: 12px;
+      }
+      .trend-wrap { padding-left: 8px; padding-right: 8px; }
+      .funnel-row { grid-template-columns: 88px minmax(0, 1fr) 54px; }
+      .bar-row { grid-template-columns: 96px minmax(0, 1fr) 54px; }
+      .section-foot {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="app-shell">
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true"></div>
+      <h1>AI销售全链路BI深度分析看板</h1>
+      <div class="page-meta"><span class="status-dot"></span><span id="freshnessText">日级刷新 2026-08-19 09:30</span></div>
+    </div>
+    <div class="top-actions">
+      <button class="icon-btn" type="button" id="refreshBtn" aria-label="刷新">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 12a9 9 0 0 1-15.6 6.1"/><path d="M3 12A9 9 0 0 1 18.6 5.9"/><path d="M18 2v4h-4"/><path d="M6 22v-4h4"/></svg>
+      </button>
+      <button class="text-btn" type="button" id="exportBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+        导出
+      </button>
+      <button class="text-btn" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M8 8h8"/><path d="M8 12h8"/><path d="M8 16h5"/></svg>
+        订阅
+      </button>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <section class="filter-panel" aria-label="筛选条件">
+      <div class="filter-left">
+        <span class="filter-label">日期</span>
+        <div class="segmented" aria-label="快捷日期">
+          <button class="seg-btn" type="button" data-range="7">近7天</button>
+          <button class="seg-btn active" type="button" data-range="30">近30天</button>
+          <button class="seg-btn" type="button" data-range="month">本月</button>
+          <button class="seg-btn" type="button" data-range="quarter">本季度</button>
+        </div>
+        <div class="date-range">
+          <input id="startDate" type="text" value="2026-07-20" aria-label="开始日期">
+          <span>至</span>
+          <input id="endDate" type="text" value="2026-08-18" aria-label="结束日期">
+        </div>
+        <select class="select-control" aria-label="统计口径">
+          <option>同期群口径 - 观察7天</option>
+          <option>事件发生口径</option>
+          <option>观察24小时</option>
+          <option>观察14天</option>
+        </select>
+        <select class="select-control" aria-label="业务项目">
+          <option>全部项目</option>
+          <option>S10皮肤管理</option>
+          <option>水光针种草</option>
+          <option>热玛吉高客单</option>
+          <option>通用项目</option>
+        </select>
+        <select class="select-control" aria-label="SOP策略">
+          <option>全部SOP策略</option>
+          <option>S10皮肤管理7天触达</option>
+          <option>水光针种草序列</option>
+          <option>热玛吉高意向序列</option>
+        </select>
+      </div>
+      <div class="filter-right">
+        <span class="pill blue">开口率</span>
+        <span class="pill green">成交</span>
+        <span class="pill orange">未成交分层</span>
+        <span class="pill red">删除风险</span>
+      </div>
+    </section>
+
+    <nav class="main-tabs-panel" aria-label="主分析模块">
+      <div class="main-tabs" id="mainTabs"></div>
+    </nav>
+
+    <section class="insight-strip" aria-label="关键诊断结论" data-tab-panel="overview">
+      <article class="insight-card">
+        <div class="insight-label">总加微</div>
+        <div class="insight-value">61</div>
+        <div class="insight-note"></div>
+      </article>
+      <article class="insight-card">
+        <div class="insight-label">开口率</div>
+        <div class="insight-value">95.08%</div>
+        <div class="insight-note"></div>
+      </article>
+      <article class="insight-card">
+        <div class="insight-label">现预约数</div>
+        <div class="insight-value">10</div>
+        <div class="insight-note"></div>
+      </article>
+      <article class="insight-card">
+        <div class="insight-label">现预约率</div>
+        <div class="insight-value">16.39%</div>
+        <div class="insight-note"></div>
+      </article>
+      <article class="insight-card">
+        <div class="insight-label">总到店数</div>
+        <div class="insight-value">13</div>
+        <div class="insight-note"></div>
+      </article>
+      <article class="insight-card">
+        <div class="insight-label">总预约率</div>
+        <div class="insight-value">32.79%</div>
+        <div class="insight-note"></div>
+      </article>
+    </section>
+
+    <section class="section-panel" aria-label="AI员工整体表现" data-tab-panel="overview">
+      <div class="panel-head">
+        <div class="panel-title">AI员工整体表现</div>
+        <div class="panel-actions">
+          <span>AI员工 vs 销冠头部，从加微到转化定位偏差最大的一段</span>
+        </div>
+      </div>
+      <div class="summary-line">
+        <b>结论：</b>AI员工总转率13.5%，低于销冠头部3.5%；差距主要来自开口率-6.1%和现转率-2.8%，同时要检查加微助手来源在晚间时段占比升高带来的流量影响。
+      </div>
+      <div class="mirror-funnel-grid">
+        <div class="mirror-funnel-card">
+          <div class="mirror-funnel-title">加微客户漏斗</div>
+          <div class="mirror-funnel" id="addCustomerMirrorFunnel"></div>
+        </div>
+        <div class="mirror-funnel-card">
+          <div class="mirror-funnel-title">开口客户漏斗</div>
+          <div class="mirror-funnel" id="openCustomerMirrorFunnel"></div>
+        </div>
+      </div>
+      <div class="drill-head">
+        <div class="drill-title">开口对比</div>
+        <div class="panel-actions">围绕第1、第3、第5、第10次开口，比较AI员工和销冠头部的开口率</div>
+      </div>
+      <div class="attempt-grid" id="attemptCompareGrid"></div>
+    </section>
+
+    <section class="section-panel" aria-label="加微明细" data-tab-panel="overview" hidden>
+      <div class="panel-head">
+        <div class="panel-title">加微明细</div>
+        <div class="panel-actions">
+          <select class="select-control" id="sourceDetailFilter" aria-label="加微渠道筛选">
+            <option>全部渠道</option>
+            <option>加微助手来源</option>
+            <option>扫一扫</option>
+          </select>
+        </div>
+      </div>
+      <div class="table-wrap source-detail-wrap">
+        <table class="source-detail-table">
+          <thead>
+            <tr>
+              <th class="sticky-col" rowspan="2">日期</th>
+              <th rowspan="2">渠道</th>
+              <th colspan="5">总计</th>
+              <th colspan="5">早间 09:00-12:00</th>
+              <th colspan="5">午间 12:00-18:00</th>
+              <th colspan="5">晚间 18:00-24:00</th>
+            </tr>
+            <tr>
+              <th class="num">加微数</th>
+              <th class="num">开口率</th>
+              <th class="num">现转率</th>
+              <th class="num">总转率</th>
+              <th class="num">删除率</th>
+              <th class="num">加微数</th>
+              <th class="num">开口率</th>
+              <th class="num">现转率</th>
+              <th class="num">总转率</th>
+              <th class="num">删除率</th>
+              <th class="num">加微数</th>
+              <th class="num">开口率</th>
+              <th class="num">现转率</th>
+              <th class="num">总转率</th>
+              <th class="num">删除率</th>
+              <th class="num">加微数</th>
+              <th class="num">开口率</th>
+              <th class="num">现转率</th>
+              <th class="num">总转率</th>
+              <th class="num">删除率</th>
+            </tr>
+          </thead>
+          <tbody id="sourceDetailBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section-panel" aria-label="开口分流诊断" data-tab-panel="open" hidden>
+      <div class="panel-head">
+        <div class="panel-title">开口分流诊断</div>
+        <div class="panel-actions">
+          <span>先把加微客户切成当天已开口和当天未开口两个运营池</span>
+        </div>
+      </div>
+      <div class="summary-line">
+        <b>结论：</b>加微当天开口率35.7%，低于销冠头部5.4%；当天已开口客户要追首开归因，当天未开口客户要看回访SOP是否能在后续7天唤醒。
+      </div>
+      <div class="metric-strip" id="openSplitMetrics"></div>
+    </section>
+
+    <section class="section-panel" aria-label="加微当天已开口归因" data-tab-panel="open" hidden>
+      <div class="panel-head">
+        <div class="panel-title">加微当天已开口归因</div>
+        <div class="panel-actions">
+          <span>只分析当天被打开的客户，用来提升当天开口率</span>
+        </div>
+      </div>
+      <div class="summary-line">
+        <b>结论：</b>当天开口主要来自水光针种草SOP Node3、S10皮管SOP Node2，以及5-30分钟黄金窗口；纯欢迎语和6句以上追问贡献低且打扰风险高。
+      </div>
+      <div class="same-day-attribution-card">
+        <div class="same-day-attribution-grid">
+          <article class="same-day-card sop-focus-card">
+            <div class="same-day-card-head">
+              <div class="same-day-card-title">当天首开SOP表现</div>
+              <span class="pill blue">主分析</span>
+            </div>
+            <div class="sop-performance-list" id="sameDaySopPerformance"></div>
+          </article>
+          <article class="same-day-card heatmap-focus-card">
+            <div class="same-day-card-head">
+              <div class="same-day-card-title">SOP × 节点首开热力</div>
+              <span class="pill green">定位节点</span>
+            </div>
+            <div class="sop-heatmap" id="sameDayNodeHeatmap"></div>
+          </article>
+          <article class="same-day-card">
+            <div class="same-day-card-head">
+              <div class="same-day-card-title">加微后开口窗口</div>
+              <span class="pill blue">调节奏</span>
+            </div>
+            <div class="window-chart" id="sameDayTimeChart"></div>
+          </article>
+          <article class="same-day-card">
+            <div class="same-day-card-head">
+              <div class="same-day-card-title">首开前句数效率</div>
+              <span class="pill orange">控打扰</span>
+            </div>
+            <div class="sentence-efficiency" id="sameDaySentenceChart"></div>
+          </article>
+        </div>
+      </div>
+      <div class="drill-head">
+        <div class="drill-title">当天首开SOP × 节点明细</div>
+        <div class="panel-actions">
+          <div class="round-tabs" id="sameDaySentenceTabs"></div>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="same-day-detail-table">
+          <thead>
+            <tr>
+              <th class="sticky-col">策略ID</th>
+              <th>策略名称</th>
+              <th>发送时机</th>
+              <th class="num">触达客户</th>
+              <th class="num">当天首开率</th>
+              <th>查看</th>
+            </tr>
+          </thead>
+          <tbody id="sameDayNodeBody"></tbody>
+        </table>
+      </div>
+      <div class="table-pagination" id="sameDayNodePagination"></div>
+    </section>
+
+    <section class="section-panel" aria-label="加微当天未开口回访SOP" data-tab-panel="open" hidden>
+      <div class="panel-head">
+        <div class="panel-title">加微当天未开口回访SOP</div>
+        <div class="panel-actions">
+          <span>只看加微当天未开口客户，判断后续回访策略和节点是否有效</span>
+        </div>
+      </div>
+      <div class="summary-line">
+        <b>结论：</b>当天未开口客户中，案例视频回访和人工补一句+AI案例唤醒率最高；限时催促开口低、删除高，应作为止损规则而不是常规跟进。
+      </div>
+      <div class="metric-strip" id="followupMetrics"></div>
+      <div class="analysis-grid">
+        <div class="bar-panel">
+          <div class="bar-panel-head">
+            <div>
+              <div class="bar-panel-title">回访策略排行</div>
+              <div class="bar-panel-sub">分母为加微当天未开口客户，观察后续7天是否首次开口。</div>
+            </div>
+            <span class="pill blue">基准 18.6%</span>
+          </div>
+          <div class="bar-list" id="followupSopBars"></div>
+        </div>
+        <aside class="wake-share-panel">
+          <div class="wake-share-head">
+            <div class="wake-share-title">唤醒占比图</div>
+            <span class="pill green">含流失</span>
+          </div>
+          <div class="wake-share-list" id="followupWakeShareChart"></div>
+        </aside>
+      </div>
+      <div class="drill-head">
+        <div class="drill-title">未开口客户回访SOP策略矩阵</div>
+        <div class="panel-actions">按策略维度判断唤醒效率、删除风险和是否继续放量</div>
+      </div>
+      <div class="table-wrap">
+        <table class="sop-node-table">
+          <thead>
+            <tr>
+              <th class="sticky-col">策略ID</th>
+              <th>回访SOP</th>
+              <th>主回访节奏</th>
+              <th>内容类型</th>
+              <th class="num">覆盖客户</th>
+              <th class="num">次日唤醒</th>
+              <th class="num">3日唤醒</th>
+              <th class="num">5日唤醒</th>
+              <th class="num">7日唤醒</th>
+              <th class="num">删除率</th>
+              <th>查看</th>
+            </tr>
+          </thead>
+          <tbody id="followupNodeBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section-panel" aria-label="转化核心诊断" data-tab-panel="conversion" hidden>
+      <div class="conversion-focus-grid">
+        <article class="conversion-focus-panel">
+          <div class="focus-panel-head">
+            <div class="panel-title">流失客户结构</div>
+          </div>
+          <div class="focus-panel-body">
+            <div class="bar-panel-head">
+              <div>
+                <div class="bar-panel-title">1 / 3 / 5 / 10 次开口流失占比</div>
+                <div class="bar-panel-sub">分母为未成交流失客户，饼图保留其他流失用于闭合到100%。</div>
+              </div>
+              <span class="pill red">流失 1,125</span>
+            </div>
+            <div class="donut-layout" id="lossRoundDonut"></div>
+          </div>
+        </article>
+        <article class="conversion-focus-panel">
+          <div class="focus-panel-head">
+            <div class="panel-title">卡点转化诊断</div>
+          </div>
+          <div class="focus-panel-body">
+            <div class="bar-panel-head">
+              <div>
+                <div class="bar-panel-title">已开口客户卡点分布</div>
+                <div class="bar-panel-sub">从卡点类型判断后续策略优先级。</div>
+              </div>
+              <span class="pill blue">卡点 1,486</span>
+            </div>
+            <div class="bar-list focus-bar-list" id="bottleneckBars"></div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section-panel" aria-label="卡点转化明细" data-tab-panel="conversion" hidden>
+      <div class="panel-head">
+        <div class="panel-title">卡点转化明细</div>
+        <div class="panel-actions">
+          <span>用于验证上方卡点分布和策略匹配效果</span>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="conversion-wide-table">
+          <thead>
+            <tr>
+              <th class="sticky-col">卡点类型</th>
+              <th class="num">卡分配客户</th>
+              <th>跟进序列</th>
+              <th class="num">再次开口率</th>
+              <th class="num">预约率</th>
+              <th class="num">删除率</th>
+            </tr>
+          </thead>
+          <tbody id="bottleneckDiagnosisBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section-panel" aria-label="卡点跟进序列效果" data-tab-panel="conversion" hidden>
+      <div class="panel-head">
+        <div class="panel-title">卡点 × 跟进序列效果</div>
+        <div class="panel-actions">
+          <span>比较同一卡点下不同序列的再次开口和成交</span>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="conversion-wide-table">
+          <thead>
+            <tr>
+              <th class="sticky-col">卡点类型</th>
+              <th>跟进序列</th>
+              <th>适用客户</th>
+              <th class="num">样本</th>
+              <th class="num">再次开口率</th>
+              <th class="num">跟进后成交率</th>
+              <th class="num">删除率</th>
+              <th>判断</th>
+            </tr>
+          </thead>
+          <tbody id="bottleneckSequenceBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section-panel" aria-label="开口轮次流失诊断" data-tab-panel="conversion" hidden>
+      <div class="panel-head">
+        <div class="panel-title">开口轮次流失诊断</div>
+        <div class="panel-actions">
+          <span>围绕第1、3、5、10轮定位流失原因</span>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="conversion-wide-table">
+          <thead>
+            <tr>
+              <th class="sticky-col">开口轮次</th>
+              <th class="num">流失客户</th>
+              <th class="num">占已开口</th>
+              <th class="num">占流失客户</th>
+              <th>主要卡点</th>
+              <th>高风险序列步骤</th>
+              <th>AI问题</th>
+              <th>穿透动作</th>
+            </tr>
+          </thead>
+          <tbody id="lossRoundBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section-panel" aria-label="跟进序列步骤拆解" data-tab-panel="conversion" hidden>
+      <div class="panel-head">
+        <div class="panel-title">跟进序列步骤拆解</div>
+        <div class="panel-actions">
+          <span>看每一步是否执行、跳过、调整，以及是否带来回复</span>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="conversion-wide-table">
+          <thead>
+            <tr>
+              <th class="sticky-col">序列名称</th>
+              <th>步骤</th>
+              <th>动作类型</th>
+              <th>间隔</th>
+              <th class="num">执行率</th>
+              <th class="num">跳过率</th>
+              <th class="num">调整率</th>
+              <th class="num">回复率</th>
+              <th class="num">成交贡献</th>
+              <th>优化判断</th>
+            </tr>
+          </thead>
+          <tbody id="sequenceStepBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section-panel" aria-label="知识库话术矩阵" data-tab-panel="conversion" hidden>
+      <div class="panel-head">
+        <div class="panel-title">卡点 × 跟进策略 × 知识库话术矩阵</div>
+        <div class="panel-actions">
+          <select class="select-control" id="knowledgeBottleneckFilter" aria-label="卡点类型筛选"></select>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="conversion-wide-table">
+          <thead>
+            <tr>
+              <th class="sticky-col">卡点类型</th>
+              <th>跟进策略</th>
+              <th class="num">话术数</th>
+              <th class="num">使用次数</th>
+              <th class="num">突破率</th>
+              <th class="num">再次开口率</th>
+              <th class="num">跟进后成交率</th>
+              <th class="num">AI兜底占比</th>
+              <th>查看</th>
+            </tr>
+          </thead>
+          <tbody id="knowledgeMatrixBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section-panel" aria-label="未成交客户穿透" data-tab-panel="conversion" hidden>
+      <div class="panel-head">
+        <div class="panel-title">未成交客户穿透</div>
+        <div class="panel-actions">
+          <span>穿透到聊天记录、AI归因和完整跟进策略</span>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="loss-customer-table">
+          <thead>
+            <tr>
+              <th class="sticky-col">客户ID</th>
+              <th>卡点类型</th>
+              <th>触发序列</th>
+              <th>执行到第几步</th>
+              <th>全部跟进策略</th>
+              <th>最后跟进策略</th>
+              <th>知识库/话术ID</th>
+              <th>步骤结果</th>
+              <th>客户状态</th>
+              <th>AI归因</th>
+              <th>聊天记录</th>
+            </tr>
+          </thead>
+          <tbody id="lossCustomerBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section-panel" aria-label="转化策略闭环" data-tab-panel="conversion" hidden>
+      <div class="panel-head">
+        <div class="panel-title">转化策略闭环</div>
+        <div class="panel-actions">
+          <span>从发现到策略、验证指标和责任对象</span>
+        </div>
+      </div>
+      <div class="loop-grid" id="conversionLoopGrid"></div>
+    </section>
+
+    <section class="section-panel" aria-label="策略资产复盘" data-tab-panel="strategy" hidden>
+      <div class="panel-head">
+        <div class="panel-title">策略资产复盘</div>
+        <div class="panel-actions">
+          <span>跨周期治理SOP、话术、知识库和节奏版本，决定放大、重写、下线或实验</span>
+        </div>
+      </div>
+      <div class="metric-strip" id="sopMetrics"></div>
+      <div class="analysis-grid">
+        <div class="bar-panel">
+          <div class="bar-panel-head">
+            <div>
+              <div class="bar-panel-title">策略版本总转率排行</div>
+              <div class="bar-panel-sub">从策略资产角度看长期表现，同时检查开口、转化、删除和稳定性。</div>
+            </div>
+            <span class="pill blue">基准 13.5%</span>
+          </div>
+          <div class="bar-list" id="sopBars"></div>
+        </div>
+        <aside class="finding-panel" id="sopFindings"></aside>
+      </div>
+      <div class="drill-head">
+        <div class="drill-title">策略版本全链路表现</div>
+        <div class="panel-actions">用于沉淀可复制策略资产，不替代开口页的首开节点诊断</div>
+      </div>
+      <div class="table-wrap">
+        <table class="strategy-full-link-table">
+          <thead>
+            <tr>
+              <th class="sticky-col">SOP策略</th>
+              <th>关键节点规则</th>
+              <th class="num">触达客户</th>
+              <th class="num">1次触达开口</th>
+              <th class="num">3次触达开口</th>
+              <th class="num">5次触达开口</th>
+              <th class="num">10次触达开口</th>
+              <th class="num">开口后转化</th>
+              <th class="num">删除率</th>
+            </tr>
+          </thead>
+          <tbody id="sopBody"></tbody>
+        </table>
+      </div>
+      <div class="drill-head">
+        <div class="drill-title">当天首开SOP × 节点明细</div>
+        <div class="panel-actions">
+          <div class="round-tabs" id="strategySameDaySentenceTabs"></div>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="same-day-detail-table">
+          <thead>
+            <tr>
+              <th class="sticky-col">策略ID</th>
+              <th>策略名称</th>
+              <th>发送时机</th>
+              <th class="num">触达客户</th>
+              <th class="num">当天首开率</th>
+              <th>查看</th>
+            </tr>
+          </thead>
+          <tbody id="strategySameDayNodeBody"></tbody>
+        </table>
+      </div>
+      <div class="table-pagination" id="strategySameDayNodePagination"></div>
+    </section>
+
+    <section class="section-panel" aria-label="开口跟进节奏效果分析" data-tab-panel="strategy" hidden>
+      <div class="panel-head">
+        <div class="panel-title">开口跟进节奏效果分析</div>
+        <div class="panel-actions">
+          <span>判断哪个跟进策略、等待间隔和触达频次最能带来再次开口</span>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th class="sticky-col">卡点</th>
+              <th>AI策略动作</th>
+              <th>最佳等待间隔</th>
+              <th class="num">样本</th>
+              <th class="num">再次开口率</th>
+              <th class="num">复开后转化</th>
+              <th class="num">删除率</th>
+              <th>节奏判断</th>
+            </tr>
+          </thead>
+          <tbody id="rhythmMatrixBody"></tbody>
+        </table>
+      </div>
+      <div class="section-foot">
+        <span>复开后应暂停旧序列，按客户最新表达重新识别卡点并选择下一步动作。</span>
+        <div class="pill-list">
+          <span class="pill green">放大 3组</span>
+          <span class="pill orange">观察 2组</span>
+          <span class="pill red">停止 2组</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-panel" aria-label="开口跟进内容与知识库效果分析" data-tab-panel="strategy" hidden>
+      <div class="panel-head">
+        <div class="panel-title">开口跟进内容与知识库效果分析</div>
+        <div class="panel-actions">
+          <span>判断哪个知识库、话术内容和AI策略真正推动开口与成交</span>
+        </div>
+      </div>
+      <div class="split-grid">
+        <div class="compare-table-wrap">
+          <table class="compare-table">
+            <thead>
+              <tr>
+                <th class="sticky-col">动作类型</th>
+                <th class="num">话术覆盖率</th>
+                <th class="num">AI兜底生成</th>
+                <th class="num">24h转化</th>
+                <th>判断</th>
+              </tr>
+            </thead>
+            <tbody id="scriptBody"></tbody>
+          </table>
+        </div>
+        <div class="trend-wrap">
+          <div class="bar-panel-title">AI风格与卡点匹配</div>
+          <div class="bar-panel-sub">风格不是偏好问题，而是卡点解决方式。价格更适合闺蜜型，效果疑虑更适合顾问型，距离便利更适合服务型。</div>
+          <div class="bar-list" id="styleBars" style="margin-top:14px"></div>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th class="sticky-col">高优先级话术单元格</th>
+              <th class="num">使用次数</th>
+              <th class="num">回复率</th>
+              <th class="num">态度松动率</th>
+              <th class="num">24h转化</th>
+              <th class="num">AI生成占比</th>
+              <th>处理动作</th>
+              <th>判断</th>
+            </tr>
+          </thead>
+          <tbody id="scriptMatrixBody"></tbody>
+        </table>
+      </div>
+      <div class="drill-head">
+        <div class="drill-title">知识库效果排行</div>
+        <div class="panel-actions">按实际被AI调用后的客户反应评价内容质量</div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th class="sticky-col">知识库/内容包</th>
+              <th>主要适用卡点</th>
+              <th class="num">调用次数</th>
+              <th class="num">回复率</th>
+              <th class="num">态度松动率</th>
+              <th class="num">24h转化</th>
+              <th class="num">事实风险</th>
+              <th>处理建议</th>
+              <th>判断</th>
+            </tr>
+          </thead>
+          <tbody id="knowledgeBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section-panel" aria-label="客户明细与行动闭环" data-tab-panel="detail" hidden>
+      <div class="panel-head">
+        <div class="panel-title">客户明细与行动闭环</div>
+        <div class="panel-actions">
+          <span>未成交卡点必须能追到客户明细、聊天记录和下一步动作</span>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th class="sticky-col">客户ID</th>
+              <th>最后状态</th>
+              <th class="num">有效轮次</th>
+              <th>主要卡点</th>
+              <th>最后AI策略</th>
+              <th>聊天摘要</th>
+              <th>下一步跟进</th>
+              <th>判断</th>
+            </tr>
+          </thead>
+          <tbody id="customerDetailBody"></tbody>
+        </table>
+      </div>
+      <div class="drill-head">
+        <div class="drill-title">行动优先级</div>
+        <div class="panel-actions">每个策略调整都进入实验台账，避免凭感觉迭代</div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th class="sticky-col">行动项</th>
+              <th>触发证据</th>
+              <th class="num">影响客户</th>
+              <th>执行对象</th>
+              <th>验证指标</th>
+              <th>预计收益</th>
+              <th>优先级</th>
+            </tr>
+          </thead>
+          <tbody id="actionBody"></tbody>
+        </table>
+      </div>
+      <div class="drill-head">
+        <div class="drill-title">实验台账</div>
+        <div class="panel-actions">话术、策略、节奏、转人工规则均需版本化</div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th class="sticky-col">实验ID</th>
+              <th>变更内容</th>
+              <th class="num">对照组</th>
+              <th class="num">实验组</th>
+              <th class="num">主指标差异</th>
+              <th class="num">删除率差异</th>
+              <th>结论</th>
+            </tr>
+          </thead>
+          <tbody id="experimentBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="modal-backdrop" id="strategyPreviewModal" hidden>
+  <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="strategyPreviewTitle">
+    <div class="modal-head">
+      <div class="modal-title" id="strategyPreviewTitle">策略节点话术预览</div>
+      <button class="icon-btn" type="button" id="strategyPreviewClose" aria-label="关闭">×</button>
+    </div>
+    <div class="table-wrap modal-table-wrap">
+      <table class="preview-table">
+        <thead>
+          <tr>
+            <th class="sticky-col">句次</th>
+            <th>发送时机</th>
+            <th>文字</th>
+            <th>链接1</th>
+            <th>链接2</th>
+          </tr>
+        </thead>
+        <tbody id="strategyPreviewBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="chatReviewModal" hidden>
+  <div class="modal-panel chat-modal-panel" role="dialog" aria-modal="true" aria-labelledby="chatReviewTitle">
+    <div class="modal-head">
+      <div class="modal-title" id="chatReviewTitle">流失聊天记录分析</div>
+      <button class="icon-btn" type="button" id="chatReviewClose" aria-label="关闭">×</button>
+    </div>
+    <div class="chat-review-grid">
+      <div class="chat-transcript" id="chatTranscript"></div>
+      <aside class="chat-analysis-panel" id="chatAnalysisPanel"></aside>
+    </div>
+  </div>
+</div>
+
+<script>
+const diagnosisRows = [
+  ['加微数', '3,842', '4,916', '-21.8%'],
+  ['总开口率', '42.8%', '48.9%', '-6.1%'],
+  ['现转率', '8.4%', '11.2%', '-2.8%'],
+  ['总转率', '13.5%', '17.0%', '-3.5%'],
+  ['删除率', '6.8%', '5.1%', '+1.7%']
+];
+
+const openBenchmarkRows = [
+  ['首开客户数', '1,644', '2,404', '-31.6%'],
+  ['二次开口率', '76.2%', '83.5%', '-7.3%'],
+  ['开口客户现转率', '19.6%', '22.9%', '-3.3%'],
+  ['开口客户总转率', '31.6%', '34.8%', '-3.2%'],
+  ['删除率', '15.9%', '10.4%', '+5.5%']
+];
+
+const openSplitMetrics = [
+  ['加微客户', '3,842', '100%', '开口分析总分母', 'blue'],
+  ['当天已开口', '1,372', '35.7%', '加微当天回复', 'danger'],
+  ['当天未开口', '2,470', '64.3%', '进入回访池', 'danger'],
+  ['一句开口', '26.1%', '首句直接承接', '当天首开客户', 'good'],
+  ['两句开口', '33.4%', '利益点+轻问题', '当天首开客户', 'good'],
+  ['三句开口', '22.9%', '案例补充后开口', '当天首开客户', 'warn']
+];
+
+const addCustomerFunnelRows = [
+  { stage: '加微数', ai: 3842, aiText: '3,842 (100%)', top: 4916, topText: '4,916 (100%)' },
+  { stage: '首开客户数', ai: 1644, aiText: '1,644 (42.8%)', top: 2404, topText: '2,404 (48.9%)' },
+  { stage: '现转客户', ai: 323, aiText: '323 (8.4%)', top: 551, topText: '551 (11.2%)' },
+  { stage: '总转客户', ai: 519, aiText: '519 (13.5%)', top: 836, topText: '836 (17.0%)' },
+  { stage: '删除客户', ai: 261, aiText: '261 (6.8%)', top: 251, topText: '251 (5.1%)' }
+];
+
+const openCustomerFunnelRows = [
+  { stage: '首开客户数', ai: 1644, aiText: '1,644 (100%)', top: 2404, topText: '2,404 (100%)' },
+  { stage: '二次开口客户', ai: 1253, aiText: '1,253 (76.2%)', top: 2007, topText: '2,007 (83.5%)' },
+  { stage: '开口客户现转', ai: 323, aiText: '323 (19.6%)', top: 551, topText: '551 (22.9%)' },
+  { stage: '开口客户总转', ai: 519, aiText: '519 (31.6%)', top: 836, topText: '836 (34.8%)' },
+  { stage: '删除客户', ai: 261, aiText: '261 (15.9%)', top: 250, topText: '250 (10.4%)' }
+];
+
+const attemptOpenRows = [
+  ['第1次开口', 15.5, 21.8],
+  ['第3次开口', 23.3, 27.6],
+  ['第5次开口', 10.2, 13.4],
+  ['第10次开口', 9.1, 7.8]
+];
+
+const sameDaySopPerformanceRows = [
+  ['水光针种草SOP', 49.8, 'Node3案例视频', 'green'],
+  ['S10皮管SOP', 48.6, 'Node2利益点+轻问题', 'green'],
+  ['热玛吉高客单SOP', 41.2, 'Node4价格节点偏后', 'orange'],
+  ['通用欢迎SOP', 33.7, 'Node1首句承接弱', 'red'],
+  ['新客通用问候SOP', 28.4, '泛介绍需按来源拆分', 'red']
+];
+
+const sameDayNodeHeatmapRows = [
+  ['水光针种草SOP', [15.6, 18.2, 28.6, 12.8, 6.1]],
+  ['S10皮管SOP', [14.2, 25.4, 18.4, 10.6, 5.8]],
+  ['热玛吉高客单SOP', [9.8, 13.6, 16.9, 15.2, 7.4]],
+  ['通用欢迎SOP', [12.4, 12.5, 9.6, 6.8, 4.2]],
+  ['新客通用问候SOP', [8.8, 10.8, 7.9, 5.2, 3.1]]
+];
+
+const sameDayTimeRows = [
+  ['0-5分钟', 17.4, 'blue', '首触达及时'],
+  ['5-30分钟', 35.6, 'green', '黄金窗口'],
+  ['30分钟-2小时', 24.9, 'green', '案例补充'],
+  ['2-6小时', 14.1, 'orange', '需要换策略'],
+  ['6小时以上', 8.0, 'red', '转回访池']
+];
+
+const sameDaySentenceRows = [
+  ['1句话内', 26.1, 0.9, '首句直接承接'],
+  ['2句话', 33.4, 1.5, '利益点+轻问题'],
+  ['3句话', 22.9, 2.8, '案例补充后开口'],
+  ['4-5句话', 12.8, 5.6, '开始换内容'],
+  ['6句以上', 4.8, 10.7, '停止追问']
+];
+
+const sourceDetailRows = [
+  ['2026-08-12', '全部渠道', '394', '82', '49.1%', '10.2%', '15.9%', '4.8%', '168', '45.6%', '8.9%', '14.4%', '5.9%', '144', '34.8%', '6.1%', '10.2%', '8.7%'],
+  ['2026-08-12', '加微助手来源', '238', '38', '40.6%', '7.0%', '11.4%', '7.2%', '86', '39.8%', '7.4%', '12.2%', '7.8%', '114', '33.2%', '5.6%', '9.6%', '9.3%'],
+  ['2026-08-12', '扫一扫', '156', '44', '56.8%', '13.1%', '19.8%', '2.9%', '82', '51.7%', '10.5%', '16.8%', '3.9%', '30', '41.6%', '7.8%', '12.6%', '6.2%'],
+  ['2026-08-13', '全部渠道', '375', '76', '48.4%', '9.8%', '15.1%', '4.9%', '162', '44.7%', '8.7%', '13.9%', '5.8%', '137', '36.1%', '6.4%', '10.9%', '8.2%'],
+  ['2026-08-13', '加微助手来源', '226', '34', '39.8%', '7.2%', '11.7%', '7.0%', '88', '41.4%', '7.6%', '12.5%', '7.4%', '104', '34.5%', '6.0%', '10.1%', '8.8%'],
+  ['2026-08-13', '扫一扫', '149', '42', '55.6%', '12.4%', '18.5%', '3.1%', '74', '50.8%', '10.0%', '15.8%', '3.9%', '33', '41.2%', '7.6%', '12.9%', '6.1%'],
+  ['2026-08-14', '全部渠道', '412', '84', '47.6%', '9.4%', '14.6%', '5.3%', '171', '43.2%', '8.1%', '13.2%', '6.4%', '157', '32.4%', '5.7%', '9.4%', '9.5%'],
+  ['2026-08-14', '加微助手来源', '251', '39', '38.4%', '6.8%', '10.9%', '7.5%', '91', '39.2%', '7.0%', '11.4%', '8.1%', '121', '30.8%', '5.1%', '8.6%', '10.2%'],
+  ['2026-08-14', '扫一扫', '161', '45', '55.8%', '12.1%', '18.2%', '3.4%', '80', '49.6%', '9.6%', '15.4%', '4.5%', '36', '39.1%', '7.2%', '12.0%', '7.0%']
+];
+
+const sentenceFilterTabs = [
+  ['all', '全部'],
+  ['1', '第1句开口'],
+  ['2', '第2句开口'],
+  ['3', '第3句开口'],
+  ['4', '第4句开口'],
+  ['5', '第5句开口']
+];
+let currentSentenceFilter = 'all';
+let currentSameDayNodePage = 1;
+const sameDayNodePageSize = 10;
+
+const sameDayNodeDetailRows = [
+  { sentence: '1', strategyId: 'OP-SG-001', strategy: '水光针种草SOP', timing: '加微后5分钟', reach: '1,126', rate: 15.6 },
+  { sentence: '1', strategyId: 'OP-WC-001', strategy: '通用欢迎SOP', timing: '加微后5分钟', reach: '812', rate: 12.4 },
+  { sentence: '1', strategyId: 'OP-NC-001', strategy: '新客通用问候SOP', timing: '加微后3分钟', reach: '426', rate: 8.8 },
+  { sentence: '2', strategyId: 'OP-S10-002', strategy: 'S10皮管SOP', timing: '加微后15分钟', reach: '984', rate: 25.4 },
+  { sentence: '2', strategyId: 'OP-SG-002', strategy: '水光针种草SOP', timing: 'Node1后15分钟', reach: '1,042', rate: 18.2 },
+  { sentence: '2', strategyId: 'OP-TM-002', strategy: '热玛吉高客单SOP', timing: '加微后20分钟', reach: '736', rate: 13.6 },
+  { sentence: '3', strategyId: 'OP-SG-003', strategy: '水光针种草SOP', timing: '首句后30分钟', reach: '983', rate: 28.6 },
+  { sentence: '3', strategyId: 'OP-S10-003', strategy: 'S10皮管SOP', timing: 'Node2后2小时', reach: '684', rate: 18.4 },
+  { sentence: '3', strategyId: 'OP-TM-003', strategy: '热玛吉高客单SOP', timing: 'Node2后1小时', reach: '612', rate: 16.9 },
+  { sentence: '4', strategyId: 'OP-TM-004', strategy: '热玛吉高客单SOP', timing: '加微后2小时', reach: '736', rate: 15.2 },
+  { sentence: '4', strategyId: 'OP-SG-004', strategy: '水光针种草SOP', timing: 'Node3后2小时', reach: '812', rate: 12.8 },
+  { sentence: '4', strategyId: 'OP-S10-004', strategy: 'S10皮管SOP', timing: 'Node3后2小时', reach: '603', rate: 10.6 },
+  { sentence: '5', strategyId: 'OP-TM-005', strategy: '热玛吉高客单SOP', timing: '第5次触达', reach: '488', rate: 7.4 },
+  { sentence: '5', strategyId: 'OP-SG-005', strategy: '水光针种草SOP', timing: '第5次触达', reach: '684', rate: 6.1 },
+  { sentence: '5', strategyId: 'OP-WC-005', strategy: '通用欢迎SOP', timing: '第5次触达', reach: '512', rate: 4.2 }
+];
+
+const strategyPreviewRows = {
+  '水光针种草SOP': [
+    ['第一句', '加微后5分钟', '我是你的皮肤顾问，看到你关注水光补水，先确认下你更在意干纹还是暗沉？', 'https://bi.example.com/skin-test', 'https://bi.example.com/cases/hydration-before-after'],
+    ['', '', '如果你只是想先了解，我可以先发一组同肤质案例给你参考。', 'https://bi.example.com/video/hydration-case', 'https://bi.example.com/project/hydration'],
+    ['第二句', 'Node1后15分钟', '水光针主要解决缺水、细纹和妆后卡粉，适合先做基础补水改善。', 'https://bi.example.com/project/hydration-detail', 'https://bi.example.com/cases/care-before-after'],
+    ['', '', '你现在是想改善干燥，还是想让皮肤更亮一点？', 'https://bi.example.com/forms/skin-profile', ''],
+    ['第三句', '首句后30分钟', '这是一位和你情况接近的客户，做完后妆感和细纹变化会更明显。', 'https://bi.example.com/video/real-case', 'https://bi.example.com/docs/recovery'],
+    ['', '', '你可以先看效果，不需要马上决定，我再帮你判断是否适合。', 'https://bi.example.com/cases/collection', ''],
+    ['第四句', 'Node3后2小时', '今天有水光体验权益，适合第一次先低门槛试一次。', 'https://bi.example.com/campaign/hydration', 'https://bi.example.com/store/route'],
+    ['第五句', '第5次触达', '如果今天不方便回复，我先帮你保留案例和活动信息，晚点你有空再看。', 'https://bi.example.com/campaign/deadline', 'https://bi.example.com/contact/consult']
+  ],
+  'S10皮管SOP': [
+    ['第一句', '加微后5分钟', '你咨询的是S10皮管项目，我先确认下你更关注紧致、轮廓还是法令纹？', 'https://bi.example.com/project/hydration', 'https://bi.example.com/project/s10/audience'],
+    ['第二句', '加微后15分钟', '如果是轮廓松弛，S10更适合做下颌线和中下面部提升。', 'https://bi.example.com/project/s10/effect', 'https://bi.example.com/cases/hydration-before-after'],
+    ['', '', '你可以选一个最想改善的位置，我按你的情况给建议。', 'https://bi.example.com/assets/s10-area-map', ''],
+    ['第三句', 'Node2后2小时', '这组案例是同类型轮廓松弛客户，变化主要在下颌线和苹果肌支撑。', 'https://bi.example.com/cases/s10-gallery', 'https://bi.example.com/reviews/s10'],
+    ['第四句', 'Node3后2小时', '如果你担心效果，可以先看医生面诊方案，不用直接决定项目。', 'https://bi.example.com/visit/process', ''],
+    ['第五句', '第5次触达', '我先把适合S10的人群和不适合情况发你，方便你自己判断。', 'https://bi.example.com/docs/contraindications', 'https://bi.example.com/project/s10-fit-table']
+  ],
+  '热玛吉高客单SOP': [
+    ['第一句', '加微后5分钟', '你关注的是抗衰提升，我先问下你更在意眼周、法令纹还是脸部松弛？', 'https://bi.example.com/forms/anti-aging-test', ''],
+    ['第二句', '加微后20分钟', '热玛吉适合皮肤松弛和轮廓下垂，具体能不能做要看皮肤厚度和松弛层次。', 'https://bi.example.com/project/hydration-detail', 'https://bi.example.com/project/s10/audience'],
+    ['第三句', 'Node2后1小时', '这是一组抗衰客户案例，你可以先看她主要改善的位置和恢复情况。', 'https://bi.example.com/cases/anti-aging', 'https://bi.example.com/docs/recovery'],
+    ['第四句', '加微后2小时', '费用会根据部位和发数不同分层，我可以先给你一个大致区间。', 'https://bi.example.com/pricing/thermage', 'https://bi.example.com/payment/installment'],
+    ['', '', '如果你担心预算，也可以先从局部抗衰方案开始。', 'https://bi.example.com/project/alternatives', ''],
+    ['第五句', '第5次触达', '不着急决定，我先发一个面诊前问题清单，你看完再判断是否值得来。', 'https://bi.example.com/visit/checklist', '']
+  ],
+  '通用欢迎SOP': [
+    ['第一句', '加微后5分钟', '你好，我是门店AI助理，看到你刚添加微信，想了解哪个项目呢？', 'https://bi.example.com/projects', ''],
+    ['', '', '你也可以直接发皮肤问题，我帮你匹配适合的项目。', 'https://bi.example.com/forms/concern', ''],
+    ['第二句', 'Node1后30分钟', '我们主要有补水、抗衰、皮肤管理和轮廓类项目，可以按你的需求推荐。', 'https://bi.example.com/projects/list', 'https://bi.example.com/store/profile'],
+    ['第三句', 'Node2后1小时', '如果你暂时不确定项目，可以先说一个最想改善的问题。', 'https://bi.example.com/forms/needs', ''],
+    ['第四句', 'Node3后2小时', '今天有部分项目体验权益，我可以先发你看看。', 'https://bi.example.com/campaign/benefits', ''],
+    ['第五句', '第5次触达', '我先不打扰你，后续有皮肤或项目问题可以直接问我。', '', '']
+  ],
+  '新客通用问候SOP': [
+    ['第一句', '加微后3分钟', '欢迎添加，有想咨询的项目或皮肤问题可以直接告诉我。', 'https://bi.example.com/projects', ''],
+    ['第二句', '加微后20分钟', '我们可以根据你的预算、时间和想改善的问题帮你推荐项目。', 'https://bi.example.com/forms/consult', ''],
+    ['第三句', 'Node2后1小时', '如果方便，可以回复一个最关心的问题：补水、抗衰、痘印、轮廓。', 'https://bi.example.com/forms/problem-options', ''],
+    ['第四句', 'Node3后2小时', '我先发你一份新客常见项目说明，方便你快速了解。', 'https://bi.example.com/guide/new-customer', 'https://bi.example.com/pricing/range'],
+    ['第五句', '第5次触达', '后续你有需要再回复我，我会按你的问题给建议。', '', '']
+  ],
+  '案例视频回访SOP': [
+    ['第一句', '次日10:00', '昨天你可能比较忙，我先发一个同项目真实案例，你看效果是否接近你的需求。', 'https://bi.example.com/video/followup-case', 'https://bi.example.com/cases/followup-before-after'],
+    ['', '', '如果你觉得案例不匹配，也可以告诉我你的主要顾虑，我换一组更接近的。', 'https://bi.example.com/forms/concern-check', ''],
+    ['第二句', '第3天午间', '这个案例的重点不是夸效果，而是看术前问题和恢复节奏是否适合你。', 'https://bi.example.com/docs/recovery-guide', 'https://bi.example.com/cases/detail'],
+    ['第三句', '第5天晚间', '如果你暂时不想预约，我可以先按你的问题留一份项目对比表。', 'https://bi.example.com/project/compare', 'https://bi.example.com/contact/consult']
+  ],
+  '人工补一句+AI案例': [
+    ['第一句', '次日14:00', '我是门店顾问，昨天看到你还没回复，我先帮你确认一下：你更关心效果还是价格？', 'https://bi.example.com/forms/quick-reply', ''],
+    ['', '', '你回一个方向就行，后面案例和方案我让AI按你的需求发。', 'https://bi.example.com/cases/matched', 'https://bi.example.com/project/recommend'],
+    ['第二句', '第3天10:30', '如果是怕踩坑，可以先看同诉求客户的真实反馈，再判断要不要继续了解。', 'https://bi.example.com/reviews/verified', 'https://bi.example.com/video/customer-story'],
+    ['第三句', '第5天18:00', '我先不频繁打扰你，保留一个低门槛咨询入口，需要时点开就能接上。', 'https://bi.example.com/contact/consult', '']
+  ],
+  '换时段重触达SOP': [
+    ['第一句', '次日晚间', '白天可能不方便看消息，我晚点再发一次，你有空时回复一个想了解的项目就行。', 'https://bi.example.com/projects', ''],
+    ['第二句', '第3天晚间', '如果你还不确定项目，可以先选一个问题：补水、抗衰、痘印、轮廓。', 'https://bi.example.com/forms/problem-options', 'https://bi.example.com/guide/new-customer'],
+    ['第三句', '第5天午间', '我把常见项目和适合人群整理成表，你不用马上决定。', 'https://bi.example.com/project/fit-table', '']
+  ],
+  '价值回访SOP': [
+    ['第一句', '第2天午间', '你先不用决定项目，我先帮你拆一下这个问题一般怎么判断适不适合做。', 'https://bi.example.com/docs/decision-guide', ''],
+    ['第二句', '第3天午间', '如果你担心费用，可以先看低门槛体验方案和分层价格区间。', 'https://bi.example.com/pricing/range', 'https://bi.example.com/campaign/benefits'],
+    ['第三句', '第5天18:30', '我把效果、恢复和预算三块放一起，你按最在意的一项看就好。', 'https://bi.example.com/project/compare', 'https://bi.example.com/docs/recovery-guide']
+  ],
+  '活动权益SOP': [
+    ['第一句', '第2天18:30', '今天有新客体验权益，如果你只是想先了解，可以先看适合项目范围。', 'https://bi.example.com/campaign/new-customer', 'https://bi.example.com/project/fit-table'],
+    ['', '', '权益不等于必须预约，你先判断项目是否匹配。', 'https://bi.example.com/docs/decision-guide', ''],
+    ['第二句', '第4天午间', '活动剩余名额我帮你保留到今晚，你方便的话可以先确认一个咨询时间。', 'https://bi.example.com/calendar/booking', 'https://bi.example.com/contact/consult']
+  ],
+  '止损SOP': [
+    ['第一句', '第5次后', '如果最近不方便了解，我先停止自动提醒，后续有需要你直接回复我。', 'https://bi.example.com/contact/consult', ''],
+    ['第二句', '第7天', '我只保留一份项目资料入口，你有空再看，不再连续打扰。', 'https://bi.example.com/guide/archive', '']
+  ],
+  '首回复轻问承接策略': [
+    ['Step1', '客户首问后即时', '可以的，我先按你的情况判断。你更想改善干燥暗沉，还是细纹松弛？', 'https://bi.example.com/forms/problem-options', ''],
+    ['Step2', '未回复后30分钟', '我先不直接推荐项目，先确认一个方向就能把范围缩小。', 'https://bi.example.com/forms/quick-reply', '']
+  ],
+  '预算共情+三档替代方案': [
+    ['Step1', '问价后即时', '费用确实要看部位和方案，我先按预算给你拆成体验、标准、加强三档。', 'https://bi.example.com/pricing/range', 'https://bi.example.com/payment/installment'],
+    ['Step2', '30分钟后未回复', '如果想先低门槛试，可以从局部或体验项目开始，不用一次定完整方案。', 'https://bi.example.com/project/alternatives', 'https://bi.example.com/campaign/benefits'],
+    ['Step3', '客户复开后', '你更想先控制预算，还是先看效果稳定性？我按这个给你选一档。', 'https://bi.example.com/forms/budget-choice', '']
+  ],
+  '新客意向识别追问策略': [
+    ['Step1', '欢迎语后15分钟', '我先帮你快速定位：补水、抗衰、痘印、轮廓，你更关注哪一类？', 'https://bi.example.com/forms/needs', ''],
+    ['Step2', '客户只浏览未回复', '你不用描述很细，回一个最想改善的问题就行。', 'https://bi.example.com/forms/problem-options', '']
+  ],
+  '价格方案后预约确认': [
+    ['Step1', '方案发送后15分钟', '这三档里如果先体验，我建议看基础档；如果想稳定改善，再看标准档。', 'https://bi.example.com/project/compare', ''],
+    ['Step2', '客户有意向后', '我可以先帮你看两个可约时间，你更方便工作日晚上还是周末？', 'https://bi.example.com/calendar/booking', 'https://bi.example.com/store/route']
+  ],
+  '同项目效果案例跟进': [
+    ['Step1', '效果疑虑出现后即时', '你担心维持时间很正常，我发一组同项目、同问题客户的术前术后对比给你看。', 'https://bi.example.com/cases/detail', 'https://bi.example.com/video/real-case'],
+    ['Step2', '案例发送后2小时', '这个案例重点看术前问题和恢复节奏，你觉得最像你的是哪一点？', 'https://bi.example.com/docs/recovery-guide', '']
+  ],
+  '门店便利四件套': [
+    ['Step1', '客户问距离后即时', '我发你门店定位、地铁出口、停车点和最近可约时间，先判断来一趟是否方便。', 'https://bi.example.com/store/route', 'https://bi.example.com/calendar/booking'],
+    ['Step2', '客户仍犹豫', '如果你下班后过来，我可以优先看18:30或19:30两个时间。', 'https://bi.example.com/store/parking', '']
+  ],
+  '犹豫客户价值培育': [
+    ['Step1', '客户说再看看后24小时', '不急着定，我先把适合和不适合的情况列清楚，方便你判断是否值得继续了解。', 'https://bi.example.com/docs/decision-guide', ''],
+    ['Step2', '第3天午间', '你可以先看恢复、预算、效果三块对比，哪个最卡你，我就补哪个。', 'https://bi.example.com/project/compare', '']
+  ],
+  '重复咨询换内容策略': [
+    ['Step1', '重复问同问题后', '这个问题我换个方式说明：先看适合人群，再看预算区间，最后看是否需要面诊确认。', 'https://bi.example.com/project/fit-table', 'https://bi.example.com/pricing/range'],
+    ['Step2', '第5次触达前', '如果前面信息太多，我给你压缩成一个结论和一个选择题。', 'https://bi.example.com/forms/quick-reply', '']
+  ],
+  '活动降压权益说明': [
+    ['Step1', '活动咨询后', '活动只是降低首次尝试门槛，不代表必须今天决定，你可以先看适合范围。', 'https://bi.example.com/campaign/new-customer', 'https://bi.example.com/project/fit-table'],
+    ['Step2', '客户犹豫后', '我先帮你保留资料入口，不继续催促；你确认适合后再看是否用权益。', 'https://bi.example.com/guide/archive', '']
+  ],
+  '改期保留低门槛邀请': [
+    ['Step1', '客户说没时间后', '没关系，我先不占你时间。可以给你保留两个备选时段，之后方便再确认。', 'https://bi.example.com/calendar/booking', ''],
+    ['Step2', '第2天晚间', '如果近期排不开，也可以先线上看案例和适合条件，不用到店决定。', 'https://bi.example.com/video/followup-case', 'https://bi.example.com/docs/decision-guide']
+  ],
+  '共同决策降压说明': [
+    ['Step1', '客户要问家人朋友后', '可以理解，你可以先把项目适合人群、风险和预算发给对方一起看。', 'https://bi.example.com/project/compare', 'https://bi.example.com/docs/decision-guide'],
+    ['Step2', '24小时后', '如果对方主要担心效果或费用，你回我一个点，我再补更具体的说明。', 'https://bi.example.com/forms/concern-check', '']
+  ]
+};
+
+const followupMetrics = [
+  ['当天未开口', '2,470', '64.3%', '回访SOP总分母', 'danger'],
+  ['次日唤醒', '146', '7.2%', '回访后1天内首次回复', 'warn'],
+  ['3日唤醒', '241', '12.0%', '回访后3天内累计回复', 'warn'],
+  ['5日唤醒', '296', '14.7%', '回访后5天内累计回复', 'good'],
+  ['深度沉默', '1,031', '41.7%', '7天仍未开口', 'danger'],
+  ['回访删除率', '7.6%', '+2.5%', '高频催促风险', 'danger']
+];
+
+const followupSopBars = [
+  ['人工补一句+AI案例', 31.2, 'green'],
+  ['案例视频回访', 28.4, 'green'],
+  ['活动权益提醒', 21.7, 'blue'],
+  ['价值回访', 18.9, 'orange'],
+  ['纯文本问候', 12.6, 'red'],
+  ['限时催促', 8.4, 'red']
+];
+
+const followupWakeShareRows = [
+  ['第1天唤醒', 7.2, '146人', 'green'],
+  ['第2天唤醒', 3.1, '62人', 'blue'],
+  ['第3天唤醒', 1.6, '33人', 'sky'],
+  ['第4天唤醒', 1.6, '32人', 'orange'],
+  ['第5天唤醒', 1.1, '23人', 'amber'],
+  ['流失占比', 85.4, '1720人', 'loss']
+];
+
+const followupNodeRows = [
+  ['RV-CASE', '案例视频回访SOP', '次日10:00 / 第3天午间 / 第5天晚间', '案例视频+轻问题', '812', '11.6%', '20.8%', '25.9%', '28.4%', '4.0%'],
+  ['RV-HUMAN', '人工补一句+AI案例', '次日14:00 / 第3天10:30 / 第5天18:00', '人工短句+AI案例', '266', '14.8%', '24.6%', '29.1%', '31.2%', '2.8%'],
+  ['RV-RETIME', '换时段重触达SOP', '次日晚间 / 第3天晚间 / 第5天午间', '首句重发+换时段', '436', '3.2%', '6.8%', '8.7%', '9.8%', '2.1%'],
+  ['RV-VALUE', '价值回访SOP', '第2天午间 / 第3天午间 / 第5天18:30', '价值解释+活动提醒', '684', '2.9%', '7.6%', '10.2%', '11.4%', '8.9%'],
+  ['RV-BENEFIT', '活动权益SOP', '第2天18:30 / 第4天午间', '活动权益+二选一问题', '512', '7.4%', '15.1%', '19.2%', '21.7%', '5.2%'],
+  ['RV-STOP', '止损SOP', '第5次后 / 第7天', '停止自动触达', '178', '1.1%', '3.4%', '4.8%', '5.6%', '15.7%']
+];
+
+const sopMetrics = [
+  ['策略总数', '12条', '+2', '本期启用SOP', 'good'],
+  ['健康策略', '4条', '33.3%', '高开口且低删除', 'good'],
+  ['高风险策略', '3条', '25.0%', '删除率超阈值', 'danger'],
+  ['最佳策略', '案例种草序列', '18.4%', '总转率最高', 'good'],
+  ['最差策略', '沉默催促序列', '6.2%', '删除高且转化低', 'danger'],
+  ['待实验策略', '5条', '小流量', '需进入A/B', 'warn']
+];
+
+const sopBars = [
+  ['案例种草序列', 18.4, 'green'],
+  ['价格替代方案序列', 16.9, 'green'],
+  ['活动权益序列', 14.7, 'blue'],
+  ['通用欢迎序列', 10.6, 'orange'],
+  ['沉默催促序列', 6.2, 'red']
+];
+
+const sopFindings = [
+  ['策略复制', '好策略不是单节点高，而是前3次触达能让客户开口，开口后还能自然进入卡点解决。'],
+  ['风险识别', '沉默催促序列第5次和第10次删除率高，说明继续加压已经不是转化动作。'],
+  ['复盘规则', '每条SOP都要同时看第1、3、5、10次开口率、开口后转化率、删除率和人工介入率。']
+];
+
+const sopRows = [
+  ['案例种草序列', '第1次轻问句，第3次案例视频，第5次活动承接', '684', '16.8%', '27.4%', '12.1%', '5.6%', '36.4%', '2.6%'],
+  ['价格替代方案序列', '问价后共情，30分钟给体验价/分期/小项目', '518', '13.6%', '24.8%', '16.2%', '8.1%', '34.8%', '3.0%'],
+  ['活动权益序列', '第3次活动利益点，第5次名额提醒', '736', '12.4%', '22.0%', '13.8%', '7.4%', '29.6%', '4.8%'],
+  ['通用欢迎序列', '统一欢迎语 + 通用项目介绍', '812', '9.1%', '15.6%', '8.4%', '4.2%', '26.4%', '3.7%'],
+  ['沉默催促序列', '第5次限时催促，第10次再次催促', '426', '6.8%', '10.2%', '5.4%', '3.1%', '14.8%', '11.6%']
+];
+
+const conversionOverviewMetrics = [
+  ['已开口客户', '1,644', '100%', '转化分析分母', 'blue'],
+  ['成交客户', '519', '31.6%', '即时成交+序列成交', 'good'],
+  ['未成交客户', '1,125', '68.4%', '卡点复盘分母', 'danger'],
+  ['识别到卡点', '1,486', '90.4%', '进入系统B判断', 'good'],
+  ['进入序列', '1,218', '81.9%', 'SOP暂停并接管', 'good'],
+  ['序列成交', '216', '17.7%', '占进入序列客户', 'good']
+];
+
+const conversionPathRows = [
+  ['看结构', '先用流失占比判断问题集中在第1、3、5还是10次开口。'],
+  ['找原因', '对高流失轮次拆卡点原因排行，判断是承接、价格、案例还是节奏问题。'],
+  ['配策略', '把卡点映射到跟进策略，不再只看动作类型。'],
+  ['查话术', '查看策略背后的知识库话术，定位缺口和兜底比例。'],
+  ['闭环验证', '穿透到客户和实验指标，形成改写、放大、止损或转人工动作。']
+];
+
+const lossRoundDonutRows = [
+  ['第1次开口流失', 34.8, '392人', 'red'],
+  ['第3次开口流失', 29.9, '336人', 'orange'],
+  ['第5次开口流失', 20.3, '228人', 'amber'],
+  ['第10次开口流失', 7.3, '82人', 'purple'],
+  ['其他/复开未成交', 7.7, '87人', 'blue']
+];
+
+const lossRoundFindings = [
+  ['先处理首轮', '第1次开口流失占34.8%，说明首回复承接和价格回答方式是最大损失点。'],
+  ['第3轮看证据', '第3次开口流失占29.9%，客户已表达卡点，主要缺价格方案和效果案例。'],
+  ['第5轮要降压', '第5次开口流失占20.3%，高频活动催促应降频、换内容或进入止损规则。']
+];
+
+const lossReasonRankGroups = [
+  {
+    round: '第1次开口',
+    total: '392人',
+    rows: [
+      ['单纯咨询后未被轻问承接', 42.9, '168人', '客户只问项目或价格，AI回答后没有二选一轻问题', '首回复轻问承接策略', 'red'],
+      ['价格费用直接报价后沉默', 33.7, '132人', '只给价格区间，没有预算共情和替代方案', '预算共情+三档替代方案', 'orange'],
+      ['通用欢迎语未识别意向', 23.5, '92人', '欢迎语过泛，客户没有被引导到具体问题', '新客意向识别追问策略', 'blue']
+    ]
+  },
+  {
+    round: '第3次开口',
+    total: '336人',
+    rows: [
+      ['价格方案缺失', 36.9, '124人', '客户已问预算，但没有体验价、分期或小项目入口', '价格方案后预约确认', 'red'],
+      ['效果案例缺失', 35.1, '118人', '客户追问维持多久或适不适合，AI没有调用同项目案例', '同项目效果案例跟进', 'orange'],
+      ['距离/时间信息不完整', 28.0, '94人', '只发地址，没有交通、停车和可约时间组合', '门店便利四件套', 'blue']
+    ]
+  },
+  {
+    round: '第5次开口',
+    total: '228人',
+    rows: [
+      ['犹豫拖延仍高频催促', 45.6, '104人', '客户说再看看后，AI仍在同日重复催促活动', '犹豫客户价值培育', 'red'],
+      ['重复咨询未换内容', 34.2, '78人', '客户重复问同一问题，AI仍复制上一轮解释', '重复咨询换内容策略', 'orange'],
+      ['活动倒计时造成反感', 20.2, '46人', '活动权益表达变成压力推进，删除风险上升', '活动降压权益说明', 'blue']
+    ]
+  }
+];
+
+const conversionLoopRows = [
+  ['发现', '第1次开口流失34.8%', '首回复不能只回答问题，要在回答后增加轻问承接，验证二次开口率和删除率。'],
+  ['改策略', '价格/效果卡点进入专属策略', '价格看预算共情和三档方案，效果看同项目案例，不再直接切活动邀约。'],
+  ['查资产', '矩阵按卡点筛话术', '卡点类型筛选后查看跟进策略，优先补AI兜底占比高的话术缺口。'],
+  ['验证', '客户穿透到实验台账', '每个未成交客户保留全量跟进策略链，回流到A/B实验和人工转接规则。']
+];
+
+const bottleneckBars = [
+  ['价格费用', 31.2, 'red'],
+  ['犹豫拖延', 24.6, 'orange'],
+  ['效果疑虑', 16.8, 'orange'],
+  ['距离/便利', 11.4, 'blue'],
+  ['单纯咨询', 8.2, 'blue'],
+  ['时间冲突', 4.6, 'purple'],
+  ['决策权', 3.2, 'red']
+];
+
+const bottleneckFindings = [
+  ['主卡点', '价格费用、犹豫拖延、效果疑虑占72.6%，转化优化优先围绕这三类卡点补序列和话术。'],
+  ['序列差异', '价格费用用高意向序列更容易成交；犹豫拖延用慢热培育序列删除率更低。'],
+  ['话术缺口', '决策权和时间冲突经常进入AI兜底，说明知识库缺少预约确认、改期和共同决策话术。']
+];
+
+const bottleneckDiagnosisRows = [
+  ['价格费用', '464', '392', '高意向序列', '解决疑虑+预约确认', '41.2%', '26.4%', '3.0%', 'good:放大高意向序列, 补价格方案库'],
+  ['犹豫拖延', '366', '286', '慢热培育序列', '价值补充+低门槛邀请', '28.5%', '15.3%', '2.1%', 'watch:成交偏慢, 但删除风险低'],
+  ['效果疑虑', '250', '218', '标准序列', '效果案例+解决疑虑', '37.6%', '24.1%', '2.4%', 'good:继续扩充同项目案例'],
+  ['距离/便利', '169', '142', '标准序列', '解决疑虑+预约确认', '35.2%', '21.7%', '2.8%', 'good:门店便利信息可标准化'],
+  ['单纯咨询', '122', '86', '标准序列', '共情+引导', '18.4%', '6.2%', '4.8%', 'bad:首轮承接弱, 先补二选一轻问题'],
+  ['时间冲突', '68', '51', '慢热培育序列', '低门槛邀请', '12.6%', '5.4%', '2.2%', 'bad:改期和保留名额话术不足'],
+  ['决策权', '47', '43', '快速逼单序列', '预约确认', '9.8%', '4.1%', '5.9%', 'bad:共同决策话术缺口大']
+];
+
+const bottleneckSequenceRows = [
+  ['价格费用', '高意向序列', '明确问价/预算压力', '218', '41.2%', '26.4%', '3.0%', 'good:价格卡点优先进入'],
+  ['价格费用', '标准序列', '问价但意向一般', '176', '29.6%', '14.8%', '4.2%', 'watch:需先共情再给方案'],
+  ['效果疑虑', '标准序列', '问效果、维持、适不适合', '164', '37.6%', '24.1%', '2.4%', 'good:案例证明有效'],
+  ['距离/便利', '标准序列', '问门店、交通、时间', '108', '35.2%', '21.7%', '2.8%', 'good:补齐四件套'],
+  ['犹豫拖延', '慢热培育序列', '说再看看、不急', '151', '28.5%', '15.3%', '2.1%', 'good:删除率最低'],
+  ['犹豫拖延', '快速逼单序列', '短期活动刺激', '112', '16.7%', '7.4%', '8.6%', 'bad:同日加压容易流失'],
+  ['时间冲突', '慢热培育序列', '没时间、再约', '51', '12.6%', '5.4%', '2.2%', 'bad:低门槛邀请内容不足'],
+  ['决策权', '快速逼单序列', '要问朋友/家人', '43', '9.8%', '4.1%', '5.9%', 'bad:预约确认动作过早']
+];
+
+const lossRoundRows = [
+  ['第1次开口流失', '392', '23.8%', '34.8%', '单纯咨询/价格费用', '标准序列 Step1', '回答完没有轻问题承接, 或只发价格区间', '筛选Step1沉默客户, 查看首回复话术'],
+  ['第3次开口流失', '336', '20.4%', '29.9%', '价格费用/效果疑虑', '标准序列 Step2-Step3', '卡点已出现但没有切到方案或案例', '筛选跳过案例/方案步骤的客户'],
+  ['第5次开口流失', '228', '13.9%', '20.3%', '犹豫拖延/重复咨询', '慢热培育序列 Step2-Step4', '继续活动催促, 没有降频和换内容', '筛选调整为活动催促的客户'],
+  ['第10次开口流失', '82', '5.0%', '7.3%', '明确拒绝/高删除风险', '快速逼单序列 Step2', '拒绝后仍继续触达, 止损规则未触发', '筛选不应执行仍执行的客户']
+];
+
+const sequenceStepRows = [
+  ['标准序列', 'Step1', '共情+引导', '即时', '92.4%', '12.6%', '8.3%', '31.8%', '6.4%', 'good:首步稳定, 保留'],
+  ['标准序列', 'Step2', '解决疑虑', '30分钟', '84.8%', '15.2%', '11.6%', '36.9%', '9.8%', 'good:对价格和便利卡点有效'],
+  ['标准序列', 'Step3', '效果案例', '2小时', '76.2%', '23.8%', '13.2%', '42.6%', '13.2%', 'good:效果疑虑最佳步骤'],
+  ['标准序列', 'Step4', '活动邀约', '6小时', '71.5%', '28.5%', '6.3%', '24.9%', '5.6%', 'watch:先看卡点再邀约'],
+  ['高意向序列', 'Step1', '解决疑虑', '即时', '88.6%', '11.4%', '9.2%', '38.0%', '11.6%', 'good:价格卡点首选'],
+  ['高意向序列', 'Step2', '预约确认', '30分钟', '58.9%', '41.1%', '5.0%', '26.1%', '11.2%', 'bad:跳过率高, 需要补前置方案'],
+  ['慢热培育序列', 'Step2', '价值补充', '24小时', '79.4%', '20.6%', '7.8%', '28.5%', '7.6%', 'good:适合犹豫拖延'],
+  ['慢热培育序列', 'Step4', '低门槛邀请', '3天', '63.7%', '36.3%', '4.4%', '17.8%', '4.4%', 'bad:话术覆盖不足']
+];
+
+const knowledgeMatrixRows = [
+  ['价格费用', '预算共情+三档替代方案', '12', '624', '51.8%', '38.0%', '11.6%', '12%'],
+  ['价格费用', '价格方案后预约确认', '3', '218', '26.1%', '11.2%', '5.0%', '44%'],
+  ['效果疑虑', '同项目效果案例跟进', '14', '486', '56.4%', '42.6%', '13.2%', '8%'],
+  ['距离/便利', '门店便利四件套', '8', '238', '48.2%', '32.7%', '10.1%', '6%'],
+  ['犹豫拖延', '犹豫客户价值培育', '9', '302', '38.7%', '28.5%', '7.6%', '18%'],
+  ['时间冲突', '改期保留低门槛邀请', '0', '92', '12.6%', '5.4%', '2.2%', '100%'],
+  ['决策权', '共同决策降压说明', '0', '74', '9.8%', '4.1%', '1.2%', '100%']
+];
+
+const lossCustomerRows = [
+  ['CU-91728', '价格费用', '高意向序列', 'Step1', '高意向序列 Step1 直接报价 → 预算共情+三档替代方案未执行 → 30分钟补发未触发', '预算共情+三档替代方案', 'PRICE-SOLVE-03', '执行后沉默', '1次开口流失', '只发价格区间, 没有给预算共情和三档替代方案'],
+  ['CU-91684', '效果疑虑', '标准序列', 'Step3', '标准序列 Step2 价值解释 → Step3 应发案例 → 改为活动邀约', '同项目效果案例跟进', 'CASE-EFFECT-07', '跳过案例改邀约', '3次开口流失', '客户问维持多久, AI没有调用同项目案例'],
+  ['CU-91597', '犹豫拖延', '慢热培育序列', 'Step2', '慢热培育序列 Step2 价值补充 → 24小时降频未执行 → 活动倒计时重复触达', '犹豫客户价值培育', 'VALUE-NURTURE-02', '调整为活动催促', '5次开口流失', '客户说再看看后, AI没有降频并换内容'],
+  ['CU-91488', '明确拒绝', '快速逼单序列', 'Step2', '快速逼单序列 Step2 活动邀约 → 止损SOP未触发 → 人工降频未进入', '止损SOP', 'ACTIVITY-URGE-01', '不应执行仍执行', '10次开口流失', '拒绝信号后继续追发, 止损规则未触发'],
+  ['CU-91412', '价格费用', '高意向序列', 'Step2', '高意向序列 Step1 预算共情 → Step2 预约确认 → 方案差异解释缺失', '价格方案后预约确认', 'PRICE-CONFIRM-01', '执行后未收口', '复开未成交', '复开后问方案区别, AI缺少选择标准'],
+  ['CU-91376', '距离/便利', '标准序列', 'Step2', '标准序列 Step2 门店信息 → 交通/停车/可约时间缺失 → 未补便利四件套', '门店便利四件套', 'STORE-ROUTE-04', '执行信息不完整', '3次开口流失', '只发地址, 未补停车、地铁和可约时间']
+];
+
+const chatReviewRecords = {
+  'CU-91728': {
+    title: 'CU-91728 价格费用流失分析',
+    messages: [
+      ['客户', '这个水光大概多少钱？是不是挺贵的？'],
+      ['AI', '我们水光项目价格在980到1980之间，具体看你选择的套餐。'],
+      ['客户', '哦，我先看看吧。'],
+      ['AI', '好的，有需要可以随时联系我。'],
+      ['AI', '2小时后：今天有体验活动，你要不要了解一下？']
+    ],
+    analysis: [
+      ['卡点识别', '价格费用，客户问“是不是挺贵”，应进入高意向序列。'],
+      ['触发序列', '高意向序列 Step1 解决疑虑，匹配话术 PRICE-SOLVE-03。'],
+      ['流失原因', 'AI只给价格区间，没有预算共情、体验价、分期或小项目替代方案。'],
+      ['调整建议', '价格费用卡点用“预算理解 + 三档方案 + 二选一轻问题”，30分钟内补体验入口。']
+    ]
+  },
+  'CU-91684': {
+    title: 'CU-91684 效果疑虑流失分析',
+    messages: [
+      ['客户', '这个效果能维持多久？我怕做了没变化。'],
+      ['AI', '一般效果会逐步体现，具体因人而异，我们医生会根据情况判断。'],
+      ['客户', '那我这种干纹明显的适合吗？'],
+      ['AI', '适合的，今天活动比较划算，可以先预约。'],
+      ['客户', '我再考虑一下。']
+    ],
+    analysis: [
+      ['卡点识别', '效果疑虑，客户追问维持多久和是否适合。'],
+      ['触发序列', '标准序列 Step3 应执行效果案例，匹配话术 CASE-EFFECT-07。'],
+      ['流失原因', 'AI跳过案例证明，直接切到活动预约，客户没有获得可信证据。'],
+      ['调整建议', '效果疑虑先调用同项目案例和效果边界，再轻问是否要看相近案例。']
+    ]
+  },
+  'CU-91597': {
+    title: 'CU-91597 5轮重复催促流失分析',
+    messages: [
+      ['客户', '我再看看吧，不急。'],
+      ['AI', '今天名额比较少，建议你先定一个时间。'],
+      ['客户', '暂时不定。'],
+      ['AI', '活动今晚结束，现在预约会更划算。'],
+      ['AI', '15分钟后：名额马上没有了，你现在方便确认吗？']
+    ],
+    analysis: [
+      ['卡点识别', '犹豫拖延，客户连续表达“不急”和“暂时不定”。'],
+      ['触发序列', '慢热培育序列 Step2 应执行价值补充，但AI调整成活动催促。'],
+      ['流失原因', '同日高频活动压力没有回应客户犹豫原因，删除风险上升。'],
+      ['调整建议', '5轮后降频到24小时，改用价值补充或案例合集，仍沉默再进入长期养护。']
+    ]
+  },
+  'CU-91488': {
+    title: 'CU-91488 10轮止损缺失分析',
+    messages: [
+      ['客户', '最近不考虑了，谢谢。'],
+      ['AI', '好的，不过今天活动力度比较大，错过会比较可惜。'],
+      ['客户', '不用了。'],
+      ['AI', '我们可以先帮你保留名额。'],
+      ['客户', '别发了。']
+    ],
+    analysis: [
+      ['卡点识别', '明确拒绝，客户说“最近不考虑”和“别发了”。'],
+      ['触发序列', '快速逼单序列 Step2 活动邀约不应继续执行。'],
+      ['流失原因', '止损规则未触发，系统B没有转人工或回归低频SOP。'],
+      ['调整建议', '明确拒绝后停止自动触达，仅保留咨询入口并进入长期养护。']
+    ]
+  },
+  'CU-91412': {
+    title: 'CU-91412 复开后未成交分析',
+    messages: [
+      ['客户', '你刚说的体验价和正式项目区别是什么？'],
+      ['AI', '正式项目效果会更完整，体验项目也可以先了解。'],
+      ['客户', '那我适合哪个？'],
+      ['AI', '具体要看医生面诊。'],
+      ['客户', '那算了。']
+    ],
+    analysis: [
+      ['卡点识别', '价格费用复开，客户开始比较体验价和正式项目。'],
+      ['触发序列', '高意向序列 Step2 预约确认，话术 PRICE-CONFIRM-01 收口不足。'],
+      ['流失原因', 'AI没有给方案差异和适合人群，过早推到面诊。'],
+      ['调整建议', '复开后直接给三档方案差异、适合人群和轻确认。']
+    ]
+  },
+  'CU-91376': {
+    title: 'CU-91376 距离时间流失分析',
+    messages: [
+      ['客户', '你们门店离地铁远吗？我下班过去方便吗？'],
+      ['AI', '我们地址是XX路88号。'],
+      ['客户', '有点远吧。'],
+      ['AI', '您可以导航过来。'],
+      ['客户', '先不用了。']
+    ],
+    analysis: [
+      ['卡点识别', '距离/便利，客户关心下班过去是否方便。'],
+      ['触发序列', '标准序列 Step2 解决疑虑，匹配话术 STORE-ROUTE-04。'],
+      ['流失原因', 'AI只发地址，没有停车、地铁出口、步行距离和可约时间。'],
+      ['调整建议', '距离/便利卡点使用定位、交通、停车、可约时间四件套，并轻问下班后哪个时段方便。']
+    ]
+  }
+};
+
+const rhythmMatrixRows = [
+  ['价格费用', '共情→替代方案', '30min', '218', '41.2%', '26.4%', '3.0%', 'good:最佳组合'],
+  ['价格费用', '重复价值解释', '2h', '176', '19.8%', '8.6%', '4.8%', 'bad:停止重复'],
+  ['效果疑虑', '同项目案例证明', '2h', '164', '37.6%', '24.1%', '2.4%', 'good:扩大使用'],
+  ['距离便利', '导航/停车信息', '15-30min', '108', '35.2%', '21.7%', '2.8%', 'good:信息补全'],
+  ['时间冲突', '改期方案→轻确认', '30min', '92', '33.4%', '18.6%', '2.2%', 'good:标准化'],
+  ['犹豫拖延', '价值补充→轻邀请', '24h', '151', '28.5%', '15.3%', '2.1%', 'watch:需重建上下文'],
+  ['明确拒绝', '活动逼单', '6h', '77', '6.5%', '1.3%', '12.7%', 'bad:停止触达']
+];
+
+const scriptRows = [
+  ['共情引导', '91.4%', '8.6%', '9.8%', 'good:覆盖充分'],
+  ['解决疑虑', '84.8%', '15.2%', '11.6%', 'good:继续放大'],
+  ['效果案例', '76.2%', '23.8%', '13.2%', 'good:最佳动作'],
+  ['活动邀约', '71.5%', '28.5%', '6.3%', 'watch:需分层'],
+  ['低门槛邀请', '63.7%', '36.3%', '4.4%', 'bad:优先补齐'],
+  ['预约确认', '58.9%', '41.1%', '5.0%', 'bad:风险较高']
+];
+
+const styleBars = [
+  ['顾问型', 34.8, 'blue'],
+  ['闺蜜型', 31.6, 'purple'],
+  ['服务型', 28.9, 'green'],
+  ['逼单型', 13.7, 'red']
+];
+
+const scriptMatrixRows = [
+  ['价格×解决疑虑', '624', '51.8%', '38.0%', '11.6%', '12%', '继续放大并补充小项目入口', 'good:有效'],
+  ['价格×预约确认', '218', '26.1%', '11.2%', '5.0%', '44%', '先完成替代方案再确认时间', 'bad:优先改写'],
+  ['效果×案例证明', '486', '56.4%', '42.6%', '13.2%', '8%', '按项目和问题细分案例库', 'good:最佳组合'],
+  ['时间×低门槛邀请', '137', '29.2%', '14.7%', '4.4%', '100%', '新增改期、保留名额、先看环境话术', 'bad:内容空白'],
+  ['犹豫×活动邀约', '302', '38.7%', '19.4%', '6.3%', '31%', '按犹豫原因分层，不统一催促', 'watch:继续观察']
+];
+
+const knowledgeRows = [
+  ['同项目案例库', '效果疑虑/信任不足', '486', '56.4%', '42.6%', '13.2%', '低', '按项目、年龄、问题类型继续细分', 'good:重点调用'],
+  ['价格替代方案库', '价格费用', '624', '51.8%', '38.0%', '11.6%', '中', '补齐体验价、分期、小项目入口', 'good:扩充覆盖'],
+  ['门店便利信息库', '距离/时间', '238', '48.2%', '32.7%', '10.1%', '低', '增加停车、地铁、可约时间动态信息', 'good:标准化'],
+  ['活动权益说明库', '活动咨询/犹豫', '302', '38.7%', '19.4%', '6.3%', '中', '减少催促语气，改为权益说明', 'watch:改写'],
+  ['通用项目介绍库', '咨询项目', '712', '31.6%', '13.2%', '4.8%', '中', '按项目标签拆分，不再泛介绍', 'bad:重构'],
+  ['效果承诺兜底生成', '效果疑虑', '96', '29.4%', '9.6%', '3.1%', '高', '低置信度转人工审核', 'bad:限制调用']
+];
+
+const customerDetailRows = [
+  ['CU-91728', '1轮后沉默', '1', '价格费用', '直接报价+弱引导', '客户问“是不是很贵”，AI直接发价格表，客户未再回复。', '30分钟内补替代方案：体验价/分期/小项目三选一', 'bad:首回复失败'],
+  ['CU-91684', '2-3轮未成交', '3', '效果疑虑', '价值解释+活动邀约', '客户追问效果维持多久，AI解释较泛，未给同项目案例。', '2小时发送同项目案例，复开后确认体验时间', 'good:优先挽回'],
+  ['CU-91622', '成交', '3', '距离便利', '导航/停车信息+预约确认', '客户问门店远不远，AI给定位、停车和可约时间，当轮确认预约。', '沉淀为距离卡点标准路径', 'good:复制路径'],
+  ['CU-91597', '4-5轮未成交', '5', '犹豫拖延', '重复活动提醒', '客户连续两次说再看看，AI仍重复活动倒计时。', '停止逼单，24小时价值回访或转低频养护', 'bad:策略重复'],
+  ['CU-91488', '6轮以上未成交', '7', '明确拒绝', '活动逼单', '客户已表示暂时不需要，AI继续追活动，删除风险升高。', '停止自动触达，进入长期养护名单', 'bad:立即止损'],
+  ['CU-91412', '复开后成交', '4', '价格费用', '共情→替代方案', '首次沉默后30分钟补体验价，客户复开问区别，后续支付预约金。', '复制到价格卡点沉默跟进策略', 'good:复开样板']
+];
+
+const actionRows = [
+  ['重构1轮客户首回复', '392名客户首轮后沉默，再开口率18.4%', '392', 'AI首回复策略', '二次对话率、删除率', '+9单', 'P0'],
+  ['优先挽回2至3轮未成交', '再开口率34.7%，复开后转化21.8%', '336', '系统B跟进序列', '再次开口率、7日转化', '+16单', 'P0'],
+  ['按卡点配置等待间隔', '30min和2h明显优于统一节奏', '947', '跟进调度规则', '复开率、删除率', '+11单', 'P0'],
+  ['停止Node5催促文本', '开口率0.8%，删除率上升', '426', 'SOP节点内容', '删除率、后续开口率', '少删除14人', 'P0'],
+  ['补齐价格×预约确认话术', '覆盖率58.9%，AI兜底41.1%', '218', '话术库', '24h转化、事实风险', '+7单', 'P1'],
+  ['6轮以上转人工或降频', '再开口率9.8%，重复解释占比高', '169', '转人工规则', '删除率、人工成交', '+4单', 'P1']
+];
+
+const experimentRows = [
+  ['EXP-202608-041', '首回复回答后增加二选一轻问题', '1,820', '1,876', '+4.8%', '+0.2%', 'good:扩大验证'],
+  ['EXP-202608-039', '价格卡点30分钟发送替代方案', '1,126', '1,094', '+7.9%', '-1.1%', 'good:采纳'],
+  ['EXP-202608-037', '效果疑虑2小时发送同项目案例', '982', '1,018', '+6.4%', '-0.8%', 'good:采纳'],
+  ['EXP-202608-034', '同日第5条继续活动逼单', '742', '756', '-3.1%', '+5.7%', 'bad:放弃'],
+  ['EXP-202608-031', '第3轮不主动报价，改为需求反问', '1,842', '1,916', '+2.5%', '-0.4%', 'good:采纳']
+];
+
+const mainTabs = [
+  { key: 'overview', label: '总览诊断' },
+  { key: 'open', label: '开口分析' },
+  { key: 'conversion', label: '转化分析' },
+  { key: 'strategy', label: '策略复盘' },
+  { key: 'detail', label: '客户明细' }
+];
+
+let currentMainTab = 'overview';
+
+function statusBadge(value) {
+  if (typeof value !== 'string' || !value.includes(':')) return value;
+  const parts = value.split(':');
+  return `<span class="badge ${parts[0]}">${parts.slice(1).join(':')}</span>`;
+}
+
+function metricNumber(value) {
+  return Number(String(value).replace(/,/g, '').replace('%', '')) || 0;
+}
+
+function valueDiffClass(value, reverse = false) {
+  const number = metricNumber(value);
+  if (number === 0) return 'muted';
+  return reverse ? (number > 0 ? 'danger' : 'good') : (number < 0 ? 'danger' : 'good');
+}
+
+function renderDiagnosis() {
+  renderMirrorFunnel('addCustomerMirrorFunnel', addCustomerFunnelRows);
+  renderMirrorFunnel('openCustomerMirrorFunnel', openCustomerFunnelRows);
+}
+
+function funnelRateText(value) {
+  const text = String(value);
+  const parenthesized = text.match(/\(([^()]+)\)/);
+  if (parenthesized) return parenthesized[1];
+  const percent = text.match(/-?\d+(?:\.\d+)?%/);
+  return percent ? percent[0] : text;
+}
+
+function renderMirrorFunnel(id, rows) {
+  const aiBase = rows[0]?.ai || 1;
+  const topBase = rows[0]?.top || 1;
+  const aiColors = ['#3057d8', '#3476f4', '#5ca0f5', '#75baf0', '#9bd9ef', '#c3eef5'];
+  const topColors = ['#11926a', '#17a879', '#2fbd89', '#5bcc9e', '#88ddba', '#b4ecd6'];
+  const body = rows.map((row, index) => {
+    const aiWidth = Math.max(18, Math.min(100, row.ai / aiBase * 100));
+    const topWidth = Math.max(18, Math.min(100, row.top / topBase * 100));
+    return `
+      <div class="mirror-funnel-row">
+        <div class="mirror-stage-label"><span>${row.stage}</span></div>
+        <div class="mirror-value left">${funnelRateText(row.aiText)}</div>
+        <div class="mirror-side left">
+          <div class="mirror-segment" style="width:${aiWidth}%;background:${aiColors[index] || aiColors[aiColors.length - 1]}"></div>
+        </div>
+        <div class="mirror-axis"></div>
+        <div class="mirror-side right">
+          <div class="mirror-segment" style="width:${topWidth}%;background:${topColors[index] || topColors[topColors.length - 1]}"></div>
+        </div>
+        <div class="mirror-value right">${funnelRateText(row.topText)}</div>
+      </div>
+    `;
+  }).join('');
+  document.getElementById(id).innerHTML = `
+    <div class="mirror-funnel-head">
+      <div></div>
+      <div></div>
+      <div class="mirror-head-left">AI员工</div>
+      <div></div>
+      <div class="mirror-head-right">销冠头部</div>
+      <div></div>
+    </div>
+    <div class="mirror-funnel-body">${body}</div>
+  `;
+}
+
+function signedPercent(value) {
+  const sign = value > 0 ? '+' : '';
+  return `${sign}${value.toFixed(1)}%`;
+}
+
+function sourceDetailDisplayRow(row) {
+  const totalAdd = metricNumber(row[2]);
+  const buckets = [
+    { count: metricNumber(row[3]), open: metricNumber(row[4]), current: metricNumber(row[5]), total: metricNumber(row[6]), deleteRate: metricNumber(row[7]) },
+    { count: metricNumber(row[8]), open: metricNumber(row[9]), current: metricNumber(row[10]), total: metricNumber(row[11]), deleteRate: metricNumber(row[12]) },
+    { count: metricNumber(row[13]), open: metricNumber(row[14]), current: metricNumber(row[15]), total: metricNumber(row[16]), deleteRate: metricNumber(row[17]) }
+  ];
+  const weightedRate = key => {
+    if (!totalAdd) return '0.0%';
+    const weighted = buckets.reduce((sum, bucket) => sum + bucket.count * bucket[key], 0) / totalAdd;
+    return `${weighted.toFixed(1)}%`;
+  };
+  return [
+    row[0],
+    row[1],
+    row[2],
+    weightedRate('open'),
+    weightedRate('current'),
+    weightedRate('total'),
+    weightedRate('deleteRate'),
+    ...row.slice(3)
+  ];
+}
+
+function renderAttemptMetric(name, ai, top, max, reverse = false) {
+  const diff = ai - top;
+  return `
+    <div class="attempt-metric">
+      <div class="attempt-metric-head">
+        <span class="attempt-metric-name">${name}</span>
+        <span class="attempt-diff ${valueDiffClass(diff, reverse)}">${signedPercent(diff)}</span>
+      </div>
+      <div class="attempt-lines">
+        <div class="attempt-line">
+          <span class="paired-label">AI</span>
+          <div class="paired-track"><div class="paired-fill" style="width:${Math.max(2, ai / max * 100)}%"></div></div>
+          <span class="paired-value">${ai}%</span>
+        </div>
+        <div class="attempt-line">
+          <span class="paired-label">销冠</span>
+          <div class="paired-track"><div class="paired-fill top" style="width:${Math.max(2, top / max * 100)}%"></div></div>
+          <span class="paired-value">${top}%</span>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderAttemptMatrix() {
+  const maxOpen = Math.max(...attemptOpenRows.flatMap(row => [row[1], row[2]]), 1);
+  document.getElementById('attemptCompareGrid').innerHTML = attemptOpenRows.map(row => `
+      <article class="attempt-card">
+        <div class="attempt-title">${row[0]}</div>
+        ${renderAttemptMetric('开口率', row[1], row[2], maxOpen)}
+      </article>
+  `).join('');
+}
+
+function renderBars(id, bars, baseline, unit) {
+  const maxValue = Math.max(...bars.map(item => item[1]), baseline || 0) * 1.12 || 1;
+  const baselineLeft = baseline ? Math.min(100, baseline / maxValue * 100) : null;
+  document.getElementById(id).innerHTML = bars.map(item => {
+    const width = Math.max(1, item[1] / maxValue * 100);
+    const mark = baselineLeft === null ? '' : `<span class="baseline-mark" style="left:${baselineLeft}%"></span>`;
+    return `
+      <div class="bar-row">
+        <div class="bar-name">${item[0]}</div>
+        <div class="track">
+          <div class="bar-fill ${item[2] || ''}" style="width:${width}%"></div>
+          ${mark}
+        </div>
+        <div class="bar-value">${item[1]}${unit}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderMetricStrip(id, metrics) {
+  document.getElementById(id).innerHTML = metrics.map(metric => `
+    <article class="metric-card">
+      <div class="metric-label">${metric[0]}</div>
+      <div class="metric-value ${metric[4] === 'danger' ? 'danger' : metric[4] === 'warn' ? 'warn' : metric[4] === 'good' ? 'good' : ''}">${metric[1]}</div>
+      <div class="metric-change ${metric[4] === 'danger' ? 'danger' : metric[4] === 'warn' ? 'warn' : metric[4] === 'good' ? 'good' : ''}">${metric[2]}</div>
+      <div class="metric-note">${metric[3]}</div>
+    </article>
+  `).join('');
+}
+
+function renderFindingCards(id, rows) {
+  document.getElementById(id).innerHTML = rows.map(item => `
+    <div class="finding-card">
+      <div class="finding-label">${item[0]}</div>
+      <div class="finding-text">${item[1]}</div>
+    </div>
+  `).join('');
+}
+
+const chartColorMap = {
+  red: '#df3f3f',
+  orange: '#f59e0b',
+  amber: '#f7c55f',
+  purple: '#7c6ff0',
+  blue: '#3478f6',
+  green: '#18a97b',
+  neutral: '#d8dee8'
+};
+
+function conicStops(rows, valueIndex = 1, colorIndex = 3) {
+  let start = 0;
+  const stops = rows.map(row => {
+    const value = Number(row[valueIndex]) || 0;
+    const end = Math.min(100, start + value);
+    const color = chartColorMap[row[colorIndex]] || chartColorMap.blue;
+    const segment = `${color} ${start.toFixed(2)}% ${end.toFixed(2)}%`;
+    start = end;
+    return segment;
+  });
+  if (start < 99.99) stops.push(`${chartColorMap.neutral} ${start.toFixed(2)}% 100%`);
+  return stops.join(', ');
+}
+
+function renderConversionPath(id, rows) {
+  document.getElementById(id).innerHTML = rows.map((row, index) => `
+    <article class="path-card">
+      <div class="path-index">${index + 1}</div>
+      <div class="path-title">${row[0]}</div>
+      <div class="path-text">${row[1]}</div>
+    </article>
+  `).join('');
+}
+
+function renderLossRoundDonut(id, rows) {
+  document.getElementById(id).innerHTML = `
+    <div class="donut-chart" style="background: conic-gradient(${conicStops(rows)})">
+      <div class="donut-hole">
+        <strong>100%</strong>
+        <span>流失客户</span>
+      </div>
+    </div>
+    <div class="donut-legend">
+      ${rows.map(row => `
+        <div class="donut-legend-row">
+          <span class="legend-dot" style="background:${chartColorMap[row[3]] || chartColorMap.blue}"></span>
+          <span class="legend-name">${row[0]}</span>
+          <span class="legend-count">${row[2]}</span>
+          <span class="legend-value">${row[1]}%</span>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function renderLossRoundBars(id, rows) {
+  const max = Math.max(...rows.map(row => row[1]), 1);
+  document.getElementById(id).innerHTML = rows.map(row => `
+    <div class="loss-summary-row">
+      <div class="loss-summary-name">${row[0].replace('开口流失', '')}</div>
+      <div class="loss-summary-track">
+        <div class="loss-summary-fill" style="width:${Math.max(2, row[1] / max * 100)}%;background:${chartColorMap[row[3]] || chartColorMap.red}"></div>
+      </div>
+      <div class="loss-summary-value">${row[1]}%</div>
+    </div>
+  `).join('');
+}
+
+function renderLossReasonRankGrid(id, groups) {
+  document.getElementById(id).innerHTML = groups.map(group => {
+    const max = Math.max(...group.rows.map(row => row[1]), 1);
+    return `
+      <article class="reason-card">
+        <div class="reason-card-head">
+          <div>
+            <div class="reason-title">${group.round}流失原因</div>
+            <div class="reason-subtitle">流失客户 ${group.total}</div>
+          </div>
+          <span class="pill red">Top 3</span>
+        </div>
+        <div class="reason-visual">
+          <div class="reason-donut" style="background: conic-gradient(${conicStops(group.rows, 1, 5)})">
+            <div class="reason-donut-hole">${group.total}</div>
+          </div>
+          <div class="reason-bars">
+            ${group.rows.map(row => `
+              <div class="reason-row">
+                <div class="reason-name">${row[0]}</div>
+                <div class="reason-value">${row[1]}%</div>
+                <div class="reason-track">
+                  <div class="reason-fill" style="width:${Math.max(2, row[1] / max * 100)}%;background:${chartColorMap[row[5]] || chartColorMap.orange}"></div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        <div class="reason-actions">
+          ${group.rows.map(row => `
+            <div class="reason-action-row">
+              <div class="reason-action-name"><b>${row[4]}</b><span>${row[3]}</span></div>
+              <button class="table-action-btn" type="button" data-preview-strategy="${row[4]}">查看</button>
+            </div>
+          `).join('')}
+        </div>
+      </article>
+    `;
+  }).join('');
+  document.getElementById(id).querySelectorAll('[data-preview-strategy]').forEach(button => {
+    button.addEventListener('click', () => openStrategyPreview(button.dataset.previewStrategy));
+  });
+}
+
+function renderWakeShareChart(id, rows) {
+  const colors = {
+    green: '#18a97b',
+    blue: '#3478f6',
+    sky: '#67a8f6',
+    orange: '#f59e0b',
+    amber: '#f7c55f',
+    loss: '#d8dee8'
+  };
+  let start = 0;
+  const stops = rows.map(row => {
+    const end = start + row[1];
+    const color = colors[row[3]] || colors.blue;
+    const segment = `${color} ${start}% ${end}%`;
+    start = end;
+    return segment;
+  });
+  if (start < 100) stops.push(`#edf2f8 ${start}% 100%`);
+  document.getElementById(id).innerHTML = `
+    <div class="wake-pie" style="background: conic-gradient(${stops.join(', ')})">
+      <div class="wake-pie-hole">
+        <strong>100%</strong>
+        <span>回访闭环</span>
+      </div>
+    </div>
+    <div class="wake-legend">
+      ${rows.map(row => `
+        <div class="wake-legend-row">
+          <span class="wake-dot" style="background:${colors[row[3]] || colors.blue}"></span>
+          <span class="wake-share-day">${row[0]}</span>
+          <span class="wake-share-value">${row[1]}%</span>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function heatmapLevel(value) {
+  if (value >= 25) return 'level-hot';
+  if (value >= 18) return 'level-good';
+  if (value >= 12) return 'level-mid';
+  if (value >= 7) return 'level-low';
+  return 'level-risk';
+}
+
+function renderSopPerformance(id, rows) {
+  const max = Math.max(...rows.map(row => row[1]), 1);
+  document.getElementById(id).innerHTML = rows.map(row => `
+    <div class="sop-performance-row">
+      <div>
+        <div class="sop-performance-name">${row[0]}</div>
+        <div class="sop-performance-meta">${row[2]}</div>
+      </div>
+      <div class="sop-performance-track">
+        <div class="sop-performance-fill ${row[3]}" style="width:${Math.max(2, row[1] / max * 100)}%"></div>
+      </div>
+      <div class="sop-performance-kpis">
+        <span>首开率<strong>${row[1]}%</strong></span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderNodeHeatmap(id, rows) {
+  const header = `
+    <div class="heatmap-row header">
+      <div>SOP</div>
+      <div>Node1</div>
+      <div>Node2</div>
+      <div>Node3</div>
+      <div>Node4</div>
+      <div>Node5</div>
+    </div>
+  `;
+  const body = rows.map(row => `
+    <div class="heatmap-row">
+      <div class="heatmap-sop">${row[0]}</div>
+      ${row[1].map(value => `<div class="heatmap-cell ${heatmapLevel(value)}">${value}%</div>`).join('')}
+    </div>
+  `).join('');
+  document.getElementById(id).innerHTML = header + body;
+}
+
+function renderSentenceTabs(tabWrapId = 'sameDaySentenceTabs') {
+  const tabWrap = document.getElementById(tabWrapId);
+  if (!tabWrap) return;
+  tabWrap.innerHTML = sentenceFilterTabs.map(tab => `
+    <button class="round-tab ${tab[0] === currentSentenceFilter ? 'active' : ''}" type="button" data-sentence-filter="${tab[0]}">${tab[1]}</button>
+  `).join('');
+  tabWrap.querySelectorAll('[data-sentence-filter]').forEach(button => {
+    button.addEventListener('click', () => {
+      currentSentenceFilter = button.dataset.sentenceFilter;
+      currentSameDayNodePage = 1;
+      renderSameDayNodeDetail();
+      renderStrategySameDayNodeDetail();
+    });
+  });
+}
+
+function renderPagination(id, total, pageSize, currentPage, onPageName) {
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const start = total === 0 ? 0 : (currentPage - 1) * pageSize + 1;
+  const end = Math.min(total, currentPage * pageSize);
+  const pages = Array.from({ length: totalPages }, (_, index) => index + 1);
+  document.getElementById(id).innerHTML = `
+    <span class="pagination-info">显示 ${start}-${end} / ${total} 条</span>
+    <button class="pagination-btn" type="button" data-page-action="prev" ${currentPage <= 1 ? 'disabled' : ''}>上一页</button>
+    ${pages.map(page => `<button class="pagination-btn ${page === currentPage ? 'active' : ''}" type="button" data-page="${page}">${page}</button>`).join('')}
+    <button class="pagination-btn" type="button" data-page-action="next" ${currentPage >= totalPages ? 'disabled' : ''}>下一页</button>
+  `;
+  document.getElementById(id).querySelectorAll('[data-page]').forEach(button => {
+    button.addEventListener('click', () => {
+      window[onPageName](Number(button.dataset.page));
+    });
+  });
+  document.getElementById(id).querySelectorAll('[data-page-action]').forEach(button => {
+    button.addEventListener('click', () => {
+      window[onPageName](button.dataset.pageAction === 'prev' ? currentPage - 1 : currentPage + 1);
+    });
+  });
+}
+
+function setSameDayNodePage(page) {
+  const filteredTotal = sameDayNodeDetailRows.filter(row => currentSentenceFilter === 'all' || row.sentence === currentSentenceFilter).length;
+  const totalPages = Math.max(1, Math.ceil(filteredTotal / sameDayNodePageSize));
+  currentSameDayNodePage = Math.min(Math.max(1, page), totalPages);
+  renderSameDayNodeDetail();
+  renderStrategySameDayNodeDetail();
+}
+window.setSameDayNodePage = setSameDayNodePage;
+
+function renderSameDayNodeDetail() {
+  renderSameDayNodeTable('sameDaySentenceTabs', 'sameDayNodeBody', 'sameDayNodePagination');
+}
+
+function renderStrategySameDayNodeDetail() {
+  renderSameDayNodeTable('strategySameDaySentenceTabs', 'strategySameDayNodeBody', 'strategySameDayNodePagination');
+}
+
+function renderSameDayNodeTable(tabsId, bodyId, paginationId) {
+  renderSentenceTabs(tabsId);
+  const rows = sameDayNodeDetailRows
+    .filter(row => currentSentenceFilter === 'all' || row.sentence === currentSentenceFilter)
+    .slice()
+    .sort((a, b) => b.rate - a.rate);
+  const totalPages = Math.max(1, Math.ceil(rows.length / sameDayNodePageSize));
+  currentSameDayNodePage = Math.min(currentSameDayNodePage, totalPages);
+  const pageRows = rows.slice((currentSameDayNodePage - 1) * sameDayNodePageSize, currentSameDayNodePage * sameDayNodePageSize);
+  const body = document.getElementById(bodyId);
+  if (!body) return;
+  body.innerHTML = pageRows.map(row => `
+    <tr>
+      <td class="sticky-col strong">${row.strategyId}</td>
+      <td class="strong">${row.strategy}</td>
+      <td>${row.timing}</td>
+      <td class="num">${row.reach}</td>
+      <td class="num">${row.rate}%</td>
+      <td><button class="table-action-btn" type="button" data-preview-strategy="${row.strategy}">查看</button></td>
+    </tr>
+  `).join('');
+  body.querySelectorAll('[data-preview-strategy]').forEach(button => {
+    button.addEventListener('click', () => openStrategyPreview(button.dataset.previewStrategy));
+  });
+  renderPagination(paginationId, rows.length, sameDayNodePageSize, currentSameDayNodePage, 'setSameDayNodePage');
+}
+
+function openStrategyPreview(strategy) {
+  const rows = strategyPreviewRows[strategy] || [];
+  document.getElementById('strategyPreviewTitle').textContent = `${strategy} 节点话术预览`;
+  document.getElementById('strategyPreviewBody').innerHTML = rows.map(row => `
+    <tr>
+      <td class="sticky-col strong ${row[0] ? '' : 'preview-empty'}">${row[0] || '-'}</td>
+      <td class="${row[1] ? '' : 'preview-empty'}">${row[1] || '-'}</td>
+      <td>${row[2]}</td>
+      <td>${row[3] ? `<a class="preview-link" href="${row[3]}" target="_blank" rel="noopener noreferrer">${row[3]}</a>` : ''}</td>
+      <td>${row[4] ? `<a class="preview-link" href="${row[4]}" target="_blank" rel="noopener noreferrer">${row[4]}</a>` : ''}</td>
+    </tr>
+  `).join('');
+  document.getElementById('strategyPreviewModal').hidden = false;
+}
+
+function closeStrategyPreview() {
+  document.getElementById('strategyPreviewModal').hidden = true;
+}
+
+function renderWindowChart(id, rows) {
+  const max = Math.max(...rows.map(row => row[1]), 1);
+  document.getElementById(id).innerHTML = rows.map(row => `
+    <div class="window-column">
+      <div class="window-bar-box">
+        <div class="window-bar ${row[2]}" style="height:${Math.max(6, row[1] / max * 148)}px"></div>
+      </div>
+      <div class="window-label">
+        <strong>${row[1]}%</strong>
+        ${row[0]}
+        <span>${row[3]}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderSentenceEfficiency(id, rows) {
+  const maxOpen = Math.max(...rows.map(row => row[1]), 1);
+  const maxRisk = Math.max(...rows.map(row => row[2]), 1);
+  document.getElementById(id).innerHTML = rows.map(row => `
+    <div class="sentence-row">
+      <div class="sentence-name">${row[0]}</div>
+      <div class="sentence-bars">
+        <div class="sentence-track"><div class="sentence-fill" style="width:${Math.max(2, row[1] / maxOpen * 100)}%"></div></div>
+        <div class="sentence-track"><div class="sentence-fill risk" style="width:${Math.max(2, row[2] / maxRisk * 100)}%"></div></div>
+      </div>
+      <div class="sentence-kpi">
+        开口 <strong>${row[1]}%</strong><br>
+        删除 <strong>${row[2]}%</strong>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderOpen() {
+  renderMetricStrip('openSplitMetrics', openSplitMetrics);
+  renderSopPerformance('sameDaySopPerformance', sameDaySopPerformanceRows);
+  renderNodeHeatmap('sameDayNodeHeatmap', sameDayNodeHeatmapRows);
+  renderWindowChart('sameDayTimeChart', sameDayTimeRows);
+  renderSentenceEfficiency('sameDaySentenceChart', sameDaySentenceRows);
+  renderSameDayNodeDetail();
+  renderMetricStrip('followupMetrics', followupMetrics);
+  renderBars('followupSopBars', followupSopBars, 18.6, '%');
+  renderWakeShareChart('followupWakeShareChart', followupWakeShareRows);
+  renderFollowupNodeTable('followupNodeBody', followupNodeRows);
+}
+
+function renderSource() {
+  renderSourceDetail();
+}
+
+function renderSourceDetail() {
+  const filter = document.getElementById('sourceDetailFilter').value;
+  const rows = sourceDetailRows.filter(row => filter === '全部渠道' ? row[1] === '全部渠道' : row[1] === filter);
+  document.getElementById('sourceDetailBody').innerHTML = rows.map(row => `
+    <tr>${sourceDetailDisplayRow(row).map((cell, index) => `<td class="${index === 0 ? 'sticky-col strong' : index >= 2 ? 'num' : ''}">${cell}</td>`).join('')}</tr>
+  `).join('');
+}
+
+function renderSop() {
+  document.getElementById('sopMetrics').innerHTML = sopMetrics.map(metric => `
+    <article class="metric-card">
+      <div class="metric-label">${metric[0]}</div>
+      <div class="metric-value ${metric[4] === 'danger' ? 'danger' : metric[4] === 'warn' ? 'warn' : metric[4] === 'good' ? 'good' : ''}">${metric[1]}</div>
+      <div class="metric-change ${metric[4] === 'danger' ? 'danger' : metric[4] === 'warn' ? 'warn' : metric[4] === 'good' ? 'good' : ''}">${metric[2]}</div>
+      <div class="metric-note">${metric[3]}</div>
+    </article>
+  `).join('');
+  renderBars('sopBars', sopBars, 13.5, '%');
+  document.getElementById('sopFindings').innerHTML = sopFindings.map(item => `
+    <div class="finding-card">
+      <div class="finding-label">${item[0]}</div>
+      <div class="finding-text">${item[1]}</div>
+    </div>
+  `).join('');
+  renderSopRows();
+  renderStrategySameDayNodeDetail();
+}
+
+function getMainTabLabel(key) {
+  const tab = mainTabs.find(item => item.key === key);
+  return tab ? tab.label : key;
+}
+
+function renderMainTabs() {
+  document.getElementById('mainTabs').innerHTML = mainTabs.map(tab => `
+    <button class="main-tab ${tab.key === currentMainTab ? 'active' : ''}" type="button" data-tab="${tab.key}">${tab.label}</button>
+  `).join('');
+  document.querySelectorAll('[data-tab]').forEach(button => {
+    button.addEventListener('click', () => switchMainTab(button.dataset.tab));
+  });
+}
+
+function switchMainTab(key) {
+  currentMainTab = key;
+  document.querySelectorAll('.main-tab').forEach(button => {
+    button.classList.toggle('active', button.dataset.tab === key);
+  });
+  document.querySelectorAll('[data-tab-panel]').forEach(panel => {
+    panel.hidden = panel.dataset.tabPanel !== key;
+  });
+}
+
+function renderConversion() {
+  renderLossRoundDonut('lossRoundDonut', lossRoundDonutRows);
+  renderBars('bottleneckBars', bottleneckBars, 0, '%');
+  renderBottleneckDiagnosisTable('bottleneckDiagnosisBody', bottleneckDiagnosisRows);
+  renderConversionRows('bottleneckSequenceBody', bottleneckSequenceRows, [3, 4, 5, 6]);
+  renderConversionRows('lossRoundBody', lossRoundRows, [1, 2, 3]);
+  renderConversionRows('sequenceStepBody', sequenceStepRows, [4, 5, 6, 7, 8]);
+  renderKnowledgeBottleneckFilter();
+  renderKnowledgeMatrix();
+  renderLossCustomerTable('lossCustomerBody', lossCustomerRows);
+  renderConversionLoop('conversionLoopGrid', conversionLoopRows);
+}
+
+function renderConversionRows(id, rows, numericIndexes = []) {
+  document.getElementById(id).innerHTML = rows.map(row => `
+    <tr>${row.map((cell, index) => `<td class="${index === 0 ? 'sticky-col strong' : numericIndexes.includes(index) ? 'num' : ''}">${statusBadge(cell)}</td>`).join('')}</tr>
+  `).join('');
+}
+
+function renderBottleneckDiagnosisTable(id, rows) {
+  document.getElementById(id).innerHTML = rows.map(row => `
+    <tr>
+      <td class="sticky-col strong">${row[0]}</td>
+      <td class="num">${row[1]}</td>
+      <td>${row[3]}</td>
+      <td class="num">${row[5]}</td>
+      <td class="num">${row[6]}</td>
+      <td class="num">${row[7]}</td>
+    </tr>
+  `).join('');
+}
+
+function renderLossRoundGrid(id, rows) {
+  document.getElementById(id).innerHTML = rows.map((row, index) => `
+    <article class="node-card">
+      <div class="node-head">
+        <span>${row.round}</span>
+        <span class="pill ${index === 0 || index === 3 ? 'red' : 'orange'}">流失</span>
+      </div>
+      <div class="node-rate danger">${row.customers}</div>
+      <div class="node-meta">${row.rate} / 已开口客户</div>
+      <div class="node-health"><span style="width:${Math.max(8, metricNumber(row.rate) * 2.4)}%;background:${index === 0 || index === 3 ? 'var(--red)' : 'var(--orange)'}"></span></div>
+      <div class="loss-round-detail"><b>${row.reason}</b><br>${row.problem}<br>调整：${row.action}</div>
+    </article>
+  `).join('');
+}
+
+function renderKnowledgeBottleneckFilter() {
+  const select = document.getElementById('knowledgeBottleneckFilter');
+  if (!select) return;
+  const currentValue = select.value || '全部卡点';
+  const options = ['全部卡点', ...new Set(knowledgeMatrixRows.map(row => row[0]))];
+  select.innerHTML = options.map(option => `<option value="${option}">${option}</option>`).join('');
+  select.value = options.includes(currentValue) ? currentValue : '全部卡点';
+}
+
+function renderKnowledgeMatrix() {
+  const filter = document.getElementById('knowledgeBottleneckFilter')?.value || '全部卡点';
+  const rows = knowledgeMatrixRows.filter(row => filter === '全部卡点' || row[0] === filter);
+  document.getElementById('knowledgeMatrixBody').innerHTML = rows.map(row => `
+    <tr>
+      <td class="sticky-col strong">${row[0]}</td>
+      <td class="strong">${row[1]}</td>
+      <td class="num">${row[2]}</td>
+      <td class="num">${row[3]}</td>
+      <td class="num">${row[4]}</td>
+      <td class="num">${row[5]}</td>
+      <td class="num">${row[6]}</td>
+      <td class="num">${row[7]}</td>
+      <td><button class="table-action-btn" type="button" data-preview-strategy="${row[1]}">查看</button></td>
+    </tr>
+  `).join('');
+  document.getElementById('knowledgeMatrixBody').querySelectorAll('[data-preview-strategy]').forEach(button => {
+    button.addEventListener('click', () => openStrategyPreview(button.dataset.previewStrategy));
+  });
+}
+
+function renderLossCustomerTable(id, rows) {
+  document.getElementById(id).innerHTML = rows.map(row => `
+    <tr>
+      <td class="sticky-col strong">${row[0]}</td>
+      <td>${row[1]}</td>
+      <td>${row[2]}</td>
+      <td>${row[3]}</td>
+      <td><span class="strategy-chain">${row[4]}</span></td>
+      <td>${row[5]}</td>
+      <td>${row[6]}</td>
+      <td>${row[7]}</td>
+      <td>${row[8]}</td>
+      <td>${row[9]}</td>
+      <td><button class="table-action-btn" type="button" data-chat-customer="${row[0]}">查看聊天</button></td>
+    </tr>
+  `).join('');
+  document.getElementById(id).querySelectorAll('[data-chat-customer]').forEach(button => {
+    button.addEventListener('click', () => openChatReview(button.dataset.chatCustomer));
+  });
+}
+
+function renderConversionLoop(id, rows) {
+  document.getElementById(id).innerHTML = rows.map(row => `
+    <article class="loop-card">
+      <div class="loop-label">${row[0]}</div>
+      <div class="loop-title">${row[1]}</div>
+      <div class="loop-text">${row[2]}</div>
+    </article>
+  `).join('');
+}
+
+function openChatReview(customerId) {
+  const record = chatReviewRecords[customerId];
+  if (!record) return;
+  document.getElementById('chatReviewTitle').textContent = record.title;
+  document.getElementById('chatTranscript').innerHTML = record.messages.map(message => `
+    <div class="chat-message ${message[0] === 'AI' ? 'ai' : 'customer'}">
+      <div class="chat-role">${message[0]}</div>
+      <div class="chat-text">${message[1]}</div>
+    </div>
+  `).join('');
+  document.getElementById('chatAnalysisPanel').innerHTML = record.analysis.map(item => `
+    <div class="chat-analysis-card">
+      <div class="chat-analysis-label">${item[0]}</div>
+      <div class="chat-analysis-value">${item[1]}</div>
+    </div>
+  `).join('');
+  document.getElementById('chatReviewModal').hidden = false;
+}
+
+function closeChatReview() {
+  document.getElementById('chatReviewModal').hidden = true;
+}
+
+function renderSimpleTable(id, rows) {
+  document.getElementById(id).innerHTML = rows.map(row => `
+    <tr>${row.map((cell, index) => `<td class="${index === 0 ? 'sticky-col strong' : index > 2 && String(cell).includes('%') ? 'num' : ''}">${statusBadge(cell)}</td>`).join('')}</tr>
+  `).join('');
+}
+
+function renderSopRows() {
+  document.getElementById('sopBody').innerHTML = sopRows.map(row => `
+    <tr>${row.map((cell, index) => `<td class="${index === 0 ? 'sticky-col strong' : index >= 2 ? 'num' : ''}">${cell}</td>`).join('')}</tr>
+  `).join('');
+}
+
+function renderFollowupNodeTable(id, rows) {
+  document.getElementById(id).innerHTML = rows.map(row => `
+    <tr>
+      <td class="sticky-col strong">${row[0]}</td>
+      <td class="strong">${row[1]}</td>
+      <td>${row[2]}</td>
+      <td>${row[3]}</td>
+      <td class="num">${row[4]}</td>
+      <td class="num">${row[5]}</td>
+      <td class="num">${row[6]}</td>
+      <td class="num">${row[7]}</td>
+      <td class="num">${row[8]}</td>
+      <td class="num">${row[9]}</td>
+      <td><button class="table-action-btn" type="button" data-preview-strategy="${row[1]}">查看</button></td>
+    </tr>
+  `).join('');
+  document.getElementById(id).querySelectorAll('[data-preview-strategy]').forEach(button => {
+    button.addEventListener('click', () => openStrategyPreview(button.dataset.previewStrategy));
+  });
+}
+
+function renderActions() {
+  document.getElementById('actionBody').innerHTML = actionRows.map(row => `
+    <tr>
+      <td class="sticky-col strong">${row[0]}</td>
+      <td>${row[1]}</td>
+      <td class="num">${row[2]}</td>
+      <td>${row[3]}</td>
+      <td>${row[4]}</td>
+      <td>${row[5]}</td>
+      <td><span class="badge ${row[6] === 'P0' ? 'bad' : 'warn'}">${row[6]}</span></td>
+    </tr>
+  `).join('');
+}
+
+function setRange(key) {
+  document.querySelectorAll('[data-range]').forEach(btn => btn.classList.toggle('active', btn.dataset.range === key));
+  const start = document.getElementById('startDate');
+  const end = document.getElementById('endDate');
+  if (key === '7') {
+    start.value = '2026-08-12';
+    end.value = '2026-08-18';
+  } else if (key === 'month') {
+    start.value = '2026-08-01';
+    end.value = '2026-08-18';
+  } else if (key === 'quarter') {
+    start.value = '2026-07-01';
+    end.value = '2026-08-18';
+  } else {
+    start.value = '2026-07-20';
+    end.value = '2026-08-18';
+  }
+}
+
+function exportCurrentView() {
+  const activeTabLabel = getMainTabLabel(currentMainTab);
+  let lines = [
+    ['页面', 'AI销售全链路BI深度分析看板'],
+    ['当前主Tab', activeTabLabel],
+    []
+  ];
+
+  if (currentMainTab === 'overview') {
+    lines = lines.concat([
+      ['总加微客户口径'],
+      ['指标', 'AI员工', '销冠头部', '偏差'],
+      ...diagnosisRows,
+      [],
+      ['开口客户口径'],
+      ['指标', 'AI员工', '销冠头部', '偏差'],
+      ...openBenchmarkRows,
+      [],
+      ['加微明细'],
+      [],
+      ['日期', '渠道', '总计加微数', '总计开口率', '总计现转率', '总计总转率', '总计删除率', '早间加微数', '早间开口率', '早间现转率', '早间总转率', '早间删除率', '午间加微数', '午间开口率', '午间现转率', '午间总转率', '午间删除率', '晚间加微数', '晚间开口率', '晚间现转率', '晚间总转率', '晚间删除率'],
+      ...sourceDetailRows.map(sourceDetailDisplayRow)
+    ]);
+  } else if (currentMainTab === 'open') {
+    lines = lines.concat([
+      ['开口分流诊断'],
+      ['指标', '当前值', '变化', '说明'],
+      ...openSplitMetrics.map(item => [item[0], item[1], item[2], item[3]]),
+      [],
+      ['加微当天已开口归因'],
+      [],
+      ['当天首开SOP表现'],
+      ['SOP策略', '当天首开率'],
+      ...sameDaySopPerformanceRows.map(row => [row[0], `${row[1]}%`]),
+      [],
+      ['SOP × 节点首开热力'],
+      ['SOP策略', 'Node1', 'Node2', 'Node3', 'Node4', 'Node5'],
+      ...sameDayNodeHeatmapRows.map(row => [row[0], ...row[1].map(value => `${value}%`)]),
+      [],
+      ['首开前句数分布'],
+      ['句数', '当天首开率', '删除率', '判断'],
+      ...sameDaySentenceRows.map(row => [row[0], `${row[1]}%`, `${row[2]}%`, row[3]]),
+      [],
+      ['加微后开口窗口'],
+      ['时间窗口', '占比', '说明'],
+      ...sameDayTimeRows.map(row => [row[0], `${row[1]}%`, row[3]]),
+      [],
+      ['当天首开SOP × 节点明细'],
+      ['句次', '策略ID', '策略名称', '发送时机', '触达客户', '当天首开率'],
+      ...sameDayNodeDetailRows
+        .slice()
+        .sort((a, b) => b.rate - a.rate)
+        .map(row => [`第${row.sentence}句`, row.strategyId, row.strategy, row.timing, row.reach, `${row.rate}%`]),
+      [],
+      ['加微当天未开口回访SOP'],
+      ['指标', '当前值', '变化', '说明'],
+      ...followupMetrics.map(item => [item[0], item[1], item[2], item[3]]),
+      [],
+      ['回访策略排行'],
+      ['回访策略', '7日唤醒率'],
+      ...followupSopBars.map(row => [row[0], `${row[1]}%`]),
+      [],
+      ['唤醒占比图'],
+      ['天数', '唤醒占比'],
+      ...followupWakeShareRows.map(row => [row[0], `${row[1]}%`]),
+      [],
+      ['未开口客户回访SOP策略矩阵'],
+      ['策略ID', '回访SOP', '主回访节奏', '内容类型', '覆盖客户', '次日唤醒', '3日唤醒', '5日唤醒', '7日唤醒', '删除率'],
+      ...followupNodeRows.map(row => row.map(cell => String(cell).replace(/^(good|bad|watch|neutral|blue):/, '')))
+    ]);
+  } else if (currentMainTab === 'conversion') {
+    lines = lines.concat([
+      ['流失客户结构'],
+      ['轮次', '占流失客户', '客户数'],
+      ...lossRoundDonutRows.map(row => [row[0], `${row[1]}%`, row[2]]),
+      [],
+      ['卡点转化诊断'],
+      ['卡点', '占识别卡点客户'],
+      ...bottleneckBars.map(row => [row[0], `${row[1]}%`]),
+      [],
+      ['卡点转化明细'],
+      ['卡点类型', '卡分配客户', '跟进序列', '再次开口率', '预约率', '删除率'],
+      ...bottleneckDiagnosisRows.map(row => [row[0], row[1], row[3], row[5], row[6], row[7]]),
+      [],
+      ['卡点 × 跟进序列效果'],
+      ['卡点类型', '跟进序列', '适用客户', '样本', '再次开口率', '跟进后成交率', '删除率', '判断'],
+      ...bottleneckSequenceRows.map(row => row.map(cell => String(cell).replace(/^(good|bad|watch|neutral|blue):/, ''))),
+      [],
+      ['开口轮次流失诊断'],
+      ['开口轮次', '流失客户', '占已开口', '占流失客户', '主要卡点', '高风险序列步骤', 'AI问题', '穿透动作'],
+      ...lossRoundRows,
+      [],
+      ['跟进序列步骤拆解'],
+      ['序列名称', '步骤', '动作类型', '间隔', '执行率', '跳过率', '调整率', '回复率', '成交贡献', '优化判断'],
+      ...sequenceStepRows.map(row => row.map(cell => String(cell).replace(/^(good|bad|watch|neutral|blue):/, ''))),
+      [],
+      ['卡点 × 跟进策略 × 知识库话术矩阵'],
+      ['卡点类型', '跟进策略', '话术数', '使用次数', '突破率', '再次开口率', '跟进后成交率', 'AI兜底占比', '查看'],
+      ...knowledgeMatrixRows.map(row => [...row, `查看${row[1]}`]),
+      [],
+      ['未成交客户穿透'],
+      ['客户ID', '卡点类型', '触发序列', '执行到第几步', '全部跟进策略', '最后跟进策略', '知识库/话术ID', '步骤结果', '客户状态', 'AI归因'],
+      ...lossCustomerRows,
+      [],
+      ['转化策略闭环'],
+      ['闭环步骤', '触发证据', '策略动作'],
+      ...conversionLoopRows
+    ]);
+  } else if (currentMainTab === 'strategy') {
+    lines = lines.concat([
+      ['指标', '当前值', '变化', '说明'],
+      ...sopMetrics.map(item => [item[0], item[1], item[2], item[3]]),
+      [],
+      ['SOP策略', '关键节点规则', '触达客户', '1次触达开口', '3次触达开口', '5次触达开口', '10次触达开口', '开口后转化', '删除率'],
+      ...sopRows.map(row => row.map(cell => String(cell).replace(/^(good|bad|watch|neutral|blue):/, ''))),
+      [],
+      ['当天首开SOP × 节点明细'],
+      ['策略ID', '策略名称', '发送时机', '触达客户', '当天首开率'],
+      ...sameDayNodeDetailRows
+        .slice()
+        .sort((a, b) => b.rate - a.rate)
+        .map(row => [row.strategyId, row.strategy, row.timing, row.reach, `${row.rate}%`]),
+      [],
+      ['卡点', 'AI策略动作', '最佳等待间隔', '样本', '再次开口率', '复开后转化', '删除率', '节奏判断'],
+      ...rhythmMatrixRows.map(row => row.map(cell => String(cell).replace(/^(good|bad|watch|neutral|blue):/, ''))),
+      [],
+      ['高优先级话术单元格', '使用次数', '回复率', '态度松动率', '24h转化', 'AI生成占比', '处理动作', '判断'],
+      ...scriptMatrixRows.map(row => row.map(cell => String(cell).replace(/^(good|bad|watch|neutral|blue):/, ''))),
+      [],
+      ['知识库/内容包', '主要适用卡点', '调用次数', '回复率', '态度松动率', '24h转化', '事实风险', '处理建议', '判断'],
+      ...knowledgeRows.map(row => row.map(cell => String(cell).replace(/^(good|bad|watch|neutral|blue):/, '')))
+    ]);
+  } else if (currentMainTab === 'detail') {
+    lines = lines.concat([
+      ['客户ID', '最后状态', '有效轮次', '主要卡点', '最后AI策略', '聊天摘要', '下一步跟进', '判断'],
+      ...customerDetailRows.map(row => row.map(cell => String(cell).replace(/^(good|bad|watch|neutral|blue):/, ''))),
+      [],
+      ['行动项', '触发证据', '影响客户', '执行对象', '验证指标', '预计收益', '优先级'],
+      ...actionRows,
+      [],
+      ['实验ID', '变更内容', '对照组', '实验组', '主指标差异', '删除率差异', '结论'],
+      ...experimentRows.map(row => row.map(cell => String(cell).replace(/^(good|bad|watch|neutral|blue):/, '')))
+    ]);
+  }
+
+  const csv = '\ufeff' + lines.map(row => row.map(cell => `"${String(cell ?? '').replace(/"/g, '""')}"`).join(',')).join('\n');
+  const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `${activeTabLabel}-BI分析.csv`;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+function init() {
+  renderMainTabs();
+  renderDiagnosis();
+  renderAttemptMatrix();
+  renderSource();
+  renderOpen();
+  renderConversion();
+  renderSop();
+  renderSimpleTable('rhythmMatrixBody', rhythmMatrixRows);
+  renderSimpleTable('scriptBody', scriptRows);
+  renderBars('styleBars', styleBars, 0, '%');
+  renderSimpleTable('scriptMatrixBody', scriptMatrixRows);
+  renderSimpleTable('knowledgeBody', knowledgeRows);
+  renderSimpleTable('customerDetailBody', customerDetailRows);
+  renderActions();
+  renderSimpleTable('experimentBody', experimentRows);
+  document.querySelectorAll('[data-range]').forEach(btn => btn.addEventListener('click', () => setRange(btn.dataset.range)));
+  document.querySelectorAll('.select-control').forEach(select => {
+    select.addEventListener('change', () => {
+      document.getElementById('freshnessText').textContent = '筛选已应用 ' + new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+    });
+  });
+  document.getElementById('sourceDetailFilter').addEventListener('change', renderSourceDetail);
+  document.getElementById('knowledgeBottleneckFilter').addEventListener('change', renderKnowledgeMatrix);
+  document.getElementById('strategyPreviewClose').addEventListener('click', closeStrategyPreview);
+  document.getElementById('strategyPreviewModal').addEventListener('click', event => {
+    if (event.target.id === 'strategyPreviewModal') closeStrategyPreview();
+  });
+  document.getElementById('chatReviewClose').addEventListener('click', closeChatReview);
+  document.getElementById('chatReviewModal').addEventListener('click', event => {
+    if (event.target.id === 'chatReviewModal') closeChatReview();
+  });
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape') {
+      closeStrategyPreview();
+      closeChatReview();
+    }
+  });
+  document.getElementById('refreshBtn').addEventListener('click', () => {
+    const btn = document.getElementById('refreshBtn');
+    btn.disabled = true;
+    window.setTimeout(() => {
+      btn.disabled = false;
+      document.getElementById('freshnessText').textContent = '数据更新于 ' + new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+    }, 600);
+  });
+  document.getElementById('exportBtn').addEventListener('click', exportCurrentView);
+  switchMainTab(currentMainTab);
+}
+
+init();
+</script>
+</body>
+</html>

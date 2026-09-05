@@ -1,0 +1,3057 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>经营异常行动闭环BI看板</title>
+  <style>
+    :root {
+      --bg: #f4f6f9;
+      --surface: #ffffff;
+      --surface-2: #f8fafc;
+      --surface-3: #eef3f8;
+      --line: #dfe6ee;
+      --line-strong: #cbd5e1;
+      --text: #172033;
+      --muted: #667085;
+      --soft: #98a2b3;
+      --blue: #2f75ff;
+      --blue-strong: #1f5fd6;
+      --blue-soft: #edf4ff;
+      --green: #13a06f;
+      --green-soft: #e8f7ef;
+      --amber: #b97813;
+      --amber-soft: #fff5df;
+      --red: #d64b4b;
+      --red-soft: #fff0f0;
+      --cyan: #0f8f9f;
+      --cyan-soft: #e7f7f9;
+      --violet: #6957b8;
+      --violet-soft: #f0edfb;
+      --ink: #344054;
+      --shadow: 0 10px 28px rgba(23, 32, 51, 0.06);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { min-height: 100%; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+      letter-spacing: 0;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+    a { color: inherit; text-decoration: none; }
+
+    .app-shell {
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 70;
+      min-height: 62px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 10px 22px;
+      background: rgba(255, 255, 255, 0.96);
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(10px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 300px;
+    }
+
+    .brand-mark {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background:
+        linear-gradient(135deg, rgba(47, 117, 255, .95), rgba(19, 160, 111, .95)),
+        linear-gradient(45deg, transparent 41%, rgba(255,255,255,.42) 42%, rgba(255,255,255,.42) 56%, transparent 57%);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.44);
+      flex: 0 0 auto;
+      position: relative;
+    }
+
+    .brand-mark::before {
+      content: "";
+      position: absolute;
+      left: 8px;
+      right: 8px;
+      top: 9px;
+      height: 3px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, .9);
+      box-shadow: 0 7px 0 rgba(255,255,255,.9);
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 17px;
+      line-height: 1.2;
+      font-weight: 820;
+      white-space: nowrap;
+    }
+
+    .brand p {
+      margin: 3px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .freshness {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 650;
+      white-space: nowrap;
+    }
+
+    .text-btn,
+    .icon-btn {
+      height: 34px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #fff;
+      color: var(--ink);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 0 11px;
+      font-size: 12px;
+      font-weight: 760;
+      transition: background .15s, border-color .15s, color .15s, transform .15s;
+    }
+
+    .icon-btn {
+      width: 34px;
+      padding: 0;
+    }
+
+    .text-btn:hover,
+    .icon-btn:hover {
+      border-color: #b8ccf8;
+      background: #f8fbff;
+      color: var(--blue-strong);
+    }
+
+    .text-btn.primary {
+      color: #fff;
+      border-color: var(--blue);
+      background: var(--blue);
+    }
+
+    .text-btn.primary:hover {
+      color: #fff;
+      background: var(--blue-strong);
+    }
+
+    .icon {
+      width: 15px;
+      height: 15px;
+      position: relative;
+      display: inline-block;
+      flex: 0 0 auto;
+    }
+
+    .icon.refresh::before {
+      content: "";
+      position: absolute;
+      inset: 1px;
+      border: 2px solid currentColor;
+      border-right-color: transparent;
+      border-radius: 50%;
+    }
+
+    .icon.refresh::after {
+      content: "";
+      position: absolute;
+      right: 0;
+      top: 1px;
+      border-left: 5px solid currentColor;
+      border-top: 4px solid transparent;
+      border-bottom: 4px solid transparent;
+      transform: rotate(22deg);
+    }
+
+    .icon.download::before {
+      content: "";
+      position: absolute;
+      left: 6px;
+      top: 1px;
+      width: 2px;
+      height: 9px;
+      background: currentColor;
+    }
+
+    .icon.download::after {
+      content: "";
+      position: absolute;
+      left: 3px;
+      top: 7px;
+      width: 8px;
+      height: 8px;
+      border-left: 2px solid currentColor;
+      border-bottom: 2px solid currentColor;
+      transform: rotate(-45deg);
+    }
+
+    .icon.bolt::before {
+      content: "";
+      position: absolute;
+      left: 5px;
+      top: 0;
+      width: 6px;
+      height: 15px;
+      background: currentColor;
+      clip-path: polygon(55% 0, 100% 0, 63% 42%, 100% 42%, 35% 100%, 45% 56%, 0 56%);
+    }
+
+    .icon.arrow::before {
+      content: "";
+      position: absolute;
+      left: 2px;
+      top: 7px;
+      width: 10px;
+      height: 2px;
+      background: currentColor;
+      border-radius: 2px;
+    }
+
+    .icon.arrow::after {
+      content: "";
+      position: absolute;
+      right: 2px;
+      top: 4px;
+      width: 7px;
+      height: 7px;
+      border-top: 2px solid currentColor;
+      border-right: 2px solid currentColor;
+      transform: rotate(45deg);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 238px minmax(0, 1fr);
+      min-height: 0;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 62px;
+      height: calc(100vh - 62px);
+      align-self: start;
+      overflow: auto;
+      padding: 14px;
+      background: #fff;
+      border-right: 1px solid var(--line);
+    }
+
+    .nav-title {
+      margin: 4px 8px 9px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .nav-list {
+      display: grid;
+      gap: 4px;
+    }
+
+    .nav-btn {
+      width: 100%;
+      min-height: 40px;
+      border: 1px solid transparent;
+      border-radius: 7px;
+      background: transparent;
+      color: var(--ink);
+      display: grid;
+      grid-template-columns: 24px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 9px;
+      font-size: 13px;
+      font-weight: 760;
+      text-align: left;
+      transition: background .15s, border-color .15s, color .15s;
+    }
+
+    .nav-btn span:nth-child(2) {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .nav-btn:hover {
+      color: var(--blue-strong);
+      background: var(--blue-soft);
+    }
+
+    .nav-btn.active {
+      color: var(--blue-strong);
+      background: var(--blue-soft);
+      border-color: #c8dafd;
+    }
+
+    .nav-index {
+      width: 24px;
+      height: 24px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      background: var(--surface-3);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 850;
+    }
+
+    .nav-btn.active .nav-index {
+      background: #fff;
+      color: var(--blue-strong);
+    }
+
+    .nav-alert {
+      min-width: 21px;
+      height: 20px;
+      border-radius: 10px;
+      background: var(--red-soft);
+      color: var(--red);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 6px;
+      font-size: 11px;
+      font-weight: 850;
+    }
+
+    .sidebar-summary {
+      margin-top: 14px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface-2);
+    }
+
+    .sidebar-summary h2 {
+      margin: 0 0 9px;
+      font-size: 12px;
+      font-weight: 850;
+    }
+
+    .mini-kv {
+      display: grid;
+      gap: 7px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .mini-kv div {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .mini-kv strong {
+      color: var(--text);
+      font-size: 13px;
+    }
+
+    .main {
+      min-width: 0;
+      padding: 16px 20px 32px;
+    }
+
+    .workspace {
+      max-width: 1680px;
+      margin: 0 auto;
+      display: grid;
+      gap: 18px;
+    }
+
+    .filter-strip {
+      min-height: 54px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 10px 14px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .filter-left,
+    .filter-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .filter-label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .segmented {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface-2);
+      gap: 2px;
+    }
+
+    .segmented button {
+      min-height: 30px;
+      border: 0;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 760;
+      padding: 0 10px;
+      white-space: nowrap;
+    }
+
+    .segmented button.active {
+      background: var(--surface);
+      color: var(--blue-strong);
+      box-shadow: 0 1px 3px rgba(23, 32, 42, 0.08);
+    }
+
+    .control {
+      height: 34px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #fff;
+      color: var(--text);
+      padding: 0 9px;
+      font-size: 12px;
+      font-weight: 680;
+      min-width: 112px;
+    }
+
+    .section {
+      scroll-margin-top: 78px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 2px 2px 0;
+    }
+
+    .section-title {
+      display: grid;
+      gap: 4px;
+    }
+
+    .section-title h2 {
+      margin: 0;
+      color: var(--text);
+      font-size: 20px;
+      line-height: 1.2;
+      font-weight: 860;
+    }
+
+    .section-title p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .logic-chain {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .chain-chip {
+      height: 28px;
+      display: inline-flex;
+      align-items: center;
+      padding: 0 10px;
+      border-radius: 14px;
+      background: #fff;
+      border: 1px solid var(--line);
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 760;
+      white-space: nowrap;
+    }
+
+    .chain-arrow {
+      color: var(--soft);
+      font-size: 13px;
+      font-weight: 850;
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      min-width: 0;
+    }
+
+    .panel-head {
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .panel-title {
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 850;
+    }
+
+    .panel-title span:last-child {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .panel-sub {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+      white-space: nowrap;
+    }
+
+    .panel-body {
+      padding: 14px;
+      min-width: 0;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--blue);
+      box-shadow: 0 0 0 4px rgba(47,117,255,.13);
+      flex: 0 0 auto;
+    }
+
+    .dot.red { background: var(--red); box-shadow: 0 0 0 4px rgba(214,75,75,.13); }
+    .dot.amber { background: var(--amber); box-shadow: 0 0 0 4px rgba(185,120,19,.13); }
+    .dot.green { background: var(--green); box-shadow: 0 0 0 4px rgba(19,160,111,.13); }
+    .dot.cyan { background: var(--cyan); box-shadow: 0 0 0 4px rgba(15,143,159,.13); }
+    .dot.violet { background: var(--violet); box-shadow: 0 0 0 4px rgba(105,87,184,.13); }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(560px, .85fr);
+      gap: 12px;
+      align-items: start;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      align-items: start;
+    }
+
+    .health-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(190px, 1fr));
+      gap: 12px;
+    }
+
+    .health-card {
+      min-height: 160px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      padding: 13px;
+      display: grid;
+      gap: 12px;
+      align-content: start;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .health-card::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      height: 4px;
+      background: var(--green);
+    }
+
+    .health-card.warn::before { background: var(--amber); }
+    .health-card.danger::before { background: var(--red); }
+
+    .health-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .health-name {
+      display: grid;
+      gap: 5px;
+    }
+
+    .health-name h3 {
+      margin: 0;
+      font-size: 13px;
+      font-weight: 850;
+    }
+
+    .health-name p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .status-pill,
+    .priority,
+    .tag {
+      height: 24px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      padding: 0 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 850;
+      white-space: nowrap;
+    }
+
+    .status-pill.ok,
+    .tag.ok { color: var(--green); background: var(--green-soft); }
+    .status-pill.warn,
+    .tag.warn { color: var(--amber); background: var(--amber-soft); }
+    .status-pill.danger,
+    .tag.danger { color: var(--red); background: var(--red-soft); }
+    .tag.info { color: var(--blue-strong); background: var(--blue-soft); }
+    .tag.cyan { color: var(--cyan); background: var(--cyan-soft); }
+    .tag.violet { color: var(--violet); background: var(--violet-soft); }
+
+    .metric-main {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .metric-main strong {
+      font-size: 30px;
+      line-height: 1;
+      font-weight: 880;
+      letter-spacing: 0;
+    }
+
+    .metric-main span {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 760;
+      padding-bottom: 3px;
+    }
+
+    .delta {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .delta strong { font-weight: 850; }
+    .delta .down { color: var(--red); }
+    .delta .up { color: var(--green); }
+    .delta .warn { color: var(--amber); }
+
+    .drill-link {
+      margin-top: auto;
+      width: 100%;
+      min-height: 34px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: var(--surface-2);
+      color: var(--ink);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 0 10px;
+      font-size: 12px;
+      font-weight: 780;
+      text-align: left;
+    }
+
+    .health-card.danger .drill-link {
+      color: var(--red);
+      background: var(--red-soft);
+      border-color: #f4caca;
+    }
+
+    .health-card.warn .drill-link {
+      color: var(--amber);
+      background: var(--amber-soft);
+      border-color: #f3d99d;
+    }
+
+    .event-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .event-item {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      padding: 12px;
+      display: grid;
+      grid-template-columns: 86px minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: start;
+    }
+
+    .event-time {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .event-content {
+      min-width: 0;
+      display: grid;
+      gap: 6px;
+    }
+
+    .event-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      font-size: 13px;
+      font-weight: 850;
+    }
+
+    .event-detail {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .event-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 780px;
+    }
+
+    th, td {
+      padding: 10px 11px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: middle;
+      font-size: 12px;
+      line-height: 1.45;
+      white-space: nowrap;
+    }
+
+    th {
+      background: var(--surface-2);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 850;
+    }
+
+    tbody tr:hover td {
+      background: #fbfdff;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: 0;
+    }
+
+    td strong {
+      font-weight: 850;
+    }
+
+    .num-positive { color: var(--green); font-weight: 850; }
+    .num-negative { color: var(--red); font-weight: 850; }
+    .num-warn { color: var(--amber); font-weight: 850; }
+
+    .spark {
+      width: 90px;
+      height: 26px;
+      display: block;
+    }
+
+    .priority.p0 { color: #fff; background: var(--red); }
+    .priority.p1 { color: var(--amber); background: var(--amber-soft); }
+    .priority.p2 { color: var(--blue-strong); background: var(--blue-soft); }
+
+    .action-strip {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(180px, 1fr));
+      gap: 10px;
+    }
+
+    .action-item {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      padding: 12px;
+      display: grid;
+      gap: 9px;
+      min-height: 134px;
+    }
+
+    .action-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .action-title strong {
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .action-meta {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 6px 10px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .action-meta strong {
+      color: var(--text);
+    }
+
+    .journey-table {
+      display: grid;
+      gap: 0;
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .journey-grid {
+      min-width: 980px;
+      display: grid;
+      grid-template-columns: 82px repeat(8, minmax(98px, 1fr));
+    }
+
+    .journey-cell {
+      min-height: 54px;
+      border-right: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px;
+      text-align: center;
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 760;
+      position: relative;
+    }
+
+    .journey-cell:nth-child(9n) {
+      border-right: 0;
+    }
+
+    .journey-grid .journey-cell:nth-last-child(-n+9) {
+      border-bottom: 0;
+    }
+
+    .journey-head {
+      background: var(--surface-2);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 850;
+    }
+
+    .heat-ok {
+      background: linear-gradient(180deg, #edf9f3, #dff5ea);
+      color: #0f7657;
+    }
+
+    .heat-watch {
+      background: linear-gradient(180deg, #fff8e8, #ffe9b7);
+      color: #8a570b;
+    }
+
+    .heat-bad {
+      background: linear-gradient(180deg, #fff2f2, #ffd6d6);
+      color: #a23232;
+    }
+
+    .heat-bad::after,
+    .heat-watch::after {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      position: absolute;
+      top: 7px;
+      right: 7px;
+      background: currentColor;
+    }
+
+    .journey-cell button {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: transparent;
+      color: inherit;
+      font: inherit;
+    }
+
+    .flow-map {
+      display: grid;
+      grid-template-columns: repeat(8, minmax(112px, 1fr));
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+    }
+
+    .flow-step {
+      min-height: 118px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      padding: 11px;
+      display: grid;
+      gap: 9px;
+      position: relative;
+    }
+
+    .flow-step::after {
+      content: "";
+      position: absolute;
+      right: -8px;
+      top: 50%;
+      width: 8px;
+      height: 2px;
+      background: var(--line-strong);
+    }
+
+    .flow-step:last-child::after {
+      display: none;
+    }
+
+    .flow-step strong {
+      font-size: 12px;
+      font-weight: 850;
+    }
+
+    .flow-step span {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.4;
+    }
+
+    .bar-track {
+      width: 100%;
+      height: 7px;
+      border-radius: 8px;
+      background: var(--surface-3);
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      display: block;
+      width: var(--w);
+      height: 100%;
+      border-radius: inherit;
+      background: var(--green);
+    }
+
+    .bar-fill.warn { background: var(--amber); }
+    .bar-fill.bad { background: var(--red); }
+    .bar-fill.blue { background: var(--blue); }
+
+    .diagnosis-note {
+      border-left: 3px solid var(--blue);
+      background: var(--blue-soft);
+      color: #24436f;
+      padding: 10px 12px;
+      border-radius: 7px;
+      font-size: 13px;
+      line-height: 1.6;
+      font-weight: 680;
+    }
+
+    .bubble-area {
+      min-height: 326px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background:
+        linear-gradient(90deg, transparent 49.8%, var(--line) 49.8%, var(--line) 50.2%, transparent 50.2%),
+        linear-gradient(0deg, transparent 49.8%, var(--line) 49.8%, var(--line) 50.2%, transparent 50.2%),
+        linear-gradient(180deg, #fff, #fbfdff);
+      position: relative;
+      overflow: hidden;
+      padding: 34px 38px 40px 52px;
+    }
+
+    .axis-label {
+      position: absolute;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      background: rgba(255,255,255,.8);
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
+
+    .axis-label.x { right: 18px; bottom: 13px; }
+    .axis-label.y { left: 12px; top: 12px; }
+
+    .quadrant {
+      position: absolute;
+      color: var(--soft);
+      font-size: 11px;
+      font-weight: 850;
+      pointer-events: none;
+    }
+
+    .q1 { right: 16px; top: 14px; color: var(--green); }
+    .q2 { left: 60px; top: 14px; color: var(--cyan); }
+    .q3 { left: 60px; bottom: 16px; color: var(--muted); }
+    .q4 { right: 16px; bottom: 35px; color: var(--red); }
+
+    .bubble {
+      position: absolute;
+      left: calc(var(--x) * 1%);
+      bottom: calc(var(--y) * 1%);
+      width: var(--s);
+      height: var(--s);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 850;
+      text-align: center;
+      line-height: 1.2;
+      transform: translate(-50%, 50%);
+      box-shadow: 0 10px 24px rgba(23, 32, 51, .16);
+      border: 2px solid rgba(255,255,255,.9);
+    }
+
+    .bubble.good { background: rgba(19, 160, 111, .9); }
+    .bubble.watch { background: rgba(185, 120, 19, .9); }
+    .bubble.bad { background: rgba(214, 75, 75, .92); }
+    .bubble.info { background: rgba(47, 117, 255, .88); }
+    .bubble.cyan { background: rgba(15, 143, 159, .88); }
+
+    .mini-score-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .score-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      padding: 12px;
+      display: grid;
+      gap: 7px;
+      min-height: 112px;
+    }
+
+    .score-card h3 {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 850;
+    }
+
+    .score-card strong {
+      font-size: 25px;
+      line-height: 1;
+      font-weight: 880;
+    }
+
+    .score-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .strategy-card-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .strategy-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      padding: 12px;
+      display: grid;
+      gap: 10px;
+      min-height: 154px;
+    }
+
+    .strategy-card.danger {
+      border-color: #f0c5c5;
+      background: linear-gradient(180deg, #fff, #fff7f7);
+    }
+
+    .strategy-card.warn {
+      border-color: #f1dba8;
+      background: linear-gradient(180deg, #fff, #fffaf0);
+    }
+
+    .strategy-card h3 {
+      margin: 0;
+      font-size: 13px;
+      font-weight: 850;
+    }
+
+    .strategy-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .strategy-metric {
+      display: grid;
+      gap: 3px;
+    }
+
+    .strategy-metric span {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 760;
+    }
+
+    .strategy-metric strong {
+      font-size: 18px;
+      font-weight: 860;
+    }
+
+    .ai-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(150px, 1fr));
+      gap: 10px;
+    }
+
+    .ai-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      padding: 12px;
+      display: grid;
+      gap: 8px;
+      min-height: 128px;
+    }
+
+    .ai-card h3 {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 850;
+    }
+
+    .ai-card strong {
+      font-size: 22px;
+      line-height: 1;
+      font-weight: 880;
+    }
+
+    .staff-heatmap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .staff-grid {
+      min-width: 880px;
+      display: grid;
+      grid-template-columns: 74px repeat(6, minmax(110px, 1fr));
+    }
+
+    .staff-cell {
+      min-height: 42px;
+      border-right: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px;
+      font-size: 12px;
+      font-weight: 760;
+      text-align: center;
+    }
+
+    .staff-cell:nth-child(7n) {
+      border-right: 0;
+    }
+
+    .staff-grid .staff-cell:nth-last-child(-n+7) {
+      border-bottom: 0;
+    }
+
+    .staff-head {
+      color: var(--muted);
+      background: var(--surface-2);
+      font-size: 11px;
+      font-weight: 850;
+    }
+
+    .wait-cell-ok { background: #e8f7ef; color: #0f7657; }
+    .wait-cell-watch { background: #fff5df; color: #8a570b; }
+    .wait-cell-bad { background: #fff0f0; color: #a23232; }
+
+    .work-order-overview {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(140px, 1fr));
+      gap: 10px;
+    }
+
+    .order-kpi {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      padding: 12px;
+      display: grid;
+      gap: 7px;
+    }
+
+    .order-kpi span {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .order-kpi strong {
+      font-size: 27px;
+      line-height: 1;
+      font-weight: 880;
+    }
+
+    .role-tabs {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .role-tab {
+      min-height: 32px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #fff;
+      color: var(--muted);
+      padding: 0 11px;
+      font-size: 12px;
+      font-weight: 780;
+    }
+
+    .role-tab.active {
+      background: var(--blue-soft);
+      color: var(--blue-strong);
+      border-color: #c8dafd;
+    }
+
+    .role-panel {
+      display: none;
+    }
+
+    .role-panel.active {
+      display: block;
+    }
+
+    .rule-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .rule-item {
+      min-height: 112px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      padding: 12px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .rule-item h3 {
+      margin: 0;
+      font-size: 13px;
+      font-weight: 850;
+    }
+
+    .rule-item p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .flash {
+      animation: flashTarget 1.25s ease;
+    }
+
+    @keyframes flashTarget {
+      0% { box-shadow: 0 0 0 0 rgba(47,117,255,.28); }
+      55% { box-shadow: 0 0 0 8px rgba(47,117,255,.08); }
+      100% { box-shadow: var(--shadow); }
+    }
+
+    @media (max-width: 1280px) {
+      .health-grid,
+      .action-strip {
+        grid-template-columns: repeat(3, minmax(190px, 1fr));
+      }
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+      .mini-score-grid,
+      .strategy-card-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .ai-grid {
+        grid-template-columns: repeat(3, minmax(150px, 1fr));
+      }
+    }
+
+    @media (max-width: 900px) {
+      .topbar {
+        position: static;
+        align-items: flex-start;
+        flex-direction: column;
+      }
+      .brand { min-width: 0; }
+      .brand h1 { white-space: normal; }
+      .brand p { white-space: normal; }
+      .layout {
+        grid-template-columns: 1fr;
+      }
+      .sidebar {
+        position: sticky;
+        top: 0;
+        z-index: 55;
+        height: auto;
+        overflow-x: auto;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+        padding: 10px;
+      }
+      .nav-title,
+      .sidebar-summary {
+        display: none;
+      }
+      .nav-list {
+        display: flex;
+        gap: 6px;
+        min-width: max-content;
+      }
+      .nav-btn {
+        width: auto;
+        grid-template-columns: 22px minmax(72px, auto) auto;
+      }
+      .main { padding: 14px 12px 26px; }
+      .filter-strip,
+      .section-head {
+        align-items: stretch;
+        flex-direction: column;
+      }
+      .health-grid,
+      .action-strip,
+      .grid-3,
+      .mini-score-grid,
+      .strategy-card-grid,
+      .ai-grid,
+      .work-order-overview,
+      .rule-grid {
+        grid-template-columns: 1fr;
+      }
+      .event-item {
+        grid-template-columns: 1fr;
+      }
+      .event-actions {
+        justify-content: flex-start;
+      }
+      .panel-head {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+      .panel-sub {
+        white-space: normal;
+      }
+      .bubble-area {
+        min-height: 300px;
+        padding-left: 38px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand" aria-label="经营异常行动闭环BI看板">
+        <div class="brand-mark" aria-hidden="true"></div>
+        <div>
+          <h1>经营异常行动闭环BI看板</h1>
+          <p>发现异常 → 定位环节 → 归因拆解 → 输出行动名单</p>
+        </div>
+      </div>
+      <div class="top-actions">
+        <span class="freshness">2026-08-22 16:30 更新</span>
+        <button class="icon-btn" title="刷新数据" aria-label="刷新数据"><span class="icon refresh" aria-hidden="true"></span></button>
+        <button class="text-btn" title="导出当前名单"><span class="icon download" aria-hidden="true"></span>导出</button>
+        <button class="text-btn primary" data-jump="l3"><span class="icon bolt" aria-hidden="true"></span>行动中心</button>
+      </div>
+    </header>
+
+    <div class="layout">
+      <aside class="sidebar" aria-label="看板导航">
+        <div class="nav-title">诊断路径</div>
+        <nav class="nav-list">
+          <button class="nav-btn active" data-jump="l0">
+            <span class="nav-index">L0</span><span>经营健康度</span><span class="nav-alert">5</span>
+          </button>
+          <button class="nav-btn" data-jump="l1">
+            <span class="nav-index">L1</span><span>环节漏损定位</span><span class="nav-alert">3</span>
+          </button>
+          <button class="nav-btn" data-jump="l2a">
+            <span class="nav-index">A</span><span>渠道与流量</span><span></span>
+          </button>
+          <button class="nav-btn" data-jump="l2b">
+            <span class="nav-index">B</span><span>SOP策略</span><span></span>
+          </button>
+          <button class="nav-btn" data-jump="l2c">
+            <span class="nav-index">C</span><span>AI能力</span><span></span>
+          </button>
+          <button class="nav-btn" data-jump="l2d">
+            <span class="nav-index">D</span><span>人工效率</span><span></span>
+          </button>
+          <button class="nav-btn" data-jump="l3">
+            <span class="nav-index">L3</span><span>行动中心</span><span class="nav-alert">14</span>
+          </button>
+        </nav>
+
+        <div class="sidebar-summary">
+          <h2>今日判断</h2>
+          <div class="mini-kv">
+            <div><span>P0工单</span><strong>4</strong></div>
+            <div><span>首要根因</span><strong>来源质量</strong></div>
+            <div><span>最高风险员工</span><strong>陈小丽</strong></div>
+            <div><span>预计损失</span><strong>¥27,800</strong></div>
+          </div>
+        </div>
+      </aside>
+
+      <main class="main">
+        <div class="workspace">
+          <section class="filter-strip" aria-label="全局筛选">
+            <div class="filter-left">
+              <span class="filter-label">诊断范围</span>
+              <div class="segmented" role="group" aria-label="时间范围">
+                <button class="active">今日实时</button>
+                <button>近7天</button>
+                <button>本月</button>
+              </div>
+              <select class="control" aria-label="门店">
+                <option>全部门店</option>
+                <option>华东一区</option>
+                <option>上海旗舰店</option>
+                <option>杭州湖滨店</option>
+              </select>
+              <select class="control" aria-label="渠道">
+                <option>全部渠道</option>
+                <option>百度竞价</option>
+                <option>小红书</option>
+                <option>老客转介绍</option>
+              </select>
+            </div>
+            <div class="filter-right">
+              <span class="tag danger">删除率异常</span>
+              <span class="tag warn">响应超时</span>
+              <span class="tag info">AI置信度下移</span>
+            </div>
+          </section>
+
+          <section class="section" id="l0" data-section>
+            <div class="section-head">
+              <div class="section-title">
+                <h2>L0 经营健康度总览</h2>
+                <p>每天第一眼先看红色区域，点击即可进入对应归因页面。</p>
+              </div>
+              <div class="logic-chain" aria-label="核心链路">
+                <span class="chain-chip">发现异常</span><span class="chain-arrow">→</span>
+                <span class="chain-chip">定位环节</span><span class="chain-arrow">→</span>
+                <span class="chain-chip">归因拆解</span><span class="chain-arrow">→</span>
+                <span class="chain-chip">行动名单</span>
+              </div>
+            </div>
+
+            <div class="health-grid" aria-label="今日健康度仪表盘">
+              <article class="health-card warn">
+                <div class="health-top">
+                  <div class="health-name">
+                    <h3>流量模块</h3>
+                    <p>今日加微数 vs 7日均值</p>
+                  </div>
+                  <span class="status-pill warn">关注</span>
+                </div>
+                <div class="metric-main"><strong>374</strong><span>加微</span></div>
+                <p class="delta">低于7日均值 <strong class="down">23%</strong>，百度渠道占比升至38%。</p>
+                <button class="drill-link" data-jump="l2a">查看来源构成变化 <span class="icon arrow" aria-hidden="true"></span></button>
+              </article>
+
+              <article class="health-card danger">
+                <div class="health-top">
+                  <div class="health-name">
+                    <h3>开口模块</h3>
+                    <p>开口率、开口数、7日均值</p>
+                  </div>
+                  <span class="status-pill danger">异常</span>
+                </div>
+                <div class="metric-main"><strong>28.0%</strong><span>开口率</span></div>
+                <p class="delta">从34%降至28%，相对基线 <strong class="down">-17.5%</strong>。</p>
+                <button class="drill-link" data-jump="l1">定位问题环节 <span class="icon arrow" aria-hidden="true"></span></button>
+              </article>
+
+              <article class="health-card danger">
+                <div class="health-top">
+                  <div class="health-name">
+                    <h3>转化模块</h3>
+                    <p>预约率、预约金额、同比均值</p>
+                  </div>
+                  <span class="status-pill danger">异常</span>
+                </div>
+                <div class="metric-main"><strong>14.2%</strong><span>预约率</span></div>
+                <p class="delta">预约率下降 <strong class="down">19%</strong>，预计今日少收¥12,600。</p>
+                <button class="drill-link" data-jump="l2c">进入归因分析 <span class="icon arrow" aria-hidden="true"></span></button>
+              </article>
+
+              <article class="health-card danger">
+                <div class="health-top">
+                  <div class="health-name">
+                    <h3>流失模块</h3>
+                    <p>删除数、删除率、小时峰值</p>
+                  </div>
+                  <span class="status-pill danger">严重</span>
+                </div>
+                <div class="metric-main"><strong>8.6%</strong><span>删除率</span></div>
+                <p class="delta">14:00-15:00删除率达日均3倍，集中于百度计划#2048。</p>
+                <button class="drill-link" data-jump="l2a">定位删除来源 <span class="icon arrow" aria-hidden="true"></span></button>
+              </article>
+
+              <article class="health-card warn">
+                <div class="health-top">
+                  <div class="health-name">
+                    <h3>响应模块</h3>
+                    <p>人工平均响应时长、超时率</p>
+                  </div>
+                  <span class="status-pill warn">超时</span>
+                </div>
+                <div class="metric-main"><strong>18.4</strong><span>分钟</span></div>
+                <p class="delta">3名员工平均响应超30分钟，陈小丽最严重。</p>
+                <button class="drill-link" data-jump="l2d">查看员工名单 <span class="icon arrow" aria-hidden="true"></span></button>
+              </article>
+            </div>
+
+            <div class="grid-2">
+              <section class="panel">
+                <div class="panel-head">
+                  <div class="panel-title"><span class="dot red"></span><span>异常事件流</span></div>
+                  <span class="panel-sub">按影响金额和客户量倒序</span>
+                </div>
+                <div class="panel-body">
+                  <div class="event-list">
+                    <article class="event-item">
+                      <div class="event-time">15:00</div>
+                      <div class="event-content">
+                        <div class="event-title"><span class="tag danger">严重</span><strong>删除率飙升</strong></div>
+                        <div class="event-detail">涉及86名客户，预估损失¥4,300。系统初判：百度计划#2048 首触即删率8.2%。</div>
+                      </div>
+                      <div class="event-actions">
+                        <button class="text-btn" data-jump="l2a">下钻</button>
+                        <button class="text-btn js-done">标记已处理</button>
+                      </div>
+                    </article>
+                    <article class="event-item">
+                      <div class="event-time">14:00</div>
+                      <div class="event-content">
+                        <div class="event-title"><span class="tag danger">严重</span><strong>响应超时</strong></div>
+                        <div class="event-detail">陈小丽名下12名客户等待中，最长68分钟。建议立即重分配给张美丽和王小美。</div>
+                      </div>
+                      <div class="event-actions">
+                        <button class="text-btn" data-jump="l2d">下钻</button>
+                        <button class="text-btn js-done">转派</button>
+                      </div>
+                    </article>
+                    <article class="event-item">
+                      <div class="event-time">11:00</div>
+                      <div class="event-content">
+                        <div class="event-title"><span class="tag warn">中等</span><strong>策略效果恶化</strong></div>
+                        <div class="event-detail">沉默激活V1节点3删除率3.9%，高于阈值3%。建议回滚到V0或立即设计新版。</div>
+                      </div>
+                      <div class="event-actions">
+                        <button class="text-btn" data-jump="l2b">下钻</button>
+                        <button class="text-btn js-done">转派</button>
+                      </div>
+                    </article>
+                  </div>
+                </div>
+              </section>
+
+              <section class="panel">
+                <div class="panel-head">
+                  <div class="panel-title"><span class="dot blue"></span><span>今日关键数字对比</span></div>
+                  <span class="panel-sub">实时 / 昨日同期 / 7日均值</span>
+                </div>
+                <div class="panel-body">
+                  <div class="table-wrap">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>指标</th>
+                          <th>今日实时</th>
+                          <th>昨日同期</th>
+                          <th>7日均值</th>
+                          <th>偏差率</th>
+                          <th>趋势</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td><strong>加微数</strong></td>
+                          <td>374</td>
+                          <td>486</td>
+                          <td>486</td>
+                          <td class="num-negative">-23.0%</td>
+                          <td><canvas class="spark" width="90" height="26" data-values="482,498,506,476,520,486,374"></canvas></td>
+                        </tr>
+                        <tr>
+                          <td><strong>开口数</strong></td>
+                          <td>105</td>
+                          <td>166</td>
+                          <td>163</td>
+                          <td class="num-negative">-35.6%</td>
+                          <td><canvas class="spark" width="90" height="26" data-values="168,161,176,159,178,166,105"></canvas></td>
+                        </tr>
+                        <tr>
+                          <td><strong>开口率</strong></td>
+                          <td>28.0%</td>
+                          <td>34.1%</td>
+                          <td>34.2%</td>
+                          <td class="num-negative">-18.1%</td>
+                          <td><canvas class="spark" width="90" height="26" data-values="33,35,36,32,34,34,28"></canvas></td>
+                        </tr>
+                        <tr>
+                          <td><strong>预约数</strong></td>
+                          <td>53</td>
+                          <td>82</td>
+                          <td>90</td>
+                          <td class="num-negative">-41.1%</td>
+                          <td><canvas class="spark" width="90" height="26" data-values="84,92,88,95,89,82,53"></canvas></td>
+                        </tr>
+                        <tr>
+                          <td><strong>删除数</strong></td>
+                          <td>32</td>
+                          <td>26</td>
+                          <td>26</td>
+                          <td class="num-negative">+23.1%</td>
+                          <td><canvas class="spark" width="90" height="26" data-values="24,21,29,22,27,26,32"></canvas></td>
+                        </tr>
+                        <tr>
+                          <td><strong>人工响应</strong></td>
+                          <td>18.4分</td>
+                          <td>7.8分</td>
+                          <td>8.1分</td>
+                          <td class="num-negative">+127%</td>
+                          <td><canvas class="spark" width="90" height="26" data-values="7,8,9,8,7,8,18"></canvas></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </section>
+            </div>
+
+            <section class="panel">
+              <div class="panel-head">
+                <div class="panel-title"><span class="dot amber"></span><span>待处理行动项摘要</span></div>
+                <span class="panel-sub">同步至L3行动中心，优先展示前5项</span>
+              </div>
+              <div class="panel-body">
+                <div class="action-strip">
+                  <article class="action-item">
+                    <div class="action-title"><span class="priority p0">P0</span><strong>督促陈小丽响应12名待接客户</strong></div>
+                    <div class="action-meta"><span>责任人</span><strong>销售主管</strong><span>影响客户</span><strong>12</strong><span>预计损失</span><strong>¥3,600</strong></div>
+                  </article>
+                  <article class="action-item">
+                    <div class="action-title"><span class="priority p0">P0</span><strong>暂停百度计划#2048低质流量</strong></div>
+                    <div class="action-meta"><span>责任人</span><strong>投放专员D</strong><span>影响客户</span><strong>86</strong><span>预计损失</span><strong>¥4,300</strong></div>
+                  </article>
+                  <article class="action-item">
+                    <div class="action-title"><span class="priority p1">P1</span><strong>回滚沉默激活V1节点3话术</strong></div>
+                    <div class="action-meta"><span>责任人</span><strong>策略运营</strong><span>影响客户</span><strong>380</strong><span>状态</span><strong>处理中</strong></div>
+                  </article>
+                  <article class="action-item">
+                    <div class="action-title"><span class="priority p0">P0</span><strong>上线“太贵了”新AI话术</strong></div>
+                    <div class="action-meta"><span>责任人</span><strong>AI训练师</strong><span>触发次数</span><strong>486/周</strong><span>目标</span><strong>化解率+9%</strong></div>
+                  </article>
+                  <article class="action-item">
+                    <div class="action-title"><span class="priority p1">P1</span><strong>补充首次开口时间字段埋点</strong></div>
+                    <div class="action-meta"><span>责任人</span><strong>数据/开发</strong><span>影响范围</span><strong>全链路</strong><span>截止</span><strong>今日</strong></div>
+                  </article>
+                </div>
+              </div>
+            </section>
+          </section>
+
+          <section class="section" id="l1" data-section>
+            <div class="section-head">
+              <div class="section-title">
+                <h2>L1 环节漏损定位</h2>
+                <p>从L0下钻后，快速判断异常卡在客户旅程的哪个环节。</p>
+              </div>
+            </div>
+
+            <section class="panel">
+              <div class="panel-head">
+                <div class="panel-title"><span class="dot red"></span><span>全链路环节漏损热力图</span></div>
+                <span class="panel-sub">红色格子偏离均值超过15%，可点击归因</span>
+              </div>
+              <div class="panel-body">
+                <div class="flow-map" aria-label="客户旅程环节">
+                  <div class="flow-step">
+                    <strong>加微成功</strong>
+                    <span>374人</span>
+                    <div class="bar-track"><span class="bar-fill warn" style="--w:76%"></span></div>
+                  </div>
+                  <div class="flow-step">
+                    <strong>欢迎语送达</strong>
+                    <span>92.4%送达</span>
+                    <div class="bar-track"><span class="bar-fill" style="--w:92%"></span></div>
+                  </div>
+                  <div class="flow-step">
+                    <strong>链接点击</strong>
+                    <span>48.6%点击</span>
+                    <div class="bar-track"><span class="bar-fill blue" style="--w:49%"></span></div>
+                  </div>
+                  <div class="flow-step">
+                    <strong>SOP触达开口</strong>
+                    <span>28.0%开口</span>
+                    <div class="bar-track"><span class="bar-fill bad" style="--w:28%"></span></div>
+                  </div>
+                  <div class="flow-step">
+                    <strong>AI对话推进</strong>
+                    <span>72.4%继续聊</span>
+                    <div class="bar-track"><span class="bar-fill" style="--w:72%"></span></div>
+                  </div>
+                  <div class="flow-step">
+                    <strong>转人工承接</strong>
+                    <span>34.0%及时承接</span>
+                    <div class="bar-track"><span class="bar-fill bad" style="--w:34%"></span></div>
+                  </div>
+                  <div class="flow-step">
+                    <strong>预约金转化</strong>
+                    <span>14.2%预约</span>
+                    <div class="bar-track"><span class="bar-fill bad" style="--w:14%"></span></div>
+                  </div>
+                  <div class="flow-step">
+                    <strong>到店核销</strong>
+                    <span>71.6%到店</span>
+                    <div class="bar-track"><span class="bar-fill" style="--w:72%"></span></div>
+                  </div>
+                </div>
+
+                <div class="journey-table" style="margin-top: 12px;">
+                  <div class="journey-grid">
+                    <div class="journey-cell journey-head">日期</div>
+                    <div class="journey-cell journey-head">加微成功</div>
+                    <div class="journey-cell journey-head">欢迎语送达</div>
+                    <div class="journey-cell journey-head">链接点击</div>
+                    <div class="journey-cell journey-head">SOP开口</div>
+                    <div class="journey-cell journey-head">AI推进</div>
+                    <div class="journey-cell journey-head">人工承接</div>
+                    <div class="journey-cell journey-head">预约转化</div>
+                    <div class="journey-cell journey-head">到店核销</div>
+
+                    <div class="journey-cell journey-head">8/16</div>
+                    <div class="journey-cell heat-ok">486</div>
+                    <div class="journey-cell heat-ok">93%</div>
+                    <div class="journey-cell heat-ok">51%</div>
+                    <div class="journey-cell heat-ok">34%</div>
+                    <div class="journey-cell heat-ok">74%</div>
+                    <div class="journey-cell heat-ok">68%</div>
+                    <div class="journey-cell heat-ok">18%</div>
+                    <div class="journey-cell heat-ok">72%</div>
+
+                    <div class="journey-cell journey-head">8/17</div>
+                    <div class="journey-cell heat-ok">498</div>
+                    <div class="journey-cell heat-ok">92%</div>
+                    <div class="journey-cell heat-ok">52%</div>
+                    <div class="journey-cell heat-ok">35%</div>
+                    <div class="journey-cell heat-ok">73%</div>
+                    <div class="journey-cell heat-ok">65%</div>
+                    <div class="journey-cell heat-ok">19%</div>
+                    <div class="journey-cell heat-ok">71%</div>
+
+                    <div class="journey-cell journey-head">8/18</div>
+                    <div class="journey-cell heat-ok">506</div>
+                    <div class="journey-cell heat-ok">94%</div>
+                    <div class="journey-cell heat-ok">49%</div>
+                    <div class="journey-cell heat-ok">36%</div>
+                    <div class="journey-cell heat-ok">75%</div>
+                    <div class="journey-cell heat-watch"><button data-jump="l2d">54%</button></div>
+                    <div class="journey-cell heat-ok">18%</div>
+                    <div class="journey-cell heat-ok">73%</div>
+
+                    <div class="journey-cell journey-head">8/19</div>
+                    <div class="journey-cell heat-ok">520</div>
+                    <div class="journey-cell heat-ok">92%</div>
+                    <div class="journey-cell heat-watch">44%</div>
+                    <div class="journey-cell heat-bad"><button data-jump="l2a">28%</button></div>
+                    <div class="journey-cell heat-ok">72%</div>
+                    <div class="journey-cell heat-watch"><button data-jump="l2d">49%</button></div>
+                    <div class="journey-cell heat-bad"><button data-jump="l2c">14%</button></div>
+                    <div class="journey-cell heat-ok">70%</div>
+
+                    <div class="journey-cell journey-head">8/20</div>
+                    <div class="journey-cell heat-ok">476</div>
+                    <div class="journey-cell heat-ok">93%</div>
+                    <div class="journey-cell heat-ok">51%</div>
+                    <div class="journey-cell heat-ok">34%</div>
+                    <div class="journey-cell heat-ok">76%</div>
+                    <div class="journey-cell heat-ok">67%</div>
+                    <div class="journey-cell heat-ok">19%</div>
+                    <div class="journey-cell heat-ok">75%</div>
+
+                    <div class="journey-cell journey-head">8/21</div>
+                    <div class="journey-cell heat-ok">486</div>
+                    <div class="journey-cell heat-ok">93%</div>
+                    <div class="journey-cell heat-ok">50%</div>
+                    <div class="journey-cell heat-ok">34%</div>
+                    <div class="journey-cell heat-ok">73%</div>
+                    <div class="journey-cell heat-watch"><button data-jump="l2d">52%</button></div>
+                    <div class="journey-cell heat-ok">17%</div>
+                    <div class="journey-cell heat-ok">72%</div>
+
+                    <div class="journey-cell journey-head">8/22</div>
+                    <div class="journey-cell heat-watch"><button data-jump="l2a">374</button></div>
+                    <div class="journey-cell heat-ok">92%</div>
+                    <div class="journey-cell heat-watch">49%</div>
+                    <div class="journey-cell heat-bad"><button data-jump="l2b">28%</button></div>
+                    <div class="journey-cell heat-ok">72%</div>
+                    <div class="journey-cell heat-bad"><button data-jump="l2d">34%</button></div>
+                    <div class="journey-cell heat-bad"><button data-jump="l2c">14%</button></div>
+                    <div class="journey-cell heat-ok">72%</div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <div class="grid-2">
+              <section class="panel">
+                <div class="panel-head">
+                  <div class="panel-title"><span class="dot amber"></span><span>环节间断裂分析</span></div>
+                  <span class="panel-sub">按断裂幅度排序</span>
+                </div>
+                <div class="panel-body">
+                  <div class="table-wrap">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>断裂位置</th>
+                          <th>上游</th>
+                          <th>下游</th>
+                          <th>断裂幅度</th>
+                          <th>影响客户</th>
+                          <th>每日损失</th>
+                          <th>最可能原因</th>
+                          <th>下钻</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td><strong>SOP触达→开口</strong></td>
+                          <td>92%</td>
+                          <td>34%</td>
+                          <td class="num-negative">-58%</td>
+                          <td>约300人/天</td>
+                          <td>¥15,000</td>
+                          <td>策略+来源双重问题</td>
+                          <td><button class="text-btn" data-jump="l2a">渠道</button> <button class="text-btn" data-jump="l2b">策略</button></td>
+                        </tr>
+                        <tr>
+                          <td><strong>AI对话→转化</strong></td>
+                          <td>78%</td>
+                          <td>18.6%</td>
+                          <td class="num-negative">-59.4%</td>
+                          <td>约130人/天</td>
+                          <td>¥6,500</td>
+                          <td>AI逼单+异议化解</td>
+                          <td><button class="text-btn" data-jump="l2c">AI</button></td>
+                        </tr>
+                        <tr>
+                          <td><strong>转人工→承接</strong></td>
+                          <td>64%</td>
+                          <td>34%</td>
+                          <td class="num-negative">-30%</td>
+                          <td>约70人/天</td>
+                          <td>¥8,400</td>
+                          <td>员工响应慢</td>
+                          <td><button class="text-btn" data-jump="l2d">人工</button></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </section>
+
+              <section class="panel">
+                <div class="panel-head">
+                  <div class="panel-title"><span class="dot cyan"></span><span>异常日期对比诊断</span></div>
+                  <span class="panel-sub">异常日：2026-08-19</span>
+                </div>
+                <div class="panel-body">
+                  <div class="table-wrap">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>环节</th>
+                          <th>异常日</th>
+                          <th>7日均值</th>
+                          <th>偏差</th>
+                          <th>根因判断</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr><td><strong>加微数</strong></td><td>520</td><td>486</td><td class="num-positive">+7%</td><td><span class="tag ok">量正常</span></td></tr>
+                        <tr><td><strong>开口率</strong></td><td>28.4%</td><td>34.2%</td><td class="num-negative">-17%</td><td><span class="tag warn">异常</span></td></tr>
+                        <tr><td><strong>预约率</strong></td><td>14.2%</td><td>18.6%</td><td class="num-negative">-24%</td><td><span class="tag warn">异常</span></td></tr>
+                        <tr><td><strong>删除率</strong></td><td>8.6%</td><td>5.4%</td><td class="num-negative">+59%</td><td><span class="tag danger">严重异常</span></td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div class="diagnosis-note" style="margin-top: 12px;">
+                    8/19加微量正常，但开口率和删除率同时异常。系统排查发现百度竞价占比从14%升至38%，优先判定为来源质量问题，随后复核沉默激活V1节点3。
+                  </div>
+                </div>
+              </section>
+            </div>
+          </section>
+
+          <section class="section" id="l2a" data-section>
+            <div class="section-head">
+              <div class="section-title">
+                <h2>L2-A 渠道与流量归因</h2>
+                <p>判断是不是粉的质量问题，最终输出问题渠道、计划和专员名单。</p>
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <section class="panel">
+                <div class="panel-head">
+                  <div class="panel-title"><span class="dot red"></span><span>渠道质量矩阵</span></div>
+                  <span class="panel-sub">横轴加微量，纵轴综合质量分，气泡大小代表花费</span>
+                </div>
+                <div class="panel-body">
+                  <div class="bubble-area" aria-label="渠道质量矩阵">
+                    <span class="axis-label y">综合质量分</span>
+                    <span class="axis-label x">加微量</span>
+                    <span class="quadrant q1">高量高质：加大投入</span>
+                    <span class="quadrant q2">低量高质：扩量</span>
+                    <span class="quadrant q3">低量低质：关停</span>
+                    <span class="quadrant q4">高量低质：立即优化</span>
+                    <button class="bubble bad" style="--x:78; --y:25; --s:86px;" data-jump="l3" title="百度计划#2048">百度<br>#2048</button>
+                    <button class="bubble watch" style="--x:58; --y:42; --s:66px;" data-jump="l3" title="百度计划#2051">百度<br>#2051</button>
+                    <button class="bubble good" style="--x:65; --y:74; --s:62px;" title="小红书案例">小红书</button>
+                    <button class="bubble cyan" style="--x:35; --y:78; --s:50px;" title="老客转介绍">转介绍</button>
+                    <button class="bubble info" style="--x:46; --y:60; --s:56px;" title="视频号直播">视频号</button>
+                    <button class="bubble good" style="--x:83; --y:70; --s:58px;" title="百度计划#2055">百度<br>#2055</button>
+                  </div>
+                </div>
+              </section>
+
+              <section class="panel">
+                <div class="panel-head">
+                  <div class="panel-title"><span class="dot amber"></span><span>问题专员识别</span></div>
+                  <span class="panel-sub">连续异常自动生成工单</span>
+                </div>
+                <div class="panel-body">
+                  <div class="table-wrap">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>专员</th>
+                          <th>计划数</th>
+                          <th>总花费</th>
+                          <th>加微数</th>
+                          <th>质量分</th>
+                          <th>首触即删</th>
+                          <th>异常标记</th>
+                          <th>建议动作</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td><strong>投放专员D</strong></td>
+                          <td>4</td>
+                          <td>¥28,000</td>
+                          <td>480</td>
+                          <td class="num-negative">32分</td>
+                          <td class="num-negative">6.2%</td>
+                          <td><span class="tag danger">连续5天低质</span></td>
+                          <td>约谈+暂停权限</td>
+                        </tr>
+                        <tr>
+                          <td><strong>投放专员B</strong></td>
+                          <td>3</td>
+                          <td>¥18,000</td>
+                          <td>680</td>
+                          <td class="num-warn">58分</td>
+                          <td>2.1%</td>
+                          <td><span class="tag warn">近3天下滑</span></td>
+                          <td>关注</td>
+                        </tr>
+                        <tr>
+                          <td><strong>投放专员A</strong></td>
+                          <td>5</td>
+                          <td>¥31,000</td>
+                          <td>720</td>
+                          <td class="num-positive">76分</td>
+                          <td>1.6%</td>
+                          <td><span class="tag ok">稳定</span></td>
+                          <td>保持</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </section>
+            </div>
+
+            <section class="panel">
+              <div class="panel-head">
+                <div class="panel-title"><span class="dot blue"></span><span>问题渠道下钻：百度竞价</span></div>
+                <span class="panel-sub">计划和创意级别拆解</span>
+              </div>
+              <div class="panel-body">
+                <div class="table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>推广计划ID</th>
+                        <th>创意类型</th>
+                        <th>日均加微</th>
+                        <th>开口率</th>
+                        <th>首触即删率</th>
+                        <th>预约率</th>
+                        <th>单预约成本</th>
+                        <th>建议动作</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td><strong>#2048</strong></td>
+                        <td>视频-变美日记</td>
+                        <td>82</td>
+                        <td class="num-negative">18.4%</td>
+                        <td class="num-negative">8.2%</td>
+                        <td class="num-negative">4.1%</td>
+                        <td class="num-negative">¥820</td>
+                        <td><span class="tag danger">立即暂停</span></td>
+                      </tr>
+                      <tr>
+                        <td><strong>#2051</strong></td>
+                        <td>图文-案例对比</td>
+                        <td>46</td>
+                        <td class="num-warn">26.8%</td>
+                        <td>3.1%</td>
+                        <td>12.6%</td>
+                        <td>¥380</td>
+                        <td><span class="tag warn">优化落地页</span></td>
+                      </tr>
+                      <tr>
+                        <td><strong>#2055</strong></td>
+                        <td>视频-价格引导</td>
+                        <td>38</td>
+                        <td>32.4%</td>
+                        <td>1.8%</td>
+                        <td class="num-positive">18.2%</td>
+                        <td class="num-positive">¥245</td>
+                        <td><span class="tag ok">保持</span></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-head">
+                <div class="panel-title"><span class="dot green"></span><span>输出：问题渠道处理名单</span></div>
+                <button class="text-btn"><span class="icon download" aria-hidden="true"></span>导出名单</button>
+              </div>
+              <div class="panel-body">
+                <div class="table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>序号</th>
+                        <th>对象类型</th>
+                        <th>对象ID/名称</th>
+                        <th>问题描述</th>
+                        <th>影响规模</th>
+                        <th>建议动作</th>
+                        <th>优先级</th>
+                        <th>责任人</th>
+                        <th>截止</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>1</td>
+                        <td>推广计划</td>
+                        <td><strong>#2048 百度-视频变美日记</strong></td>
+                        <td>首触即删率8.2%，预约率仅4.1%</td>
+                        <td>日均82人浪费</td>
+                        <td>立即暂停</td>
+                        <td><span class="priority p0">P0</span></td>
+                        <td>投放专员D</td>
+                        <td>今日</td>
+                      </tr>
+                      <tr>
+                        <td>2</td>
+                        <td>推广专员</td>
+                        <td><strong>投放专员D</strong></td>
+                        <td>连续5天综合质量分低于40</td>
+                        <td>480人/周低质</td>
+                        <td>约谈、暂停百度权限</td>
+                        <td><span class="priority p0">P0</span></td>
+                        <td>投放主管</td>
+                        <td>今日</td>
+                      </tr>
+                      <tr>
+                        <td>3</td>
+                        <td>推广计划</td>
+                        <td><strong>#2051 百度-图文案例对比</strong></td>
+                        <td>开口率偏低但非极端</td>
+                        <td>日均46人</td>
+                        <td>优化落地页</td>
+                        <td><span class="priority p1">P1</span></td>
+                        <td>投放专员D</td>
+                        <td>3日内</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </section>
+          </section>
+
+          <section class="section" id="l2b" data-section>
+            <div class="section-head">
+              <div class="section-title">
+                <h2>L2-B SOP策略归因</h2>
+                <p>判断是否为话术策略问题，输出策略、节点和具体内容调整名单。</p>
+              </div>
+            </div>
+
+            <section class="panel">
+              <div class="panel-head">
+                <div class="panel-title"><span class="dot amber"></span><span>策略效果健康度</span></div>
+                <span class="panel-sub">活跃策略按风险排序</span>
+              </div>
+              <div class="panel-body">
+                <div class="strategy-card-grid">
+                  <article class="strategy-card">
+                    <h3>新客欢迎SOP V3</h3>
+                    <div class="strategy-grid">
+                      <div class="strategy-metric"><span>开口率</span><strong class="num-positive">42.3%</strong></div>
+                      <div class="strategy-metric"><span>删除率</span><strong>4.2%</strong></div>
+                      <div class="strategy-metric"><span>vs上周</span><strong class="num-positive">+1.2%</strong></div>
+                      <div class="strategy-metric"><span>需调整</span><strong>0</strong></div>
+                    </div>
+                    <span class="tag ok">健康</span>
+                  </article>
+                  <article class="strategy-card">
+                    <h3>项目推荐SOP V2</h3>
+                    <div class="strategy-grid">
+                      <div class="strategy-metric"><span>开口率</span><strong>36.8%</strong></div>
+                      <div class="strategy-metric"><span>删除率</span><strong>5.8%</strong></div>
+                      <div class="strategy-metric"><span>vs上周</span><strong>-0.4%</strong></div>
+                      <div class="strategy-metric"><span>需调整</span><strong>0</strong></div>
+                    </div>
+                    <span class="tag ok">健康</span>
+                  </article>
+                  <article class="strategy-card warn">
+                    <h3>优惠触达SOP V2</h3>
+                    <div class="strategy-grid">
+                      <div class="strategy-metric"><span>开口率</span><strong class="num-warn">31.5%</strong></div>
+                      <div class="strategy-metric"><span>删除率</span><strong class="num-warn">6.1%</strong></div>
+                      <div class="strategy-metric"><span>vs上周</span><strong class="num-negative">-2.1%</strong></div>
+                      <div class="strategy-metric"><span>需调整</span><strong>1</strong></div>
+                    </div>
+                    <span class="tag warn">关注</span>
+                  </article>
+                  <article class="strategy-card danger">
+                    <h3>沉默激活SOP V1</h3>
+                    <div class="strategy-grid">
+                      <div class="strategy-metric"><span>开口率</span><strong class="num-negative">18.7%</strong></div>
+                      <div class="strategy-metric"><span>删除率</span><strong class="num-negative">9.2%</strong></div>
+                      <div class="strategy-metric"><span>vs上周</span><strong class="num-negative">-3.8%</strong></div>
+                      <div class="strategy-metric"><span>需调整</span><strong>3</strong></div>
+                    </div>
+                    <span class="tag danger">异常</span>
+                  </article>
+                </div>
+              </div>
+            </section>
+
+            <div class="grid-2">
+              <section class="panel">
+                <div class="panel-head">
+                  <div class="panel-title"><span class="dot red"></span><span>问题策略节点拆解</span></div>
+                  <span class="panel-sub">当前选中：沉默激活SOP V1</span>
+                </div>
+                <div class="panel-body">
+                  <div class="table-wrap">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>节点</th>
+                          <th>内容摘要</th>
+                          <th>发送数</th>
+                          <th>开口率</th>
+                          <th>删除率</th>
+                          <th>开口vs均值</th>
+                          <th>删除vs均值</th>
+                          <th>判定</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr><td>节点1</td><td>“姐姐您好，注意到您关注了...”</td><td>380</td><td class="num-negative">4.1%</td><td>2.4%</td><td class="num-negative">-14.1%</td><td>+1.4%</td><td><span class="tag warn">开口过低</span></td></tr>
+                        <tr><td>节点2</td><td>“还在考虑吗？帮您预留了...”</td><td>364</td><td class="num-warn">6.2%</td><td>2.6%</td><td class="num-negative">-6.3%</td><td>+0.6%</td><td><span class="tag warn">偏低</span></td></tr>
+                        <tr><td>节点3</td><td>“姐姐，最后3个名额...”</td><td>341</td><td class="num-negative">5.1%</td><td class="num-negative">3.9%</td><td class="num-negative">-7.4%</td><td class="num-negative">+2.9%</td><td><span class="tag danger">高删除</span></td></tr>
+                        <tr><td>节点4</td><td>“看到同城的XX姐姐也做了...”</td><td>328</td><td class="num-negative">3.3%</td><td>1.2%</td><td class="num-negative">-9.2%</td><td>正常</td><td><span class="tag warn">效果差</span></td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </section>
+
+              <section class="panel">
+                <div class="panel-head">
+                  <div class="panel-title"><span class="dot cyan"></span><span>节点内容A/B对比</span></div>
+                  <span class="panel-sub">问题节点：节点3</span>
+                </div>
+                <div class="panel-body">
+                  <div class="table-wrap">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>内容版本</th>
+                          <th>内容摘要</th>
+                          <th>使用时段</th>
+                          <th>开口率</th>
+                          <th>删除率</th>
+                          <th>结论</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr><td><strong>V1原版</strong></td><td>“最后3个名额！错过再等一年”</td><td>当前</td><td class="num-negative">5.1%</td><td class="num-negative">3.9%</td><td>效果差且引起反感</td></tr>
+                        <tr><td><strong>V0旧版</strong></td><td>“这周还有少量预约名额哦”</td><td>7月使用</td><td class="num-warn">6.8%</td><td>2.1%</td><td>效果略好</td></tr>
+                        <tr><td><strong>建议新版</strong></td><td>降低紧迫感，增加价值描述</td><td>待测试</td><td>-</td><td>-</td><td><span class="tag info">建议A/B测试</span></td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </section>
+            </div>
+
+            <section class="panel">
+              <div class="panel-head">
+                <div class="panel-title"><span class="dot green"></span><span>输出：策略调整名单</span></div>
+                <button class="text-btn"><span class="icon download" aria-hidden="true"></span>导出名单</button>
+              </div>
+              <div class="panel-body">
+                <div class="table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>序号</th>
+                        <th>对象类型</th>
+                        <th>对象</th>
+                        <th>问题描述</th>
+                        <th>当前效果</th>
+                        <th>建议动作</th>
+                        <th>优先级</th>
+                        <th>责任人</th>
+                        <th>处理方式</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr><td>1</td><td>策略节点</td><td><strong>沉默激活V1-节点3</strong></td><td>删除率3.9%，远超均值</td><td>开口5.1% 删除3.9%</td><td>立即替换内容</td><td><span class="priority p0">P0</span></td><td>策略运营</td><td>回滚V0或设计新版+A/B测试</td></tr>
+                      <tr><td>2</td><td>策略节点</td><td><strong>沉默激活V1-节点1</strong></td><td>开口率仅4.1%，策略起始失败</td><td>开口4.1%</td><td>重新设计首触话术</td><td><span class="priority p0">P0</span></td><td>策略运营</td><td>参考新客欢迎V3</td></tr>
+                      <tr><td>3</td><td>整体策略</td><td><strong>优惠触达V2-节点1</strong></td><td>营销感强，开口低删除高</td><td>开口8.6% 删除4.3%</td><td>降低营销感</td><td><span class="priority p1">P1</span></td><td>策略运营</td><td>A/B测试新方案</td></tr>
+                      <tr><td>4</td><td>策略配置</td><td><strong>沉默激活V1整体</strong></td><td>4个节点整体表现均差</td><td>综合开口18.7%</td><td>考虑下线重做</td><td><span class="priority p1">P1</span></td><td>策略运营</td><td>暂停该策略，设计V2</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </section>
+          </section>
+
+          <section class="section" id="l2c" data-section>
+            <div class="section-head">
+              <div class="section-title">
+                <h2>L2-C AI能力归因</h2>
+                <p>判断是否为AI聊得不好，输出话术优化和人工接管名单。</p>
+              </div>
+            </div>
+
+            <section class="panel">
+              <div class="panel-head">
+                <div class="panel-title"><span class="dot cyan"></span><span>AI整体能力诊断</span></div>
+                <span class="panel-sub">能力维度按基准阈值自动判定</span>
+              </div>
+              <div class="panel-body">
+                <div class="ai-grid">
+                  <article class="ai-card"><h3>响应速度</h3><strong class="num-positive">3.2秒</strong><p>基准小于5秒</p><span class="tag ok">健康</span></article>
+                  <article class="ai-card"><h3>对话推进力</h3><strong class="num-positive">72.4%</strong><p>客户继续对话率</p><span class="tag ok">健康</span></article>
+                  <article class="ai-card"><h3>异议化解力</h3><strong class="num-warn">54.8%</strong><p>基准大于60%</p><span class="tag warn">需提升</span></article>
+                  <article class="ai-card"><h3>逼单能力</h3><strong class="num-negative">6.8%</strong><p>AI独立成交率</p><span class="tag danger">需提升</span></article>
+                  <article class="ai-card"><h3>安全性</h3><strong class="num-warn">4.2%</strong><p>AI对话中删除率</p><span class="tag warn">偏高</span></article>
+                </div>
+              </div>
+            </section>
+
+            <div class="grid-2">
+              <section class="panel">
+                <div class="panel-head">
+                  <div class="panel-title"><span class="dot red"></span><span>AI话术问题定位</span></div>
+                  <span class="panel-sub">按异议类型拆解</span>
+                </div>
+                <div class="panel-body">
+                  <div class="table-wrap">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>场景/异议</th>
+                          <th>AI策略</th>
+                          <th>触发</th>
+                          <th>化解成功</th>
+                          <th>化解后转化</th>
+                          <th>失败后果</th>
+                          <th>优先级</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr><td><strong>太贵了</strong></td><td>价值对比法</td><td>486次</td><td class="num-negative">52.3%</td><td>18.6%</td><td>28%沉默，14%删除</td><td><span class="tag danger">最高</span></td></tr>
+                        <tr><td><strong>不需要</strong></td><td>需求挖掘法</td><td>142次</td><td class="num-negative">21.6%</td><td>6.2%</td><td>45%直接删除</td><td><span class="tag danger">高</span></td></tr>
+                        <tr><td><strong>考虑一下</strong></td><td>限时优惠法</td><td>298次</td><td class="num-warn">45.8%</td><td>15.4%</td><td>32%沉默</td><td><span class="tag warn">中</span></td></tr>
+                        <tr><td><strong>要看效果</strong></td><td>案例展示法</td><td>186次</td><td class="num-positive">68.4%</td><td>28.9%</td><td>18%要求更多案例</td><td><span class="tag ok">维持</span></td></tr>
+                        <tr><td><strong>时间不合适</strong></td><td>灵活预约法</td><td>324次</td><td class="num-positive">71.2%</td><td>34.2%</td><td>12%约到下次</td><td><span class="tag ok">效果好</span></td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </section>
+
+              <section class="panel">
+                <div class="panel-head">
+                  <div class="panel-title"><span class="dot amber"></span><span>低置信度会话识别</span></div>
+                  <span class="panel-sub">实时捕捉需人工兜底会话</span>
+                </div>
+                <div class="panel-body">
+                  <div class="table-wrap">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>会话ID</th>
+                          <th>客户ID</th>
+                          <th>轮次</th>
+                          <th>置信度</th>
+                          <th>客户最后一句话</th>
+                          <th>情绪</th>
+                          <th>建议动作</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr><td>S-8842</td><td><strong>C-2041</strong></td><td>第6轮</td><td class="num-negative">0.18</td><td>“你们跟XX比有什么区别”</td><td>质疑</td><td><button class="text-btn" data-jump="l3">立即转人工</button></td></tr>
+                        <tr><td>S-8856</td><td><strong>C-2078</strong></td><td>第4轮</td><td class="num-negative">0.24</td><td>“我朋友说效果不好”</td><td>负面</td><td><button class="text-btn" data-jump="l3">立即转人工</button></td></tr>
+                        <tr><td>S-8861</td><td><strong>C-2095</strong></td><td>第8轮</td><td class="num-warn">0.31</td><td>“能不能再便宜点”</td><td>犹豫</td><td><button class="text-btn" data-jump="l3">建议转人工</button></td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </section>
+            </div>
+
+            <section class="panel">
+              <div class="panel-head">
+                <div class="panel-title"><span class="dot green"></span><span>输出：AI优化与人工接管名单</span></div>
+                <button class="text-btn"><span class="icon download" aria-hidden="true"></span>导出名单</button>
+              </div>
+              <div class="panel-body">
+                <div class="grid-2">
+                  <div class="table-wrap">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>序号</th>
+                          <th>优化对象</th>
+                          <th>当前策略</th>
+                          <th>问题</th>
+                          <th>影响规模</th>
+                          <th>建议方向</th>
+                          <th>优先级</th>
+                          <th>责任人</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr><td>1</td><td><strong>“太贵了”应对话术</strong></td><td>价值对比法</td><td>14%引发删除</td><td>486次/周</td><td>改为锚定对比法</td><td><span class="priority p0">P0</span></td><td>AI训练师</td></tr>
+                        <tr><td>2</td><td><strong>“不需要”应对话术</strong></td><td>需求挖掘法</td><td>45%直接删除</td><td>142次/周</td><td>重新设计或转人工</td><td><span class="priority p0">P0</span></td><td>AI训练师</td></tr>
+                        <tr><td>3</td><td><strong>AI逼单时机</strong></td><td>第3轮尝试逼单</td><td>过早引发抗拒</td><td>200次/周</td><td>延后到第5轮</td><td><span class="priority p1">P1</span></td><td>AI训练师</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div class="table-wrap">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>客户ID</th>
+                          <th>企微号</th>
+                          <th>AI状态</th>
+                          <th>情绪</th>
+                          <th>等待</th>
+                          <th>应接管员工</th>
+                          <th>操作</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr><td><strong>C-2041</strong></td><td>美丽顾问02</td><td>置信度0.18</td><td>质疑</td><td>等待中</td><td>张美丽</td><td><button class="text-btn js-done">立即转接</button></td></tr>
+                        <tr><td><strong>C-2078</strong></td><td>美丽顾问03</td><td>置信度0.24</td><td>负面</td><td>等待中</td><td>王小美</td><td><button class="text-btn js-done">立即转接</button></td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </section>
+
+          <section class="section" id="l2d" data-section>
+            <div class="section-head">
+              <div class="section-title">
+                <h2>L2-D 人工效率归因</h2>
+                <p>判断是否为员工响应问题，输出督促员工和需立即响应客户名单。</p>
+              </div>
+            </div>
+
+            <section class="panel">
+              <div class="panel-head">
+                <div class="panel-title"><span class="dot red"></span><span>人工团队效率热力图</span></div>
+                <span class="panel-sub">格子为该时段平均响应时长</span>
+              </div>
+              <div class="panel-body">
+                <div class="staff-heatmap" aria-label="人工团队效率热力图">
+                  <div class="staff-grid">
+                    <div class="staff-cell staff-head">时段</div>
+                    <div class="staff-cell staff-head">张美丽</div>
+                    <div class="staff-cell staff-head">王小美</div>
+                    <div class="staff-cell staff-head">李芳芳</div>
+                    <div class="staff-cell staff-head">陈小丽</div>
+                    <div class="staff-cell staff-head">赵敏</div>
+                    <div class="staff-cell staff-head">刘婷婷</div>
+
+                    <div class="staff-cell staff-head">09:00</div>
+                    <div class="staff-cell wait-cell-ok">2.1分</div>
+                    <div class="staff-cell wait-cell-ok">3.8分</div>
+                    <div class="staff-cell wait-cell-watch">7.4分</div>
+                    <div class="staff-cell wait-cell-watch">12.2分</div>
+                    <div class="staff-cell wait-cell-ok">2.8分</div>
+                    <div class="staff-cell wait-cell-ok">4.1分</div>
+
+                    <div class="staff-cell staff-head">10:00</div>
+                    <div class="staff-cell wait-cell-ok">1.8分</div>
+                    <div class="staff-cell wait-cell-watch">6.2分</div>
+                    <div class="staff-cell wait-cell-watch">9.8分</div>
+                    <div class="staff-cell wait-cell-bad">32.6分</div>
+                    <div class="staff-cell wait-cell-ok">3.2分</div>
+                    <div class="staff-cell wait-cell-ok">4.4分</div>
+
+                    <div class="staff-cell staff-head">11:00</div>
+                    <div class="staff-cell wait-cell-ok">2.4分</div>
+                    <div class="staff-cell wait-cell-ok">4.8分</div>
+                    <div class="staff-cell wait-cell-watch">8.2分</div>
+                    <div class="staff-cell wait-cell-bad">48.1分</div>
+                    <div class="staff-cell wait-cell-ok">3.0分</div>
+                    <div class="staff-cell wait-cell-ok">3.9分</div>
+
+                    <div class="staff-cell staff-head">14:00</div>
+                    <div class="staff-cell wait-cell-ok">2.0分</div>
+                    <div class="staff-cell wait-cell-watch">8.4分</div>
+                    <div class="staff-cell wait-cell-bad">22.6分</div>
+                    <div class="staff-cell wait-cell-bad">68.2分</div>
+                    <div class="staff-cell wait-cell-ok">3.7分</div>
+                    <div class="staff-cell wait-cell-watch">6.9分</div>
+
+                    <div class="staff-cell staff-head">15:00</div>
+                    <div class="staff-cell wait-cell-ok">2.2分</div>
+                    <div class="staff-cell wait-cell-watch">12.4分</div>
+                    <div class="staff-cell wait-cell-bad">18.6分</div>
+                    <div class="staff-cell wait-cell-bad">45.3分</div>
+                    <div class="staff-cell wait-cell-ok">4.0分</div>
+                    <div class="staff-cell wait-cell-ok">4.7分</div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <div class="grid-2">
+              <section class="panel">
+                <div class="panel-head">
+                  <div class="panel-title"><span class="dot amber"></span><span>员工效率排名与问题定位</span></div>
+                  <span class="panel-sub">按超时风险排序</span>
+                </div>
+                <div class="panel-body">
+                  <div class="table-wrap">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>员工</th>
+                          <th>承接数</th>
+                          <th>平均响应</th>
+                          <th>最长等待</th>
+                          <th>5分钟内率</th>
+                          <th>超时</th>
+                          <th>承接预约</th>
+                          <th>流失率</th>
+                          <th>状态</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr><td><strong>张美丽</strong></td><td>38</td><td class="num-positive">2.1分</td><td>4.8分</td><td class="num-positive">92%</td><td>0</td><td>34.2%</td><td>5.3%</td><td><span class="tag ok">优秀</span></td></tr>
+                        <tr><td><strong>王小美</strong></td><td>32</td><td class="num-warn">4.8分</td><td>12.4分</td><td>69%</td><td>3</td><td>25.6%</td><td>9.4%</td><td><span class="tag warn">待提醒</span></td></tr>
+                        <tr><td><strong>李芳芳</strong></td><td>28</td><td class="num-negative">8.2分</td><td>22.6分</td><td class="num-negative">43%</td><td>8</td><td>17.9%</td><td>14.3%</td><td><span class="tag danger">需约谈</span></td></tr>
+                        <tr><td><strong>陈小丽</strong></td><td>22</td><td class="num-negative">32.6分</td><td>68.2分</td><td class="num-negative">9%</td><td>18</td><td>4.5%</td><td>36.4%</td><td><span class="tag danger">严重失职</span></td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </section>
+
+              <section class="panel">
+                <div class="panel-head">
+                  <div class="panel-title"><span class="dot red"></span><span>客户等待实时监控</span></div>
+                  <span class="panel-sub">按等待时长倒序</span>
+                </div>
+                <div class="panel-body">
+                  <div class="table-wrap">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>客户ID</th>
+                          <th>等待</th>
+                          <th>分配给</th>
+                          <th>最后一句话</th>
+                          <th>情绪</th>
+                          <th>AI铺垫</th>
+                          <th>风险</th>
+                          <th>操作</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr><td><strong>C-3042</strong></td><td class="num-negative">42分钟</td><td>陈小丽</td><td>“什么时候能回复我？”</td><td>不耐烦</td><td>好，聊8轮</td><td><span class="tag danger">极高</span></td><td><button class="text-btn js-done">重分配</button></td></tr>
+                        <tr><td><strong>C-3056</strong></td><td class="num-negative">28分钟</td><td>陈小丽</td><td>“有人吗？”</td><td>焦虑</td><td>中，聊4轮</td><td><span class="tag danger">高</span></td><td><button class="text-btn js-done">提醒员工</button></td></tr>
+                        <tr><td><strong>C-3061</strong></td><td class="num-warn">15分钟</td><td>李芳芳</td><td>“好的那我考虑一下”</td><td>中性</td><td>好，有意向</td><td><span class="tag warn">中</span></td><td><button class="text-btn js-done">提醒员工</button></td></tr>
+                        <tr><td><strong>C-3078</strong></td><td>8分钟</td><td>王小美</td><td>“这个项目做完多久恢复”</td><td>积极</td><td>好，明确意向</td><td><span class="tag warn">中</span></td><td><button class="text-btn js-done">提醒员工</button></td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </section>
+            </div>
+
+            <div class="grid-2">
+              <section class="panel">
+                <div class="panel-head">
+                  <div class="panel-title"><span class="dot cyan"></span><span>响应时长与客户价值交叉</span></div>
+                  <span class="panel-sub">高意向客户优先级最高</span>
+                </div>
+                <div class="panel-body">
+                  <div class="table-wrap">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>价值层级</th>
+                          <th>判定规则</th>
+                          <th>客户数</th>
+                          <th>平均响应</th>
+                          <th>流失率</th>
+                          <th>潜在损失/人</th>
+                          <th>优先级</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr><td><strong>A 高意向</strong></td><td>AI聊8+轮且表达预约意向</td><td>18</td><td class="num-negative">14.2分</td><td class="num-negative">22%</td><td>¥500</td><td><span class="tag danger">最高</span></td></tr>
+                        <tr><td><strong>B 中意向</strong></td><td>AI聊4-7轮有咨询行为</td><td>42</td><td class="num-negative">18.6分</td><td class="num-negative">31%</td><td>¥300</td><td><span class="tag danger">高</span></td></tr>
+                        <tr><td><strong>C 低意向</strong></td><td>AI开口即转或表达犹豫</td><td>47</td><td class="num-negative">22.4分</td><td class="num-negative">42%</td><td>¥150</td><td><span class="tag warn">中</span></td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div class="diagnosis-note" style="margin-top: 12px;">
+                    A类高意向客户平均等待仍达14.2分钟，说明AI已经培育好的客户在人工环节被浪费。建议先做自动重分配，再处理员工绩效。
+                  </div>
+                </div>
+              </section>
+
+              <section class="panel">
+                <div class="panel-head">
+                  <div class="panel-title"><span class="dot green"></span><span>输出：人工效率处理名单</span></div>
+                  <button class="text-btn"><span class="icon download" aria-hidden="true"></span>导出名单</button>
+                </div>
+                <div class="panel-body">
+                  <div class="table-wrap">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>对象</th>
+                          <th>问题</th>
+                          <th>当前待响应</th>
+                          <th>最长等待</th>
+                          <th>预估损失</th>
+                          <th>建议动作</th>
+                          <th>执行人</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr><td><strong>陈小丽</strong></td><td>平均响应32.6分钟</td><td>12</td><td class="num-negative">68分钟</td><td>¥3,600</td><td>重分配+约谈</td><td>销售主管</td></tr>
+                        <tr><td><strong>李芳芳</strong></td><td>今日超时8次</td><td>5</td><td class="num-negative">22分钟</td><td>¥1,500</td><td>发送提醒+关注</td><td>销售主管</td></tr>
+                        <tr><td><strong>C-3042</strong></td><td>A类高意向等待过久</td><td>当前分配陈小丽</td><td class="num-negative">42分钟</td><td>¥500</td><td>立即给张美丽</td><td>销售主管</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </section>
+
+          <section class="section" id="l3" data-section>
+            <div class="section-head">
+              <div class="section-title">
+                <h2>L3 行动中心</h2>
+                <p>所有归因结果汇聚为分角色工单，打开即可执行。</p>
+              </div>
+            </div>
+
+            <section class="panel">
+              <div class="panel-head">
+                <div class="panel-title"><span class="dot red"></span><span>今日待处理工单总览</span></div>
+                <span class="panel-sub">14条新增，P0优先闭环</span>
+              </div>
+              <div class="panel-body">
+                <div class="work-order-overview">
+                  <article class="order-kpi"><span>今日新增工单</span><strong>14</strong></article>
+                  <article class="order-kpi"><span>待处理</span><strong class="num-negative">9</strong></article>
+                  <article class="order-kpi"><span>处理中</span><strong class="num-warn">3</strong></article>
+                  <article class="order-kpi"><span>已完成</span><strong class="num-positive">2</strong></article>
+                  <article class="order-kpi"><span>P0紧急工单</span><strong class="num-negative">4</strong></article>
+                </div>
+              </div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-head">
+                <div class="panel-title"><span class="dot blue"></span><span>按角色分发的行动面板</span></div>
+                <div class="role-tabs" role="tablist" aria-label="角色工单">
+                  <button class="role-tab active" data-role="traffic">投放运营</button>
+                  <button class="role-tab" data-role="strategy">策略/AI</button>
+                  <button class="role-tab" data-role="sales">销售主管</button>
+                  <button class="role-tab" data-role="data">数据/开发</button>
+                </div>
+              </div>
+              <div class="panel-body">
+                <div class="role-panel active" data-role-panel="traffic">
+                  <div class="table-wrap">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>优先级</th>
+                          <th>工单内容</th>
+                          <th>问题来源</th>
+                          <th>数据依据</th>
+                          <th>影响规模</th>
+                          <th>截止</th>
+                          <th>状态</th>
+                          <th>操作</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr><td><span class="priority p0">P0</span></td><td><strong>暂停推广计划#2048</strong></td><td>L2-A渠道归因</td><td>首触即删率8.2%，预约率4.1%</td><td>日均82人浪费</td><td>今日</td><td><span class="tag danger js-status">待处理</span></td><td><button class="text-btn js-done">完成</button></td></tr>
+                        <tr><td><span class="priority p1">P1</span></td><td><strong>优化计划#2051落地页</strong></td><td>L2-A渠道归因</td><td>开口率低于均值8%</td><td>日均46人</td><td>3日内</td><td><span class="tag danger js-status">待处理</span></td><td><button class="text-btn js-done">完成</button></td></tr>
+                        <tr><td><span class="priority p1">P1</span></td><td><strong>约谈投放专员D</strong></td><td>L2-A专员分析</td><td>连续5天质量分低于40</td><td>480人/周</td><td>今日</td><td><span class="tag danger js-status">待处理</span></td><td><button class="text-btn js-done">完成</button></td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <div class="role-panel" data-role-panel="strategy">
+                  <div class="table-wrap">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>优先级</th>
+                          <th>工单内容</th>
+                          <th>问题来源</th>
+                          <th>数据依据</th>
+                          <th>影响规模</th>
+                          <th>截止</th>
+                          <th>状态</th>
+                          <th>操作</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr><td><span class="priority p0">P0</span></td><td><strong>替换沉默激活V1-节点3内容</strong></td><td>L2-B策略归因</td><td>删除率3.9%，远超均值</td><td>380人受影响</td><td>今日</td><td><span class="tag danger js-status">待处理</span></td><td><button class="text-btn js-done">完成</button></td></tr>
+                        <tr><td><span class="priority p0">P0</span></td><td><strong>上线“太贵了”新话术</strong></td><td>L2-C AI归因</td><td>实验证明化解率+9.5%</td><td>486次/周</td><td>今日</td><td><span class="tag warn js-status">处理中</span></td><td><button class="text-btn js-done">完成</button></td></tr>
+                        <tr><td><span class="priority p1">P1</span></td><td><strong>设计沉默激活V2方案</strong></td><td>L2-B策略归因</td><td>V1整体开口18.7%</td><td>380人/周</td><td>本周内</td><td><span class="tag danger js-status">待处理</span></td><td><button class="text-btn js-done">完成</button></td></tr>
+                        <tr><td><span class="priority p1">P1</span></td><td><strong>“不需要”场景直接转人工</strong></td><td>L2-C AI归因</td><td>化解率仅21%，45%删除</td><td>142次/周</td><td>2日内</td><td><span class="tag danger js-status">待处理</span></td><td><button class="text-btn js-done">完成</button></td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <div class="role-panel" data-role-panel="sales">
+                  <div class="table-wrap">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>优先级</th>
+                          <th>工单内容</th>
+                          <th>问题来源</th>
+                          <th>数据依据</th>
+                          <th>影响规模</th>
+                          <th>截止</th>
+                          <th>状态</th>
+                          <th>操作</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr><td><span class="priority p0">P0</span></td><td><strong>重分配陈小丽名下12名待响应客户</strong></td><td>L2-D人工归因</td><td>最长等待68分钟，流失率36%</td><td>12名高意向客户</td><td>立即</td><td><span class="tag warn js-status">处理中</span></td><td><button class="text-btn js-done">完成</button></td></tr>
+                        <tr><td><span class="priority p0">P0</span></td><td><strong>约谈陈小丽</strong></td><td>L2-D人工归因</td><td>平均响应32.6分钟</td><td>周损失约¥10,800</td><td>今日</td><td><span class="tag danger js-status">待处理</span></td><td><button class="text-btn js-done">完成</button></td></tr>
+                        <tr><td><span class="priority p1">P1</span></td><td><strong>提醒李芳芳提升响应速度</strong></td><td>L2-D人工归因</td><td>今日超时8次</td><td>5名客户等待中</td><td>今日</td><td><span class="tag danger js-status">待处理</span></td><td><button class="text-btn js-done">完成</button></td></tr>
+                        <tr><td><span class="priority p2">P2</span></td><td><strong>设置超时自动重分配规则</strong></td><td>L2-D系统建议</td><td>当前无自动机制</td><td>全员</td><td>本周内</td><td><span class="tag danger js-status">待处理</span></td><td><button class="text-btn js-done">完成</button></td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <div class="role-panel" data-role-panel="data">
+                  <div class="table-wrap">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>优先级</th>
+                          <th>工单内容</th>
+                          <th>问题来源</th>
+                          <th>数据依据</th>
+                          <th>影响</th>
+                          <th>截止</th>
+                          <th>状态</th>
+                          <th>操作</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr><td><span class="priority p0">P0</span></td><td><strong>补充“首次开口时间”字段埋点</strong></td><td>L0缺失数据</td><td>字段为空，无法计算响应时效</td><td>全链路分析缺失</td><td>今日</td><td><span class="tag warn js-status">处理中</span></td><td><button class="text-btn js-done">完成</button></td></tr>
+                        <tr><td><span class="priority p1">P1</span></td><td><strong>修复企微号数量统计异常</strong></td><td>L0数据校验</td><td>林瑞琴显示110个价位，实际不符</td><td>数据失真</td><td>2日内</td><td><span class="tag danger js-status">待处理</span></td><td><button class="text-btn js-done">完成</button></td></tr>
+                        <tr><td><span class="priority p1">P1</span></td><td><strong>新建删除归因宽表</strong></td><td>L2-A/B/C/D共同需求</td><td>无法做删除阶段+原因交叉</td><td>归因分析缺失</td><td>3日内</td><td><span class="tag danger js-status">待处理</span></td><td><button class="text-btn js-done">完成</button></td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <div class="grid-2">
+              <section class="panel">
+                <div class="panel-head">
+                  <div class="panel-title"><span class="dot green"></span><span>工单闭环追踪</span></div>
+                  <span class="panel-sub">创建、处理、验证一条链</span>
+                </div>
+                <div class="panel-body">
+                  <div class="table-wrap">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>工单ID</th>
+                          <th>创建时间</th>
+                          <th>内容</th>
+                          <th>责任人</th>
+                          <th>状态</th>
+                          <th>处理记录</th>
+                          <th>效果验证</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr><td>WO-086</td><td>8/20</td><td>上线新客欢迎V3</td><td>策略运营</td><td><span class="tag ok">已完成</span></td><td>8/20上线，8/22达到显著性</td><td class="num-positive">开口率+4.2%</td></tr>
+                        <tr><td>WO-089</td><td>8/21</td><td>暂停高频触达实验</td><td>策略运营</td><td><span class="tag ok">已完成</span></td><td>发现删除率飙升后回滚</td><td class="num-positive">删除率恢复正常</td></tr>
+                        <tr><td>WO-092</td><td>8/22</td><td>重分配陈小丽客户</td><td>销售主管</td><td><span class="tag warn">处理中</span></td><td>已分配8名给张美丽、4名给王小美</td><td>待验证</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </section>
+
+              <section class="panel">
+                <div class="panel-head">
+                  <div class="panel-title"><span class="dot cyan"></span><span>本周行动效果复盘</span></div>
+                  <span class="panel-sub">把行动效果反哺策略</span>
+                </div>
+                <div class="panel-body">
+                  <div class="table-wrap">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>行动项</th>
+                          <th>执行日期</th>
+                          <th>预期效果</th>
+                          <th>实际效果</th>
+                          <th>是否达标</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr><td><strong>上线新客欢迎V3</strong></td><td>8/20</td><td>开口率+3%</td><td class="num-positive">开口率+4.2%</td><td><span class="tag ok">超预期</span></td></tr>
+                        <tr><td><strong>暂停高频触达实验</strong></td><td>8/21</td><td>删除率回到5%以下</td><td class="num-positive">降至5.1%</td><td><span class="tag ok">达标</span></td></tr>
+                        <tr><td><strong>提升AI置信度阈值</strong></td><td>8/18</td><td>转人工后流失率降10%</td><td class="num-positive">38%降至22%</td><td><span class="tag ok">超预期</span></td></tr>
+                        <tr><td><strong>约谈投放专员D</strong></td><td>8/19</td><td>百度质量分提升</td><td class="num-warn">32→35</td><td><span class="tag warn">继续观察</span></td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </section>
+            </div>
+
+            <section class="panel">
+              <div class="panel-head">
+                <div class="panel-title"><span class="dot violet"></span><span>自动归因与数据映射</span></div>
+                <span class="panel-sub">把异常识别转成工单的规则底座</span>
+              </div>
+              <div class="panel-body">
+                <div class="rule-grid">
+                  <article class="rule-item">
+                    <h3>开口率骤降</h3>
+                    <p>先查来源，再查策略，最后查系统。同策略不同来源差异大时判定来源问题；同来源不同策略差异大时判定策略问题。</p>
+                    <span class="tag info">依赖字段：source_channel, strategy_id, is_customer_opened</span>
+                  </article>
+                  <article class="rule-item">
+                    <h3>删除率飙升</h3>
+                    <p>先查来源，再查节点，再查频率。集中在某来源为粉质量问题，集中在某节点后为内容问题，集中短间隔为频率问题。</p>
+                    <span class="tag danger">依赖字段：is_deleted, delete_phase, node_seq</span>
+                  </article>
+                  <article class="rule-item">
+                    <h3>预约率下降</h3>
+                    <p>先查响应时效，再查AI能力，再查来源。人工响应同步恶化则优先归因为人的问题，AI置信分布下移则归因为AI问题。</p>
+                    <span class="tag warn">依赖字段：transfer_to_staff_reply_seconds, ai_confidence_score</span>
+                  </article>
+                  <article class="rule-item">
+                    <h3>自动生成工单</h3>
+                    <p>员工连续3次响应超过30分钟生成P0督促工单；计划连续3天首触即删率超过5%生成P0暂停评估工单。</p>
+                    <span class="tag ok">输出：对象、责任人、优先级、截止时间</span>
+                  </article>
+                </div>
+              </div>
+            </section>
+          </section>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const navButtons = Array.from(document.querySelectorAll('.nav-btn'));
+      const sections = Array.from(document.querySelectorAll('[data-section]'));
+
+      function activateNav(id) {
+        navButtons.forEach((btn) => {
+          btn.classList.toggle('active', btn.dataset.jump === id);
+        });
+      }
+
+      function jumpTo(id) {
+        const target = document.getElementById(id);
+        if (!target) return;
+        activateNav(id);
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        target.classList.remove('flash');
+        window.setTimeout(() => target.classList.add('flash'), 80);
+      }
+
+      document.querySelectorAll('[data-jump]').forEach((el) => {
+        el.addEventListener('click', (event) => {
+          const id = el.getAttribute('data-jump');
+          if (!id) return;
+          event.preventDefault();
+          jumpTo(id);
+        });
+      });
+
+      if ('IntersectionObserver' in window) {
+        const observer = new IntersectionObserver((entries) => {
+          const visible = entries
+            .filter((entry) => entry.isIntersecting)
+            .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+          if (visible) activateNav(visible.target.id);
+        }, { rootMargin: '-18% 0px -62% 0px', threshold: [0.1, 0.25, 0.5] });
+
+        sections.forEach((section) => observer.observe(section));
+      }
+
+      document.querySelectorAll('.role-tab').forEach((tab) => {
+        tab.addEventListener('click', () => {
+          const role = tab.dataset.role;
+          document.querySelectorAll('.role-tab').forEach((item) => item.classList.toggle('active', item === tab));
+          document.querySelectorAll('.role-panel').forEach((panel) => {
+            panel.classList.toggle('active', panel.dataset.rolePanel === role);
+          });
+        });
+      });
+
+      document.querySelectorAll('.js-done').forEach((button) => {
+        button.addEventListener('click', () => {
+          const row = button.closest('tr');
+          const eventItem = button.closest('.event-item');
+          const status = row ? row.querySelector('.js-status') : null;
+          if (status) {
+            status.textContent = '已完成';
+            status.className = 'tag ok js-status';
+          }
+          if (eventItem) {
+            eventItem.style.opacity = '.62';
+          }
+          button.textContent = '已处理';
+          button.disabled = true;
+          button.style.cursor = 'not-allowed';
+        });
+      });
+
+      function drawSparkline(canvas) {
+        const values = (canvas.dataset.values || '')
+          .split(',')
+          .map((value) => Number(value.trim()))
+          .filter((value) => !Number.isNaN(value));
+        if (values.length < 2) return;
+
+        const rectWidth = canvas.width;
+        const rectHeight = canvas.height;
+        const ctx = canvas.getContext('2d');
+        const min = Math.min(...values);
+        const max = Math.max(...values);
+        const range = max - min || 1;
+        const padding = 4;
+        const step = (rectWidth - padding * 2) / (values.length - 1);
+        const last = values[values.length - 1];
+        const previous = values[values.length - 2];
+        const color = last >= previous ? '#13a06f' : '#d64b4b';
+
+        ctx.clearRect(0, 0, rectWidth, rectHeight);
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = color;
+        ctx.lineJoin = 'round';
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+
+        values.forEach((value, index) => {
+          const x = padding + index * step;
+          const y = rectHeight - padding - ((value - min) / range) * (rectHeight - padding * 2);
+          if (index === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        });
+
+        ctx.stroke();
+        ctx.fillStyle = color;
+        const x = padding + (values.length - 1) * step;
+        const y = rectHeight - padding - ((last - min) / range) * (rectHeight - padding * 2);
+        ctx.beginPath();
+        ctx.arc(x, y, 3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      document.querySelectorAll('.spark').forEach(drawSparkline);
+    })();
+  </script>
+</body>
+</html>
