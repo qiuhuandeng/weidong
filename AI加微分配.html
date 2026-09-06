@@ -1,0 +1,4464 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI加微分配</title>
+    <style>
+        :root {
+            --card: #ffffff;
+            --primary: #3b82f6;
+            --primary-light: #eff6ff;
+            --success: #16a34a;
+            --success-bg: #f0fdf4;
+            --warning: #d97706;
+            --warning-bg: #fffbeb;
+            --danger: #dc2626;
+            --danger-bg: #fef2f2;
+            --gray-50: #f8fafc;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --radius: 8px;
+            --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: #f0f2f5;
+            color: #1f2937;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        /* Header */
+        .header {
+            background: #fff;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .header-subtitle {
+            font-size: 12px;
+            color: #9ca3af;
+            margin-top: 2px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .last-update {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .refresh-btn {
+            padding: 6px 16px;
+            background: #3b82f6;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: background 0.2s;
+        }
+
+        .refresh-btn:hover {
+            background: #2563eb;
+        }
+
+        /* Global Filters */
+        .global-filters {
+            background: #fff;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .filter-label {
+            font-size: 12px;
+            color: #6b7280;
+            white-space: nowrap;
+        }
+
+        .filter-input, .filter-select {
+            padding: 5px 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #374151;
+            background: #fff;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .filter-input:focus, .filter-select:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59,130,246,0.1);
+        }
+
+        .filter-input {
+            width: 130px;
+        }
+
+        .quick-date-btns {
+            display: flex;
+            gap: 4px;
+        }
+
+        .quick-date-btn {
+            padding: 4px 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            background: #fff;
+            font-size: 12px;
+            color: #374151;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quick-date-btn:hover {
+            border-color: #3b82f6;
+            color: #3b82f6;
+        }
+
+        .quick-date-btn.active {
+            background: #3b82f6;
+            color: #fff;
+            border-color: #3b82f6;
+        }
+
+        /* Layer Tabs */
+        .layer-tabs {
+            background: #fff;
+            padding: 0 24px;
+            display: flex;
+            border-bottom: 2px solid #e5e7eb;
+            position: sticky;
+            top: 69px;
+            z-index: 99;
+        }
+
+        .layer-tab {
+            padding: 14px 24px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #6b7280;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        .layer-tab:hover {
+            color: #3b82f6;
+        }
+
+        .layer-tab.active {
+            color: #3b82f6;
+            border-bottom-color: #3b82f6;
+        }
+
+        .tab-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 18px;
+            height: 18px;
+            padding: 0 5px;
+            border-radius: 9px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .tab-badge.normal {
+            background: #eff6ff;
+            color: #3b82f6;
+        }
+
+        .tab-badge.warning {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .tab-badge.danger {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        /* Content */
+        .content {
+            padding: 20px 24px;
+            max-width: 100%;
+        }
+
+        .layer-content {
+            display: none;
+        }
+
+        .layer-content.active {
+            display: block;
+        }
+
+        /* Alert Cards */
+        .alert-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .alert-card {
+            flex: 1;
+            min-width: 200px;
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid;
+        }
+
+        .alert-card.success {
+            background: #f0fdf4;
+            border-color: #bbf7d0;
+        }
+
+        .alert-card.warning {
+            background: #fffbeb;
+            border-color: #fde68a;
+        }
+
+        .alert-card.danger {
+            background: #fef2f2;
+            border-color: #fecaca;
+        }
+
+        .alert-card.info {
+            background: #eff6ff;
+            border-color: #bfdbfe;
+        }
+
+        .alert-card-label {
+            font-size: 12px;
+            color: #6b7280;
+            margin-bottom: 6px;
+        }
+
+        .alert-card-value {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .alert-card.success .alert-card-value { color: #16a34a; }
+        .alert-card.warning .alert-card-value { color: #d97706; }
+        .alert-card.danger .alert-card-value { color: #dc2626; }
+        .alert-card.info .alert-card-value { color: #2563eb; }
+
+        .alert-card-sub {
+            font-size: 11px;
+            color: #9ca3af;
+            margin-top: 4px;
+        }
+
+        /* KPI Cards Row */
+        .kpi-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .kpi-card {
+            background: #fff;
+            border-radius: 8px;
+            padding: 14px 16px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .kpi-card-label {
+            font-size: 12px;
+            color: #6b7280;
+            margin-bottom: 4px;
+        }
+
+        .kpi-card-value {
+            font-size: 22px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .kpi-card-value.danger { color: #dc2626; }
+        .kpi-card-value.warning { color: #d97706; }
+        .kpi-card-value.success { color: #16a34a; }
+
+        .kpi-card-trend {
+            font-size: 11px;
+            margin-top: 4px;
+        }
+
+        .kpi-card-trend.up { color: #16a34a; }
+        .kpi-card-trend.down { color: #dc2626; }
+        .kpi-card-trend.flat { color: #9ca3af; }
+
+        /* Section */
+        .section {
+            background: #fff;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .section-header {
+            padding: 14px 20px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #fafbfc;
+        }
+
+        .section-title-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 28px;
+            height: 28px;
+            padding: 0 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .section-number.blue { background: #3b82f6; }
+        .section-number.green { background: #10b981; }
+        .section-number.purple { background: #8b5cf6; }
+        .section-number.orange { background: #f59e0b; }
+        .section-number.red { background: #ef4444; }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .section-desc {
+            font-size: 12px;
+            color: #9ca3af;
+            margin-top: 2px;
+        }
+
+        .section-filters {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-filter-select {
+            padding: 4px 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 12px;
+            background: #fff;
+            color: #374151;
+            outline: none;
+        }
+
+        .section-body {
+            padding: 0;
+            overflow-x: auto;
+        }
+
+        /* Table */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            min-width: 800px;
+        }
+
+        .data-table thead {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .data-table th {
+            background: #f8fafc;
+            padding: 10px 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #4b5563;
+            border-bottom: 1px solid #e5e7eb;
+            white-space: nowrap;
+            font-size: 12px;
+        }
+
+        .data-table th.center {
+            text-align: center;
+        }
+
+        .data-table th.right {
+            text-align: right;
+        }
+
+        .data-table .column-group-row th {
+            background: #ffffff;
+            color: #30343b;
+            text-align: center;
+            border-bottom: 1px solid #eef0f2;
+            font-weight: 600;
+        }
+
+        .data-table .column-group-row th + th {
+            border-left: 1px solid #cfd6e3;
+        }
+
+        .data-table .group-start {
+            border-left: 1px solid #cfd6e3 !important;
+        }
+
+        .open-account-table th:nth-child(4),
+        .open-account-table td:nth-child(4),
+        .open-account-table th:nth-child(9),
+        .open-account-table td:nth-child(9),
+        .open-customer-table th:nth-child(4),
+        .open-customer-table td:nth-child(4),
+        .open-customer-table th:nth-child(9),
+        .open-customer-table td:nth-child(9) {
+            border-left: 1px solid #cfd6e3 !important;
+        }
+
+        .data-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #f3f4f6;
+            color: #374151;
+            white-space: nowrap;
+        }
+
+        .data-table td.center {
+            text-align: center;
+        }
+
+        .data-table td.right {
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .data-table td.mono {
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 12px;
+        }
+
+        .data-table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .data-table tbody tr.total-row {
+            background: #f0f5ff;
+            font-weight: 600;
+        }
+
+        .data-table tbody tr.total-row td {
+            border-top: 2px solid #3b82f6;
+        }
+
+        .data-table tbody tr.verify-row {
+            background: #fefce8;
+        }
+
+        .data-table tbody tr.verify-row td {
+            font-weight: 600;
+            color: #92400e;
+        }
+
+        /* Table Cell Styles */
+        .cell-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .cell-tag.blue { background: #eff6ff; color: #2563eb; }
+        .cell-tag.green { background: #f0fdf4; color: #16a34a; }
+        .cell-tag.red { background: #fef2f2; color: #dc2626; }
+        .cell-tag.orange { background: #fffbeb; color: #d97706; }
+        .cell-tag.gray { background: #f3f4f6; color: #6b7280; }
+        .cell-tag.purple { background: #faf5ff; color: #7c3aed; }
+
+        .cell-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+
+        .status-dot.green { background: #16a34a; }
+        .status-dot.red { background: #dc2626; }
+        .status-dot.yellow { background: #d97706; }
+        .status-dot.gray { background: #9ca3af; }
+
+        .cell-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .cell-bar-track {
+            flex: 1;
+            height: 6px;
+            background: #f3f4f6;
+            border-radius: 3px;
+            min-width: 60px;
+            overflow: hidden;
+        }
+
+        .cell-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.3s;
+        }
+
+        .cell-bar-fill.blue { background: #3b82f6; }
+        .cell-bar-fill.green { background: #16a34a; }
+        .cell-bar-fill.orange { background: #f59e0b; }
+        .cell-bar-fill.red { background: #ef4444; }
+
+        .cell-bar-text {
+            font-size: 12px;
+            font-weight: 500;
+            min-width: 40px;
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .cell-alert {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .cell-alert.danger {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+
+        .cell-alert.warning {
+            background: #fffbeb;
+            color: #d97706;
+        }
+
+        .cell-alert.normal {
+            background: #f0fdf4;
+            color: #16a34a;
+        }
+
+        .cell-link {
+            color: #3b82f6;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .cell-link:hover {
+            text-decoration: underline;
+        }
+
+        .cell-equation {
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 12px;
+            padding: 4px 8px;
+            background: #f3f4f6;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        .cell-equation.pass {
+            background: #f0fdf4;
+            color: #16a34a;
+        }
+
+        .cell-equation.fail {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+
+        /* Sub-table toggle */
+        .expand-btn {
+            padding: 2px 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            background: #fff;
+            font-size: 11px;
+            color: #6b7280;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .expand-btn:hover {
+            border-color: #3b82f6;
+            color: #3b82f6;
+        }
+
+        /* Section Sub-tabs */
+        .section-subtabs {
+            display: flex;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 0 20px;
+            background: #fff;
+            overflow-x: auto;
+        }
+
+        .section-subtab {
+            padding: 10px 16px;
+            font-size: 13px;
+            color: #6b7280;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+            transition: all 0.2s;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .section-subtab:hover {
+            color: #3b82f6;
+        }
+
+        .section-subtab.active {
+            color: #3b82f6;
+            border-bottom-color: #3b82f6;
+            font-weight: 500;
+        }
+
+        .subtab-content {
+            display: none;
+        }
+
+        .subtab-content.active {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            padding: 16px 0;
+            background: #f6f7fb;
+        }
+
+        .subtab-content > .section,
+        .subtab-content > .section-body,
+        .subtab-content > .section-footer,
+        .subtab-content > .customer-filter-bar,
+        .subtab-content > .card,
+        .subtab-content > .open-analysis-table,
+        .subtab-content > .open-detail-head {
+            margin: 0 16px;
+            border: 1px solid #e8eaed;
+            border-radius: 4px;
+            background: #ffffff;
+            overflow: hidden;
+        }
+
+        .subtab-content > .section-body {
+            padding: 0;
+        }
+
+        .subtab-content > .rules-insight-grid {
+            margin: 0 16px;
+        }
+
+        .subtab-content > .section-footer {
+            border-top: 1px solid #e8eaed;
+        }
+
+        .section-body > table + table,
+        .section-body > table + .section-desc,
+        .section-body > table + .allocation-scope-note,
+        .section-body > .allocation-scope-note + table,
+        .section-body > .section-desc + table {
+            margin-top: 16px;
+        }
+
+        /* Verify Table */
+        .verify-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        .verify-table th {
+            background: #f8fafc;
+            padding: 10px 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #4b5563;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .verify-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .verify-table tr.fail td {
+            background: #fef2f2;
+        }
+
+        .verify-table tr.warn td {
+            background: #fffbeb;
+        }
+
+        .verify-table tr.pass td {
+            background: #f0fdf4;
+        }
+
+        /* Empty State */
+        .empty-state {
+            padding: 40px;
+            text-align: center;
+            color: #9ca3af;
+        }
+
+        .empty-state-icon {
+            font-size: 36px;
+            margin-bottom: 12px;
+        }
+
+        .empty-state-text {
+            font-size: 14px;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .kpi-row {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        /* Tooltip for header descriptions */
+        .th-help {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #e5e7eb;
+            color: #6b7280;
+            font-size: 10px;
+            margin-left: 4px;
+            cursor: help;
+            position: relative;
+        }
+
+        .th-help:hover::after {
+            content: attr(data-tip);
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-top: 6px;
+            padding: 8px 12px;
+            background: #1f2937;
+            color: #fff;
+            font-size: 11px;
+            font-weight: 400;
+            border-radius: 6px;
+            white-space: nowrap;
+            max-width: 300px;
+            white-space: normal;
+            z-index: 1000;
+            line-height: 1.4;
+        }
+
+        /* Scrollbar */
+        .section-body::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .section-body::-webkit-scrollbar-track {
+            background: #f3f4f6;
+        }
+
+        .section-body::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 3px;
+        }
+
+        .section-body::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
+        }
+
+        /* Footer notes */
+        .section-footer {
+            padding: 10px 20px;
+            background: #fafbfc;
+            border-top: 1px solid #e5e7eb;
+            font-size: 11px;
+            color: #9ca3af;
+            display: flex;
+            gap: 20px;
+        }
+
+        .section-footer-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Customer Layer */
+        .customer-filter-bar {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 14px 20px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .customer-filter-bar label {
+            font-size: 12px;
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .customer-filter-bar select,
+        .customer-filter-bar input {
+            padding: 5px 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #374151;
+            background: #fff;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .customer-filter-bar select:focus,
+        .customer-filter-bar input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59,130,246,0.1);
+        }
+
+        .customer-section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #111827;
+            margin: 0 0 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .customer-section-title .st-num {
+            background: #3b82f6;
+            color: #fff;
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .card-head {
+            padding: 14px 20px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            background: #fafbfc;
+        }
+
+        .card-title { font-size: 14px; font-weight: 600; color: #111827; }
+        .card-desc { font-size: 12px; color: #9ca3af; margin-top: 2px; }
+        .card-body-np { padding: 0; }
+        .table-wrap { overflow-x: auto; }
+        .text-right { text-align: right; }
+
+        .handoff-analysis {
+            margin-bottom: 12px;
+            padding: 14px 16px 16px;
+            border: 1px solid #e8eaed;
+            border-radius: 4px;
+            background: #ffffff;
+        }
+
+        .handoff-analysis-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .handoff-analysis-title {
+            color: #24272c;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .handoff-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .handoff-metric {
+            min-height: 74px;
+            padding: 10px 12px;
+            border: 1px solid #e8eaed;
+            border-radius: 4px;
+            background: #fafbfc;
+        }
+
+        .handoff-metric-label {
+            color: #6f7682;
+            font-size: 11px;
+        }
+
+        .handoff-metric-value {
+            margin-top: 4px;
+            color: #15171a;
+            font-size: 20px;
+            line-height: 1.2;
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .handoff-metric-note {
+            margin-top: 5px;
+            color: #8b9099;
+            font-size: 10px;
+        }
+
+        .handoff-metric-note.up { color: #168a4b; }
+        .handoff-metric-note.down { color: #e03f3f; }
+
+        .handoff-analysis-table {
+            overflow-x: auto;
+        }
+
+        .handoff-analysis-table .data-table {
+            min-width: 980px;
+        }
+
+        .handoff-total-cell {
+            vertical-align: middle;
+            background: #ffffff;
+        }
+
+        .open-analysis-table {
+            overflow-x: auto;
+        }
+
+        .open-analysis-table .data-table {
+            min-width: 1180px;
+        }
+
+        .open-analysis-table.customer .data-table {
+            min-width: 1320px;
+        }
+
+        .open-message-table {
+            min-width: 1260px;
+        }
+
+        .open-detail-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 12px 14px 8px;
+        }
+
+        .open-detail-title {
+            padding: 12px 14px 0;
+            color: #24272c;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .open-detail-head .open-detail-title {
+            padding: 0;
+        }
+
+        .open-detail-filters {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .open-detail-filter {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: #6f7682;
+            font-size: 11px;
+        }
+
+        .dashboard-overview-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+            gap: 12px;
+            align-items: start;
+            margin-bottom: 12px;
+        }
+
+        .dashboard-overview-grid .section {
+            margin-bottom: 0;
+        }
+
+        .dashboard-overview-grid .data-table {
+            min-width: 0;
+        }
+
+        .dashboard-funnel-table th:first-child,
+        .dashboard-funnel-table td:first-child {
+            min-width: 190px;
+        }
+
+        .dashboard-latency-table th:nth-child(4),
+        .dashboard-latency-table td:nth-child(4) {
+            min-width: 180px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .badge-green { background: #dcfce7; color: #166534; }
+        .badge-red { background: #fee2e2; color: #991b1b; }
+        .badge-orange { background: #ffedd5; color: #9a3412; }
+        .badge-blue { background: #dbeafe; color: #1e40af; }
+        .badge-gray { background: #f3f4f6; color: #6b7280; }
+        .badge-purple { background: #f3e8ff; color: #6b21a8; }
+
+        .clickable { cursor: pointer; }
+        .clickable:hover td { background: #eff6ff !important; }
+
+        .chain-summary {
+            background: #f4f7fe;
+            border: 1px solid #bfdbfe;
+            border-radius: 8px;
+            padding: 14px 18px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            line-height: 1.8;
+            color: #374151;
+        }
+
+        .chain-step {
+            display: flex;
+            gap: 16px;
+            padding: 12px 0;
+            border-bottom: 1px dashed #e5e7eb;
+        }
+
+        .chain-step:last-child { border-bottom: none; }
+        .chain-dot-col { display: flex; flex-direction: column; align-items: center; min-width: 28px; }
+        .chain-dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid #3b82f6; background: #fff; flex-shrink: 0; margin-top: 4px; }
+        .chain-dot.filled { background: #3b82f6; }
+        .chain-dot.green { border-color: #16a34a; background: #16a34a; }
+        .chain-dot.red { border-color: #dc2626; background: #dc2626; }
+        .chain-line { width: 2px; flex: 1; background: #e5e7eb; margin-top: 4px; }
+        .chain-content { flex: 1; min-width: 0; }
+        .chain-title { font-weight: 600; font-size: 13px; color: #374151; margin-bottom: 4px; }
+        .chain-detail { font-size: 12px; color: #6b7280; }
+
+        .chain-result {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 6px;
+        }
+
+        .chain-result.pass { background: #dcfce7; color: #166534; }
+        .chain-result.fail { background: #fee2e2; color: #991b1b; }
+        .chain-result.info { background: #dbeafe; color: #1e40af; }
+
+        .chain-table {
+            width: 100%;
+            margin-top: 8px;
+            font-size: 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            border-collapse: collapse;
+            overflow: hidden;
+        }
+
+        .chain-table th { padding: 6px 10px; font-size: 11px; background: #f3f4f6; color: #4b5563; text-align: left; white-space: nowrap; }
+        .chain-table td { padding: 6px 10px; font-size: 12px; border-bottom: 1px solid #f3f4f6; color: #374151; white-space: nowrap; }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.4);
+            z-index: 200;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 40px 20px;
+            overflow-y: auto;
+        }
+
+        .modal-overlay.show { display: flex; }
+
+        .modal-box {
+            background: #fff;
+            border-radius: 12px;
+            max-width: 1000px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            max-height: calc(100vh - 80px);
+            overflow-y: auto;
+        }
+
+        .modal-head {
+            padding: 18px 24px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            background: #fff;
+            z-index: 1;
+            border-radius: 12px 12px 0 0;
+        }
+
+        .modal-head h3 { font-size: 16px; font-weight: 700; }
+
+        .modal-close {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: none;
+            background: #f3f4f6;
+            cursor: pointer;
+            font-size: 18px;
+            color: #6b7280;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .modal-close:hover { background: #e5e7eb; color: #1f2937; }
+        .modal-body { padding: 24px; }
+
+        /* Deviation indicator */
+        .deviation {
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .deviation.ok { color: #16a34a; }
+        .deviation.warn { color: #d97706; }
+        .deviation.bad { color: #dc2626; }
+
+        /* Quick BI visual system */
+        :root {
+            --card: #ffffff;
+            --primary: #4f7cff;
+            --primary-light: #eef3ff;
+            --success: #18a058;
+            --success-bg: #effaf4;
+            --warning: #d9822b;
+            --warning-bg: #fff8ed;
+            --danger: #f53f3f;
+            --danger-bg: #fff1f0;
+            --gray-50: #fafbfc;
+            --gray-100: #f5f6f8;
+            --gray-200: #e8eaed;
+            --gray-300: #d9dce1;
+            --gray-400: #a7abb4;
+            --gray-500: #7b808a;
+            --gray-600: #5b606b;
+            --gray-700: #3d424c;
+            --gray-800: #1f2329;
+            --radius: 4px;
+            --shadow: none;
+        }
+
+        body {
+            background: #f5f6f8;
+            color: #1f2329;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+
+        .header {
+            min-height: 48px;
+            padding: 0 16px;
+            border-bottom-color: #e8eaed;
+            box-shadow: none;
+        }
+
+        .header-left { gap: 0; }
+
+        .header-title {
+            font-size: 16px;
+            line-height: 48px;
+            font-weight: 600;
+            color: #1f2329;
+        }
+
+        .header-right { gap: 10px; }
+        .last-update { font-size: 11px; color: #8b9099; }
+
+        .refresh-btn {
+            height: 28px;
+            padding: 0 12px;
+            border-radius: 2px;
+            font-size: 12px;
+            gap: 0;
+            background: #4f7cff;
+        }
+
+        .refresh-btn:hover { background: #3f6ee8; }
+
+        .global-filters {
+            min-height: 52px;
+            padding: 10px 16px;
+            gap: 12px;
+            border-bottom: 0;
+            background: #fafbfc;
+        }
+
+        .filter-group { gap: 6px; }
+        .filter-label { font-size: 11px; color: #5b606b; }
+
+        .filter-input,
+        .filter-select,
+        .customer-filter-bar select,
+        .customer-filter-bar input,
+        .section-filter-select {
+            height: 28px;
+            padding: 0 8px;
+            border: 1px solid #e1e3e7;
+            border-radius: 2px;
+            background: #ffffff;
+            color: #30343b;
+            font-size: 11px;
+            box-shadow: none;
+        }
+
+        .filter-input:focus,
+        .filter-select:focus,
+        .customer-filter-bar select:focus,
+        .customer-filter-bar input:focus,
+        .section-filter-select:focus {
+            border-color: #4f7cff;
+            box-shadow: 0 0 0 1px rgba(79, 124, 255, 0.12);
+        }
+
+        .quick-date-btns {
+            gap: 0;
+            border: 1px solid #e1e3e7;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .quick-date-btn {
+            height: 26px;
+            padding: 0 10px;
+            border: 0;
+            border-right: 1px solid #e8eaed;
+            border-radius: 0;
+            background: #ffffff;
+            font-size: 11px;
+            color: #5b606b;
+        }
+
+        .quick-date-btn:last-child { border-right: 0; }
+
+        .quick-date-btn.active,
+        .quick-date-btn.active:hover {
+            background: #eef3ff;
+            color: #4f7cff;
+        }
+
+        .layer-tabs {
+            position: static;
+            width: max-content;
+            margin: 8px auto 12px;
+            padding: 3px;
+            gap: 2px;
+            border: 0;
+            border-radius: 4px;
+            background: #eef1f7;
+        }
+
+        .layer-tab {
+            min-width: 88px;
+            height: 28px;
+            padding: 0 18px;
+            margin: 0;
+            justify-content: center;
+            border: 0;
+            border-radius: 3px;
+            color: #5b606b;
+            font-size: 12px;
+            font-weight: 400;
+        }
+
+        .layer-tab:hover { color: #4f7cff; }
+
+        .layer-tab.active {
+            border: 0;
+            background: #dfe9ff;
+            color: #356bea;
+            font-weight: 600;
+        }
+
+        .content { padding: 0 12px 24px; }
+
+        .alert-row {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(150px, 1fr));
+            gap: 0;
+            margin-bottom: 12px;
+            overflow: hidden;
+            border: 1px solid #e8eaed;
+            border-radius: 4px;
+            background: #ffffff;
+        }
+
+        .alert-card,
+        .alert-card.success,
+        .alert-card.warning,
+        .alert-card.danger,
+        .alert-card.info {
+            min-width: 0;
+            min-height: 104px;
+            padding: 18px 20px;
+            border: 0;
+            border-right: 1px solid #e8eaed;
+            border-radius: 0;
+            background: #ffffff;
+            text-align: center;
+        }
+
+        .alert-card:last-child { border-right: 0; }
+        .alert-card-label { margin-bottom: 4px; color: #5b606b; font-size: 11px; }
+
+        .alert-card-value,
+        .alert-card.success .alert-card-value,
+        .alert-card.warning .alert-card-value,
+        .alert-card.danger .alert-card-value,
+        .alert-card.info .alert-card-value {
+            color: #15171a;
+            font-size: 22px;
+            line-height: 1.25;
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .alert-card-sub { margin-top: 6px; color: #8b9099; font-size: 10px; }
+
+        .section,
+        .card {
+            margin-bottom: 16px;
+            overflow: hidden;
+            border: 1px solid #e8eaed;
+            border-radius: 4px;
+            background: #ffffff;
+            box-shadow: none;
+        }
+
+        .section-header,
+        .card-head {
+            min-height: 42px;
+            padding: 0 14px;
+            align-items: center;
+            border-bottom: 1px solid #eef0f2;
+            background: #ffffff;
+        }
+
+        .section-title-group { gap: 0; }
+        .section-number,
+        .customer-section-title,
+        .section-desc,
+        .card-desc,
+        .header-subtitle { display: none; }
+
+        .section-title,
+        .card-title {
+            color: #24272c;
+            font-size: 13px;
+            line-height: 1.3;
+            font-weight: 600;
+        }
+
+        .section-filters { gap: 6px; }
+
+        .section-body,
+        .table-wrap {
+            overflow-x: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #cfd3da #f5f6f8;
+        }
+
+        .data-table,
+        .verify-table {
+            border-collapse: collapse;
+            font-size: 11px;
+        }
+
+        .data-table thead { z-index: 2; }
+
+        .data-table th,
+        .verify-table th {
+            height: 32px;
+            padding: 6px 10px;
+            border-bottom: 1px solid #dfe3e8;
+            background: #fafbfc;
+            color: #454a53;
+            font-size: 11px;
+            line-height: 1.2;
+            font-weight: 600;
+        }
+
+        .data-table td,
+        .verify-table td {
+            height: 31px;
+            padding: 6px 10px;
+            border-bottom: 1px solid #eef0f2;
+            color: #30343b;
+            line-height: 1.25;
+        }
+
+        .data-table td.mono {
+            font-family: inherit;
+            font-size: 11px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .data-table tbody tr:nth-child(even),
+        .verify-table tbody tr:nth-child(even) { background: #f4f7fe; }
+
+        .data-table tbody tr:hover,
+        .data-table tbody tr:nth-child(even):hover,
+        .verify-table tbody tr:hover { background: #eaf1ff; }
+
+        .data-table tbody tr.total-row {
+            background: #eef3ff;
+            font-weight: 600;
+        }
+
+        .data-table tbody tr.total-row td { border-top: 1px solid #b9ceff; }
+        .data-table tbody tr.verify-row { background: #fff9eb; }
+        .data-table tbody tr.verify-row td { color: #8c6514; }
+
+        .cell-tag,
+        .cell-alert,
+        .badge,
+        .chain-result {
+            padding: 1px 6px;
+            border-radius: 2px;
+            font-size: 10px;
+            line-height: 18px;
+            font-weight: 500;
+        }
+
+        .badge-green,
+        .cell-tag.green,
+        .cell-alert.normal { background: #eaf8f0; color: #168a4b; }
+
+        .badge-red,
+        .cell-tag.red,
+        .cell-alert.danger { background: #fff0ef; color: #e03f3f; }
+
+        .badge-orange,
+        .cell-tag.orange,
+        .cell-alert.warning { background: #fff5e8; color: #c66b16; }
+
+        .badge-blue,
+        .cell-tag.blue { background: #edf3ff; color: #356bea; }
+
+        .badge-purple,
+        .cell-tag.purple { background: #f2efff; color: #6656c9; }
+
+        .badge-gray,
+        .cell-tag.gray { background: #f2f3f5; color: #666b74; }
+
+        .data-table tbody tr:nth-child(even),
+        .verify-table tbody tr:nth-child(even) {
+            background: #f7f8fa;
+        }
+
+        .data-table tbody tr[style*="background:#fef2f2"],
+        .data-table tbody tr[style*="background:#fffbeb"],
+        .data-table tbody tr[style*="background: #fef2f2"],
+        .data-table tbody tr[style*="background: #fffbeb"] {
+            background: #ffffff !important;
+        }
+
+        .data-table tbody tr:hover,
+        .data-table tbody tr:nth-child(even):hover,
+        .data-table tbody tr[style*="background:#fef2f2"]:hover,
+        .data-table tbody tr[style*="background:#fffbeb"]:hover,
+        .verify-table tbody tr:hover {
+            background: #f1f3f6 !important;
+        }
+
+        .cell-tag,
+        .cell-alert,
+        .badge {
+            border: 1px solid #e1e4e8;
+            background: #f4f5f7 !important;
+            color: #4b5563 !important;
+        }
+
+        .cell-tag.green,
+        .cell-tag.blue,
+        .cell-tag.purple,
+        .cell-alert.normal,
+        .badge-green,
+        .badge-blue,
+        .badge-purple {
+            background: #f4f5f7 !important;
+            color: #4b5563 !important;
+            border-color: #e1e4e8;
+        }
+
+        .cell-tag.orange,
+        .cell-alert.warning,
+        .badge-orange {
+            background: #fff8e8 !important;
+            color: #8a5a12 !important;
+            border-color: #ecd8aa;
+        }
+
+        .cell-tag.red,
+        .cell-alert.danger,
+        .badge-red {
+            background: #fff5f5 !important;
+            color: #c92a2a !important;
+            border-color: #efc7c7;
+        }
+
+        .status-dot.green { background: #9aa3af; }
+        .status-dot.yellow { background: #b98528; }
+        .status-dot.red { background: #c92a2a; }
+
+        .deviation.ok {
+            color: #4b5563;
+        }
+
+        .deviation.warn {
+            color: #8a5a12;
+        }
+
+        .deviation.bad {
+            color: #c92a2a;
+        }
+
+        .cell-bar-fill,
+        .cell-bar-fill.blue,
+        .cell-bar-fill.green,
+        .cell-bar-fill.orange {
+            background: #9aa3af;
+        }
+
+        .cell-bar-fill.red {
+            background: #c92a2a;
+        }
+
+        .data-table [style*="color:#16a34a"],
+        .data-table [style*="color:#15803d"],
+        .data-table [style*="color: #16a34a"],
+        .data-table [style*="color: #15803d"] {
+            color: #4b5563 !important;
+        }
+
+        .data-table [style*="color:#d97706"],
+        .data-table [style*="color: #d97706"] {
+            color: #8a5a12 !important;
+        }
+
+        .data-table [style*="color:#dc2626"],
+        .data-table [style*="color:#e03f3f"],
+        .data-table [style*="color:#f53f3f"],
+        .data-table [style*="color:var(--danger)"],
+        .data-table [style*="color: var(--danger)"] {
+            color: #c92a2a !important;
+        }
+
+        .section-subtabs {
+            width: max-content;
+            max-width: calc(100% - 24px);
+            margin: 8px auto;
+            padding: 3px;
+            gap: 2px;
+            border: 0;
+            border-radius: 4px;
+            background: #f2f4f8;
+        }
+
+        .section-subtab {
+            min-width: 108px;
+            height: 28px;
+            padding: 0 14px;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 0;
+            border-radius: 3px;
+            color: #5b606b;
+            font-size: 11px;
+        }
+
+        .section-subtab.active {
+            border: 0;
+            background: #dfe9ff;
+            color: #356bea;
+            font-weight: 600;
+        }
+
+        .section-footer {
+            min-height: 32px;
+            padding: 7px 14px;
+            gap: 16px;
+            border-top-color: #eef0f2;
+            background: #fafbfc;
+            color: #777c86;
+            font-size: 10px;
+        }
+
+        .customer-filter-bar {
+            min-height: 44px;
+            margin-bottom: 12px;
+            padding: 8px 12px;
+            gap: 12px;
+            border-color: #e8eaed;
+            border-radius: 4px;
+            background: #ffffff;
+        }
+
+        .customer-filter-bar label { color: #5b606b; font-size: 11px; font-weight: 400; }
+
+        .clickable:hover td { background: #eaf1ff !important; }
+
+        .cell-bar-track {
+            height: 4px;
+            border-radius: 1px;
+            background: #e9ecf1;
+        }
+
+        .cell-bar-fill { border-radius: 1px; }
+        .cell-bar-fill.blue { background: #4f7cff; }
+        .cell-bar-fill.green { background: #18a058; }
+        .cell-bar-fill.orange { background: #e79a45; }
+        .cell-bar-fill.red { background: #f53f3f; }
+
+        .cell-equation {
+            padding: 2px 6px;
+            border-radius: 2px;
+            background: #f2f3f5;
+            font-family: inherit;
+            font-size: 11px;
+        }
+
+        .chain-summary {
+            border-color: #d9e5ff;
+            border-radius: 4px;
+            background: #f4f7fe;
+        }
+
+        .modal-box {
+            border-radius: 4px;
+            box-shadow: 0 8px 24px rgba(31, 35, 41, 0.16);
+        }
+
+        .modal-head {
+            min-height: 44px;
+            padding: 0 16px;
+            border-radius: 4px 4px 0 0;
+        }
+
+        .modal-head h3 { font-size: 14px; font-weight: 600; }
+        .modal-close { width: 42px; height: 28px; border-radius: 2px; font-size: 11px; }
+        .modal-body { padding: 16px; }
+
+        .rules-insight-grid {
+            display: grid;
+            grid-template-columns: minmax(320px, 0.9fr) minmax(520px, 1.4fr);
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .reason-chart {
+            padding: 12px 14px 14px;
+        }
+
+        .reason-chart-row {
+            display: grid;
+            grid-template-columns: 96px minmax(120px, 1fr) 46px 46px;
+            align-items: center;
+            min-height: 36px;
+            gap: 10px;
+            color: #1f2329;
+            font-size: 11px;
+        }
+
+        .reason-chart-label {
+            overflow: hidden;
+            color: #3d414a;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .reason-chart-track {
+            height: 7px;
+            overflow: hidden;
+            border-radius: 2px;
+            background: #eef1f6;
+        }
+
+        .reason-chart-fill {
+            height: 100%;
+            border-radius: 2px;
+            background: #4f7cff;
+        }
+
+        .reason-chart-fill.secondary { background: #49bfd3; }
+        .reason-chart-fill.warning { background: #e79a45; }
+        .reason-chart-fill.muted { background: #8f96b3; }
+
+        .reason-chart-count,
+        .reason-chart-rate {
+            color: #1f2329;
+            font-variant-numeric: tabular-nums;
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        /* 加微分配测算 */
+        .allocation-scope-note {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 10px 14px;
+            border-bottom: 1px solid #d9e5ff;
+            background: #f4f7fe;
+            color: #3d5f9a;
+            font-size: 11px;
+        }
+
+        .allocation-scope-note strong { color: #2f55a4; }
+
+        .allocation-scope-formula {
+            flex-shrink: 0;
+            color: #6b7790;
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+        }
+
+        .allocation-table { min-width: 1180px; }
+        .allocation-table .group-start { border-left: 1px solid #e1e5eb; }
+        .allocation-table .metric-strong { color: #1f2329; font-weight: 600; }
+
+        .allocation-total-row td {
+            border-top: 1px solid #b9ceff;
+            background: #eef3ff;
+            font-weight: 600;
+        }
+
+        .allocation-definition { color: #777c86; }
+
+        /* 全局表格精修：文本左对齐、数值右对齐，合并表头保留清晰分组线 */
+        .data-table,
+        .verify-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            table-layout: auto;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .data-table th,
+        .verify-table th {
+            height: 34px;
+            padding: 7px 12px;
+            border-bottom: 1px solid #dbe1ea;
+            border-right: 1px solid #eef1f6;
+            background: #f7f9fc;
+            color: #3d414a;
+            text-align: left;
+            vertical-align: middle;
+            white-space: nowrap;
+        }
+
+        .data-table td,
+        .verify-table td {
+            height: 32px;
+            padding: 7px 12px;
+            border-bottom: 1px solid #edf0f5;
+            border-right: 1px solid #f0f3f8;
+            color: #2f343d;
+            text-align: left;
+            vertical-align: middle;
+            white-space: nowrap;
+        }
+
+        .data-table th:last-child,
+        .verify-table th:last-child,
+        .data-table td:last-child,
+        .verify-table td:last-child {
+            border-right: 0;
+        }
+
+        .data-table th.right,
+        .verify-table th.right,
+        .data-table td.right,
+        .verify-table td.right {
+            text-align: right;
+        }
+
+        .data-table th.center,
+        .verify-table th.center,
+        .data-table td.center,
+        .verify-table td.center {
+            text-align: center;
+        }
+
+        .data-table .column-group-row th {
+            height: 30px;
+            padding: 6px 12px;
+            border-top: 1px solid #dbe6fb;
+            border-bottom: 1px solid #b9ceff;
+            border-right: 1px solid #dbe6fb;
+            background: #f3f7ff;
+            color: #2f55a4;
+            text-align: center;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .data-table .column-group-row th:first-child {
+            border-left: 0;
+        }
+
+        .data-table .column-group-row th + th,
+        .data-table .group-start,
+        .open-account-table th:nth-child(4),
+        .open-account-table td:nth-child(4),
+        .open-account-table th:nth-child(9),
+        .open-account-table td:nth-child(9),
+        .open-customer-table th:nth-child(4),
+        .open-customer-table td:nth-child(4),
+        .open-customer-table th:nth-child(9),
+        .open-customer-table td:nth-child(9) {
+            border-left: 1px solid #c8d2e3 !important;
+        }
+
+        .data-table tbody tr:nth-child(even),
+        .verify-table tbody tr:nth-child(even) {
+            background: #f6f8fd;
+        }
+
+        .data-table tbody tr:hover,
+        .data-table tbody tr:nth-child(even):hover,
+        .verify-table tbody tr:hover {
+            background: #edf4ff;
+        }
+
+        .data-table tbody tr.total-row {
+            background: #eef4ff;
+            font-weight: 600;
+        }
+
+        .data-table tbody tr.total-row td {
+            border-top: 1px solid #b9ceff;
+        }
+
+        .handoff-total-cell {
+            background: #fbfcff !important;
+            vertical-align: middle !important;
+        }
+
+        /* 表格降噪：灰阶为主，保留浅蓝信息提示，仅异常保留低饱和红色 */
+        .data-table .column-group-row th {
+            border-top-color: #dbe6fb;
+            border-bottom-color: #b9ceff;
+            border-right-color: #dbe6fb;
+            background: #f3f7ff;
+            color: #2f55a4;
+        }
+
+        .data-table tbody tr:nth-child(even),
+        .verify-table tbody tr:nth-child(even),
+        .data-table tbody tr[style*="background:#fef2f2"],
+        .data-table tbody tr[style*="background:#fffbeb"],
+        .data-table tbody tr[style*="background: #fef2f2"],
+        .data-table tbody tr[style*="background: #fffbeb"],
+        .chain-table tr[style*="background:#fef2f2"],
+        .chain-table tr[style*="background: #fef2f2"] {
+            background: #ffffff !important;
+        }
+
+        .data-table tbody tr:nth-child(even),
+        .verify-table tbody tr:nth-child(even) {
+            background: #f7f8fa !important;
+        }
+
+        .data-table tbody tr:hover,
+        .data-table tbody tr:nth-child(even):hover,
+        .verify-table tbody tr:hover {
+            background: #f4f7ff !important;
+        }
+
+        .data-table tbody tr.total-row,
+        .allocation-total-row td {
+            background: #f1f3f6 !important;
+        }
+
+        .data-table tbody tr.total-row td,
+        .allocation-total-row td {
+            border-top-color: #b9ceff !important;
+        }
+
+        .data-table .group-start,
+        .open-account-table th:nth-child(4),
+        .open-account-table td:nth-child(4),
+        .open-account-table th:nth-child(9),
+        .open-account-table td:nth-child(9),
+        .open-customer-table th:nth-child(4),
+        .open-customer-table td:nth-child(4),
+        .open-customer-table th:nth-child(9),
+        .open-customer-table td:nth-child(9) {
+            border-left-color: #c8d2e3 !important;
+        }
+
+        .cell-tag,
+        .cell-alert,
+        .badge {
+            border: 1px solid #e1e4e8;
+            background: #f4f5f7 !important;
+            color: #4b5563 !important;
+        }
+
+        .cell-tag.green,
+        .cell-tag.purple,
+        .cell-tag.gray,
+        .cell-alert.normal,
+        .badge-green,
+        .badge-purple,
+        .badge-gray {
+            border-color: #e1e4e8 !important;
+            background: #f4f5f7 !important;
+            color: #4b5563 !important;
+        }
+
+        .cell-tag.blue,
+        .badge-blue {
+            border-color: #d6e4ff !important;
+            background: #edf4ff !important;
+            color: #2f61c7 !important;
+        }
+
+        .cell-tag.orange,
+        .cell-alert.warning,
+        .badge-orange {
+            border-color: #e5d3ad !important;
+            background: #fff8e8 !important;
+            color: #7a5317 !important;
+        }
+
+        .cell-tag.red,
+        .cell-alert.danger,
+        .badge-red {
+            border-color: #ecc8c8 !important;
+            background: #fff5f5 !important;
+            color: #b42318 !important;
+        }
+
+        .status-dot.green { background: #9aa3af !important; }
+        .status-dot.yellow { background: #b98528 !important; }
+        .status-dot.red { background: #b42318 !important; }
+
+        .deviation.ok {
+            color: #4b5563 !important;
+        }
+
+        .deviation.warn {
+            color: #7a5317 !important;
+        }
+
+        .deviation.bad {
+            color: #b42318 !important;
+        }
+
+        .cell-bar-fill,
+        .cell-bar-fill.green,
+        .cell-bar-fill.orange {
+            background: #9aa3af !important;
+        }
+
+        .cell-bar-fill.blue {
+            background: #5b7cfa !important;
+        }
+
+        .cell-bar-fill.red {
+            background: #b42318 !important;
+        }
+
+        .data-table [style*="color:#16a34a"],
+        .data-table [style*="color:#15803d"],
+        .data-table [style*="color: #16a34a"],
+        .data-table [style*="color: #15803d"],
+        .chain-table [style*="color:#15803d"],
+        .chain-table [style*="color: #15803d"] {
+            color: #4b5563 !important;
+        }
+
+        .data-table [style*="color:#d97706"],
+        .data-table [style*="color: #d97706"],
+        .chain-table [style*="color:#d97706"],
+        .chain-table [style*="color: #d97706"] {
+            color: #7a5317 !important;
+        }
+
+        .data-table [style*="color:#dc2626"],
+        .data-table [style*="color:#e03f3f"],
+        .data-table [style*="color:#f53f3f"],
+        .data-table [style*="color:var(--danger)"],
+        .data-table [style*="color: var(--danger)"],
+        .chain-table [style*="color:#dc2626"],
+        .chain-table [style*="color:var(--danger)"],
+        .chain-table [style*="color: var(--danger)"] {
+            color: #b42318 !important;
+        }
+
+        .allocation-scope-note {
+            border-bottom-color: #dbe6fb;
+            background: #f4f7fe;
+            color: #3d5f9a;
+        }
+
+        .allocation-scope-note strong,
+        .allocation-scope-formula {
+            color: #2f55a4;
+        }
+
+        @media (max-width: 900px) {
+            .header { align-items: flex-start; padding: 0 12px; }
+            .last-update { display: none; }
+            .global-filters { padding: 8px 12px; }
+            .layer-tabs { max-width: calc(100% - 24px); overflow-x: auto; }
+            .layer-tab { min-width: 76px; padding: 0 12px; }
+            .content { padding: 0 8px 16px; }
+            .subtab-content.active {
+                gap: 12px;
+                padding: 12px 0;
+            }
+            .subtab-content > .section,
+            .subtab-content > .section-body,
+            .subtab-content > .section-footer,
+            .subtab-content > .customer-filter-bar,
+            .subtab-content > .card,
+            .subtab-content > .open-analysis-table,
+            .subtab-content > .open-detail-head {
+                margin: 0 8px;
+            }
+
+            .subtab-content > .rules-insight-grid {
+                margin: 0 8px;
+            }
+            .alert-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .alert-card:nth-child(2) { border-right: 0; }
+            .alert-card:nth-child(-n + 2) { border-bottom: 1px solid #e8eaed; }
+            .dashboard-overview-grid { grid-template-columns: 1fr; }
+            .rules-insight-grid { grid-template-columns: 1fr; }
+            .allocation-scope-note { display: block; }
+            .allocation-scope-formula { margin-top: 4px; white-space: normal; }
+            .open-detail-head {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 560px) {
+            .header-title { font-size: 15px; }
+            .refresh-btn { padding: 0 10px; }
+            .global-filters { align-items: flex-start; }
+            .filter-group:first-child { width: 100%; }
+            .filter-input { width: 118px; }
+            .quick-date-btn { padding: 0 8px; }
+            .alert-card { min-height: 92px; padding: 14px 10px; }
+            .alert-card-value,
+            .alert-card.success .alert-card-value,
+            .alert-card.warning .alert-card-value,
+            .alert-card.danger .alert-card-value,
+            .alert-card.info .alert-card-value { font-size: 20px; }
+            .section-header,
+            .card-head { min-height: 40px; padding: 0 10px; }
+            .section-footer { display: block; }
+            .section-footer-item + .section-footer-item { margin-top: 4px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ========== HEADER ========== -->
+<div class="header">
+    <div class="header-left">
+        <div>
+            <div class="header-title">AI加微分配</div>
+        </div>
+    </div>
+    <div class="header-right">
+        <span class="last-update">数据更新时间：2026-09-02 10:30:15</span>
+        <button class="refresh-btn" onclick="location.reload()">刷新</button>
+    </div>
+</div>
+
+<!-- ========== GLOBAL FILTERS ========== -->
+<div class="global-filters">
+    <div class="filter-group">
+        <span class="filter-label">日期</span>
+        <input type="date" class="filter-input" value="2026-09-02">
+        <span class="filter-label" style="margin-left: 4px;">至</span>
+        <input type="date" class="filter-input" value="2026-09-02">
+    </div>
+    <div class="filter-group">
+        <div class="quick-date-btns">
+            <button class="quick-date-btn active">今天</button>
+            <button class="quick-date-btn">昨天</button>
+            <button class="quick-date-btn">本周</button>
+            <button class="quick-date-btn">本月</button>
+        </div>
+    </div>
+    <div class="filter-group">
+        <span class="filter-label">意向品类</span>
+        <select class="filter-select">
+            <option>全部意向</option>
+            <option selected>S10N</option>
+            <option>S20N</option>
+            <option>M10N</option>
+        </select>
+    </div>
+    <div class="filter-group">
+        <span class="filter-label">加微包</span>
+        <select class="filter-select">
+            <option>全部加微包</option>
+            <option>s10N开口转人工 #1</option>
+        </select>
+    </div>
+    <div class="filter-group">
+        <span class="filter-label">员工</span>
+        <input type="text" class="filter-input" placeholder="姓名或ID搜索">
+    </div>
+</div>
+
+<!-- ========== LAYER TABS ========== -->
+<div class="layer-tabs">
+    <div class="layer-tab active" onclick="switchLayer('dashboard')">总览</div>
+    <div class="layer-tab" onclick="switchLayer('open-analysis')">AI触达</div>
+    <div class="layer-tab" onclick="switchLayer('staff')">加微分配</div>
+    <div class="layer-tab" onclick="switchLayer('customer')">分配明细</div>
+</div>
+
+<!-- ========== CONTENT ========== -->
+<div class="content">
+
+    <!-- =============================================
+         第一层：总览层
+         ============================================= -->
+    <div class="layer-content active" id="layer-dashboard">
+
+        <div class="handoff-analysis">
+            <div class="handoff-analysis-head">
+                <div>
+                    <div class="handoff-analysis-title">转人工数据分析</div>
+                </div>
+            </div>
+            <div class="handoff-metrics">
+                <div class="handoff-metric">
+                    <div class="handoff-metric-label">今日总加微</div>
+                    <div class="handoff-metric-value">1,280</div>
+                    <div class="handoff-metric-note up">较昨日 +7.1%</div>
+                </div>
+                <div class="handoff-metric">
+                    <div class="handoff-metric-label">开口数 / 开口率</div>
+                    <div class="handoff-metric-value">412 / 32.2%</div>
+                    <div class="handoff-metric-note down">较7日均 -0.7pp</div>
+                </div>
+                <div class="handoff-metric">
+                    <div class="handoff-metric-label">转人工预约</div>
+                    <div class="handoff-metric-value">18</div>
+                    <div class="handoff-metric-note up">现预约率 20.9%</div>
+                </div>
+                <div class="handoff-metric">
+                    <div class="handoff-metric-label">总预约 / 总预约率</div>
+                    <div class="handoff-metric-value">42 / 3.3%</div>
+                    <div class="handoff-metric-note">含AI直转与人工承接</div>
+                </div>
+            </div>
+            <div class="handoff-analysis-table">
+                <table class="data-table" aria-label="转人工数据分析明细">
+                    <thead>
+                        <tr class="column-group-row">
+                            <th colspan="4">开口总量</th>
+                            <th colspan="6">转人工数据</th>
+                        </tr>
+                        <tr>
+                            <th>日期</th>
+                            <th class="right">总加微</th>
+                            <th class="right">开口数</th>
+                            <th class="right">开口率</th>
+                            <th class="group-start">人工客服</th>
+                            <th class="right">转人工加微</th>
+                            <th class="right">转人工预约</th>
+                            <th class="right">现预约率</th>
+                            <th class="right">总预约</th>
+                            <th class="right">总预约率</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="mono handoff-total-cell" rowspan="10">2026-09-02</td>
+                            <td class="right mono handoff-total-cell" rowspan="10">1,280</td>
+                            <td class="right mono handoff-total-cell" rowspan="10">412</td>
+                            <td class="right mono handoff-total-cell" rowspan="10">32.2%</td>
+                            <td class="group-start">白思静</td>
+                            <td class="right mono">86</td>
+                            <td class="right mono">18</td>
+                            <td class="right mono">20.9%</td>
+                            <td class="right mono">42</td>
+                            <td class="right mono">3.3%</td>
+                        </tr>
+                        <tr>
+                            <td class="group-start">王五</td>
+                            <td class="right mono">73</td>
+                            <td class="right mono">16</td>
+                            <td class="right mono">21.9%</td>
+                            <td class="right mono">42</td>
+                            <td class="right mono">3.3%</td>
+                        </tr>
+                        <tr>
+                            <td class="group-start">张三</td>
+                            <td class="right mono">64</td>
+                            <td class="right mono">8</td>
+                            <td class="right mono">12.5%</td>
+                            <td class="right mono">42</td>
+                            <td class="right mono">3.3%</td>
+                        </tr>
+                        <tr>
+                            <td class="group-start">李四</td>
+                            <td class="right mono">58</td>
+                            <td class="right mono">11</td>
+                            <td class="right mono">19.0%</td>
+                            <td class="right mono">42</td>
+                            <td class="right mono">3.3%</td>
+                        </tr>
+                        <tr>
+                            <td class="group-start">赵六</td>
+                            <td class="right mono">52</td>
+                            <td class="right mono">7</td>
+                            <td class="right mono">13.5%</td>
+                            <td class="right mono">42</td>
+                            <td class="right mono">3.3%</td>
+                        </tr>
+                        <tr>
+                            <td class="group-start">钱七</td>
+                            <td class="right mono">47</td>
+                            <td class="right mono">10</td>
+                            <td class="right mono">21.3%</td>
+                            <td class="right mono">42</td>
+                            <td class="right mono">3.3%</td>
+                        </tr>
+                        <tr>
+                            <td class="group-start">孙悦</td>
+                            <td class="right mono">43</td>
+                            <td class="right mono">6</td>
+                            <td class="right mono">14.0%</td>
+                            <td class="right mono">42</td>
+                            <td class="right mono">3.3%</td>
+                        </tr>
+                        <tr>
+                            <td class="group-start">周明</td>
+                            <td class="right mono">39</td>
+                            <td class="right mono">5</td>
+                            <td class="right mono">12.8%</td>
+                            <td class="right mono">42</td>
+                            <td class="right mono">3.3%</td>
+                        </tr>
+                        <tr>
+                            <td class="group-start">吴迪</td>
+                            <td class="right mono">35</td>
+                            <td class="right mono">4</td>
+                            <td class="right mono">11.4%</td>
+                            <td class="right mono">42</td>
+                            <td class="right mono">3.3%</td>
+                        </tr>
+                        <tr>
+                            <td class="group-start">郑琳</td>
+                            <td class="right mono">31</td>
+                            <td class="right mono">3</td>
+                            <td class="right mono">9.7%</td>
+                            <td class="right mono">42</td>
+                            <td class="right mono">3.3%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="dashboard-overview-grid">
+        <!-- ===== 表1：每日全链路漏斗表 ===== -->
+        <div class="section">
+            <div class="section-header">
+                <div class="section-title-group">
+                    <div>
+                        <div class="section-title">全链路漏斗</div>
+                    </div>
+                </div>
+            </div>
+            <div class="section-body">
+                <table class="data-table dashboard-funnel-table">
+                    <thead>
+                        <tr>
+                            <th>指标</th>
+                            <th class="right">今日值</th>
+                            <th class="right">昨日值</th>
+                            <th class="right">近7日均值</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>① 今日加微总量</td>
+                            <td class="right mono">1,280</td>
+                            <td class="right mono">1,195</td>
+                            <td class="right mono">1,230</td>
+                        </tr>
+                        <tr>
+                            <td>② AI开口客户数</td>
+                            <td class="right mono">412</td>
+                            <td class="right mono">398</td>
+                            <td class="right mono">405</td>
+                        </tr>
+                        <tr>
+                            <td>③ AI开口率</td>
+                            <td class="right mono">32.2%</td>
+                            <td class="right mono">33.3%</td>
+                            <td class="right mono">32.9%</td>
+                        </tr>
+                        <tr>
+                            <td>④ 触发分配请求数</td>
+                            <td class="right mono">410</td>
+                            <td class="right mono">396</td>
+                            <td class="right mono">403</td>
+                        </tr>
+                        <tr style="background:#f0f5ff;">
+                            <td><strong>⑤ 实际需分配数</strong></td>
+                            <td class="right mono"><strong>312</strong></td>
+                            <td class="right mono"><strong>307</strong></td>
+                            <td class="right mono"><strong>311</strong></td>
+                        </tr>
+                        <tr>
+                            <td>⑥ 分配成功总数</td>
+                            <td class="right mono">302</td>
+                            <td class="right mono">298</td>
+                            <td class="right mono">300</td>
+                        </tr>
+                        <tr>
+                            <td>⑦ 无人可分数</td>
+                            <td class="right mono" style="color:#dc2626;font-weight:600">10</td>
+                            <td class="right mono">3</td>
+                            <td class="right mono">5</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ===== 表2：分配时效分布表 ===== -->
+        <div class="section">
+            <div class="section-header">
+                <div class="section-title-group">
+                    <div>
+                        <div class="section-title">分配时效</div>
+                    </div>
+                </div>
+            </div>
+            <div class="section-body">
+                <table class="data-table dashboard-latency-table">
+                    <thead>
+                        <tr>
+                            <th>时效区间</th>
+                            <th class="right">客户数</th>
+                            <th class="right">占比</th>
+                            <th style="min-width:200px">分布</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="cell-tag green">≤ 5秒</span></td>
+                            <td class="right mono">285</td>
+                            <td class="right mono">69.5%</td>
+                            <td>
+                                <div class="cell-bar">
+                                    <div class="cell-bar-track"><div class="cell-bar-fill green" style="width:69.5%"></div></div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><span class="cell-tag blue">5秒~30秒</span></td>
+                            <td class="right mono">88</td>
+                            <td class="right mono">21.5%</td>
+                            <td>
+                                <div class="cell-bar">
+                                    <div class="cell-bar-track"><div class="cell-bar-fill blue" style="width:21.5%"></div></div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><span class="cell-tag orange">30秒~1分钟</span></td>
+                            <td class="right mono">22</td>
+                            <td class="right mono">5.4%</td>
+                            <td>
+                                <div class="cell-bar">
+                                    <div class="cell-bar-track"><div class="cell-bar-fill orange" style="width:5.4%"></div></div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><span class="cell-tag orange">1~5分钟</span></td>
+                            <td class="right mono">10</td>
+                            <td class="right mono">2.4%</td>
+                            <td>
+                                <div class="cell-bar">
+                                    <div class="cell-bar-track"><div class="cell-bar-fill orange" style="width:2.4%"></div></div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><span class="cell-tag red">> 5分钟</span></td>
+                            <td class="right mono">3</td>
+                            <td class="right mono">0.7%</td>
+                            <td>
+                                <div class="cell-bar">
+                                    <div class="cell-bar-track"><div class="cell-bar-fill red" style="width:0.7%"></div></div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><span class="cell-tag red">未触发分配</span></td>
+                            <td class="right mono" style="color:#dc2626;font-weight:600">2</td>
+                            <td class="right mono">—</td>
+                            <td>—</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================================
+     第二层：AI触达层
+     ===================================================================== -->
+<div class="layer-content" id="layer-open-analysis">
+    <div class="section">
+        <div class="section-header">
+            <div class="section-title-group">
+                <div>
+                    <div class="section-title">AI触达</div>
+                </div>
+            </div>
+        </div>
+        <div class="section-subtabs">
+            <div class="section-subtab active" onclick="switchSubtab(this, 'open-account-tab')">账号维度</div>
+            <div class="section-subtab" onclick="switchSubtab(this, 'open-customer-tab')">客户维度</div>
+        </div>
+
+        <div class="subtab-content active" id="open-account-tab">
+            <div class="open-analysis-table">
+                <table class="data-table open-account-table" aria-label="账号维度AI触达">
+                    <thead>
+                        <tr class="column-group-row">
+                            <th colspan="3">账户信息</th>
+                            <th colspan="5">首条消息</th>
+                            <th colspan="5">全部消息</th>
+                        </tr>
+                        <tr>
+                            <th>企微ID</th>
+                            <th>企微名称</th>
+                            <th class="right">加微数</th>
+                            <th class="right">3分内送达数</th>
+                            <th class="right">3分内送达率</th>
+                            <th class="right">3分以上送达数</th>
+                            <th class="right">3分以上送达率</th>
+                            <th class="right">首条失败率</th>
+                            <th class="right">应发指令数</th>
+                            <th class="right">发送成功数</th>
+                            <th class="right">发送成功率</th>
+                            <th class="right">发送失败数</th>
+                            <th class="right">发送失败率</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="total-row">
+                            <td>总计</td>
+                            <td>—</td>
+                            <td class="right mono">14</td>
+                            <td class="right mono">13</td>
+                            <td class="right mono">108.3%</td>
+                            <td class="right mono">0</td>
+                            <td class="right mono">0.0%</td>
+                            <td class="right mono">8.3%</td>
+                            <td class="right mono">81</td>
+                            <td class="right mono">73</td>
+                            <td class="right mono">90.1%</td>
+                            <td class="right mono">8</td>
+                            <td class="right mono">9.9%</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">SL0906</td>
+                            <td>雨晴战队-康樱-HD0906</td>
+                            <td class="right mono">1</td>
+                            <td class="right mono">1</td>
+                            <td class="right mono">100.0%</td>
+                            <td class="right mono">0</td>
+                            <td class="right mono">0.0%</td>
+                            <td class="right mono">0.0%</td>
+                            <td class="right mono">2</td>
+                            <td class="right mono">2</td>
+                            <td class="right mono">100.0%</td>
+                            <td class="right mono">0</td>
+                            <td class="right mono">0.0%</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">SL1580</td>
+                            <td>志伟战队-刘敬林</td>
+                            <td class="right mono">10</td>
+                            <td class="right mono">10</td>
+                            <td class="right mono">111.1%</td>
+                            <td class="right mono">0</td>
+                            <td class="right mono">0.0%</td>
+                            <td class="right mono">0.0%</td>
+                            <td class="right mono">52</td>
+                            <td class="right mono">52</td>
+                            <td class="right mono">100.0%</td>
+                            <td class="right mono">0</td>
+                            <td class="right mono">0.0%</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">SL2478</td>
+                            <td>志伟战队-白思静SL2478</td>
+                            <td class="right mono">1</td>
+                            <td class="right mono">1</td>
+                            <td class="right mono">100.0%</td>
+                            <td class="right mono">0</td>
+                            <td class="right mono">0.0%</td>
+                            <td class="right mono">0.0%</td>
+                            <td class="right mono">18</td>
+                            <td class="right mono">17</td>
+                            <td class="right mono">94.4%</td>
+                            <td class="right mono">1</td>
+                            <td class="right mono">5.6%</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">SL8004</td>
+                            <td>清治战队-庄美琪 SL8004</td>
+                            <td class="right mono">2</td>
+                            <td class="right mono">1</td>
+                            <td class="right mono">50.0%</td>
+                            <td class="right mono">0</td>
+                            <td class="right mono">0.0%</td>
+                            <td class="right mono" style="color:#e03f3f;font-weight:600">50.0%</td>
+                            <td class="right mono">9</td>
+                            <td class="right mono">2</td>
+                            <td class="right mono" style="color:#e03f3f;font-weight:600">22.2%</td>
+                            <td class="right mono">7</td>
+                            <td class="right mono" style="color:#e03f3f;font-weight:600">77.8%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="open-detail-head">
+                <div class="open-detail-title">消息明细</div>
+                <div class="open-detail-filters" aria-label="账号维度消息明细筛选">
+                    <label class="open-detail-filter">
+                        企微号
+                        <select class="section-filter-select open-message-filter" data-target="account-message-table" data-filter="wechat">
+                            <option value="all">全部企微号</option>
+                            <option value="SL2478">SL2478</option>
+                            <option value="SL1580">SL1580</option>
+                        </select>
+                    </label>
+                    <label class="open-detail-filter">
+                        结果
+                        <select class="section-filter-select open-message-filter" data-target="account-message-table" data-filter="result">
+                            <option value="all">全部结果</option>
+                            <option value="成功">成功</option>
+                            <option value="失败">失败</option>
+                        </select>
+                    </label>
+                </div>
+            </div>
+            <div class="open-analysis-table">
+                <table class="data-table open-message-table" id="account-message-table" aria-label="账号维度消息明细">
+                    <thead>
+                        <tr>
+                            <th>企微ID</th>
+                            <th>企微名称</th>
+                            <th>客户ID</th>
+                            <th>客户名称</th>
+                            <th class="right">消息节点</th>
+                            <th>消息生成时间</th>
+                            <th>消息排队时间</th>
+                            <th>消息送达时间</th>
+                            <th class="right">总耗时</th>
+                            <th>结果</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr data-wechat="SL2478" data-result="成功">
+                            <td class="mono">SL2478</td>
+                            <td>志伟战队-白思静SL2478</td>
+                            <td class="mono">1212</td>
+                            <td>邱天</td>
+                            <td class="right mono">1</td>
+                            <td class="mono">2026-09-04 14:37:12</td>
+                            <td class="mono">2026-09-04 14:37:12</td>
+                            <td class="mono">2026-09-04 14:37:26</td>
+                            <td class="right mono">14.08s</td>
+                            <td><span class="cell-tag green">成功</span></td>
+                        </tr>
+                        <tr data-wechat="SL2478" data-result="失败">
+                            <td class="mono">SL2478</td>
+                            <td>志伟战队-白思静SL2478</td>
+                            <td class="mono">1212</td>
+                            <td>邱天</td>
+                            <td class="right mono">2</td>
+                            <td class="mono">2026-09-04 15:47:35</td>
+                            <td class="mono">2026-09-04 15:47:35</td>
+                            <td class="mono">—</td>
+                            <td class="right mono">—</td>
+                            <td><span class="cell-tag red">失败</span></td>
+                        </tr>
+                        <tr data-wechat="SL1580" data-result="成功">
+                            <td class="mono">SL1580</td>
+                            <td>志伟战队-刘敬林</td>
+                            <td class="mono">15179459</td>
+                            <td>最好</td>
+                            <td class="right mono">1</td>
+                            <td class="mono">2026-09-04 06:47:58</td>
+                            <td class="mono">2026-09-04 06:47:58</td>
+                            <td class="mono">2026-09-04 06:48:07</td>
+                            <td class="right mono">8.99s</td>
+                            <td><span class="cell-tag green">成功</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="subtab-content" id="open-customer-tab">
+            <div class="open-analysis-table customer">
+                <table class="data-table open-customer-table" aria-label="客户维度AI触达">
+                    <thead>
+                        <tr class="column-group-row">
+                            <th colspan="3">客户信息</th>
+                            <th colspan="5">首条消息</th>
+                            <th colspan="4">全部消息</th>
+                        </tr>
+                        <tr>
+                            <th>客户会员号</th>
+                            <th>客户名称</th>
+                            <th>首次加微时间</th>
+                            <th class="right">AI前置准备耗时</th>
+                            <th class="right">AI思考耗时</th>
+                            <th>首条消息排队时间</th>
+                            <th class="right">首条消息耗时</th>
+                            <th>首条消息送达时间</th>
+                            <th class="right">应发指令数</th>
+                            <th class="right">发送成功数</th>
+                            <th class="right">发送成功率</th>
+                            <th class="right">发送失败数</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="mono">11225934</td>
+                            <td>魏老三</td>
+                            <td class="mono">20260904</td>
+                            <td class="right mono">—</td>
+                            <td class="right mono">—</td>
+                            <td class="mono">2026-09-04 07:05:01</td>
+                            <td class="right mono">8.761s</td>
+                            <td class="mono">2026-09-04 07:05:10</td>
+                            <td class="right mono">2</td>
+                            <td class="right mono">2</td>
+                            <td class="right mono">100.0%</td>
+                            <td class="right mono">0</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">12883961</td>
+                            <td>fg</td>
+                            <td class="mono">20260903</td>
+                            <td class="right mono">—</td>
+                            <td class="right mono">—</td>
+                            <td class="mono">2026-09-04 05:56:15</td>
+                            <td class="right mono">9.207s</td>
+                            <td class="mono">2026-09-04 05:56:24</td>
+                            <td class="right mono">8</td>
+                            <td class="right mono">8</td>
+                            <td class="right mono">100.0%</td>
+                            <td class="right mono">0</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">14618712</td>
+                            <td>咯需哦层</td>
+                            <td class="mono">20260904</td>
+                            <td class="right mono">—</td>
+                            <td class="right mono">—</td>
+                            <td class="mono">2026-09-04 08:18:00</td>
+                            <td class="right mono">10.800s</td>
+                            <td class="mono">2026-09-04 08:18:11</td>
+                            <td class="right mono">3</td>
+                            <td class="right mono">3</td>
+                            <td class="right mono">100.0%</td>
+                            <td class="right mono">0</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">15168440</td>
+                            <td>冷心</td>
+                            <td class="mono">20260903</td>
+                            <td class="right mono">—</td>
+                            <td class="right mono">—</td>
+                            <td class="mono">2026-09-04 09:08:58</td>
+                            <td class="right mono">25.210s</td>
+                            <td class="mono">2026-09-04 09:09:24</td>
+                            <td class="right mono">8</td>
+                            <td class="right mono">8</td>
+                            <td class="right mono">100.0%</td>
+                            <td class="right mono">0</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">15169864</td>
+                            <td>杨光忠</td>
+                            <td class="mono">20260902</td>
+                            <td class="right mono">—</td>
+                            <td class="right mono">—</td>
+                            <td class="mono">—</td>
+                            <td class="right mono">—</td>
+                            <td class="mono">—</td>
+                            <td class="right mono">4</td>
+                            <td class="right mono" style="color:#e03f3f;font-weight:600">0</td>
+                            <td class="right mono" style="color:#e03f3f;font-weight:600">0.0%</td>
+                            <td class="right mono">4</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">15170824</td>
+                            <td>脸红</td>
+                            <td class="mono">20260903</td>
+                            <td class="right mono">—</td>
+                            <td class="right mono">—</td>
+                            <td class="mono">2026-09-04 09:04:52</td>
+                            <td class="right mono">31.910s</td>
+                            <td class="mono">2026-09-04 09:05:23</td>
+                            <td class="right mono">5</td>
+                            <td class="right mono">2</td>
+                            <td class="right mono" style="color:#e03f3f;font-weight:600">40.0%</td>
+                            <td class="right mono">3</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="open-detail-head">
+                <div class="open-detail-title">消息明细</div>
+                <div class="open-detail-filters" aria-label="客户维度消息明细筛选">
+                    <label class="open-detail-filter">
+                        企微号
+                        <select class="section-filter-select open-message-filter" data-target="customer-message-table" data-filter="wechat">
+                            <option value="all">全部企微号</option>
+                            <option value="SL2478">SL2478</option>
+                            <option value="SL1580">SL1580</option>
+                        </select>
+                    </label>
+                    <label class="open-detail-filter">
+                        结果
+                        <select class="section-filter-select open-message-filter" data-target="customer-message-table" data-filter="result">
+                            <option value="all">全部结果</option>
+                            <option value="成功">成功</option>
+                            <option value="失败">失败</option>
+                        </select>
+                    </label>
+                </div>
+            </div>
+            <div class="open-analysis-table">
+                <table class="data-table open-message-table" id="customer-message-table" aria-label="客户消息明细">
+                    <thead>
+                        <tr>
+                            <th>企微ID</th>
+                            <th>企微名称</th>
+                            <th>客户ID</th>
+                            <th>客户名称</th>
+                            <th class="right">消息节点</th>
+                            <th>消息生成时间</th>
+                            <th>消息排队时间</th>
+                            <th>消息送达时间</th>
+                            <th class="right">总耗时</th>
+                            <th>结果</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr data-wechat="SL2478" data-result="成功">
+                            <td class="mono">SL2478</td>
+                            <td>志伟战队-白思静SL2478</td>
+                            <td class="mono">1212</td>
+                            <td>邱天</td>
+                            <td class="right mono">1</td>
+                            <td class="mono">2026-09-04 14:37:12</td>
+                            <td class="mono">2026-09-04 14:37:12</td>
+                            <td class="mono">2026-09-04 14:37:26</td>
+                            <td class="right mono">14.08s</td>
+                            <td><span class="cell-tag green">成功</span></td>
+                        </tr>
+                        <tr data-wechat="SL2478" data-result="失败">
+                            <td class="mono">SL2478</td>
+                            <td>志伟战队-白思静SL2478</td>
+                            <td class="mono">1212</td>
+                            <td>邱天</td>
+                            <td class="right mono">2</td>
+                            <td class="mono">2026-09-04 15:47:35</td>
+                            <td class="mono">2026-09-04 15:47:35</td>
+                            <td class="mono">—</td>
+                            <td class="right mono">—</td>
+                            <td><span class="cell-tag red">失败</span></td>
+                        </tr>
+                        <tr data-wechat="SL1580" data-result="成功">
+                            <td class="mono">SL1580</td>
+                            <td>志伟战队-刘敬林</td>
+                            <td class="mono">15179459</td>
+                            <td>最好</td>
+                            <td class="right mono">1</td>
+                            <td class="mono">2026-09-04 06:47:58</td>
+                            <td class="mono">2026-09-04 06:47:58</td>
+                            <td class="mono">2026-09-04 06:48:07</td>
+                            <td class="right mono">8.99s</td>
+                            <td><span class="cell-tag green">成功</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+    <!-- =============================================
+         第三层：加微分配层
+         ============================================= -->
+    <div class="layer-content" id="layer-staff">
+
+        <!-- ===== 表7-8：员工规则与结果明细表 ===== -->
+        <div class="section">
+            <div class="section-header">
+                <div class="section-title-group">
+                    <div>
+                        <div class="section-title">加微分配检查</div>
+                    </div>
+                </div>
+                <div class="section-filters">
+                    <select class="section-filter-select">
+                        <option selected>s10N开口转人工 #1</option>
+                        <option>s10N开口转人工 #2</option>
+                    </select>
+                    <select class="section-filter-select">
+                        <option selected>全部规则</option>
+                        <option>自定义</option>
+                        <option>指标区间A</option>
+                        <option>排名B</option>
+                    </select>
+                    <select class="section-filter-select">
+                        <option>全部员工</option>
+                        <option>白思静 (26817)</option>
+                        <option>吴明杰 (22941)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="section-subtabs">
+                <div class="section-subtab active" onclick="switchSubtab(this, 'tab7-rules')">规则包</div>
+                <div class="section-subtab" onclick="switchSubtab(this, 'tab7-reconcile')">分配测算</div>
+                <div class="section-subtab" onclick="switchSubtab(this, 'tab7-quota')">员工承接</div>
+                <div class="section-subtab" onclick="switchSubtab(this, 'tab7-threshold')">停分阈值</div>
+                <div class="section-subtab" onclick="switchSubtab(this, 'tab7-fair')">轮询检验</div>
+            </div>
+
+            <!-- 规则包 -->
+            <div class="subtab-content active" id="tab7-rules">
+                <div class="customer-filter-bar">
+                  <div class="filter-group"><label>日期</label><input type="date" value="2026-09-02"></div>
+                  <div class="filter-group">
+                    <label>意向项目</label>
+                    <select><option>祛斑</option><option>嫩肤</option><option>抗衰</option></select>
+                  </div>
+                </div>
+
+                <!-- ===== 表4：加微包×规则分配结果表 ===== -->
+                <div class="card">
+                  <div class="card-head">
+                    <div>
+                      <div class="card-title">加微包与规则分配</div>
+                    </div>
+                  </div>
+                  <div class="card-body-np">
+                    <div class="table-wrap">
+                      <table class="data-table">
+                        <thead>
+                          <tr>
+                            <th>普通包</th><th class="right">可用包数</th><th class="right">选中次数</th>
+                            <th class="right">选中占比</th><th class="right">理论占比</th><th class="right">选包偏差</th>
+                            <th>规则</th><th>类型</th><th class="right">配置占比</th><th>生效时段</th>
+                            <th class="right">折算概率</th><th class="right">抽中次数</th><th class="right">抽中占比</th>
+                            <th class="right">偏差</th><th class="right">→成功</th><th class="right">→安全包</th>
+                            <th class="right">空转率</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <!-- 祛斑包A - 规则1 -->
+                          <tr>
+                            <td rowspan="3" style="vertical-align:top; font-weight:600; background:#fafbfc;">祛斑包 A</td>
+                            <td rowspan="3" class="right" style="vertical-align:top; background:#fafbfc;">2</td>
+                            <td rowspan="3" class="right" style="vertical-align:top; background:#fafbfc;">119</td>
+                            <td rowspan="3" class="right" style="vertical-align:top; background:#fafbfc;">51.3%</td>
+                            <td rowspan="3" class="right" style="vertical-align:top; background:#fafbfc;">50.0%</td>
+                            <td rowspan="3" class="right" style="vertical-align:top; background:#fafbfc;"><span class="badge badge-green">+1.3%</span></td>
+                            <td>规则 X</td><td><span class="badge badge-blue">指标区间</span></td>
+                            <td class="right">50%</td><td>09:00~21:00</td>
+                            <td class="right">50%</td><td class="right">57</td><td class="right">47.9%</td>
+                            <td class="right"><span class="badge badge-green">-2.1%</span></td>
+                            <td class="right">52</td><td class="right">5</td>
+                            <td class="right">8.8%</td>
+                          </tr>
+                          <tr>
+                            <td>规则 Y</td><td><span class="badge badge-purple">排名</span></td>
+                            <td class="right">30%</td><td>09:00~21:00</td>
+                            <td class="right">30%</td><td class="right">38</td><td class="right">31.9%</td>
+                            <td class="right"><span class="badge badge-green">+1.9%</span></td>
+                            <td class="right">35</td><td class="right">3</td>
+                            <td class="right">7.9%</td>
+                          </tr>
+                          <tr>
+                            <td>规则 Z</td><td><span class="badge badge-gray">自定义</span></td>
+                            <td class="right">20%</td><td>00:00~24:00</td>
+                            <td class="right">20%</td><td class="right">24</td><td class="right">20.2%</td>
+                            <td class="right"><span class="badge badge-green">+0.2%</span></td>
+                            <td class="right">22</td><td class="right">2</td>
+                            <td class="right">8.3%</td>
+                          </tr>
+                          <!-- 祛斑包B -->
+                          <tr style="border-top: 2px solid var(--gray-200);">
+                            <td rowspan="2" style="vertical-align:top; font-weight:600; background:#fafbfc;">祛斑包 B</td>
+                            <td rowspan="2" class="right" style="vertical-align:top; background:#fafbfc;">2</td>
+                            <td rowspan="2" class="right" style="vertical-align:top; background:#fafbfc;">113</td>
+                            <td rowspan="2" class="right" style="vertical-align:top; background:#fafbfc;">48.7%</td>
+                            <td rowspan="2" class="right" style="vertical-align:top; background:#fafbfc;">50.0%</td>
+                            <td rowspan="2" class="right" style="vertical-align:top; background:#fafbfc;"><span class="badge badge-green">-1.3%</span></td>
+                            <td>规则 M</td><td><span class="badge badge-blue">指标区间</span></td>
+                            <td class="right">60%</td><td>09:00~21:00</td>
+                            <td class="right">60%</td><td class="right">70</td><td class="right">61.9%</td>
+                            <td class="right"><span class="badge badge-green">+1.9%</span></td>
+                            <td class="right">63</td><td class="right">7</td>
+                            <td class="right">10.0%</td>
+                          </tr>
+                          <tr>
+                            <td>规则 N</td><td><span class="badge badge-gray">自定义</span></td>
+                            <td class="right">40%</td><td>00:00~24:00</td>
+                            <td class="right">40%</td><td class="right">43</td><td class="right">38.1%</td>
+                            <td class="right"><span class="badge badge-green">-1.9%</span></td>
+                            <td class="right">38</td><td class="right">5</td>
+                            <td class="right">11.6%</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="rules-insight-grid">
+                  <!-- 转安全包原因 -->
+                  <div class="card">
+                    <div class="card-head">
+                      <div>
+                        <div class="card-title">转安全包原因</div>
+                      </div>
+                    </div>
+                    <div class="reason-chart">
+                      <div class="reason-chart-row">
+                        <div class="reason-chart-label">抽中规则无候选</div>
+                        <div class="reason-chart-track"><div class="reason-chart-fill" style="width:100%"></div></div>
+                        <div class="reason-chart-count">9次</div>
+                        <div class="reason-chart-rate">40.9%</div>
+                      </div>
+                      <div class="reason-chart-row">
+                        <div class="reason-chart-label">全员被排除</div>
+                        <div class="reason-chart-track"><div class="reason-chart-fill secondary" style="width:66.7%"></div></div>
+                        <div class="reason-chart-count">6次</div>
+                        <div class="reason-chart-rate">27.3%</div>
+                      </div>
+                      <div class="reason-chart-row">
+                        <div class="reason-chart-label">指标数据不完整</div>
+                        <div class="reason-chart-track"><div class="reason-chart-fill warning" style="width:44.4%"></div></div>
+                        <div class="reason-chart-count">4次</div>
+                        <div class="reason-chart-rate">18.2%</div>
+                      </div>
+                      <div class="reason-chart-row">
+                        <div class="reason-chart-label">无有效普通规则</div>
+                        <div class="reason-chart-track"><div class="reason-chart-fill muted" style="width:22.2%"></div></div>
+                        <div class="reason-chart-count">2次</div>
+                        <div class="reason-chart-rate">9.1%</div>
+                      </div>
+                      <div class="reason-chart-row">
+                        <div class="reason-chart-label">阈值配置异常</div>
+                        <div class="reason-chart-track"><div class="reason-chart-fill muted" style="width:11.1%"></div></div>
+                        <div class="reason-chart-count">1次</div>
+                        <div class="reason-chart-rate">4.5%</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- ===== 表5：安全包承接分析表 ===== -->
+                  <div class="card">
+                    <div class="card-head">
+                      <div>
+                        <div class="card-title">安全包承接</div>
+                      </div>
+                    </div>
+                    <div class="card-body-np">
+                      <div class="table-wrap">
+                        <table class="data-table">
+                          <thead>
+                            <tr>
+                              <th>意向项目</th><th>安全包名称</th>
+                              <th class="right">人员总数</th><th class="right">今日资格通过</th>
+                              <th class="right">承接总量</th><th class="right">成功数</th><th class="right">无人可分</th>
+                              <th class="right">成功率</th>
+                              <th>分配最多</th><th>分配最少</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td>祛斑</td><td>祛斑安全包</td>
+                              <td class="right">8</td><td class="right">6</td>
+                              <td class="right">22</td><td class="right">19</td><td class="right" style="color:var(--danger)">3</td>
+                              <td class="right">86.4%</td>
+                              <td>王五 (5个)</td><td>钱七 (2个)</td>
+                            </tr>
+                            <tr>
+                              <td>嫩肤</td><td>嫩肤安全包</td>
+                              <td class="right">5</td><td class="right">4</td>
+                              <td class="right">12</td><td class="right">12</td><td class="right">0</td>
+                              <td class="right">100%</td>
+                              <td>李四 (4个)</td><td>孙八 (2个)</td>
+                            </tr>
+                            <tr>
+                              <td>抗衰</td><td>抗衰安全包</td>
+                              <td class="right">5</td><td class="right">3</td>
+                              <td class="right">9</td><td class="right">7</td><td class="right" style="color:var(--danger)">2</td>
+                              <td class="right">77.8%</td>
+                              <td>赵六 (3个)</td><td>周九 (1个)</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+            </div>
+
+            <!-- 分配测算 -->
+            <div class="subtab-content" id="tab7-reconcile">
+                <!-- ===== 表6：员工分配条件总览表 ===== -->
+                <div class="section" id="staff-allocation-conditions">
+                    <div class="section-header">
+                        <div class="section-title-group">
+                            <div>
+                                <div class="section-title">员工分配诊断</div>
+                            </div>
+                        </div>
+                        <div class="section-filters">
+                            <select class="section-filter-select">
+                                <option>全部包</option>
+                                <option selected>s10N开口转人工 #1</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="section-body">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>员工</th>
+                                    <th>基础资格</th>
+                                    <th>可分前置条件</th>
+                                    <th>命中规则</th>
+                                    <th>规则资格</th>
+                                    <th class="right">规则剩余额度</th>
+                                    
+                                    
+                                    <th class="right">实际获客</th>
+                                    <th class="right">偏差</th>
+                                    <th>问题归因</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+<strong>白思静</strong> <span class="mono">26817</span>
+</td>
+                                    <td><span class="cell-alert normal">通过</span></td>
+                                    <td>
+<span class="cell-tag green">排班</span><span class="cell-tag green" style="margin-left:4px">绑定</span><span class="cell-tag green" style="margin-left:4px">计划</span>
+</td>
+                                    <td>自定义、指标区间A、排名B</td>
+                                    <td><span class="cell-tag green">通过</span></td>
+                                    <td class="right mono">67 + 2</td>
+                                    
+                                    
+                                    <td class="right mono"><strong>33</strong></td>
+                                    <td class="right"><span class="deviation ok">+1.4%</span></td>
+                                    <td><span class="cell-tag gray">正常</span> 规则资格、排班、额度均正常</td>
+                                </tr>
+                                <tr style="background:#fffbeb;">
+                                    <td>
+<strong>吴明杰</strong> <span class="mono">22941</span>
+</td>
+                                    <td><span class="cell-alert normal">通过</span></td>
+                                    <td>
+<span class="cell-tag green">排班</span><span class="cell-tag green" style="margin-left:4px">绑定</span><span class="cell-tag green" style="margin-left:4px">计划</span>
+</td>
+                                    <td>自定义</td>
+                                    <td><span class="cell-alert warning">阈值触发</span></td>
+                                    <td class="right mono">55</td>
+                                    
+                                    
+                                    <td class="right mono"><strong>45</strong></td>
+                                    <td class="right"><span class="deviation bad">+43.4%</span></td>
+                                    <td><span class="cell-alert warning">阈值问题</span> 普通包阈值已触发，安全包仍可承接</td>
+                                </tr>
+                                <tr>
+                                    <td>
+<strong>赵雅琳</strong> <span class="mono">31024</span>
+</td>
+                                    <td><span class="cell-alert normal">通过</span></td>
+                                    <td>
+<span class="cell-tag green">排班</span><span class="cell-tag green" style="margin-left:4px">绑定</span><span class="cell-tag green" style="margin-left:4px">计划</span>
+</td>
+                                    <td>指标区间A</td>
+                                    <td><span class="cell-alert warning">通过但额度满</span></td>
+                                    <td class="right mono" style="color:#dc2626;font-weight:600">0</td>
+                                    
+                                    
+                                    <td class="right mono"><strong>15</strong></td>
+                                    <td class="right"><span class="deviation ok">-1.5%</span></td>
+                                    <td><span class="cell-alert warning">额度问题</span> 新人给量比例折算，机会减少但合理</td>
+                                </tr>
+                                <tr style="background:#fef2f2;">
+                                    <td>
+<strong>陈文博</strong> <span class="mono">28650</span>
+</td>
+                                    <td><span class="cell-alert danger">不通过</span></td>
+                                    <td>
+<span class="cell-tag red">无假勤记录</span><span class="cell-tag green" style="margin-left:4px">绑定</span><span class="cell-tag green" style="margin-left:4px">计划</span>
+</td>
+                                    <td style="color:#9ca3af">—</td>
+                                    <td style="color:#9ca3af">—</td>
+                                    <td class="right" style="color:#9ca3af">—</td>
+                                    
+                                    
+                                    <td class="right mono"><strong>0</strong></td>
+                                    <td class="right" style="color:#9ca3af">—</td>
+                                    <td><span class="cell-alert danger">资格问题</span> 当天个人假勤无记录</td>
+                                </tr>
+                                <tr style="background:#fef2f2;">
+                                    <td>
+<strong>李梦婷</strong> <span class="mono">29810</span>
+</td>
+                                    <td><span class="cell-alert warning">今日休息</span></td>
+                                    <td>
+<span class="cell-tag gray">休息</span><span class="cell-tag green" style="margin-left:4px">绑定</span>
+</td>
+                                    <td style="color:#9ca3af">—</td>
+                                    <td style="color:#9ca3af">—</td>
+                                    <td class="right" style="color:#9ca3af">—</td>
+                                    
+                                    
+                                    <td class="right mono"><strong>0</strong></td>
+                                    <td class="right" style="color:#9ca3af">—</td>
+                                    <td><span class="cell-alert warning">排班问题</span> 个人假勤为休息</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+<div class="section">
+<div class="section-header">
+    <div class="section-title-group">
+        <div>
+            <div class="section-title">应分与实分偏差明细</div>
+        </div>
+    </div>
+</div>
+<div class="section-body">
+                    <table class="data-table allocation-table">
+                        <thead>
+                            <tr>
+                                <th>员工ID</th>
+                                <th>姓名</th>
+                                <th>参与规则</th>
+                                <th class="right">可参与机会</th>
+                                <th class="right group-start" title="按每次请求发生时的候选人数分摊后汇总">理论应分</th>
+                                <th class="right">合理区间</th>
+                                <th class="right group-start">普通包实际</th>
+                                <th class="right">偏差量</th>
+                                <th class="right">偏差率</th>
+                                <th class="right group-start">安全包获客</th>
+                                <th class="right">今日总获客</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="mono">26817</td>
+                                <td><strong>白思静</strong></td>
+                                <td>
+<span class="cell-tag purple">自定义</span><span class="cell-tag blue" style="margin-left:4px">指标区间A</span>
+</td>
+                                <td class="right mono">82 / 82</td>
+                                <td class="right mono group-start metric-strong">28.6</td>
+                                <td class="right mono">27～30</td>
+                                <td class="right mono group-start metric-strong">29</td>
+                                <td class="right"><span class="deviation ok">+0.4</span></td>
+                                <td class="right"><span class="deviation ok">+1.4%</span></td>
+                                <td class="right mono group-start">4</td>
+                                <td class="right mono"><strong>33</strong></td>
+                            </tr>
+                            <tr style="background:#fffbeb;">
+                                <td class="mono">22941</td>
+                                <td><strong>吴明杰</strong></td>
+                                <td><span class="cell-tag purple">自定义</span></td>
+                                <td class="right mono">76 / 82</td>
+                                <td class="right mono group-start metric-strong">27.9</td>
+                                <td class="right mono">26～30</td>
+                                <td class="right mono group-start metric-strong">40</td>
+                                <td class="right"><span class="deviation bad">+12.1</span></td>
+                                <td class="right"><span class="deviation bad">+43.4%</span></td>
+                                <td class="right mono group-start">5</td>
+                                <td class="right mono"><strong>45</strong></td>
+                            </tr>
+                            <tr>
+                                <td class="mono">31024</td>
+                                <td><strong>赵雅琳</strong></td>
+                                <td><span class="cell-tag blue">指标区间A</span></td>
+                                <td class="right mono">35 / 82</td>
+                                <td class="right mono group-start metric-strong">13.2</td>
+                                <td class="right mono">12～15</td>
+                                <td class="right mono group-start metric-strong">13</td>
+                                <td class="right"><span class="deviation ok">-0.2</span></td>
+                                <td class="right"><span class="deviation ok">-1.5%</span></td>
+                                <td class="right mono group-start">2</td>
+                                <td class="right mono"><strong>15</strong></td>
+                            </tr>
+                            <tr style="background:#fef2f2;">
+                                <td class="mono">27100</td>
+                                <td><strong>张伟</strong></td>
+                                <td><span class="cell-tag purple">自定义</span></td>
+                                <td class="right mono">78 / 82</td>
+                                <td class="right mono group-start metric-strong">12.3</td>
+                                <td class="right mono">11～14</td>
+                                <td class="right mono group-start metric-strong">0</td>
+                                <td class="right"><span class="deviation bad">-12.3</span></td>
+                                <td class="right"><span class="deviation bad">-100%</span></td>
+                                <td class="right mono group-start">0</td>
+                                <td class="right mono"><strong>0</strong></td>
+                            </tr>
+                            <tr>
+                                <td class="mono">28650</td>
+                                <td><strong>陈文博</strong></td>
+                                <td style="color:#9ca3af">—</td>
+                                <td class="right mono">0 / 82</td>
+                                <td class="right mono group-start">0.0</td>
+                                <td class="right mono">—</td>
+                                <td class="right mono group-start">0</td>
+                                <td class="right" style="color:#9ca3af">—</td>
+                                <td class="right" style="color:#9ca3af">—</td>
+                                <td class="right mono group-start">0</td>
+                                <td class="right mono">0</td>
+                            </tr>
+                            <tr class="allocation-total-row">
+                                <td colspan="4">合计 · 普通包理论应分与实际闭环</td>
+                                <td class="right mono group-start">82.0</td>
+                                <td class="right">—</td>
+                                <td class="right mono group-start">82</td>
+                                <td class="right mono">0.0</td>
+                                <td class="right">—</td>
+                                <td class="right mono group-start">11</td>
+                                <td class="right mono">93</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+<div class="section-footer allocation-definition">
+                    <div class="section-footer-item">理论应分 = Σ（员工当次有资格 ÷ 当次候选人数）；个人额度和日/月上限均为上限，不作为目标权重</div>
+                    <div class="section-footer-item">安全包使用独立轮询，只展示实际获客，不并入普通包偏差</div>
+                </div>
+</div>
+
+                <div class="section">
+                    <div class="section-header">
+                        <div class="section-title-group">
+                            <div>
+                                <div class="section-title">基础资格明细</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="section-body">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>员工ID</th>
+                                    <th>姓名</th>
+                                    <th>状态</th>
+                                    <th class="right">入职天数</th>
+                                    <th>等级</th>
+                                    <th class="right">日上限</th>
+                                    <th class="right">月上限</th>
+                                    <th>排班</th>
+                                    <th>班次</th>
+                                    <th>班次时段</th>
+                                    <th>客服绑定</th>
+                                    <th>微动ID</th>
+                                    <th>加微计划</th>
+                                    <th>所属普通包</th>
+                                    <th>安全包</th>
+                                    <th>基础资格</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="mono">26817</td>
+                                    <td><strong>白思静</strong></td>
+                                    <td><span class="cell-status"><span class="status-dot green"></span>在职</span></td>
+                                    <td class="right mono">186</td>
+                                    <td>A级</td>
+                                    <td class="right mono">100</td>
+                                    <td class="right mono">2,000</td>
+                                    <td><span class="cell-tag green">上班</span></td>
+                                    <td>全天班</td>
+                                    <td class="mono">09:00-21:00</td>
+                                    <td><span class="cell-status"><span class="status-dot green"></span>有效</span></td>
+                                    <td><span class="cell-status"><span class="status-dot green"></span>有效</span></td>
+                                    <td><span class="cell-tag green">正常</span></td>
+                                    <td>s10N开口转人工#1</td>
+                                    <td><span class="cell-tag blue">是</span></td>
+                                    <td><span class="cell-alert normal">通过</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="mono">22941</td>
+                                    <td><strong>吴明杰</strong></td>
+                                    <td><span class="cell-status"><span class="status-dot green"></span>在职</span></td>
+                                    <td class="right mono">210</td>
+                                    <td>A级</td>
+                                    <td class="right mono">100</td>
+                                    <td class="right mono">2,000</td>
+                                    <td><span class="cell-tag green">上班</span></td>
+                                    <td>全天班</td>
+                                    <td class="mono">09:00-21:00</td>
+                                    <td><span class="cell-status"><span class="status-dot green"></span>有效</span></td>
+                                    <td><span class="cell-status"><span class="status-dot green"></span>有效</span></td>
+                                    <td><span class="cell-tag green">正常</span></td>
+                                    <td>s10N开口转人工#1</td>
+                                    <td><span class="cell-tag blue">是</span></td>
+                                    <td><span class="cell-alert normal">通过</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="mono">31024</td>
+                                    <td><strong>赵雅琳</strong></td>
+                                    <td><span class="cell-status"><span class="status-dot green"></span>试用</span></td>
+                                    <td class="right mono">12</td>
+                                    <td>C级</td>
+                                    <td class="right mono">30</td>
+                                    <td class="right mono">600</td>
+                                    <td><span class="cell-tag green">上班</span></td>
+                                    <td>早班</td>
+                                    <td class="mono">09:00-14:00</td>
+                                    <td><span class="cell-status"><span class="status-dot green"></span>有效</span></td>
+                                    <td><span class="cell-status"><span class="status-dot green"></span>有效</span></td>
+                                    <td><span class="cell-tag green">正常</span></td>
+                                    <td>s10N开口转人工#1</td>
+                                    <td><span class="cell-tag gray">否</span></td>
+                                    <td><span class="cell-alert normal">通过</span></td>
+                                </tr>
+                                <tr style="background:#fef2f2;">
+                                    <td class="mono">28650</td>
+                                    <td><strong>陈文博</strong></td>
+                                    <td><span class="cell-status"><span class="status-dot green"></span>在职</span></td>
+                                    <td class="right mono">95</td>
+                                    <td>B级</td>
+                                    <td class="right mono">50</td>
+                                    <td class="right mono">1,000</td>
+                                    <td><span class="cell-tag red">无记录</span></td>
+                                    <td>—</td>
+                                    <td>—</td>
+                                    <td><span class="cell-status"><span class="status-dot green"></span>有效</span></td>
+                                    <td><span class="cell-status"><span class="status-dot green"></span>有效</span></td>
+                                    <td><span class="cell-tag green">正常</span></td>
+                                    <td>s10N开口转人工#1</td>
+                                    <td><span class="cell-tag blue">是</span></td>
+                                    <td><span class="cell-alert danger">不通过</span></td>
+                                </tr>
+                                <tr style="background:#fef2f2;">
+                                    <td class="mono">29810</td>
+                                    <td><strong>李梦婷</strong></td>
+                                    <td><span class="cell-status"><span class="status-dot green"></span>在职</span></td>
+                                    <td class="right mono">150</td>
+                                    <td>A级</td>
+                                    <td class="right mono">100</td>
+                                    <td class="right mono">2,000</td>
+                                    <td><span class="cell-tag gray">休息</span></td>
+                                    <td>—</td>
+                                    <td>—</td>
+                                    <td><span class="cell-status"><span class="status-dot green"></span>有效</span></td>
+                                    <td><span class="cell-status"><span class="status-dot green"></span>有效</span></td>
+                                    <td><span class="cell-tag gray">—</span></td>
+                                    <td>s10N开口转人工#1</td>
+                                    <td><span class="cell-tag blue">是</span></td>
+                                    <td><span class="cell-alert warning">今日休息</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="section-footer">
+                        <div class="section-footer-item">用于逐项确认状态、排班、绑定、计划和所属包；异常：陈文博无假勤记录，需提醒填写</div>
+                    </div>
+                </div>
+
+                
+                
+            </div>
+
+            <!-- 员工承接 -->
+            <div class="subtab-content" id="tab7-quota">
+                <div class="section-body">
+                    <div class="allocation-scope-note">
+                        <div><strong>员工承接汇总：</strong>先看今日承接、日容量、可分配时长和异常；需要定位规则原因时，再看下方规则额度定位明细。</div>
+                    </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>员工</th>
+                            <th>等级</th>
+                            <th class="right">今日总获客</th>
+                            <th class="right">普通/安全</th>
+                            <th class="right">日额度</th>
+                            <th>日额度进度</th>
+                            <th class="right">剩余额度</th>
+                            <th class="right">可分配时长</th>
+                            <th class="right">每小时获客</th>
+                            <th>命中规则</th>
+                            <th>承接状态</th>
+                            <th>异常归因</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>白思静</strong> <span class="mono">26817</span></td>
+                            <td>A级</td>
+                            <td class="right mono"><strong>33</strong></td>
+                            <td class="right mono">29 / 4</td>
+                            <td class="right mono">33 / 100</td>
+                            <td>
+                                <div class="cell-bar">
+                                    <div class="cell-bar-track"><div class="cell-bar-fill blue" style="width:33%"></div></div>
+                                    <span class="cell-bar-text">33%</span>
+                                </div>
+                            </td>
+                            <td class="right mono">67</td>
+                            <td class="right mono">12h</td>
+                            <td class="right mono">2.75</td>
+                            <td><span class="cell-tag purple">自定义</span></td>
+                            <td><span class="cell-alert normal">可承接</span></td>
+                            <td>承接、额度、规则状态正常</td>
+                        </tr>
+                        <tr>
+                            <td><strong>吴明杰</strong> <span class="mono">22941</span></td>
+                            <td>A级</td>
+                            <td class="right mono"><strong>45</strong></td>
+                            <td class="right mono">40 / 5</td>
+                            <td class="right mono">45 / 100</td>
+                            <td>
+                                <div class="cell-bar">
+                                    <div class="cell-bar-track"><div class="cell-bar-fill orange" style="width:45%"></div></div>
+                                    <span class="cell-bar-text">45%</span>
+                                </div>
+                            </td>
+                            <td class="right mono">55</td>
+                            <td class="right mono">12h</td>
+                            <td class="right mono">3.75</td>
+                            <td><span class="cell-tag purple">自定义</span></td>
+                            <td><span class="cell-alert warning">安全包可承接</span></td>
+                            <td>普通包阈值已命中，需看停分阈值</td>
+                        </tr>
+                        <tr>
+                            <td><strong>赵雅琳</strong> <span class="mono">31024</span></td>
+                            <td>C级</td>
+                            <td class="right mono"><strong>15</strong></td>
+                            <td class="right mono">13 / 2</td>
+                            <td class="right mono">15 / 30</td>
+                            <td>
+                                <div class="cell-bar">
+                                    <div class="cell-bar-track"><div class="cell-bar-fill blue" style="width:50%"></div></div>
+                                    <span class="cell-bar-text">50%</span>
+                                </div>
+                            </td>
+                            <td class="right mono">15</td>
+                            <td class="right mono">5h</td>
+                            <td class="right mono">3.00</td>
+                            <td>
+<span class="cell-tag purple">自定义</span><span class="cell-tag blue" style="margin-left:4px">指标区间A</span>
+</td>
+                            <td><span class="cell-alert warning">规则额度满</span></td>
+                            <td>指标区间A折算额度已用完</td>
+                        </tr>
+                        <tr style="background:#fef2f2;">
+                            <td><strong>张伟</strong> <span class="mono">27100</span></td>
+                            <td>A级</td>
+                            <td class="right mono"><strong>0</strong></td>
+                            <td class="right mono">0 / 0</td>
+                            <td class="right mono">0 / 100</td>
+                            <td>
+                                <div class="cell-bar">
+                                    <div class="cell-bar-track"><div class="cell-bar-fill" style="width:0%"></div></div>
+                                    <span class="cell-bar-text" style="color:#dc2626">0%</span>
+                                </div>
+                            </td>
+                            <td class="right mono">100</td>
+                            <td class="right mono">12h</td>
+                            <td class="right mono" style="color:#dc2626;font-weight:600">0.00</td>
+                            <td><span class="cell-tag purple">自定义</span></td>
+                            <td><span class="cell-alert danger">异常待排查</span></td>
+                            <td>条件正常但全天0获客，优先排查轮询</td>
+                        </tr>
+                        <tr style="background:#fef2f2;">
+                            <td><strong>陈文博</strong> <span class="mono">28650</span></td>
+                            <td>B级</td>
+                            <td class="right mono"><strong>0</strong></td>
+                            <td class="right mono">0 / 0</td>
+                            <td class="right mono">0 / 50</td>
+                            <td>
+                                <div class="cell-bar">
+                                    <div class="cell-bar-track"><div class="cell-bar-fill" style="width:0%"></div></div>
+                                    <span class="cell-bar-text">0%</span>
+                                </div>
+                            </td>
+                            <td class="right mono">50</td>
+                            <td class="right mono">—</td>
+                            <td class="right mono">—</td>
+                            <td style="color:#9ca3af">—</td>
+                            <td><span class="cell-alert warning">不可承接</span></td>
+                            <td>基础资格不通过：无假勤记录</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="section-footer">
+                <div class="section-footer-item">异常：张伟全天0获客但条件正常，需排查轮询逻辑</div>
+                <div class="section-footer-item">异常：陈文博因无假勤记录未参与分配，需提醒填写</div>
+            </div>
+                <div class="section-body">
+                    <div class="allocation-scope-note">
+                        <div><strong>规则额度定位明细：</strong>承接汇总发现额度或规则问题时，用这里定位具体规则的指标、命中条件、折算额度和消耗结果。</div>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>姓名</th>
+                                <th>规则</th>
+                                <th>类型</th>
+                                <th>时段</th>
+                                <th>指标与命中条件</th>
+                                <th class="right">原始额度</th>
+                                <th class="right">给量比例</th>
+                                <th class="right">折算额度</th>
+                                <th class="right">消耗/剩余</th>
+                                <th>额度进度</th>
+                                <th>规则结论</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>白思静</strong></td>
+                                <td>自定义</td>
+                                <td><span class="cell-tag purple">自定义</span></td>
+                                <td class="mono">00:00-24:00</td>
+                                <td>自定义规则，不看指标</td>
+                                <td class="right mono">100</td>
+                                <td style="color:#9ca3af">不适用</td>
+                                <td class="right mono">100</td>
+                                <td class="right mono">33 / 67</td>
+                                <td>
+                                    <div class="cell-bar">
+                                        <div class="cell-bar-track"><div class="cell-bar-fill blue" style="width:33%"></div></div>
+                                        <span class="cell-bar-text">33%</span>
+                                    </div>
+                                </td>
+                                <td><span class="cell-alert normal">可继续承接</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>白思静</strong></td>
+                                <td>指标区间A</td>
+                                <td><span class="cell-tag blue">指标区间</span></td>
+                                <td class="mono">09:00-18:00</td>
+                                <td>前7天当前预约率 <span class="mono">18.5%</span>；<span class="cell-tag blue">(10,20] → 额度10</span></td>
+                                <td class="right mono">10</td>
+                                <td class="right mono">100%</td>
+                                <td class="right mono">10</td>
+                                <td class="right mono">8 / 2</td>
+                                <td>
+                                    <div class="cell-bar">
+                                        <div class="cell-bar-track"><div class="cell-bar-fill orange" style="width:80%"></div></div>
+                                        <span class="cell-bar-text">80%</span>
+                                    </div>
+                                </td>
+                                <td><span class="cell-alert warning">额度紧张</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>白思静</strong></td>
+                                <td>排名B</td>
+                                <td><span class="cell-tag orange">排名</span></td>
+                                <td class="mono">09:00-18:00</td>
+                                <td>前7天当前预约率 <span class="mono">18.5%</span>；<span class="cell-tag green">第2名/共6人 → 入选(前50%)</span></td>
+                                <td class="right mono" style="color:#9ca3af">—</td>
+                                <td class="right mono">100%</td>
+                                <td class="right mono" style="color:#9ca3af">—</td>
+                                <td class="right mono" style="color:#9ca3af">—</td>
+                                <td style="color:#9ca3af">排名无额外额度</td>
+                                <td><span class="cell-tag gray">仅提供候选资格</span></td>
+                            </tr>
+                            <tr style="background:#fffbeb;">
+                                <td><strong>赵雅琳</strong></td>
+                                <td>指标区间A</td>
+                                <td><span class="cell-tag blue">指标区间</span></td>
+                                <td class="mono">09:00-18:00</td>
+                                <td>前7天当前预约率 <span class="mono">5.2%</span>；<span class="cell-tag blue">[0,10] → 额度20</span></td>
+                                <td class="right mono">20</td>
+                                <td class="right mono">50%</td>
+                                <td class="right mono">10</td>
+                                <td class="right mono">10 / <span style="color:#dc2626;font-weight:600">0</span></td>
+                                <td>
+                                    <div class="cell-bar">
+                                        <div class="cell-bar-track"><div class="cell-bar-fill red" style="width:100%"></div></div>
+                                        <span class="cell-bar-text" style="color:#dc2626">100%</span>
+                                    </div>
+                                </td>
+                                <td><span class="cell-alert danger">额度已满</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+<!-- 停分阈值 -->
+            <div class="subtab-content" id="tab7-threshold">
+                <div class="section-body">
+                    <div class="allocation-scope-note">
+                        <div><strong>看停分影响：</strong>阈值触发后优先确认普通包是否暂停、安全包是否仍可承接，以及什么时候恢复。</div>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>姓名</th>
+                                <th>所属包</th>
+                                <th>阈值类型</th>
+                                <th>统计时段</th>
+                                <th>阈值区间</th>
+                                <th class="right">时段内分配数</th>
+                                <th class="right">日上限</th>
+                                <th class="right">本月天数</th>
+                                <th class="right">计算值</th>
+                                <th>是否命中</th>
+                                <th>影响范围</th>
+                                <th>安全包可分配</th>
+                                <th>恢复条件</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>白思静</strong></td>
+                                <td>s10N#1</td>
+                                <td>日数量</td>
+                                <td class="mono">08:00~18:00</td>
+                                <td class="mono">(40, 不限)</td>
+                                <td class="right mono">28</td>
+                                <td class="right mono">100</td>
+                                <td class="right">—</td>
+                                <td class="right mono">28个</td>
+                                <td><span class="cell-tag green">未命中</span></td>
+                                <td style="color:#9ca3af">—</td>
+                                <td style="color:#9ca3af">—</td>
+                                <td style="color:#9ca3af">—</td>
+                            </tr>
+                            <tr>
+                                <td><strong>白思静</strong></td>
+                                <td>s10N#1</td>
+                                <td>日进度</td>
+                                <td class="mono">08:00~12:00</td>
+                                <td class="mono">(60%, 不限)</td>
+                                <td class="right mono">18</td>
+                                <td class="right mono">100</td>
+                                <td class="right">—</td>
+                                <td class="right mono">18.0%</td>
+                                <td><span class="cell-tag green">未命中</span></td>
+                                <td style="color:#9ca3af">—</td>
+                                <td style="color:#9ca3af">—</td>
+                                <td style="color:#9ca3af">—</td>
+                            </tr>
+                            <tr style="background:#fef2f2;">
+                                <td><strong>吴明杰</strong></td>
+                                <td>s10N#1</td>
+                                <td>日数量</td>
+                                <td class="mono">08:00~18:00</td>
+                                <td class="mono">(40, 不限)</td>
+                                <td class="right mono" style="color:#dc2626;font-weight:600">45</td>
+                                <td class="right mono">100</td>
+                                <td class="right">—</td>
+                                <td class="right mono">45个</td>
+                                <td><span class="cell-alert danger">已命中</span></td>
+                                <td style="color:#dc2626">s10N#1普通规则暂停</td>
+                                <td><span class="cell-tag green">是，安全包不受影响</span></td>
+                                <td>次日重置或统计时段结束</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="section-footer">
+                    <div class="section-footer-item">说明：吴明杰日数量阈值已命中(45&gt;40)，普通规则暂停，安全包仍可分配</div>
+                </div>
+            </div>
+
+            <!-- 轮询检验 -->
+            <div class="subtab-content" id="tab7-fair">
+                <div class="section-body">
+                    <div class="allocation-scope-note">
+                        <div><strong>校验系统有没有按规则执行：</strong>每个“普通包 + 规则”拥有独立轮询位置，安全包另行校验。</div>
+                        <div class="allocation-scope-formula">正常标准：实际承接人 = 根据上次位置推演的应承接人</div>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>包</th>
+                                <th>规则</th>
+                                <th>类型</th>
+                                <th class="right">成功分配数</th>
+                                <th class="right">候选集变化</th>
+                                <th class="right">轮询不一致</th>
+                                <th>上次轮询位置</th>
+                                <th>当前轮询位置</th>
+                                <th>校验结果</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>s10N#1</td>
+                                <td><strong>自定义</strong></td>
+                                <td><span class="cell-tag purple">自定义</span></td>
+                                <td class="right mono">68</td>
+                                <td class="right mono">4次</td>
+                                <td class="right mono"><span class="deviation ok">0</span></td>
+                                <td>刘佳欣 (25330)</td>
+                                <td>白思静 (26817)</td>
+                                <td><span class="cell-tag green">轮询一致</span></td>
+                            </tr>
+                            <tr>
+                                <td>s10N#1</td>
+                                <td><strong>指标区间A</strong></td>
+                                <td><span class="cell-tag blue">指标区间</span></td>
+                                <td class="right mono">10</td>
+                                <td class="right mono">3次</td>
+                                <td class="right mono"><span class="deviation bad">1</span></td>
+                                <td>吴明杰 (22941)</td>
+                                <td>赵雅琳 (31024)</td>
+                                <td><span class="cell-alert danger">发现不一致</span></td>
+                            </tr>
+                            <tr>
+                                <td>s10N#1</td>
+                                <td><strong>排名B</strong></td>
+                                <td><span class="cell-tag orange">排名</span></td>
+                                <td class="right mono">4</td>
+                                <td class="right mono">1次</td>
+                                <td class="right mono"><span class="deviation ok">0</span></td>
+                                <td>白思静 (26817)</td>
+                                <td>吴明杰 (22941)</td>
+                                <td><span class="cell-tag green">轮询一致</span></td>
+                            </tr>
+                            <tr>
+                                <td>安全包S1</td>
+                                <td>安全包轮询</td>
+                                <td><span class="cell-tag gray">安全包</span></td>
+                                <td class="right mono">11</td>
+                                <td class="right mono">2次</td>
+                                <td class="right mono"><span class="deviation ok">0</span></td>
+                                <td>赵雅琳 (31024)</td>
+                                <td>吴明杰 (22941)</td>
+                                <td><span class="cell-tag green">轮询一致</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+
+
+    <!-- =====================================================================
+     第四层：分配明细层
+     ===================================================================== -->
+<div class="layer-content" id="layer-customer">
+  <div class="customer-filter-bar">
+    <div class="filter-group"><label>日期</label><input type="date" value="2026-09-02"></div>
+    <div class="filter-group">
+      <label>客户ID</label>
+      <input type="text" placeholder="如 C_10086" style="width:120px;" id="clientIdInput">
+    </div>
+    <div class="filter-group">
+      <label>意向项目</label>
+      <select><option>全部</option><option>祛斑</option><option>嫩肤</option><option>抗衰</option></select>
+    </div>
+    <div class="filter-group">
+      <label>分配结果</label>
+      <select><option>全部</option><option>普通包成功</option><option>安全包成功</option><option>已有归属继续承接</option><option>无人可分</option></select>
+    </div>
+    <div class="filter-group">
+      <label>分配客服</label>
+      <input type="text" placeholder="姓名或ID" style="width:120px;">
+    </div>
+  </div>
+
+  <!-- ===== 表9：分配明细表 ===== -->
+  <div class="card">
+    <div class="card-head">
+      <div>
+        <div class="card-title">分配明细</div>
+      </div>
+    </div>
+    <div class="card-body-np">
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>客户ID</th><th>来源企微</th><th>意向项目</th><th>开口时间</th>
+              <th>分配时间</th><th class="right">耗时</th><th>选中普通包</th><th>抽中规则</th>
+              <th>规则类型</th><th>分配客服</th>
+              <th>分配结果</th><th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="clickable" onclick="openChainModal('case1')">
+              <td><strong>C_10086</strong></td><td>抖音</td><td>祛斑</td><td>14:22:58</td>
+              <td>14:23:05</td><td class="right">7秒</td>
+              <td>祛斑包A</td><td>规则Y</td><td><span class="badge badge-purple">排名</span></td>
+              <td>王五</td><td><span class="badge badge-green">成功</span></td>
+              <td style="color:var(--primary); cursor:pointer;">查看</td>
+            </tr>
+            <tr class="clickable" onclick="openChainModal('case2')">
+              <td><strong>C_10099</strong></td><td>快手</td><td>祛斑</td><td>14:24:50</td>
+              <td>14:25:12</td><td class="right">22秒</td>
+              <td>祛斑包A</td><td>规则X</td><td><span class="badge badge-blue">指标区间</span></td>
+              <td>张三</td><td><span class="badge badge-green">成功</span></td>
+              <td style="color:var(--primary); cursor:pointer;">查看</td>
+            </tr>
+            <tr>
+              <td><strong>C_10086</strong></td><td>抖音</td><td>祛斑</td><td>—</td>
+              <td>15:01:33</td><td class="right">—</td>
+              <td>—</td><td>—</td><td>—</td>
+              <td>王五</td><td><span class="badge badge-gray">已有归属继续承接</span></td>
+              <td style="color:var(--gray-400);">—</td>
+            </tr>
+            <tr class="clickable" onclick="openChainModal('case3')">
+              <td><strong>C_10086</strong></td><td>抖音</td><td>嫩肤</td><td>15:09:55</td>
+              <td>15:10:05</td><td class="right">10秒</td>
+              <td>嫩肤包A</td><td>规则M</td><td><span class="badge badge-gray">自定义</span></td>
+              <td>李四</td><td><span class="badge badge-green">成功</span></td>
+              <td style="color:var(--primary); cursor:pointer;">查看</td>
+            </tr>
+            <tr style="background:#fef2f2;">
+              <td><strong>C_10102</strong></td><td>百度</td><td>祛斑</td><td>16:02:30</td>
+              <td>16:02:44</td><td class="right">14秒</td>
+              <td>祛斑包B</td><td>规则X</td><td><span class="badge badge-blue">指标区间</span></td>
+              <td>—</td><td><span class="badge badge-red">无人可分</span></td>
+              <td style="color:var(--primary); cursor:pointer;" onclick="openChainModal('case4')">查看</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<!-- =====================================================================
+     模态框：表10 单客户完整决策链路
+     ===================================================================== -->
+<div class="modal-overlay" id="chainModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>单客户决策链路</h3>
+      <button class="modal-close" onclick="closeChainModal()">关闭</button>
+    </div>
+    <div class="modal-body" id="chainModalBody">
+      <!-- 动态填充 -->
+    </div>
+  </div>
+</div>
+
+
+<script>
+// Layer tab switching
+function switchLayer(layerId) {
+    document.querySelectorAll('.layer-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.layer-content').forEach(c => c.classList.remove('active'));
+
+    event.currentTarget.classList.add('active');
+    document.getElementById('layer-' + layerId).classList.add('active');
+}
+
+// ==============================
+// 决策链路模态框
+// ==============================
+function openChainModal(caseId) {
+  const body = document.getElementById('chainModalBody');
+  body.innerHTML = getChainHTML(caseId);
+  document.getElementById('chainModal').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+function closeChainModal() {
+  document.getElementById('chainModal').classList.remove('show');
+  document.body.style.overflow = '';
+}
+document.getElementById('chainModal').addEventListener('click', function(e) {
+  if (e.target === this) closeChainModal();
+});
+
+// ==============================
+// 决策链路内容
+// ==============================
+function getChainHTML(caseId) {
+  const cases = {
+    // ---- Case 1: 普通包成功（排名规则） ----
+    case1: `
+      <div class="chain-summary">
+        <strong>一句话总结：</strong>客户 C_10086 走祛斑意向 → 选中祛斑包A（该意向2个可用包，等概率选中）→ 当前有效规则 X(50%)、Y(30%)、Z(20%) → 抽中规则Y（排名，前7日总预约率取前3名）→ 排名：王五28.5%、张三25.1%、李四22.0%入选 → 李四日上限已满跳过 → 轮询上次到张三，本次轮到王五 → <strong style="color:#15803d">分配给王五</strong> → 微动回写成功。
+      </div>
+
+      <div class="chain">
+        <div class="chain-step">
+          <div class="chain-dot-col"><div class="chain-dot filled"></div><div class="chain-line"></div></div>
+          <div class="chain-content">
+            <div class="chain-title">客户信息</div>
+            <div class="chain-detail">客户 C_10086 · 意向项目：祛斑 · 请求时间：14:23:05</div>
+          </div>
+        </div>
+
+        <div class="chain-step">
+          <div class="chain-dot-col"><div class="chain-dot filled"></div><div class="chain-line"></div></div>
+          <div class="chain-content">
+            <div class="chain-title">去重检查</div>
+            <div class="chain-detail">该客户 + 祛斑意向 → 无已有归属</div>
+            <div class="chain-result pass">继续分配</div>
+          </div>
+        </div>
+
+        <div class="chain-step">
+          <div class="chain-dot-col"><div class="chain-dot filled"></div><div class="chain-line"></div></div>
+          <div class="chain-content">
+            <div class="chain-title">选包</div>
+            <div class="chain-detail">祛斑意向下可用包：祛斑包A、祛斑包B（各50%概率）</div>
+            <div class="chain-result info">随机选中：祛斑包A</div>
+          </div>
+        </div>
+
+        <div class="chain-step">
+          <div class="chain-dot-col"><div class="chain-dot filled"></div><div class="chain-line"></div></div>
+          <div class="chain-content">
+            <div class="chain-title">有效规则筛选（14:23 北京时间）</div>
+            <table class="chain-table">
+              <thead><tr><th>规则</th><th>类型</th><th>时段</th><th>配置占比</th><th>是否有效</th><th>折算概率</th></tr></thead>
+              <tbody>
+                <tr><td>规则X</td><td>指标区间</td><td>09:00~21:00</td><td>50%</td><td>有效</td><td>50%</td></tr>
+                <tr><td>规则Y</td><td>排名</td><td>09:00~21:00</td><td>30%</td><td>有效</td><td>30%</td></tr>
+                <tr><td>规则Z</td><td>自定义</td><td>00:00~24:00</td><td>20%</td><td>有效</td><td>20%</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="chain-step">
+          <div class="chain-dot-col"><div class="chain-dot filled"></div><div class="chain-line"></div></div>
+          <div class="chain-content">
+            <div class="chain-title">指标数据完整性</div>
+            <div class="chain-detail">规则X和规则Y需要"前7日总预约率"数据，所有基础可用咨询数据齐全。</div>
+            <div class="chain-result pass">通过</div>
+          </div>
+        </div>
+
+        <div class="chain-step">
+          <div class="chain-dot-col"><div class="chain-dot filled"></div><div class="chain-line"></div></div>
+          <div class="chain-content">
+            <div class="chain-title">规则抽签</div>
+            <div class="chain-detail">按 50%/30%/20% 概率抽签</div>
+            <div class="chain-result info">抽中规则Y（排名规则，概率30%）</div>
+          </div>
+        </div>
+
+        <div class="chain-step">
+          <div class="chain-dot-col"><div class="chain-dot filled"></div><div class="chain-line"></div></div>
+          <div class="chain-content">
+            <div class="chain-title">规则Y执行：排名（前7日总预约率 · 取前3名）</div>
+            <table class="chain-table">
+              <thead><tr><th>排名</th><th>员工</th><th>ID</th><th>指标值</th><th>是否入选</th><th>新人限制</th><th>最终资格</th></tr></thead>
+              <tbody>
+                <tr style="background:#f0fdf4"><td>1</td><td>王五</td><td>30</td><td>28.5%</td><td>入选</td><td>—</td><td>有资格</td></tr>
+                <tr style="background:#f0fdf4"><td>2</td><td>张三</td><td>10</td><td>25.1%</td><td>入选</td><td>入职第5天 (0,7] 比例80%&gt;0 保留</td><td>有资格</td></tr>
+                <tr style="background:#f0fdf4"><td>3</td><td>李四</td><td>20</td><td>22.0%</td><td>入选</td><td>—</td><td>有资格</td></tr>
+                <tr style="color:var(--gray-400)"><td>4</td><td>钱七</td><td>50</td><td>20.7%</td><td>未入选</td><td>—</td><td>—</td></tr>
+                <tr style="color:var(--gray-400)"><td>5</td><td>赵六</td><td>40</td><td>18.3%</td><td>未入选</td><td>—</td><td>—</td></tr>
+              </tbody>
+            </table>
+            <div class="chain-result info" style="margin-top:8px">候选3人：王五、张三、李四</div>
+          </div>
+        </div>
+
+        <div class="chain-step">
+          <div class="chain-dot-col"><div class="chain-dot filled"></div><div class="chain-line"></div></div>
+          <div class="chain-content">
+            <div class="chain-title">基础资格 + 额度过滤</div>
+            <table class="chain-table">
+              <thead><tr><th>员工</th><th>在班</th><th>日已分/上限</th><th>可用</th></tr></thead>
+              <tbody>
+                <tr><td>王五 (30)</td><td>通过</td><td>24/30</td><td style="color:#15803d; font-weight:600">有资格</td></tr>
+                <tr><td>张三 (10)</td><td>通过</td><td>17/20</td><td style="color:#15803d; font-weight:600">有资格</td></tr>
+                <tr style="background:#fef2f2"><td>李四 (20)</td><td>通过</td><td style="color:var(--danger); font-weight:700">30/30 已满</td><td style="color:var(--danger); font-weight:600">日上限已满</td></tr>
+              </tbody>
+            </table>
+            <div class="chain-result info" style="margin-top:8px">实际可轮询：王五、张三</div>
+          </div>
+        </div>
+
+        <div class="chain-step">
+          <div class="chain-dot-col"><div class="chain-dot filled"></div><div class="chain-line"></div></div>
+          <div class="chain-content">
+            <div class="chain-title">轮询选人</div>
+            <div class="chain-detail">
+              候选人按ID排序：张三(10)、王五(30)<br>
+              该规则上一次成功分配给：张三(10)<br>
+              下一位 → 王五(30)
+            </div>
+            <div class="chain-result pass">分配给王五 (ID: 30)</div>
+          </div>
+        </div>
+
+        <div class="chain-step">
+          <div class="chain-dot-col"><div class="chain-dot green"></div></div>
+          <div class="chain-content">
+            <div class="chain-title">微动回写</div>
+            <div class="chain-detail">将微动加微记录指向王五</div>
+            <div class="chain-result pass">成功：最终确认归属</div>
+          </div>
+        </div>
+      </div>
+    `,
+
+    // ---- Case 2: 普通规则无候选 → 安全包兜底 ----
+    case2: `
+      <div class="chain-summary">
+        <strong>一句话总结：</strong>客户 C_10099 走祛斑意向 → 选中祛斑包A → 抽中规则X（指标区间，前7日总预约率）→ 候选人 0 人（张三额度剩0、李四日上限满、王五被阈值暂停）→ <strong style="color:#d97706">进入安全包</strong> → 安全包候选人：张三在班可用 → <strong style="color:#15803d">安全包分配给张三</strong> → 微动回写成功。
+      </div>
+
+      <div class="chain">
+        <div class="chain-step">
+          <div class="chain-dot-col"><div class="chain-dot filled"></div><div class="chain-line"></div></div>
+          <div class="chain-content">
+            <div class="chain-title">客户信息</div>
+            <div class="chain-detail">客户 C_10099 · 意向项目：祛斑 · 请求时间：14:25:12</div>
+          </div>
+        </div>
+
+        <div class="chain-step">
+          <div class="chain-dot-col"><div class="chain-dot filled"></div><div class="chain-line"></div></div>
+          <div class="chain-content">
+            <div class="chain-title">去重检查</div>
+            <div class="chain-detail">该客户 + 祛斑意向 → 无已有归属</div>
+            <div class="chain-result pass">继续分配</div>
+          </div>
+        </div>
+
+        <div class="chain-step">
+          <div class="chain-dot-col"><div class="chain-dot filled"></div><div class="chain-line"></div></div>
+          <div class="chain-content">
+            <div class="chain-title">选包</div>
+            <div class="chain-result info">随机选中：祛斑包A</div>
+          </div>
+        </div>
+
+        <div class="chain-step">
+          <div class="chain-dot-col"><div class="chain-dot filled"></div><div class="chain-line"></div></div>
+          <div class="chain-content">
+            <div class="chain-title">规则抽签</div>
+            <div class="chain-result info">抽中规则X（指标区间，概率50%）</div>
+          </div>
+        </div>
+
+        <div class="chain-step">
+          <div class="chain-dot-col"><div class="chain-dot filled"></div><div class="chain-line"></div></div>
+          <div class="chain-content">
+            <div class="chain-title">规则X执行：指标区间（前7日总预约率）</div>
+            <table class="chain-table">
+              <thead><tr><th>员工</th><th>指标值</th><th>命中区间</th><th>原始额度</th><th>新人折算</th><th>已消耗</th><th>剩余</th><th>结果</th></tr></thead>
+              <tbody>
+                <tr style="background:#fef2f2"><td>张三 (10)</td><td>15.2%</td><td>(10,20]</td><td>10</td><td>×80%=8</td><td>8</td><td style="color:var(--danger);font-weight:700">0</td><td style="color:var(--danger)">额度已满</td></tr>
+                <tr style="background:#fef2f2"><td>李四 (20)</td><td>22.0%</td><td>(20,不限)</td><td>5</td><td>—</td><td>—</td><td>—</td><td style="color:var(--danger)">日上限30/30已满</td></tr>
+                <tr style="background:#fef2f2"><td>王五 (30)</td><td>28.5%</td><td>(20,不限)</td><td>5</td><td>—</td><td>3</td><td>2</td><td style="color:var(--danger)">阈值暂停(祛斑包A)</td></tr>
+              </tbody>
+            </table>
+            <div class="chain-result fail" style="margin-top:8px">候选人 0 人 → 进入安全包</div>
+          </div>
+        </div>
+
+        <div class="chain-step">
+          <div class="chain-dot-col"><div class="chain-dot" style="border-color:var(--warning);background:var(--warning)"></div><div class="chain-line"></div></div>
+          <div class="chain-content">
+            <div class="chain-title" style="color:var(--warning)">⚡ 进入安全包</div>
+            <div class="chain-detail">原因：规则X无候选人（全员额度满/日上限满/阈值暂停）</div>
+            <table class="chain-table" style="margin-top:8px">
+              <thead><tr><th>安全包员工</th><th>在班</th><th>日已分/上限</th><th>加微计划</th><th>可用</th></tr></thead>
+              <tbody>
+                <tr style="background:#f0fdf4"><td>张三 (10)</td><td>通过</td><td>17/20</td><td>正常</td><td style="color:#15803d;font-weight:600">有资格</td></tr>
+                <tr><td>李四 (20)</td><td>通过</td><td style="color:var(--danger)">30/30</td><td>正常</td><td style="color:var(--danger)">日上限满</td></tr>
+                <tr><td>王五 (30)</td><td>通过</td><td>24/30</td><td>正常</td><td style="color:#15803d;font-weight:600">有资格</td></tr>
+                <tr><td>赵六 (40)</td><td>通过</td><td>10/15</td><td>正常</td><td style="color:#15803d;font-weight:600">有资格</td></tr>
+              </tbody>
+            </table>
+            <div class="chain-detail" style="margin-top:8px">安全包上次分配给：赵六(40) → 下一位按ID：张三(10)</div>
+            <div class="chain-result info">安全包分配给张三 (ID: 10)</div>
+          </div>
+        </div>
+
+        <div class="chain-step">
+          <div class="chain-dot-col"><div class="chain-dot green"></div></div>
+          <div class="chain-content">
+            <div class="chain-title">微动回写</div>
+            <div class="chain-result pass">成功：最终确认归属（安全包）</div>
+          </div>
+        </div>
+      </div>
+    `,
+
+    // ---- Case 3: 自定义规则成功 ----
+    case3: `
+      <div class="chain-summary">
+        <strong>一句话总结：</strong>客户 C_10086 换了嫩肤意向，重新走完整分配 → 选中嫩肤包A（唯一可用包）→ 抽中规则M（自定义）→ 候选人：李四剩余额度68、钱七剩余额度55 → 轮询上次到钱七，本次到李四 → <strong style="color:#15803d">分配给李四</strong> → 微动回写成功。
+      </div>
+
+      <div class="chain">
+        <div class="chain-step">
+          <div class="chain-dot-col"><div class="chain-dot filled"></div><div class="chain-line"></div></div>
+          <div class="chain-content">
+            <div class="chain-title">客户信息</div>
+            <div class="chain-detail">客户 C_10086 · 意向项目：<strong>嫩肤</strong>（与之前祛斑不同，重新分配）· 请求时间：15:10:05</div>
+          </div>
+        </div>
+
+        <div class="chain-step">
+          <div class="chain-dot-col"><div class="chain-dot filled"></div><div class="chain-line"></div></div>
+          <div class="chain-content">
+            <div class="chain-title">去重检查</div>
+            <div class="chain-detail">该客户 + 嫩肤意向 → 无已有归属（祛斑意向的归属不影响嫩肤）</div>
+            <div class="chain-result pass">继续分配</div>
+          </div>
+        </div>
+
+        <div class="chain-step">
+          <div class="chain-dot-col"><div class="chain-dot filled"></div><div class="chain-line"></div></div>
+          <div class="chain-content">
+            <div class="chain-title">选包</div>
+            <div class="chain-detail">嫩肤意向下仅1个可用包</div>
+            <div class="chain-result info">选中：嫩肤包A</div>
+          </div>
+        </div>
+
+        <div class="chain-step">
+          <div class="chain-dot-col"><div class="chain-dot filled"></div><div class="chain-line"></div></div>
+          <div class="chain-content">
+            <div class="chain-title">规则抽签</div>
+            <div class="chain-result info">抽中规则M（自定义规则，概率60%）</div>
+          </div>
+        </div>
+
+        <div class="chain-step">
+          <div class="chain-dot-col"><div class="chain-dot filled"></div><div class="chain-line"></div></div>
+          <div class="chain-content">
+            <div class="chain-title">规则M执行：自定义</div>
+            <table class="chain-table">
+              <thead><tr><th>员工</th><th>有每日计划</th><th>自定义额度</th><th>已消耗(全包共享)</th><th>剩余</th><th>结果</th></tr></thead>
+              <tbody>
+                <tr style="background:#f0fdf4"><td>李四 (20)</td><td>通过</td><td>100</td><td>32</td><td>68</td><td style="color:#15803d">有资格</td></tr>
+                <tr style="background:#f0fdf4"><td>钱七 (50)</td><td>通过</td><td>80</td><td>25</td><td>55</td><td style="color:#15803d">有资格</td></tr>
+              </tbody>
+            </table>
+            <div class="chain-detail" style="margin-top:8px">新人限制：自定义规则不执行新人限制</div>
+            <div class="chain-result info">候选2人：李四、钱七</div>
+          </div>
+        </div>
+
+        <div class="chain-step">
+          <div class="chain-dot-col"><div class="chain-dot filled"></div><div class="chain-line"></div></div>
+          <div class="chain-content">
+            <div class="chain-title">轮询选人</div>
+            <div class="chain-detail">
+              候选人按ID排序：李四(20)、钱七(50)<br>
+              上一次成功分配给：钱七(50)<br>
+              下一位 → 回到最小ID → 李四(20)
+            </div>
+            <div class="chain-result pass">分配给李四 (ID: 20)</div>
+          </div>
+        </div>
+
+        <div class="chain-step">
+          <div class="chain-dot-col"><div class="chain-dot green"></div></div>
+          <div class="chain-content">
+            <div class="chain-title">微动回写</div>
+            <div class="chain-result pass">成功：最终确认归属</div>
+          </div>
+        </div>
+      </div>
+    `,
+
+    // ---- Case 4: 彻底无人可分 ----
+    case4: `
+      <div class="chain-summary" style="background:#fff4f2; border-color:#f6b7b2;">
+        <strong>一句话总结：</strong>客户 C_10102 走祛斑意向 → 选中祛斑包B → 抽中规则X（指标区间）→ 候选人 0 人（全员额度已满）→ 进入安全包 → 安全包3人全部日上限已满 → <strong style="color:#dc2626">返回 0，客户无人承接</strong>。
+      </div>
+
+      <div class="chain">
+        <div class="chain-step">
+          <div class="chain-dot-col"><div class="chain-dot filled"></div><div class="chain-line"></div></div>
+          <div class="chain-content">
+            <div class="chain-title">客户信息</div>
+            <div class="chain-detail">客户 C_10102 · 意向项目：祛斑 · 请求时间：16:02:44</div>
+          </div>
+        </div>
+
+        <div class="chain-step">
+          <div class="chain-dot-col"><div class="chain-dot filled"></div><div class="chain-line"></div></div>
+          <div class="chain-content">
+            <div class="chain-title">去重检查</div>
+            <div class="chain-result pass">继续分配</div>
+          </div>
+        </div>
+
+        <div class="chain-step">
+          <div class="chain-dot-col"><div class="chain-dot filled"></div><div class="chain-line"></div></div>
+          <div class="chain-content">
+            <div class="chain-title">选包</div>
+            <div class="chain-result info">随机选中：祛斑包B</div>
+          </div>
+        </div>
+
+        <div class="chain-step">
+          <div class="chain-dot-col"><div class="chain-dot filled"></div><div class="chain-line"></div></div>
+          <div class="chain-content">
+            <div class="chain-title">规则抽签</div>
+            <div class="chain-result info">抽中规则X（指标区间，概率60%）</div>
+          </div>
+        </div>
+
+        <div class="chain-step">
+          <div class="chain-dot-col"><div class="chain-dot filled"></div><div class="chain-line"></div></div>
+          <div class="chain-content">
+            <div class="chain-title">规则X执行</div>
+            <table class="chain-table">
+              <thead><tr><th>员工</th><th>指标值</th><th>命中区间</th><th>折算额度</th><th>已消耗</th><th>结果</th></tr></thead>
+              <tbody>
+                <tr style="background:#fef2f2"><td>李四 (20)</td><td>22.0%</td><td>(20,不限)</td><td>5</td><td>5</td><td style="color:var(--danger)">规则额度已满</td></tr>
+                <tr style="background:#fef2f2"><td>钱七 (50)</td><td>20.7%</td><td>(10,20]</td><td>10</td><td>10</td><td style="color:var(--danger)">规则额度已满</td></tr>
+                <tr style="background:#fef2f2"><td>赵六 (40)</td><td>18.3%</td><td>(10,20]</td><td>10</td><td>10</td><td style="color:var(--danger)">规则额度已满</td></tr>
+              </tbody>
+            </table>
+            <div class="chain-result fail" style="margin-top:8px">候选人 0 人 → 进入安全包</div>
+          </div>
+        </div>
+
+        <div class="chain-step">
+          <div class="chain-dot-col"><div class="chain-dot" style="border-color:var(--warning);background:var(--warning)"></div><div class="chain-line"></div></div>
+          <div class="chain-content">
+            <div class="chain-title" style="color:var(--warning)">⚡ 进入安全包</div>
+            <table class="chain-table" style="margin-top:8px">
+              <thead><tr><th>安全包员工</th><th>在班</th><th>日已分/上限</th><th>可用</th></tr></thead>
+              <tbody>
+                <tr style="background:#fef2f2"><td>张三 (10)</td><td>通过</td><td style="color:var(--danger)">20/20</td><td style="color:var(--danger)">日上限已满</td></tr>
+                <tr style="background:#fef2f2"><td>李四 (20)</td><td>通过</td><td style="color:var(--danger)">30/30</td><td style="color:var(--danger)">日上限已满</td></tr>
+                <tr style="background:#fef2f2"><td>王五 (30)</td><td>通过</td><td style="color:var(--danger)">30/30</td><td style="color:var(--danger)">日上限已满</td></tr>
+              </tbody>
+            </table>
+            <div class="chain-result fail" style="margin-top:8px">安全包也无人可分</div>
+          </div>
+        </div>
+
+        <div class="chain-step">
+          <div class="chain-dot-col"><div class="chain-dot red"></div></div>
+          <div class="chain-content">
+            <div class="chain-title" style="color:var(--danger)">最终结果</div>
+            <div class="chain-result fail">返回 0 — 客户无人承接，该客户被浪费</div>
+            <div class="chain-detail" style="margin-top:6px; color:var(--danger)">建议排查：该时段安全包所有员工日上限已满，需增加安全包人力或提高日上限</div>
+          </div>
+        </div>
+      </div>
+    `
+  };
+  return cases[caseId] || '<p>暂无数据</p>';
+}
+
+// Sub-tab switching
+function switchSubtab(el, tabId) {
+    const parent = el.closest('.section');
+    parent.querySelectorAll('.section-subtab').forEach(t => t.classList.remove('active'));
+    parent.querySelectorAll('.subtab-content').forEach(c => c.classList.remove('active'));
+
+    el.classList.add('active');
+    parent.querySelector('#' + tabId).classList.add('active');
+}
+
+function applyOpenMessageFilters(tableId) {
+    const table = document.getElementById(tableId);
+    if (!table) return;
+
+    const filters = document.querySelectorAll(`.open-message-filter[data-target="${tableId}"]`);
+    const selected = { wechat: 'all', result: 'all' };
+
+    filters.forEach(filter => {
+        selected[filter.dataset.filter] = filter.value;
+    });
+
+    table.querySelectorAll('tbody tr').forEach(row => {
+        const matchWechat = selected.wechat === 'all' || row.dataset.wechat === selected.wechat;
+        const matchResult = selected.result === 'all' || row.dataset.result === selected.result;
+        row.style.display = matchWechat && matchResult ? '' : 'none';
+    });
+}
+
+document.querySelectorAll('.open-message-filter').forEach(filter => {
+    filter.addEventListener('change', function() {
+        applyOpenMessageFilters(this.dataset.target);
+    });
+});
+
+// Quick date buttons
+document.querySelectorAll('.quick-date-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.querySelectorAll('.quick-date-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+    });
+});
+</script>
+
+</body>
+</html>

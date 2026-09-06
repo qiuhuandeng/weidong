@@ -1,0 +1,1395 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI话术分配</title>
+  <style>
+    :root {
+      --primary: #356ff6;
+      --primary-soft: #edf3ff;
+      --success: #16a36a;
+      --warning: #d97706;
+      --danger: #e5484d;
+      --text: #20232a;
+      --text-2: #5f6673;
+      --text-3: #8b929e;
+      --line: #e6e8eb;
+      --line-2: #f0f1f3;
+      --page: #f5f6f8;
+      --white: #fff;
+      --header-h: 48px;
+    }
+
+    * { box-sizing: border-box; }
+    html { min-width: 1180px; }
+    body {
+      margin: 0;
+      color: var(--text);
+      background: var(--page);
+      font: 12px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+    .mono { font-variant-numeric: tabular-nums; }
+    .right { text-align: right; }
+    .center { text-align: center; }
+    .muted { color: var(--text-3); }
+    .positive { color: var(--success); }
+    .negative { color: var(--danger); }
+    .warning { color: var(--warning); }
+
+    .topbar {
+      height: var(--header-h);
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--white);
+      border-bottom: 1px solid var(--line);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+    .brand { display: flex; align-items: center; gap: 8px; }
+    .brand-title { font-size: 16px; font-weight: 600; color: #17191d; }
+    .favorite {
+      width: 24px;
+      height: 24px;
+      border: 0;
+      background: transparent;
+      color: #7b8492;
+      font-size: 18px;
+      line-height: 24px;
+    }
+    .top-actions { display: flex; align-items: center; gap: 12px; color: var(--text-3); }
+    .refresh {
+      height: 28px;
+      padding: 0 14px;
+      color: #fff;
+      border: 1px solid var(--primary);
+      background: var(--primary);
+      border-radius: 3px;
+    }
+    .refresh:hover { background: #245ee3; }
+
+    .filters {
+      min-height: 48px;
+      padding: 8px 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      background: var(--white);
+      border-bottom: 1px solid var(--line);
+    }
+    .filter { display: flex; align-items: center; gap: 6px; }
+    .filter label { color: var(--text-2); white-space: nowrap; }
+    .control {
+      height: 28px;
+      min-width: 108px;
+      padding: 0 8px;
+      color: #343841;
+      background: #fff;
+      border: 1px solid #dcdfe4;
+      border-radius: 3px;
+      outline: none;
+    }
+    .control:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(53,111,246,.1); }
+    input.control { width: 126px; }
+    .date-arrow { color: var(--text-3); }
+    .segmented { display: inline-flex; padding: 2px; background: #f4f6f9; border-radius: 3px; }
+    .segmented button {
+      height: 24px;
+      min-width: 52px;
+      padding: 0 10px;
+      border: 0;
+      color: var(--text-2);
+      background: transparent;
+      border-radius: 3px;
+    }
+    .segmented button.active { color: var(--primary); background: #fff; box-shadow: 0 1px 3px rgba(20,30,50,.08); }
+
+    .main-tabs {
+      height: 42px;
+      padding: 0 16px;
+      display: flex;
+      align-items: flex-end;
+      gap: 28px;
+      background: #fff;
+      border-bottom: 1px solid var(--line);
+    }
+    .main-tab {
+      height: 42px;
+      padding: 0 2px;
+      border: 0;
+      border-bottom: 2px solid transparent;
+      color: #4f5662;
+      background: transparent;
+      font-size: 13px;
+    }
+    .main-tab.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 600; }
+
+    main { padding: 12px 16px 28px; }
+    .page { display: none; }
+    .page.active { display: block; }
+    .section {
+      margin-bottom: 12px;
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 4px;
+    }
+    .section-head {
+      min-height: 42px;
+      padding: 0 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--line-2);
+    }
+    .section-title { font-size: 14px; font-weight: 600; color: #24272e; }
+    .section-tools { display: flex; align-items: center; gap: 8px; }
+    .text-btn { border: 0; color: var(--primary); background: transparent; }
+    .section-body { overflow: auto; }
+    .section-pad { padding: 12px; }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(8, minmax(130px, 1fr));
+      background: #fff;
+    }
+    .metric {
+      min-height: 104px;
+      padding: 17px 14px 12px;
+      border-right: 1px solid var(--line);
+      position: relative;
+    }
+    .metric:last-child { border-right: 0; }
+    .metric-name { color: var(--text-2); }
+    .metric-value { margin-top: 6px; font-size: 23px; line-height: 30px; font-weight: 600; color: #17191d; }
+    .metric-foot { margin-top: 7px; color: var(--text-3); }
+    .metric-foot strong { margin-left: 4px; font-weight: 500; }
+    .metric-accent { position: absolute; left: 14px; bottom: 0; width: 28px; height: 2px; background: var(--primary); }
+    .metric:nth-child(4) .metric-accent { background: #36b7c7; }
+    .metric:nth-child(6) .metric-accent { background: var(--success); }
+    .metric:nth-child(8) .metric-accent { background: var(--warning); }
+
+    .split { display: grid; grid-template-columns: 1.35fr 1fr; gap: 12px; margin-bottom: 12px; }
+    .split.equal { grid-template-columns: 1fr 1fr; }
+    .split > .section { margin-bottom: 0; min-width: 0; }
+
+    table { width: 100%; border-collapse: collapse; white-space: nowrap; }
+    th {
+      height: 36px;
+      padding: 0 10px;
+      color: #4d535e;
+      background: #fafbfc;
+      border-bottom: 1px solid var(--line);
+      font-weight: 600;
+      text-align: left;
+    }
+    td {
+      height: 38px;
+      padding: 0 10px;
+      border-bottom: 1px solid #eef0f2;
+      color: #353a43;
+    }
+    tbody tr:last-child td { border-bottom: 0; }
+    tbody tr:hover td { background: #f7faff; }
+    .total td { background: #f7f9fc; font-weight: 600; }
+    .fixed-table { table-layout: fixed; }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 20px;
+      padding: 0 7px;
+      border-radius: 2px;
+      color: #516071;
+      background: #f1f3f5;
+    }
+    .badge.blue { color: #2e67e8; background: #edf3ff; }
+    .badge.green { color: #108457; background: #edf9f4; }
+    .badge.orange { color: #b66600; background: #fff6e8; }
+    .badge.red { color: #cf343b; background: #fff0f0; }
+    .badge.purple { color: #7756c8; background: #f3efff; }
+    .dot { display: inline-block; width: 6px; height: 6px; margin-right: 6px; border-radius: 50%; background: var(--text-3); vertical-align: 1px; }
+    .dot.green { background: var(--success); }
+    .dot.red { background: var(--danger); }
+    .dot.orange { background: var(--warning); }
+    .dot.blue { background: var(--primary); }
+
+    .bar-cell { display: flex; align-items: center; gap: 8px; min-width: 140px; }
+    .bar-track { flex: 1; height: 6px; background: #edf0f4; overflow: hidden; }
+    .bar-fill { height: 100%; background: var(--primary); }
+    .bar-fill.green { background: var(--success); }
+    .bar-fill.orange { background: var(--warning); }
+    .bar-fill.red { background: var(--danger); }
+
+    .funnel { padding: 12px; }
+    .funnel-row {
+      min-height: 42px;
+      display: grid;
+      grid-template-columns: 170px 80px 1fr 94px;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid var(--line-2);
+    }
+    .funnel-row:last-child { border-bottom: 0; }
+    .funnel-label { color: #3f444d; }
+    .funnel-value { font-weight: 600; text-align: right; }
+    .funnel-track { height: 14px; background: #eef1f5; }
+    .funnel-fill { height: 100%; background: #5684f7; }
+    .funnel-row:nth-child(4) .funnel-fill { background: #36b7c7; }
+    .funnel-row:nth-child(5) .funnel-fill { background: #27a977; }
+    .funnel-rate { text-align: right; color: var(--text-2); }
+
+    .rank-list { padding: 4px 12px 8px; }
+    .rank-item {
+      min-height: 48px;
+      display: grid;
+      grid-template-columns: 22px minmax(140px, 1fr) 130px 68px;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid var(--line-2);
+    }
+    .rank-item:last-child { border-bottom: 0; }
+    .rank-no { color: var(--text-3); font-weight: 600; }
+    .rank-item:nth-child(-n+3) .rank-no { color: var(--primary); }
+    .rank-name { overflow: hidden; text-overflow: ellipsis; }
+    .rank-track { height: 6px; background: #edf0f4; }
+    .rank-fill { height: 100%; background: #6f94f8; }
+    .rank-value { text-align: right; font-weight: 600; }
+
+    .subtabs { display: flex; align-items: center; gap: 4px; }
+    .subtab {
+      min-width: 78px;
+      height: 28px;
+      padding: 0 12px;
+      border: 0;
+      color: var(--text-2);
+      background: #f5f7fa;
+      border-radius: 3px;
+    }
+    .subtab.active { color: var(--primary); background: #eaf1ff; }
+    .subpanel { display: none; }
+    .subpanel.active { display: block; }
+
+    .insight-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      border-bottom: 1px solid var(--line);
+    }
+    .insight {
+      min-height: 76px;
+      padding: 12px;
+      border-right: 1px solid var(--line);
+    }
+    .insight:last-child { border-right: 0; }
+    .insight-label { color: var(--text-3); }
+    .insight-value { margin-top: 4px; font-size: 18px; font-weight: 600; }
+    .insight-note { margin-top: 2px; color: var(--text-2); }
+
+    .notice {
+      min-height: 38px;
+      padding: 9px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: #805100;
+      background: #fff9ed;
+      border-bottom: 1px solid #f4e2ba;
+    }
+    .notice strong { color: #a55c00; }
+
+    .sparkline { display: inline-flex; align-items: flex-end; gap: 2px; height: 22px; vertical-align: middle; }
+    .sparkline i { display: block; width: 4px; background: #82a3f8; }
+
+    .detail-toolbar {
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid var(--line-2);
+    }
+    .search { width: 220px !important; }
+    .link-btn { border: 0; background: transparent; color: var(--primary); padding: 0; }
+    .empty { padding: 42px 12px; color: var(--text-3); text-align: center; }
+
+    .drawer-mask {
+      position: fixed;
+      inset: 0;
+      z-index: 40;
+      display: none;
+      background: rgba(20,24,32,.28);
+    }
+    .drawer-mask.open { display: block; }
+    .drawer {
+      width: 520px;
+      height: 100%;
+      margin-left: auto;
+      background: #fff;
+      box-shadow: -6px 0 20px rgba(15,23,42,.14);
+      overflow: auto;
+    }
+    .drawer-head {
+      height: 52px;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--line);
+      position: sticky;
+      top: 0;
+      background: #fff;
+    }
+    .drawer-title { font-size: 15px; font-weight: 600; }
+    .close { width: 28px; height: 28px; border: 0; background: transparent; font-size: 20px; color: var(--text-2); }
+    .drawer-body { padding: 14px 16px 28px; }
+    .summary-box { padding: 10px 12px; color: #3d4c62; background: #f4f7fc; border: 1px solid #e0e8f5; }
+    .timeline { margin-top: 16px; }
+    .step { display: grid; grid-template-columns: 18px 1fr; gap: 10px; min-height: 62px; }
+    .step-axis { position: relative; }
+    .step-dot { width: 8px; height: 8px; margin: 5px; border-radius: 50%; background: var(--primary); }
+    .step-axis::after { content: ""; position: absolute; top: 17px; bottom: 0; left: 8px; width: 1px; background: #dfe4eb; }
+    .step:last-child .step-axis::after { display: none; }
+    .step-title { font-weight: 600; color: #30343b; }
+    .step-detail { margin-top: 3px; color: var(--text-2); }
+
+    .toast {
+      position: fixed;
+      top: 60px;
+      left: 50%;
+      z-index: 60;
+      display: none;
+      padding: 8px 14px;
+      color: #fff;
+      background: #323640;
+      border-radius: 3px;
+      transform: translateX(-50%);
+    }
+    .toast.show { display: block; }
+
+    @media (max-width: 1280px) {
+      .metric-grid { grid-template-columns: repeat(4, 1fr); }
+      .metric:nth-child(4) { border-right: 0; }
+      .metric:nth-child(-n+4) { border-bottom: 1px solid var(--line); }
+    }
+
+    /* Match the visual system and component density of 66.html. */
+    :root {
+      --primary: #4f7cff;
+      --primary-soft: #eef3ff;
+      --success: #18a058;
+      --warning: #d9822b;
+      --danger: #f53f3f;
+      --text: #1f2329;
+      --text-2: #5b606b;
+      --text-3: #8b9099;
+      --line: #e8eaed;
+      --line-2: #eef0f2;
+      --page: #f5f6f8;
+    }
+
+    html { min-width: 0; }
+    body { color: #1f2329; font-size: 12px; line-height: 1.4; }
+
+    .topbar {
+      height: 48px;
+      min-height: 48px;
+      padding: 0 16px;
+      border-bottom-color: #e8eaed;
+      box-shadow: none;
+    }
+    .brand { gap: 0; }
+    .brand-title { color: #1f2329; font-size: 16px; line-height: 48px; font-weight: 600; }
+    .favorite { display: none; }
+    .top-actions { gap: 10px; color: #8b9099; font-size: 11px; }
+    .refresh {
+      height: 28px;
+      padding: 0 12px;
+      border-color: #4f7cff;
+      border-radius: 2px;
+      background: #4f7cff;
+      font-size: 12px;
+    }
+    .refresh:hover { background: #3f6ee8; }
+
+    .filters {
+      min-height: 52px;
+      padding: 10px 16px;
+      gap: 12px;
+      border-bottom: 0;
+      background: #fafbfc;
+    }
+    .filter { gap: 6px; }
+    .filter label, .date-arrow { color: #5b606b; font-size: 11px; }
+    .control {
+      height: 28px;
+      min-width: 108px;
+      padding: 0 8px;
+      border: 1px solid #e1e3e7;
+      border-radius: 2px;
+      color: #30343b;
+      background: #fff;
+      font-size: 11px;
+      box-shadow: none;
+    }
+    .control:focus { border-color: #4f7cff; box-shadow: 0 0 0 1px rgba(79,124,255,.12); }
+    input.control { width: 130px; }
+    .segmented {
+      gap: 0;
+      padding: 0;
+      overflow: hidden;
+      border: 1px solid #e1e3e7;
+      border-radius: 2px;
+      background: #fff;
+    }
+    .segmented button {
+      height: 26px;
+      min-width: auto;
+      padding: 0 10px;
+      border: 0;
+      border-right: 1px solid #e8eaed;
+      border-radius: 0;
+      color: #5b606b;
+      background: #fff;
+      font-size: 11px;
+    }
+    .segmented button:last-child { border-right: 0; }
+    .segmented button.active { color: #4f7cff; background: #eef3ff; box-shadow: none; }
+
+    .main-tabs {
+      width: max-content;
+      max-width: calc(100% - 24px);
+      height: auto;
+      margin: 8px auto 12px;
+      padding: 3px;
+      align-items: center;
+      gap: 2px;
+      overflow-x: auto;
+      border: 0;
+      border-radius: 4px;
+      background: #eef1f7;
+    }
+    .main-tab {
+      min-width: 88px;
+      height: 28px;
+      padding: 0 18px;
+      border: 0;
+      border-radius: 3px;
+      color: #5b606b;
+      background: transparent;
+      font-size: 12px;
+      font-weight: 400;
+    }
+    .main-tab:hover { color: #4f7cff; }
+    .main-tab.active { border: 0; color: #356bea; background: #dfe9ff; font-weight: 600; }
+
+    main { padding: 0 12px 24px; }
+    .section {
+      margin-bottom: 12px;
+      overflow: hidden;
+      border: 1px solid #e8eaed;
+      border-radius: 4px;
+      background: #fff;
+      box-shadow: none;
+    }
+    .section-head {
+      min-height: 42px;
+      padding: 0 14px;
+      border-bottom: 1px solid #eef0f2;
+      background: #fff;
+    }
+    .section-title { color: #24272c; font-size: 13px; line-height: 1.3; font-weight: 600; }
+    .section-tools { gap: 6px; }
+    .section-body { overflow-x: auto; scrollbar-width: thin; scrollbar-color: #cfd3da #f5f6f8; }
+
+    .metric-grid { grid-template-columns: repeat(4, minmax(150px, 1fr)); }
+    .metric {
+      min-height: 104px;
+      padding: 18px 20px;
+      border-right: 1px solid #e8eaed;
+      text-align: center;
+    }
+    .metric:nth-child(4n) { border-right: 0; }
+    .metric:nth-child(-n+4) { border-bottom: 1px solid #e8eaed; }
+    .metric-name { margin-bottom: 4px; color: #5b606b; font-size: 11px; }
+    .metric-value { margin-top: 0; color: #15171a; font-size: 22px; line-height: 1.25; font-weight: 600; }
+    .metric-foot { margin-top: 6px; color: #8b9099; font-size: 10px; }
+    .metric-accent { display: none; }
+
+    table { border-collapse: collapse; font-size: 11px; }
+    th {
+      height: 32px;
+      padding: 6px 10px;
+      border-bottom: 1px solid #dfe3e8;
+      color: #454a53;
+      background: #fafbfc;
+      font-size: 11px;
+      line-height: 1.2;
+      font-weight: 600;
+    }
+    td {
+      height: 31px;
+      padding: 6px 10px;
+      border-bottom: 1px solid #eef0f2;
+      color: #30343b;
+      line-height: 1.25;
+    }
+    tbody tr:nth-child(even) td { background: #f4f7fe; }
+    tbody tr:hover td, tbody tr:nth-child(even):hover td { background: #eaf1ff; }
+    .total td { border-top: 1px solid #b9ceff; background: #eef3ff !important; font-weight: 600; }
+
+    .badge {
+      min-height: 18px;
+      padding: 1px 6px;
+      border-radius: 2px;
+      font-size: 10px;
+      line-height: 16px;
+      font-weight: 500;
+    }
+    .badge.blue { color: #356bea; background: #edf3ff; }
+    .badge.green { color: #168a4b; background: #eaf8f0; }
+    .badge.orange { color: #c66b16; background: #fff5e8; }
+    .badge.red { color: #e03f3f; background: #fff0ef; }
+    .badge.purple { color: #6656c9; background: #f2efff; }
+
+    .bar-track, .rank-track { height: 4px; border-radius: 1px; background: #e9ecf1; }
+    .bar-fill, .rank-fill { border-radius: 1px; background: #4f7cff; }
+    .bar-fill.orange { background: #e79a45; }
+    .bar-fill.red { background: #f53f3f; }
+
+    .split { gap: 12px; }
+    .script-open-grid { grid-template-columns: minmax(460px, 1fr) minmax(520px, 1fr); }
+    .open-trigger-chart {
+      min-height: 252px;
+      padding: 14px 18px 10px;
+    }
+    .open-trigger-row {
+      display: grid;
+      grid-template-columns: 86px 1fr 38px;
+      min-height: 31px;
+      align-items: center;
+      gap: 10px;
+    }
+    .open-trigger-label {
+      color: #5b606b;
+      font-size: 11px;
+      text-align: right;
+    }
+    .open-trigger-track {
+      height: 18px;
+      background-image: linear-gradient(to right, transparent 0, transparent calc(25% - 1px), #eef0f2 calc(25% - 1px), #eef0f2 25%, transparent 25%, transparent calc(50% - 1px), #eef0f2 calc(50% - 1px), #eef0f2 50%, transparent 50%, transparent calc(75% - 1px), #eef0f2 calc(75% - 1px), #eef0f2 75%, transparent 75%, transparent calc(100% - 1px), #eef0f2 calc(100% - 1px), #eef0f2 100%);
+    }
+    .open-trigger-bar {
+      height: 9px;
+      margin-top: 4px;
+      border-radius: 2px;
+      background: #4f8df7;
+    }
+    .open-trigger-value {
+      color: #30343b;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .open-trigger-axis {
+      display: grid;
+      grid-template-columns: 86px repeat(5, 1fr) 38px;
+      margin-top: 2px;
+      color: #8b9099;
+      font-size: 10px;
+    }
+    .open-trigger-axis span { text-align: center; }
+    .open-trigger-axis span:first-child,
+    .open-trigger-axis span:last-child { text-align: left; }
+    .open-node-table { min-width: 720px; }
+    .open-node-table th:first-child,
+    .open-node-table td:first-child {
+      max-width: 420px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .insight-strip { grid-template-columns: repeat(4, minmax(150px, 1fr)); }
+    .insight { min-height: 104px; padding: 18px 20px; text-align: center; }
+    .insight-label { margin-bottom: 4px; color: #5b606b; font-size: 11px; }
+    .insight-value { margin-top: 0; color: #15171a; font-size: 22px; line-height: 1.25; }
+    .insight-note { margin-top: 6px; color: #8b9099; font-size: 10px; }
+
+    .section-head:has(.subtabs) { justify-content: center; min-height: 46px; }
+    .section-head:has(.subtabs) > .muted { display: none; }
+    .subtabs {
+      width: max-content;
+      max-width: calc(100% - 24px);
+      padding: 3px;
+      gap: 2px;
+      overflow-x: auto;
+      border-radius: 4px;
+      background: #f2f4f8;
+    }
+    .subtab {
+      min-width: 108px;
+      height: 28px;
+      padding: 0 14px;
+      border: 0;
+      border-radius: 3px;
+      color: #5b606b;
+      background: transparent;
+      font-size: 11px;
+    }
+    .subtab.active { color: #356bea; background: #dfe9ff; font-weight: 600; }
+
+    .detail-toolbar { min-height: 44px; padding: 8px 12px; gap: 12px; }
+    .notice { min-height: 38px; padding: 8px 12px; }
+    .text-btn, .link-btn { color: #356bea; font-size: 11px; }
+
+    #detailTable { min-width: 1540px; }
+    #detailTable td { height: 38px; vertical-align: middle; }
+    #detailTable tbody td,
+    #detailTable tbody strong,
+    #detailTable .badge,
+    #detailTable .path-chip {
+      font-weight: 400;
+    }
+    .log-primary { color: #262b34; font-size: 11px; font-weight: 400; line-height: 1.35; }
+    .log-secondary { margin-top: 4px; color: #8b9099; font-size: 10px; line-height: 1.3; }
+    .path-chip {
+      display: inline-flex;
+      max-width: 210px;
+      min-height: 20px;
+      padding: 1px 7px;
+      overflow: hidden;
+      align-items: center;
+      border: 1px solid #b9ceff;
+      border-radius: 9px;
+      color: #356bea;
+      background: #f4f7fe;
+      font-size: 10px;
+      font-weight: 600;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .candidate-main { color: #356bea; font-size: 11px; line-height: 1.25; font-weight: 400; }
+    .decision-copy {
+      width: 320px;
+      max-width: 320px;
+      overflow: hidden;
+      color: #5b606b;
+      display: block;
+      line-height: 1.45;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .detail-action {
+      height: 26px;
+      padding: 0 10px;
+      border: 1px solid #b9ceff;
+      border-radius: 3px;
+      color: #356bea;
+      background: #f7faff;
+      font-size: 10px;
+    }
+    .detail-action:hover { border-color: #4f7cff; background: #eef3ff; }
+
+    .drawer-mask { align-items: center; justify-content: center; background: rgba(31,35,41,.36); }
+    .drawer-mask.open { display: flex; }
+    .drawer {
+      width: min(980px, calc(100vw - 48px));
+      height: auto;
+      max-height: 90vh;
+      margin: 0;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      border-radius: 4px;
+      background: #fff;
+      box-shadow: 0 8px 24px rgba(31,35,41,.16);
+    }
+    .drawer-head { min-height: 58px; padding: 0 18px; position: static; flex: 0 0 auto; border-radius: 4px 4px 0 0; }
+    .drawer-title { font-size: 14px; font-weight: 600; }
+    .drawer-subtitle { margin-top: 3px; color: #8b9099; font-size: 10px; font-weight: 400; }
+    .close { width: 42px; height: 28px; border-radius: 2px; font-size: 18px; }
+    .drawer-body { min-height: 0; padding: 18px 20px 20px; overflow-y: auto; flex: 1 1 auto; }
+    .drawer-footer {
+      min-height: 52px;
+      padding: 10px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      flex: 0 0 auto;
+      border-top: 1px solid #eef0f2;
+      background: #fafbfc;
+    }
+    .modal-close-btn {
+      min-width: 76px;
+      height: 28px;
+      border: 1px solid #d9dce1;
+      border-radius: 3px;
+      color: #30343b;
+      background: #fff;
+      font-size: 11px;
+    }
+    .decision-hero {
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      border: 1px solid #b9ceff;
+      border-radius: 4px;
+      background: #eef5ff;
+    }
+    .decision-hero-label { color: #7b808a; font-size: 10px; }
+    .decision-hero-title { margin-top: 2px; color: #1f2d3d; font-size: 13px; font-weight: 600; }
+    .decision-hero-desc { max-width: 610px; margin-top: 5px; color: #5b606b; font-size: 10px; line-height: 1.5; }
+    .decision-route { flex: 0 0 auto; color: #356bea; font-size: 10px; font-weight: 600; text-align: right; }
+    .decision-hero.warning-state { border-color: #f1d4a8; background: #fff8ed; }
+    .decision-hero.warning-state .decision-route { color: #c66b16; }
+    .decision-hero.danger-state { border-color: #f4c2c2; background: #fff3f2; }
+    .decision-hero.danger-state .decision-route { color: #e03f3f; }
+    .decision-grid {
+      margin-top: 12px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+    .decision-field { min-height: 58px; padding: 10px 12px; border: 1px solid #e1e5ea; border-radius: 4px; background: #fff; }
+    .decision-field-label { color: #8b9099; font-size: 10px; }
+    .decision-field-value {
+      margin-top: 4px;
+      overflow: hidden;
+      color: #30343b;
+      font-size: 11px;
+      font-weight: 600;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .trace-meta { margin: 10px 0 12px; color: #8b9099; font-size: 10px; }
+    .process-card { overflow: hidden; border: 1px solid #e1e5ea; border-radius: 4px; }
+    .process-head {
+      min-height: 38px;
+      padding: 0 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #eef0f2;
+      background: #fafbfc;
+    }
+    .process-title { color: #30343b; font-size: 11px; font-weight: 600; }
+    .process-version { color: #8b9099; font-size: 10px; }
+    .process-card .timeline { margin: 0; padding: 12px 16px 4px; }
+    .process-card .step { grid-template-columns: 24px 1fr; min-height: 58px; gap: 10px; }
+    .process-card .step-axis::after { top: 23px; left: 10px; }
+    .step-index {
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      color: #356bea;
+      background: #edf3ff;
+      font-size: 10px;
+      font-weight: 600;
+    }
+    .process-card .step-title { padding-top: 2px; font-size: 11px; }
+    .process-card .step-detail { font-size: 10px; line-height: 1.5; }
+    .conversion-strip {
+      margin-top: 12px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      border: 1px solid #e1e5ea;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .conversion-item { min-height: 58px; padding: 10px 12px; border-right: 1px solid #e8eaed; }
+    .conversion-item:last-child { border-right: 0; }
+    .conversion-label { color: #8b9099; font-size: 10px; }
+    .conversion-value { margin-top: 4px; color: #30343b; font-size: 11px; font-weight: 600; }
+
+    @media (max-width: 900px) {
+      .top-actions #updateTime { display: none; }
+      .filters { padding: 8px 12px; }
+      main { padding: 0 8px 16px; }
+      .metric-grid, .insight-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .metric:nth-child(2n), .insight:nth-child(2n) { border-right: 0; }
+      .metric:nth-child(-n+6), .insight:nth-child(-n+2) { border-bottom: 1px solid #e8eaed; }
+      .split, .split.equal { grid-template-columns: 1fr; }
+      .drawer { width: calc(100vw - 24px); }
+      .decision-hero { align-items: flex-start; flex-direction: column; gap: 8px; }
+      .decision-route { text-align: left; }
+      .decision-grid, .conversion-strip { grid-template-columns: 1fr; }
+      .conversion-item { border-right: 0; border-bottom: 1px solid #e8eaed; }
+      .conversion-item:last-child { border-bottom: 0; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-title">AI话术分配</div>
+    </div>
+    <div class="top-actions">
+      <span id="updateTime">数据更新时间：2026-09-02 09:32:15</span>
+      <button class="refresh" id="refreshBtn">刷新</button>
+    </div>
+  </header>
+
+  <section class="filters">
+    <div class="filter">
+      <label>日期</label>
+      <input class="control" type="date" value="2026-09-02">
+      <span class="date-arrow">至</span>
+      <input class="control" type="date" value="2026-09-02">
+    </div>
+    <div class="filter">
+      <div class="segmented" data-segment="compare">
+        <button class="active">今天</button><button>昨天</button><button>本周</button><button>本月</button>
+      </div>
+    </div>
+    <div class="filter">
+      <label>意向项目</label>
+      <select class="control"><option>全部</option><option>祛斑 S10</option><option>嫩肤 S20</option><option>抗衰 M10</option></select>
+    </div>
+    <div class="filter">
+      <label>话术包</label>
+      <select class="control"><option>全部</option><option>祛斑赛马包A</option><option>祛斑赛马包B</option><option>新客冷启动包</option></select>
+    </div>
+    <div class="filter">
+      <label>企微账号</label>
+      <select class="control"><option>全部</option><option>DY3510</option><option>SL0080</option><option>DY8730</option></select>
+    </div>
+  </section>
+
+  <nav class="main-tabs" aria-label="看板主导航">
+    <button class="main-tab active" data-page="scripts">话术效果</button>
+    <button class="main-tab" data-page="strategy">分配策略</button>
+    <button class="main-tab" data-page="accounts">企微账号</button>
+    <button class="main-tab" data-page="details">分配明细</button>
+  </nav>
+
+  <main>
+    <section class="page" id="overview">
+      <div class="section">
+        <div class="metric-grid">
+          <div class="metric"><div class="metric-name" title="收到添加企微事件的去重客户数">加微客户数</div><div class="metric-value mono">12,486</div><div class="metric-foot">较昨日 <strong class="positive">+6.8%</strong></div><i class="metric-accent"></i></div>
+          <div class="metric"><div class="metric-name" title="成功选出话术并生成分配记录的客户数">话术分配客户数</div><div class="metric-value mono">12,238</div><div class="metric-foot">分配成功率 <strong>98.0%</strong></div><i class="metric-accent"></i></div>
+          <div class="metric"><div class="metric-name" title="首条SOP消息实际发送成功的客户数">首条消息触达数</div><div class="metric-value mono">12,071</div><div class="metric-foot">触达率 <strong>98.6%</strong></div><i class="metric-accent"></i></div>
+          <div class="metric"><div class="metric-name" title="分配话术后客户首次发送有效消息的去重客户数">AI开口客户数</div><div class="metric-value mono">4,382</div><div class="metric-foot">较昨日 <strong class="positive">+4.3%</strong></div><i class="metric-accent"></i></div>
+          <div class="metric"><div class="metric-name" title="AI开口客户数 ÷ 首条消息触达数">AI开口率</div><div class="metric-value mono">36.3%</div><div class="metric-foot">较昨日 <strong class="negative">-0.7pp</strong></div><i class="metric-accent"></i></div>
+          <div class="metric"><div class="metric-name" title="观察窗口内完成预约金支付的去重客户数">预约金客户数</div><div class="metric-value mono">1,086</div><div class="metric-foot">较昨日 <strong class="positive">+9.1%</strong></div><i class="metric-accent"></i></div>
+          <div class="metric"><div class="metric-name" title="预约金客户数 ÷ 首条消息触达数">预约金转化率</div><div class="metric-value mono">9.0%</div><div class="metric-foot">较昨日 <strong class="positive">+0.2pp</strong></div><i class="metric-accent"></i></div>
+          <div class="metric"><div class="metric-name" title="最终由全局兜底话术承接的客户数 ÷ 话术分配客户数">全局兜底率</div><div class="metric-value mono">1.4%</div><div class="metric-foot">较昨日 <strong class="positive">-0.3pp</strong></div><i class="metric-accent"></i></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-head"><div class="section-title">全链路漏斗</div></div>
+        <div class="section-body">
+          <table>
+            <thead><tr><th>漏斗环节</th><th class="right">今日</th><th class="right">昨日</th><th class="right">7日均值</th><th class="right">环节转化率</th></tr></thead>
+            <tbody>
+              <tr><td>① 加微客户数</td><td class="right mono">12,486</td><td class="right mono">11,692</td><td class="right mono">11,875</td><td class="right mono">100%</td></tr>
+              <tr><td>② 话术分配客户数</td><td class="right mono">12,238</td><td class="right mono">11,474</td><td class="right mono">11,648</td><td class="right mono">98.0%</td></tr>
+              <tr><td>③ 首条消息触达数</td><td class="right mono">12,071</td><td class="right mono">11,306</td><td class="right mono">11,492</td><td class="right mono">98.6%</td></tr>
+              <tr><td>④ AI开口客户数</td><td class="right mono">4,382</td><td class="right mono">4,201</td><td class="right mono">4,168</td><td class="right mono">36.3%</td></tr>
+              <tr><td>⑤ 预约金客户数</td><td class="right mono">1,086</td><td class="right mono">995</td><td class="right mono">1,018</td><td class="right mono">24.8%</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-head"><div class="section-title">高转化话术</div><button class="text-btn" data-go="scripts">查看全部</button></div>
+        <div class="section-body">
+          <table>
+            <thead><tr><th>排名</th><th>话术</th><th>意向项目</th><th>成长阶段</th><th class="right">触达客户数</th><th class="right">AI开口率</th><th class="right">预约金客户数</th><th class="right">预约金转化率</th><th class="right">项目基线差</th><th>运营建议</th></tr></thead>
+            <tbody>
+              <tr><td class="mono">1</td><td><strong>SOP-07 案例共鸣型</strong></td><td>祛斑 S10</td><td><span class="badge green">成熟期</span></td><td class="right mono">1,473</td><td class="right mono">45.8%</td><td class="right mono">203</td><td class="right mono positive">13.8%</td><td class="right mono positive">+3.5pp</td><td><span class="badge green">建议增量</span></td></tr>
+              <tr><td class="mono">2</td><td><strong>SOP-12 专家问诊型</strong></td><td>祛斑 S10</td><td><span class="badge green">成熟期</span></td><td class="right mono">1,357</td><td class="right mono">43.6%</td><td class="right mono">171</td><td class="right mono positive">12.6%</td><td class="right mono positive">+2.3pp</td><td><span class="badge green">建议增量</span></td></tr>
+              <tr><td class="mono">3</td><td><strong>SOP-03 到店福利型</strong></td><td>祛斑 S10</td><td><span class="badge blue">测试期</span></td><td class="right mono">616</td><td class="right mono">39.8%</td><td class="right mono">70</td><td class="right mono positive">11.3%</td><td class="right mono positive">+1.0pp</td><td><span class="badge blue">扩大测试</span></td></tr>
+              <tr><td class="mono">4</td><td><strong>SOP-18 痛点追问型</strong></td><td>嫩肤 S20</td><td><span class="badge green">成熟期</span></td><td class="right mono">930</td><td class="right mono">34.2%</td><td class="right mono">97</td><td class="right mono">10.4%</td><td class="right mono positive">+3.8pp</td><td><span class="badge blue">保持</span></td></tr>
+              <tr><td class="mono">5</td><td><strong>SOP-05 轻咨询型</strong></td><td>祛斑 S10</td><td><span class="badge green">成熟期</span></td><td class="right mono">812</td><td class="right mono">35.9%</td><td class="right mono">76</td><td class="right mono">9.4%</td><td class="right mono negative">-0.9pp</td><td><span class="badge">保持</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-head"><div class="section-title">意向项目转化</div><div class="section-tools"><span class="muted">预约金转化率按触达客户计算</span></div></div>
+        <div class="section-body">
+          <table>
+            <thead><tr><th>意向项目</th><th class="right">加微客户数</th><th class="right">分配成功率</th><th class="right">触达客户数</th><th class="right">AI开口客户数</th><th class="right">AI开口率</th><th class="right">预约金客户数</th><th class="right">预约金转化率</th><th class="right">安全包承接率</th><th class="right">全局兜底率</th><th>趋势</th></tr></thead>
+            <tbody>
+              <tr><td><strong>祛斑 S10</strong></td><td class="right mono">8,204</td><td class="right mono">98.4%</td><td class="right mono">7,982</td><td class="right mono">3,124</td><td class="right mono positive">39.1%</td><td class="right mono">824</td><td class="right mono positive">10.3%</td><td class="right mono">3.8%</td><td class="right mono">0.8%</td><td><span class="sparkline"><i style="height:8px"></i><i style="height:12px"></i><i style="height:10px"></i><i style="height:17px"></i><i style="height:19px"></i><i style="height:21px"></i><i style="height:20px"></i></span></td></tr>
+              <tr><td><strong>嫩肤 S20</strong></td><td class="right mono">2,774</td><td class="right mono">97.9%</td><td class="right mono">2,671</td><td class="right mono">839</td><td class="right mono">31.4%</td><td class="right mono">177</td><td class="right mono">6.6%</td><td class="right mono warning">12.7%</td><td class="right mono">2.1%</td><td><span class="sparkline"><i style="height:14px"></i><i style="height:12px"></i><i style="height:16px"></i><i style="height:13px"></i><i style="height:12px"></i><i style="height:10px"></i><i style="height:11px"></i></span></td></tr>
+              <tr><td><strong>抗衰 M10</strong></td><td class="right mono">1,508</td><td class="right mono negative">96.2%</td><td class="right mono">1,418</td><td class="right mono">419</td><td class="right mono">29.5%</td><td class="right mono">85</td><td class="right mono">6.0%</td><td class="right mono warning">18.4%</td><td class="right mono negative">4.9%</td><td><span class="sparkline"><i style="height:20px"></i><i style="height:17px"></i><i style="height:15px"></i><i style="height:14px"></i><i style="height:11px"></i><i style="height:9px"></i><i style="height:8px"></i></span></td></tr>
+              <tr class="total"><td>合计</td><td class="right mono">12,486</td><td class="right mono">98.0%</td><td class="right mono">12,071</td><td class="right mono">4,382</td><td class="right mono">36.3%</td><td class="right mono">1,086</td><td class="right mono">9.0%</td><td class="right mono">7.0%</td><td class="right mono">1.4%</td><td>—</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="split equal">
+        <div class="section">
+          <div class="section-head"><div class="section-title">分配路径</div></div>
+          <div class="section-body">
+            <table><thead><tr><th>最终承接路径</th><th class="right">客户数</th><th class="right">占比</th><th>分布</th><th class="right">开口率</th><th class="right">预约金转化率</th></tr></thead>
+              <tbody>
+                <tr><td><span class="dot blue"></span>普通话术</td><td class="right mono">11,208</td><td class="right mono">91.6%</td><td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:91.6%"></div></div></div></td><td class="right mono">37.0%</td><td class="right mono">9.4%</td></tr>
+                <tr><td><span class="dot orange"></span>安全包话术</td><td class="right mono">857</td><td class="right mono">7.0%</td><td><div class="bar-cell"><div class="bar-track"><div class="bar-fill orange" style="width:28%"></div></div></div></td><td class="right mono">30.2%</td><td class="right mono">5.9%</td></tr>
+                <tr><td><span class="dot red"></span>全局兜底话术</td><td class="right mono">173</td><td class="right mono">1.4%</td><td><div class="bar-cell"><div class="bar-track"><div class="bar-fill red" style="width:10%"></div></div></div></td><td class="right mono negative">18.5%</td><td class="right mono negative">3.1%</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="section">
+          <div class="section-head"><div class="section-title">未正常承接原因</div></div>
+          <div class="section-body">
+            <table><thead><tr><th>原因</th><th class="right">客户数</th><th class="right">占比</th><th>处理结果</th></tr></thead>
+              <tbody>
+                <tr><td>企微账号不在线</td><td class="right mono">96</td><td class="right mono">38.7%</td><td><span class="badge red">直接停止</span></td></tr>
+                <tr><td>企微归属校验失败</td><td class="right mono">61</td><td class="right mono">24.6%</td><td><span class="badge red">直接停止</span></td></tr>
+                <tr><td>意向项目无法匹配</td><td class="right mono">43</td><td class="right mono">17.3%</td><td><span class="badge orange">尝试全局兜底</span></td></tr>
+                <tr><td>无可用普通话术</td><td class="right mono">31</td><td class="right mono">12.5%</td><td><span class="badge orange">尝试全局兜底</span></td></tr>
+                <tr><td>所有兜底均不可用</td><td class="right mono">17</td><td class="right mono">6.9%</td><td><span class="badge red">未分配</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="page active" id="scripts">
+      <div class="section">
+        <div class="section-head">
+          <div class="section-title">话术效果明细</div>
+          <div class="section-tools">
+            <select class="control" id="stageFilter"><option value="">全部阶段</option><option>成熟期</option><option>测试期</option><option>冷启动期</option><option>观察期</option></select>
+            <select class="control"><option>按开口率</option><option>按现预约率</option><option>按开口后预约率</option><option>按删除率</option></select>
+          </div>
+        </div>
+        <div class="section-body">
+          <table id="scriptTable">
+            <thead><tr><th>话术ID</th><th>话术名称</th><th>版本</th><th>意向项目</th><th>成长阶段</th><th>主要话术包 / 策略</th><th class="right">分配客户数</th><th class="right">流量占比</th><th class="right">触达率</th><th class="right">开口数</th><th class="right">开口率</th><th class="right">现预约数</th><th class="right">现预约率</th><th class="right">开口后预约数</th><th class="right">开口后预约率</th><th class="right">删除数</th><th class="right">删除率</th></tr></thead>
+            <tbody>
+              <tr data-stage="成熟期"><td class="mono">SOP-07</td><td><strong>案例共鸣型</strong></td><td class="mono">v3.2</td><td>祛斑 S10</td><td><span class="badge green">成熟期</span></td><td>赛马包A · 智能池</td><td class="right mono">1,486</td><td class="right mono">12.1%</td><td class="right mono">99.1%</td><td class="right mono">311</td><td class="right mono">63.21%</td><td class="right mono">35</td><td class="right mono">7.11%</td><td class="right mono">27</td><td class="right mono">8.68%</td><td class="right mono">170</td><td class="right mono">34.55%</td></tr>
+              <tr data-stage="成熟期"><td class="mono">SOP-12</td><td><strong>专家问诊型</strong></td><td class="mono">v2.4</td><td>祛斑 S10</td><td><span class="badge green">成熟期</span></td><td>赛马包A · 智能池</td><td class="right mono">1,372</td><td class="right mono">11.2%</td><td class="right mono">98.9%</td><td class="right mono">70</td><td class="right mono">68.63%</td><td class="right mono">7</td><td class="right mono">6.86%</td><td class="right mono">3</td><td class="right mono">4.29%</td><td class="right mono">33</td><td class="right mono">32.35%</td></tr>
+              <tr data-stage="测试期"><td class="mono">SOP-03</td><td><strong>到店福利型</strong></td><td class="mono">v4.0</td><td>祛斑 S10</td><td><span class="badge blue">测试期</span></td><td>赛马包A · 探索池</td><td class="right mono">624</td><td class="right mono">5.1%</td><td class="right mono">98.7%</td><td class="right mono">118</td><td class="right mono">57.56%</td><td class="right mono">14</td><td class="right mono">6.83%</td><td class="right mono">9</td><td class="right mono">7.63%</td><td class="right mono">61</td><td class="right mono">29.76%</td></tr>
+              <tr data-stage="成熟期"><td class="mono">SOP-18</td><td><strong>痛点追问型</strong></td><td class="mono">v1.8</td><td>嫩肤 S20</td><td><span class="badge green">成熟期</span></td><td>嫩肤新客包 · 智能池</td><td class="right mono">946</td><td class="right mono">7.7%</td><td class="right mono">98.3%</td><td class="right mono">156</td><td class="right mono">54.17%</td><td class="right mono">18</td><td class="right mono">6.25%</td><td class="right mono">12</td><td class="right mono">7.69%</td><td class="right mono">89</td><td class="right mono">30.90%</td></tr>
+              <tr data-stage="冷启动期"><td class="mono">SOP-20</td><td><strong>真人案例短版</strong></td><td class="mono">v1.0</td><td>祛斑 S10</td><td><span class="badge purple">冷启动期</span></td><td>赛马包A · 探索池</td><td class="right mono">98</td><td class="right mono">0.8%</td><td class="right mono">97.9%</td><td class="right mono">26</td><td class="right mono">61.90%</td><td class="right mono">3</td><td class="right mono">7.14%</td><td class="right mono">2</td><td class="right mono">7.69%</td><td class="right mono">13</td><td class="right mono">30.95%</td></tr>
+              <tr data-stage="观察期"><td class="mono">SOP-09</td><td><strong>长图科普型</strong></td><td class="mono">v2.1</td><td>祛斑 S10</td><td><span class="badge orange">观察期</span></td><td>赛马包A · 随机池</td><td class="right mono">327</td><td class="right mono">2.7%</td><td class="right mono">96.8%</td><td class="right mono">44</td><td class="right mono">48.89%</td><td class="right mono">4</td><td class="right mono">4.44%</td><td class="right mono">2</td><td class="right mono">4.55%</td><td class="right mono">35</td><td class="right mono">38.89%</td></tr>
+              <tr data-stage="成熟期"><td class="mono">SOP-14</td><td><strong>强促销型</strong></td><td class="mono">v2.6</td><td>抗衰 M10</td><td><span class="badge green">成熟期</span></td><td>抗衰限量包 · 高开口率优先</td><td class="right mono">518</td><td class="right mono">4.2%</td><td class="right mono">98.1%</td><td class="right mono">73</td><td class="right mono">52.14%</td><td class="right mono">5</td><td class="right mono">3.57%</td><td class="right mono">3</td><td class="right mono">4.11%</td><td class="right mono">46</td><td class="right mono">32.86%</td></tr>
+            </tbody>
+          </table>
+          <div class="empty" id="scriptEmpty" hidden>当前筛选条件下暂无话术</div>
+        </div>
+      </div>
+      <div class="split script-open-grid">
+        <div class="section">
+          <div class="section-head"><div class="section-title">开口触发</div></div>
+          <div class="open-trigger-chart">
+            <div class="open-trigger-row"><div class="open-trigger-label">1次</div><div class="open-trigger-track"><div class="open-trigger-bar" style="width:55%"></div></div><div class="open-trigger-value mono">110</div></div>
+            <div class="open-trigger-row"><div class="open-trigger-label">2-3次</div><div class="open-trigger-track"><div class="open-trigger-bar" style="width:67%"></div></div><div class="open-trigger-value mono">134</div></div>
+            <div class="open-trigger-row"><div class="open-trigger-label">4-5次</div><div class="open-trigger-track"><div class="open-trigger-bar" style="width:8%"></div></div><div class="open-trigger-value mono">16</div></div>
+            <div class="open-trigger-row"><div class="open-trigger-label">6-10次</div><div class="open-trigger-track"><div class="open-trigger-bar" style="width:6%"></div></div><div class="open-trigger-value mono">12</div></div>
+            <div class="open-trigger-row"><div class="open-trigger-label">10次以上</div><div class="open-trigger-track"><div class="open-trigger-bar" style="width:10.5%"></div></div><div class="open-trigger-value mono">21</div></div>
+            <div class="open-trigger-row"><div class="open-trigger-label">AI未发送开口</div><div class="open-trigger-track"><div class="open-trigger-bar" style="width:9%"></div></div><div class="open-trigger-value mono">18</div></div>
+            <div class="open-trigger-row"><div class="open-trigger-label">未开口</div><div class="open-trigger-track"><div class="open-trigger-bar" style="width:90.5%"></div></div><div class="open-trigger-value mono">181</div></div>
+            <div class="open-trigger-axis"><span></span><span>0</span><span>50</span><span>100</span><span>150</span><span>200</span><span></span></div>
+          </div>
+        </div>
+        <div class="section">
+          <div class="section-head"><div class="section-title">高开口节点</div><div class="muted">已选择字段(4)</div></div>
+          <div class="section-body">
+            <table class="open-node-table">
+              <thead><tr><th>发送内容</th><th class="right">开口数</th><th class="right">发送总次数</th><th class="right">开口率</th></tr></thead>
+              <tbody>
+                <tr><td>您也是来领取199斑点特惠活动的吗?</td><td class="right mono">57</td><td class="right mono">122</td><td class="right mono">46.72%</td></tr>
+                <tr><td>亲，给您介绍一下。我们采用目前属于先进有效的第三代操作斑点技术...</td><td class="right mono">9</td><td class="right mono">29</td><td class="right mono">31.03%</td></tr>
+                <tr><td>亲爱的，咨询斑点问题吗?</td><td class="right mono">23</td><td class="right mono">79</td><td class="right mono">29.11%</td></tr>
+                <tr><td>您是来了解淡斑项目的吗?</td><td class="right mono">38</td><td class="right mono">138</td><td class="right mono">27.54%</td></tr>
+                <tr><td>您好，我们专业做 斑20年，全国连锁300+家直营门店，您在哪个城市呢？...</td><td class="right mono">10</td><td class="right mono">42</td><td class="right mono">23.81%</td></tr>
+                <tr><td>我们全国连锁专业解决斑点问题的，您是在哪个城市呢?</td><td class="right mono">10</td><td class="right mono">49</td><td class="right mono">20.41%</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-head"><div class="section-title">SOP步骤贡献</div><div class="section-tools"><select class="control"><option>SOP-07 案例共鸣型 v3.2</option><option>SOP-12 专家问诊型 v2.4</option><option>SOP-03 到店福利型 v4.0</option></select></div></div>
+        <div class="section-body">
+          <table><thead><tr><th>步骤</th><th>触发时机</th><th>消息目的</th><th class="right">进入客户数</th><th class="right">发送成功数</th><th class="right">发送成功率</th><th class="right">本步骤开口客户数</th><th class="right">步骤开口率</th><th class="right">开口贡献占比</th></tr></thead>
+            <tbody>
+              <tr><td><strong>第1步</strong></td><td>加微后立即</td><td>欢迎 + 识别核心诉求</td><td class="right mono">1,486</td><td class="right mono">1,473</td><td class="right mono">99.1%</td><td class="right mono">397</td><td class="right mono positive">27.0%</td><td class="right mono">58.9%</td></tr>
+              <tr><td><strong>第2步</strong></td><td>5分钟未开口</td><td>案例共鸣 + 轻问句</td><td class="right mono">1,076</td><td class="right mono">1,061</td><td class="right mono">98.6%</td><td class="right mono">168</td><td class="right mono">15.8%</td><td class="right mono">24.9%</td></tr>
+              <tr><td><strong>第3步</strong></td><td>当日18:00仍未开口</td><td>专家建议 + 到店利益点</td><td class="right mono">856</td><td class="right mono">841</td><td class="right mono">98.2%</td><td class="right mono">78</td><td class="right mono">9.3%</td><td class="right mono">11.6%</td></tr>
+              <tr><td><strong>第4步</strong></td><td>次日10:00仍未开口</td><td>二次唤醒</td><td class="right mono">731</td><td class="right mono">704</td><td class="right mono">96.3%</td><td class="right mono">31</td><td class="right mono warning">4.4%</td><td class="right mono">4.6%</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" id="strategy">
+      <div class="section">
+        <div class="notice"><span><strong>配置提醒：</strong>发现 2 组“意向项目 + 企微账号”同时命中多个启用策略包，客户会在策略包间等概率随机。</span><button class="text-btn" data-go="accounts">查看账号</button></div>
+        <div>
+          <div class="section-head"><div class="section-title">策略包概览</div></div>
+          <div class="section-body">
+            <table><thead><tr><th>策略包</th><th>意向项目</th><th class="right">绑定企微数</th><th class="right">配置话术数</th><th class="right">分配客户数</th><th class="right">流量占比</th><th class="right">AI开口率</th><th class="right">预约金转化率</th><th class="right">安全包转入率</th><th>状态</th></tr></thead>
+              <tbody>
+                <tr><td><strong>祛斑赛马包A</strong></td><td>祛斑 S10</td><td class="right mono">18</td><td class="right mono">8</td><td class="right mono">3,148</td><td class="right mono">25.7%</td><td class="right mono positive">41.2%</td><td class="right mono positive">11.8%</td><td class="right mono">2.1%</td><td><span class="dot green"></span>启用</td></tr>
+                <tr><td><strong>祛斑赛马包B</strong></td><td>祛斑 S10</td><td class="right mono">16</td><td class="right mono">7</td><td class="right mono">2,986</td><td class="right mono">24.4%</td><td class="right mono">37.1%</td><td class="right mono">9.2%</td><td class="right mono warning">7.8%</td><td><span class="dot green"></span>启用</td></tr>
+                <tr><td><strong>嫩肤新客包</strong></td><td>嫩肤 S20</td><td class="right mono">12</td><td class="right mono">6</td><td class="right mono">2,231</td><td class="right mono">18.2%</td><td class="right mono">32.6%</td><td class="right mono">6.9%</td><td class="right mono warning">11.3%</td><td><span class="dot green"></span>启用</td></tr>
+                <tr><td><strong>抗衰限量包</strong></td><td>抗衰 M10</td><td class="right mono">8</td><td class="right mono">5</td><td class="right mono">1,147</td><td class="right mono">9.4%</td><td class="right mono">29.8%</td><td class="right mono">6.1%</td><td class="right mono negative">18.9%</td><td><span class="dot green"></span>启用</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="section-head"><div class="section-title">包内规则明细</div></div>
+          <div class="section-body">
+            <table><thead><tr><th>策略包</th><th>规则</th><th>规则类型</th><th>生效时段</th><th class="right">配置流量</th><th class="right">运行概率</th><th class="right">抽中客户数</th><th class="right">有候选客户数</th><th class="right">转安全包数</th><th class="right">规则内话术数</th></tr></thead>
+              <tbody>
+                <tr><td>祛斑赛马包B</td><td>高开口率优先</td><td>开口率前N名</td><td>09:00-24:00</td><td class="right mono">45%</td><td class="right mono">50.0%</td><td class="right mono">1,146</td><td class="right mono">1,146</td><td class="right mono">0</td><td class="right mono">3</td></tr>
+                <tr><td>祛斑赛马包B</td><td>中腰部验证</td><td>开口率区间</td><td>09:00-24:00</td><td class="right mono">35%</td><td class="right mono">38.9%</td><td class="right mono">891</td><td class="right mono">826</td><td class="right mono warning">65</td><td class="right mono">4</td></tr>
+                <tr><td>祛斑赛马包B</td><td>固定样本量</td><td>自定义每日数量</td><td>09:00-24:00</td><td class="right mono">10%</td><td class="right mono">11.1%</td><td class="right mono">254</td><td class="right mono">241</td><td class="right mono warning">13</td><td class="right mono">2</td></tr>
+                <tr><td>祛斑赛马包B</td><td>夜间补量</td><td>开口率前百分比</td><td>18:00-24:00</td><td class="right mono">10%</td><td class="right mono">0%</td><td class="right mono">0</td><td class="right mono">0</td><td class="right mono">0</td><td class="right mono">—</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="section-head"><div class="section-title">兜底承接</div></div>
+          <div class="split equal" style="margin:0;gap:0">
+            <div style="border-right:1px solid var(--line)">
+              <div class="section-head"><div class="section-title">转安全包原因</div></div>
+              <div class="section-body">
+                <table><thead><tr><th>原因</th><th class="right">客户数</th><th class="right">占比</th><th>分布</th></tr></thead><tbody>
+                  <tr><td>选中规则无候选话术</td><td class="right mono">361</td><td class="right mono">42.1%</td><td><div class="bar-cell"><div class="bar-track"><div class="bar-fill orange" style="width:100%"></div></div></div></td></tr>
+                  <tr><td>未匹配普通策略包</td><td class="right mono">248</td><td class="right mono">28.9%</td><td><div class="bar-cell"><div class="bar-track"><div class="bar-fill orange" style="width:69%"></div></div></div></td></tr>
+                  <tr><td>包内智能无候选话术</td><td class="right mono">137</td><td class="right mono">16.0%</td><td><div class="bar-cell"><div class="bar-track"><div class="bar-fill orange" style="width:38%"></div></div></div></td></tr>
+                  <tr><td>当前无有效规则</td><td class="right mono">111</td><td class="right mono">13.0%</td><td><div class="bar-cell"><div class="bar-track"><div class="bar-fill orange" style="width:31%"></div></div></div></td></tr>
+                </tbody></table>
+              </div>
+            </div>
+            <div>
+              <div class="section-head"><div class="section-title">兜底承接效果</div></div>
+              <div class="section-body">
+                <table><thead><tr><th>承接层级</th><th class="right">尝试客户数</th><th class="right">成功数</th><th class="right">成功率</th><th class="right">AI开口率</th><th class="right">预约金转化率</th></tr></thead><tbody>
+                  <tr><td>安全包</td><td class="right mono">857</td><td class="right mono">824</td><td class="right mono">96.1%</td><td class="right mono">30.2%</td><td class="right mono">5.9%</td></tr>
+                  <tr><td>全局兜底话术</td><td class="right mono">206</td><td class="right mono">173</td><td class="right mono">84.0%</td><td class="right mono">18.5%</td><td class="right mono">3.1%</td></tr>
+                  <tr><td>仍未分配</td><td class="right mono">33</td><td class="right mono">0</td><td class="right mono negative">0%</td><td class="right mono">—</td><td class="right mono">—</td></tr>
+                </tbody></table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" id="accounts">
+      <div class="section">
+        <div class="section-head"><div class="section-title">企微账号与策略效果</div><div class="section-tools"><select class="control"><option>全部实验组</option><option>A组</option><option>B组</option><option>非实验组</option></select></div></div>
+        <div class="section-body">
+          <table><thead><tr><th>企微账号</th><th>所属团队</th><th>意向项目</th><th>实验组</th><th>命中话术包</th><th>包内方式</th><th class="right">加微客户数</th><th class="right">分配成功率</th><th class="right">AI开口率</th><th class="right">预约金转化率</th></tr></thead>
+            <tbody>
+              <tr><td class="mono">DY3510</td><td>华东投流一组</td><td>祛斑 S10</td><td><span class="badge blue">A组</span></td><td>祛斑赛马包A / 历史包</td><td>包内智能</td><td class="right mono">486</td><td class="right mono">98.8%</td><td class="right mono positive">43.2%</td><td class="right mono positive">12.4%</td></tr>
+              <tr><td class="mono">DY8730</td><td>华东投流一组</td><td>祛斑 S10</td><td><span class="badge blue">A组</span></td><td>祛斑赛马包A</td><td>包内智能</td><td class="right mono">451</td><td class="right mono">99.1%</td><td class="right mono">41.8%</td><td class="right mono">11.7%</td></tr>
+              <tr><td class="mono">SL0080</td><td>华南投流二组</td><td>祛斑 S10</td><td><span class="badge purple">B组</span></td><td>祛斑赛马包B</td><td>包内规则</td><td class="right mono">438</td><td class="right mono">98.2%</td><td class="right mono">36.9%</td><td class="right mono">9.1%</td></tr>
+              <tr><td class="mono">SL0906</td><td>华南投流二组</td><td>祛斑 S10</td><td><span class="badge purple">B组</span></td><td>祛斑赛马包B / 新限量包</td><td>包内规则</td><td class="right mono">419</td><td class="right mono">97.6%</td><td class="right mono">35.4%</td><td class="right mono">8.7%</td></tr>
+              <tr><td class="mono">DY5062</td><td>华北投流组</td><td>嫩肤 S20</td><td><span class="badge">非实验组</span></td><td>嫩肤新客包</td><td>包内智能</td><td class="right mono">322</td><td class="right mono">98.5%</td><td class="right mono">33.1%</td><td class="right mono">7.0%</td></tr>
+              <tr><td class="mono">WW6688</td><td>华北投流组</td><td>抗衰 M10</td><td><span class="badge">非实验组</span></td><td>抗衰限量包</td><td>包内规则</td><td class="right mono">208</td><td class="right mono negative">91.3%</td><td class="right mono">27.9%</td><td class="right mono">5.4%</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" id="details">
+      <div class="section">
+        <div class="section-head"><div class="section-title">话术分配明细</div></div>
+        <div class="detail-toolbar">
+          <input class="control search" id="detailSearch" placeholder="搜索日志ID、客户ID、企微账号、话术">
+          <select class="control" id="resultFilter"><option value="">全部结果</option><option>普通话术</option><option>安全包</option><option>全局兜底</option><option>未分配</option></select>
+          <select class="control" id="methodFilter"><option value="">全部包内方式</option><option>包内智能</option><option>包内规则</option><option>兜底承接</option><option>前置校验</option></select>
+        </div>
+        <div class="section-body">
+          <table id="detailTable"><thead><tr><th>分配时间</th><th>客户 / 意向</th><th>来源企微</th><th>命中路径</th><th>最终话术</th><th class="right">候选数</th><th>分配结果</th><th>分配说明</th><th>操作</th></tr></thead>
+            <tbody>
+              <tr data-result="普通话术" data-method="包内智能">
+                <td class="mono">09-02 17:47:14</td>
+                <td>客户 #14000588</td>
+                <td class="mono">DY3510</td>
+                <td><span class="path-chip">祛斑赛马包A</span></td>
+                <td>SOP-07 案例共鸣型</td>
+                <td class="right mono">20</td>
+                <td><span class="badge blue">普通话术</span></td>
+                <td><div class="decision-copy" title="命中祛斑赛马包A，按包内智能策略进入智能池，根据昨日有效评分从成熟话术中选择SOP-07。">命中祛斑赛马包A，按包内智能策略进入智能池，根据昨日有效评分从成熟话术中选择 SOP-07。</div></td>
+                <td><button class="detail-action" data-detail="case1">详情</button></td>
+              </tr>
+              <tr data-result="安全包" data-method="包内规则">
+                <td class="mono">09-02 17:47:14</td>
+                <td>客户 #14000608</td>
+                <td class="mono">SL0080</td>
+                <td><span class="path-chip">祛斑安全包</span></td>
+                <td>SOP-05 轻咨询型</td>
+                <td class="right mono">5</td>
+                <td><span class="badge orange">安全包</span></td>
+                <td><div class="decision-copy" title="祛斑赛马包B抽中中腰部验证规则，规则内候选话术均达到当日上限，不重抽普通规则，转入安全包。">赛马包B抽中“中腰部验证”，规则内候选均达到当日上限，不重抽普通规则，转入安全包。</div></td>
+                <td><button class="detail-action" data-detail="case2">详情</button></td>
+              </tr>
+              <tr data-result="全局兜底" data-method="兜底承接">
+                <td class="mono">09-02 17:46:52</td>
+                <td>客户 #14000592</td>
+                <td class="mono">DY8730</td>
+                <td><span class="path-chip">全局兜底</span></td>
+                <td>SOP-01 通用欢迎语</td>
+                <td class="right mono">1</td>
+                <td><span class="badge red">全局兜底</span></td>
+                <td><div class="decision-copy" title="微动意向项目ID无法匹配租户意向项目，跳过普通话术包和安全包，使用最新有效的全局兜底话术。">意向项目无法匹配，跳过普通话术包和安全包，使用最新有效的全局兜底话术。</div></td>
+                <td><button class="detail-action" data-detail="case3">详情</button></td>
+              </tr>
+              <tr data-result="普通话术" data-method="包内智能">
+                <td class="mono">09-02 17:46:31</td>
+                <td>客户 #14000612</td>
+                <td class="mono">DY5062</td>
+                <td><span class="path-chip">嫩肤新客包</span></td>
+                <td>SOP-03 到店福利型</td>
+                <td class="right mono">8</td>
+                <td><span class="badge blue">普通话术</span></td>
+                <td><div class="decision-copy" title="嫩肤新客包采用包内智能，探索池当前欠量最大，在测试期候选中按累计综合效果选择SOP-03。">嫩肤新客包采用包内智能，探索池欠量最大，在测试期候选中按累计综合效果选择 SOP-03。</div></td>
+                <td><button class="detail-action" data-detail="case4">详情</button></td>
+              </tr>
+              <tr data-result="未分配" data-method="前置校验">
+                <td class="mono">09-02 17:45:58</td>
+                <td>客户 #14000576</td>
+                <td class="mono">WW6688</td>
+                <td><span class="path-chip">前置校验</span></td>
+                <td>—</td>
+                <td class="right mono">0</td>
+                <td><span class="badge red">未分配</span></td>
+                <td><div class="decision-copy" title="来源企微账号WW6688离线，事件在前置校验阶段停止，不进入话术包、安全包或全局兜底。">企微账号离线，前置校验阶段停止，不进入话术包、安全包或全局兜底。</div></td>
+                <td><button class="detail-action" data-detail="case5">详情</button></td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="empty" id="detailEmpty" hidden>没有匹配的分配记录</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="drawer-mask" id="drawerMask" role="dialog" aria-modal="true" aria-labelledby="drawerTitle">
+    <aside class="drawer">
+      <div class="drawer-head">
+        <div><div class="drawer-title" id="drawerTitle">分配决策详情</div><div class="drawer-subtitle" id="drawerSubtitle"></div></div>
+        <button class="close" id="drawerClose" aria-label="关闭">×</button>
+      </div>
+      <div class="drawer-body" id="drawerBody"></div>
+      <div class="drawer-footer"><button class="modal-close-btn" id="drawerFooterClose">关闭</button></div>
+    </aside>
+  </div>
+  <div class="toast" id="toast">数据已刷新</div>
+
+  <script>
+    const pages = document.querySelectorAll('.page');
+    const tabs = document.querySelectorAll('.main-tab');
+
+    function showPage(pageId) {
+      tabs.forEach(tab => tab.classList.toggle('active', tab.dataset.page === pageId));
+      pages.forEach(page => page.classList.toggle('active', page.id === pageId));
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    tabs.forEach(tab => tab.addEventListener('click', () => showPage(tab.dataset.page)));
+    document.querySelectorAll('[data-go]').forEach(button => button.addEventListener('click', () => showPage(button.dataset.go)));
+
+    document.querySelectorAll('[data-segment]').forEach(group => {
+      group.querySelectorAll('button').forEach(button => button.addEventListener('click', () => {
+        group.querySelectorAll('button').forEach(item => item.classList.remove('active'));
+        button.classList.add('active');
+      }));
+    });
+
+    const refreshBtn = document.getElementById('refreshBtn');
+    const toast = document.getElementById('toast');
+    refreshBtn.addEventListener('click', () => {
+      refreshBtn.disabled = true;
+      refreshBtn.textContent = '刷新中';
+      setTimeout(() => {
+        const now = new Date();
+        const stamp = [now.getFullYear(), String(now.getMonth() + 1).padStart(2, '0'), String(now.getDate()).padStart(2, '0')].join('-')
+          + ' ' + [String(now.getHours()).padStart(2, '0'), String(now.getMinutes()).padStart(2, '0'), String(now.getSeconds()).padStart(2, '0')].join(':');
+        document.getElementById('updateTime').textContent = `数据更新时间：${stamp}`;
+        refreshBtn.disabled = false;
+        refreshBtn.textContent = '刷新';
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 1400);
+      }, 500);
+    });
+
+    const stageFilter = document.getElementById('stageFilter');
+    stageFilter.addEventListener('change', () => {
+      let visible = 0;
+      document.querySelectorAll('#scriptTable tbody tr').forEach(row => {
+        const show = !stageFilter.value || row.dataset.stage === stageFilter.value;
+        row.hidden = !show;
+        if (show) visible += 1;
+      });
+      document.getElementById('scriptEmpty').hidden = visible > 0;
+    });
+
+    const detailSearch = document.getElementById('detailSearch');
+    const resultFilter = document.getElementById('resultFilter');
+    const methodFilter = document.getElementById('methodFilter');
+    function filterDetails() {
+      const term = detailSearch.value.trim().toLowerCase();
+      let visible = 0;
+      document.querySelectorAll('#detailTable tbody tr').forEach(row => {
+        const textMatch = !term || row.textContent.toLowerCase().includes(term);
+        const resultMatch = !resultFilter.value || row.dataset.result === resultFilter.value;
+        const methodMatch = !methodFilter.value || row.dataset.method === methodFilter.value;
+        row.hidden = !(textMatch && resultMatch && methodMatch);
+        if (!row.hidden) visible += 1;
+      });
+      document.getElementById('detailEmpty').hidden = visible > 0;
+    }
+    detailSearch.addEventListener('input', filterDetails);
+    resultFilter.addEventListener('change', filterDetails);
+    methodFilter.addEventListener('change', filterDetails);
+
+    const chainCases = {
+      case1: {
+        logId: '#1000', timestamp: '2026-09-02 17:47:14', selected: 'SOP-07 案例共鸣型', tone: '',
+        description: '命中祛斑赛马包A，按包内智能策略进入智能池，根据昨日有效评分从成熟话术中选择 SOP-07（SOP ID 226）。',
+        route: '普通话术包 · 包内智能 · 智能池',
+        fields: [
+          ['客户', '客户 #14000588'], ['客户意向', '祛斑 S10'], ['来源企微', 'DY3510'],
+          ['开始匹配的话术包', '祛斑赛马包A'], ['最终承接', '祛斑赛马包A'], ['包内分配方式', '包内智能'],
+          ['命中策略', '智能池'], ['候选话术', '20 / 23 条'], ['本次命中', 'SOP-07 · SOP ID 226']
+        ],
+        trace: '分配记录 #38042 · 事件 #52948 · 日志 #1000',
+        steps: [
+          ['确认意向和候选话术', '本次意向为祛斑 S10，当前意向下共有 23 条可用普通话术。'],
+          ['确认话术包', '根据“祛斑 S10 + DY3510”匹配到唯一启用包祛斑赛马包A。'],
+          ['执行包内智能策略', '当前话术包智能池欠量最高；7 条成熟话术中有 3 条具备有效评分。'],
+          ['选择话术', 'SOP-07 昨日有效评分 91.4，按评分概率选中。'],
+          ['完成分配', '提交前再次校验话术包、策略和话术状态，186ms 内生成成功分配记录。']
+        ],
+        conversion: [['首条消息', '17:47:15 发送成功'], ['客户开口', '17:48:56 · 耗时 102 秒'], ['预约金', '18:46:22 已支付']]
+      },
+      case2: {
+        logId: '#999', timestamp: '2026-09-02 17:47:14', selected: 'SOP-05 轻咨询型', tone: 'warning-state',
+        description: '祛斑赛马包B抽中“中腰部验证”规则，但规则内候选话术均达到当日上限；按规则不重抽普通规则，转入安全包后选中 SOP-05。',
+        route: '普通话术包 · 包内规则 · 安全包',
+        fields: [
+          ['客户', '客户 #14000608'], ['客户意向', '祛斑 S10'], ['来源企微', 'SL0080'],
+          ['开始匹配的话术包', '祛斑赛马包B'], ['最终承接', '祛斑安全包'], ['包内分配方式', '包内规则'],
+          ['命中规则', '中腰部验证'], ['候选话术', '5 / 12 条'], ['本次命中', 'SOP-05 · SOP ID 241']
+        ],
+        trace: '分配记录 #38036 · 事件 #52933 · 日志 #999',
+        steps: [
+          ['确认意向和候选话术', '本次意向为祛斑 S10，当前共有 12 条可用普通话术。'],
+          ['确认话术包', '根据“祛斑 S10 + SL0080”命中祛斑赛马包B，包内方式为规则分配。'],
+          ['抽中包内规则', '剔除非生效规则后重算概率，抽中“中腰部验证”。'],
+          ['规则筛选失败', '规则内 4 条候选话术均达到“包 + 规则 + 话术 + 当天”上限。'],
+          ['进入安全包', '不重新抽取其他普通规则；安全包按开口率区间筛选出 5 条话术。'],
+          ['完成分配', '安全包等概率选择 SOP-05，并生成成功分配记录。']
+        ],
+        conversion: [['首条消息', '17:47:15 发送成功'], ['客户开口', '17:55:33 · 耗时 8分18秒'], ['预约金', '尚未支付']]
+      },
+      case3: {
+        logId: '#998', timestamp: '2026-09-02 17:46:52', selected: 'SOP-01 通用欢迎语', tone: 'warning-state',
+        description: '微动意向项目 ID 无法匹配租户意向项目，因此不进入普通话术包和安全包，直接尝试并选中最新有效的全局兜底话术。',
+        route: '意向匹配失败 · 全局兜底',
+        fields: [
+          ['客户', '客户 #14000592'], ['客户意向', '未识别'], ['来源企微', 'DY8730'],
+          ['开始匹配的话术包', '—'], ['最终承接', '全局兜底'], ['包内分配方式', '—'],
+          ['兜底原因', '意向项目无法匹配'], ['候选话术', '1 / 1 条'], ['本次命中', 'SOP-01 · SOP ID 201']
+        ],
+        trace: '分配记录 #38029 · 事件 #52920 · 日志 #998',
+        steps: [
+          ['校验来源企微', 'DY8730 属于当前租户，企业主体匹配且账号在线。'],
+          ['匹配意向项目', '事件中的微动意向项目 ID 未找到对应的租户意向项目。'],
+          ['进入全局兜底', '按规则跳过普通话术包和安全包，查询租户级全局兜底话术。'],
+          ['选择话术', '在有效全局兜底话术中按创建时间选择最新的 SOP-01。'],
+          ['完成分配', '98ms 内生成成功分配记录和后续话术任务。']
+        ],
+        conversion: [['首条消息', '17:46:53 发送成功'], ['客户开口', '尚未开口'], ['预约金', '尚未支付']]
+      },
+      case4: {
+        logId: '#997', timestamp: '2026-09-02 17:46:31', selected: 'SOP-03 到店福利型', tone: '',
+        description: '根据“嫩肤 S20 + DY5062”命中嫩肤新客包，执行包内智能；探索池当前欠量最大，在测试期候选中按累计综合效果选择 SOP-03。',
+        route: '普通话术包 · 包内智能 · 探索池',
+        fields: [
+          ['客户', '客户 #14000612'], ['客户意向', '嫩肤 S20'], ['来源企微', 'DY5062'],
+          ['开始匹配的话术包', '嫩肤新客包'], ['最终承接', '嫩肤新客包'], ['包内分配方式', '包内智能'],
+          ['命中策略', '探索池 · 测试期'], ['候选话术', '8 / 12 条'], ['本次命中', 'SOP-03 · SOP ID 218']
+        ],
+        trace: '分配记录 #38018 · 事件 #52909 · 日志 #997',
+        steps: [
+          ['确认意向和候选话术', '本次意向为嫩肤 S20，当前共有 12 条可用普通话术。'],
+          ['确认话术包', '“嫩肤 S20 + DY5062”唯一命中嫩肤新客包。'],
+          ['执行包内智能策略', '探索池距离当日目标比例的欠量最大，本次优先补给探索池。'],
+          ['选择成长阶段', '测试期欠量高于冷启动期，进入 5 条测试期候选话术。'],
+          ['选择话术', '根据累计开口和预约金综合效果，概率选中 SOP-03。'],
+          ['完成分配', '164ms 内生成成功分配记录和后续话术任务。']
+        ],
+        conversion: [['首条消息', '17:46:32 发送成功'], ['客户开口', '17:48:13 · 耗时 102 秒'], ['预约金', '19:02:31 已支付']]
+      },
+      case5: {
+        logId: '#996', timestamp: '2026-09-02 17:45:58', selected: '未分配话术', tone: 'danger-state',
+        description: '来源企微账号 WW6688 当前离线，事件在前置校验阶段停止，不进入普通话术包、安全包或全局兜底，也不生成后续话术任务。',
+        route: '前置校验 · 未分配',
+        fields: [
+          ['客户', '客户 #14000576'], ['客户意向', '抗衰 M10'], ['来源企微', 'WW6688'],
+          ['开始匹配的话术包', '—'], ['最终承接', '未分配'], ['包内分配方式', '—'],
+          ['失败原因', '企微账号不在线'], ['候选话术', '0 条'], ['本次命中', '—']
+        ],
+        trace: '分配记录 — · 事件 #52896 · 日志 #996',
+        steps: [
+          ['接收添加企微事件', '收到事件 EVT-0902-8401，客户意向为抗衰 M10。'],
+          ['校验来源企微', 'WW6688 属于当前租户，但事件发生时账号状态为离线。'],
+          ['停止分配', '按规则不进入话术包、安全包或全局兜底，不生成成功分配记录。'],
+          ['记录失败原因', '事件日志记录“企微账号不在线”，账号恢复后可重新尝试。']
+        ],
+        conversion: [['首条消息', '未生成发送任务'], ['客户开口', '—'], ['预约金', '—']]
+      }
+    };
+
+    const drawerMask = document.getElementById('drawerMask');
+    const drawerBody = document.getElementById('drawerBody');
+    const drawerSubtitle = document.getElementById('drawerSubtitle');
+    function openDrawer(caseId) {
+      const data = chainCases[caseId];
+      drawerSubtitle.textContent = `日志 ${data.logId} · ${data.timestamp}`;
+      drawerBody.innerHTML = `
+        <div class="decision-hero ${data.tone}">
+          <div>
+            <div class="decision-hero-label">最终分配话术</div>
+            <div class="decision-hero-title">${data.selected}</div>
+            <div class="decision-hero-desc">${data.description}</div>
+          </div>
+          <div class="decision-route">${data.route}</div>
+        </div>
+        <div class="decision-grid">
+          ${data.fields.map(field => `<div class="decision-field"><div class="decision-field-label">${field[0]}</div><div class="decision-field-value" title="${field[1]}">${field[1]}</div></div>`).join('')}
+        </div>
+        <div class="trace-meta">追踪信息：${data.trace}</div>
+        <div class="process-card">
+          <div class="process-head"><div class="process-title">业务决策过程</div><div class="process-version">Trace V4</div></div>
+          <div class="timeline">
+            ${data.steps.map((step, index) => `<div class="step"><div class="step-axis"><div class="step-index">${index + 1}</div></div><div><div class="step-title">${step[0]}</div><div class="step-detail">${step[1]}</div></div></div>`).join('')}
+          </div>
+        </div>
+        <div class="conversion-strip">
+          ${data.conversion.map(item => `<div class="conversion-item"><div class="conversion-label">${item[0]}</div><div class="conversion-value">${item[1]}</div></div>`).join('')}
+        </div>`;
+      drawerMask.classList.add('open');
+    }
+    document.querySelectorAll('[data-detail]').forEach(button => button.addEventListener('click', () => openDrawer(button.dataset.detail)));
+    document.getElementById('drawerClose').addEventListener('click', () => drawerMask.classList.remove('open'));
+    document.getElementById('drawerFooterClose').addEventListener('click', () => drawerMask.classList.remove('open'));
+    drawerMask.addEventListener('click', event => { if (event.target === drawerMask) drawerMask.classList.remove('open'); });
+    document.addEventListener('keydown', event => { if (event.key === 'Escape') drawerMask.classList.remove('open'); });
+  </script>
+</body>
+</html>
