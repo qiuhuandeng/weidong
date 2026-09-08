@@ -1041,6 +1041,7 @@
   .follow-plan-main { min-width: 0; display: grid; gap: 10px; }
   .follow-time-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; color: #64748b; font-size: 13px; }
   .follow-trigger-select { width: 118px; height: 32px; padding: 4px 8px; color: #1a2332; font-weight: 600; }
+  .online-knowledge-trigger-text { height: 32px; display: inline-flex; align-items: center; color: #1a2332; font-weight: 600; white-space: nowrap; }
   .follow-time-editor { display: inline-flex; align-items: center; gap: 8px; }
   .follow-delay-input { width: 76px; height: 32px; padding: 4px 8px; }
   .follow-delay-unit { width: 84px; height: 32px; padding: 4px 8px; }
@@ -2028,6 +2029,74 @@
   .script-lib-page .ant-form-label .hint { font-weight: 400; color: rgba(0,0,0,0.45); font-size: 12px; margin-left: 8px; }
   .script-lib-page .form-footer { position: sticky; bottom: 0; background: #fff; border-top: 1px solid #f0f0f0; padding: 12px 24px; display: flex; align-items: center; justify-content: flex-end; gap: 12px; margin: 0 -24px; z-index: 5; }
   #modal-script-library-form .modal-body { background: #f6f8fb; }
+  #modal-recommend-rule { z-index: 1040; }
+  #modal-recommend-rule .modal-xl { width: min(880px, 100vw); max-width: min(880px, 100vw); }
+  #modal-recommend-rule .modal-header { display: block; position: relative; padding: 18px 24px 14px; }
+  #modal-recommend-rule .modal-title { display: block; font-size: 16px; font-weight: 700; }
+  #modal-recommend-rule .recommend-rule-subtitle { margin-top: 4px; color: #64748b; font-size: 12px; }
+  #modal-recommend-rule .modal-close { position: absolute; top: 20px; right: 22px; }
+  #modal-recommend-rule .modal-body { padding: 0; background: #f6f8fb; }
+  .recommend-step-tabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-bottom: 1px solid #dde5ef; background: #f8fafc; }
+  .recommend-step-tab { height: 52px; border: 0; border-bottom: 2px solid transparent; background: transparent; color: #64748b; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .recommend-step-tab:hover { color: #1677ff; }
+  .recommend-step-tab.active { color: #1677ff; border-bottom-color: #1677ff; background: #fff; }
+  .recommend-step-no { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; margin-right: 8px; border-radius: 50%; border: 1px solid #cbd8e6; color: #8090a3; background: #fff; font-size: 12px; font-weight: 600; }
+  .recommend-step-tab.active .recommend-step-no { background: #1f6fff; border-color: #1f6fff; color: #fff; }
+  .recommend-step-pane { display: none; padding: 22px 24px 28px; }
+  .recommend-step-pane.active { display: block; }
+  .recommend-section-head { display: flex; align-items: center; gap: 12px; padding-bottom: 20px; margin-bottom: 18px; border-bottom: 1px solid #e8edf2; }
+  .recommend-section-icon { width: 34px; height: 34px; border-radius: 8px; background: #e6f4ff; color: #1677ff; display: inline-flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; }
+  .recommend-section-title { color: #1a2332; font-size: 15px; font-weight: 700; }
+  .recommend-section-desc { color: #64748b; font-size: 12px; margin-top: 3px; }
+  .recommend-form-grid { display: grid; gap: 18px; }
+  .recommend-form-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+  .recommend-form-label { display: block; margin-bottom: 7px; color: #334155; font-size: 13px; font-weight: 600; }
+  .recommend-form-label.required::after { content: ' *'; color: #ff4d4f; }
+  .recommend-form-hint { margin-top: 6px; color: #64748b; font-size: 12px; line-height: 1.5; }
+  .recommend-enabled-card { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px; border: 1px solid #dbe4ef; border-radius: 8px; background: #fbfdff; }
+  .recommend-enabled-card strong { display: block; color: #1a2332; font-size: 14px; margin-bottom: 3px; }
+  .recommend-enabled-card span { color: #64748b; font-size: 12px; }
+  .recommend-algo-card { padding: 14px 16px; border: 1px solid #91caff; border-radius: 8px; background: #eaf4ff; color: #1f2937; }
+  .recommend-algo-title { display: flex; align-items: center; gap: 8px; color: #1677ff; font-weight: 700; font-size: 14px; }
+  .recommend-algo-desc { margin-top: 7px; color: #64748b; font-size: 12px; line-height: 1.6; }
+  .recommend-total { color: #059669; font-size: 12px; font-weight: 700; text-align: right; }
+  .recommend-percent-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 14px; }
+  .recommend-input-group { display: flex; }
+  .recommend-input-group .form-control { border-radius: 6px 0 0 6px; }
+  .recommend-input-addon { min-width: 42px; padding: 0 11px; border: 1px solid #d9e0e8; border-left: 0; border-radius: 0 6px 6px 0; display: inline-flex; align-items: center; justify-content: center; color: #64748b; background: #f8fafc; font-size: 12px; }
+  .recommend-stack-card { margin-top: 14px; padding: 14px; border: 1px solid #dbe4ef; border-radius: 8px; background: #fbfdff; }
+  .recommend-ratio-bar { height: 8px; margin-top: 14px; display: flex; overflow: hidden; border-radius: 999px; background: #dbeafe; }
+  .recommend-ratio-bar span:nth-child(1) { background: #f59e0b; }
+  .recommend-ratio-bar span:nth-child(2) { background: #10b981; }
+  .recommend-ratio-bar span:nth-child(3) { background: #60a5fa; }
+  .recommend-green-card { margin-top: 16px; padding: 16px; border: 1px solid #86efac; border-radius: 8px; background: #ecfdf5; }
+  .recommend-green-head { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 18px; align-items: center; }
+  .recommend-slider-row { display: flex; align-items: center; gap: 10px; }
+  .recommend-slider-row input[type="range"] { flex: 1; accent-color: #10b981; }
+  .recommend-mini-table { width: 100%; margin-top: 14px; border-collapse: collapse; font-size: 12px; overflow: hidden; border-radius: 6px; }
+  .recommend-mini-table th, .recommend-mini-table td { padding: 9px 12px; border-bottom: 1px solid #d9f7e5; text-align: left; }
+  .recommend-mini-table th { background: #dff9ec; color: #64748b; font-weight: 700; }
+  .recommend-score-table { width: 100%; border-collapse: collapse; border: 1px solid #dbe4ef; border-radius: 8px; overflow: hidden; background: #fff; }
+  .recommend-score-table th, .recommend-score-table td { padding: 13px 14px; border-bottom: 1px solid #edf1f5; text-align: left; vertical-align: middle; font-size: 13px; }
+  .recommend-score-table th { background: #f8fafc; color: #64748b; font-weight: 700; }
+  .recommend-score-table tr:last-child td { border-bottom: 0; }
+  .recommend-score-name strong { display: block; color: #1a2332; margin-bottom: 4px; }
+  .recommend-score-name span { color: #64748b; font-size: 12px; }
+  .recommend-weight-cell { display: flex; align-items: center; gap: 12px; }
+  .recommend-weight-cell input[type="range"] { flex: 1; min-width: 180px; accent-color: #1f6fff; }
+  .recommend-weight-valid { margin-top: 12px; color: #059669; font-size: 12px; font-weight: 700; text-align: right; }
+  .recommend-flow-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+  .recommend-flow-card { padding: 16px; border: 1px solid #dbe4ef; border-radius: 8px; background: #fff; }
+  .recommend-flow-line { grid-column: 1 / -1; padding: 18px; border-radius: 8px; background: #f8fafc; color: #1677ff; text-align: center; font-size: 13px; font-weight: 700; }
+  .recommend-pill { display: inline-flex; align-items: center; min-height: 28px; padding: 4px 12px; border: 1px solid #bae0ff; border-radius: 999px; background: #e6f4ff; color: #1677ff; white-space: nowrap; }
+  .recommend-observe-card { grid-column: 1 / -1; padding: 16px; border: 1px solid #dbe4ef; border-radius: 8px; background: #fff; }
+  #modal-recommend-rule .modal-footer { align-items: center; justify-content: space-between; background: #fbfcfe; }
+  .recommend-footer-note { display: flex; align-items: center; gap: 6px; color: #64748b; font-size: 12px; }
+  .recommend-footer-actions { display: flex; align-items: center; gap: 10px; }
+  @media (max-width: 760px) {
+    .recommend-step-tabs { grid-template-columns: 1fr 1fr; }
+    .recommend-form-row, .recommend-percent-grid, .recommend-green-head, .recommend-flow-grid { grid-template-columns: 1fr; }
+  }
   @media (max-width: 1200px) {
     .script-lib-page .script-list-layout { grid-template-columns: 1fr; }
     .script-lib-page .script-obstacle-panel { position: static; }
@@ -4644,7 +4713,7 @@
   #page-transfer-rules .radio-card:hover{border-color:#3b82f6;color:#2563eb}
   #page-transfer-rules .radio-card.selected{border-color:#3b82f6;color:#2563eb;background:#fff}
   #page-transfer-rules .tag{display:inline-flex;align-items:center;padding:2px 10px;border-radius:9999px;font-size:12px;font-weight:500;line-height:18px}
-  #page-transfer-rules .tag-open{background:#dbeafe;color:#1d4ed8} #page-transfer-rules .tag-multi{background:#e0e7ff;color:#4338ca} #page-transfer-rules .tag-pay{background:#d1fae5;color:#065f46}
+  #page-transfer-rules .tag-open{background:#dbeafe;color:#1d4ed8} #page-transfer-rules .tag-pay{background:#d1fae5;color:#065f46}
   #page-transfer-rules .wx-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:6px;font-size:12px;background:#f1f5f9;color:#475569;border:1px solid #e2e8f0}
   #page-transfer-rules .rule-card{background:#fff;border:1px solid #e2e8f0;border-radius:14px;transition:all .2s;overflow:hidden;box-shadow:0 1px 3px rgba(15,35,70,.04)}
   #page-transfer-rules .rule-card:hover{box-shadow:0 4px 20px rgba(0,0,0,.06);border-color:#cbd5e1}
@@ -4724,7 +4793,7 @@
   #page-transfer-rules #transfer-rule-drawer .chain-heading{display:block;padding:16px 24px 0;font-size:14px;font-weight:700;color:#1a2332;margin:0}
   #page-transfer-rules #transfer-rule-drawer .section-heading{font-size:14px;font-weight:700;color:#1a2332;margin-bottom:14px}
   #page-transfer-rules #transfer-rule-drawer .inline-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-  #page-transfer-rules #transfer-rule-drawer #transfer-rule-chains{padding:16px 24px;display:grid;gap:16px}
+  #page-transfer-rules #transfer-rule-drawer #transfer-common-chain,#page-transfer-rules #transfer-rule-drawer #transfer-rule-chains{padding:16px 24px;display:grid;gap:16px}
   #page-transfer-rules #transfer-rule-drawer #transfer-rule-chains>div:not(.hidden){display:grid;gap:10px}
   #page-transfer-rules #transfer-rule-drawer .rule-node{position:relative;padding-left:0;margin:0}
   #page-transfer-rules #transfer-rule-drawer .rule-node::before,#page-transfer-rules #transfer-rule-drawer .rule-node::after{display:none}
@@ -4734,6 +4803,7 @@
   #page-transfer-rules #transfer-rule-drawer .node-card .form-label{margin-top:5px;color:#64748b;text-align:right;font-size:12px}
   #page-transfer-rules #transfer-rule-drawer .node-card .target-form{grid-column:1/-1;grid-template-columns:92px minmax(0,1fr)}
   #page-transfer-rules #transfer-rule-drawer .node-index{display:inline-flex;align-items:center;padding:3px 9px;border-radius:4px;background:#e6f4ff;color:#1677ff;font-size:12px;font-weight:700;white-space:nowrap}
+  #page-transfer-rules #transfer-rule-drawer .node-readonly-text{min-height:34px;padding:7px 10px;border:1px solid #e8edf2;border-radius:6px;background:#f8fafc;color:#334155;font-size:13px;line-height:20px}
   #page-transfer-rules #transfer-rule-drawer .radio-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
   #page-transfer-rules #transfer-rule-drawer .radio-list.two-cols{grid-template-columns:repeat(2,minmax(0,1fr))}
   #page-transfer-rules #transfer-rule-drawer .node-card>.form-item .radio-list .ant-radio{min-height:34px;border:1px solid #d9e0e8;border-radius:6px;background:#fff;padding:7px 10px;align-items:center;font-size:13px;font-weight:600;transition:border .15s,background .15s}
@@ -4807,7 +4877,7 @@
   #page-transfer-rules #transfer-scope-drawer .transfer-scope-tag button{margin-left:auto;border:0;background:transparent;color:#a8b3c2;cursor:pointer;font-size:16px;line-height:1}
   #page-transfer-rules #transfer-scope-drawer .transfer-scope-tag button:hover{color:#cf1322}
   #page-transfer-rules #transfer-scope-drawer .transfer-scope-empty{padding:26px 10px;color:#8c9bab;font-size:13px;text-align:center}
-  @media(max-width:700px){#page-transfer-rules .transfer-list-view-header{margin-left:-16px;margin-right:-16px;padding-left:16px;padding-right:16px}#page-transfer-rules .transfer-filter-bar{align-items:flex-start;flex-direction:column}#page-transfer-rules .transfer-filter-bar .transfer-search-wrap,#page-transfer-rules .transfer-filter-bar .transfer-search-wrap .form-input{width:100%}#page-transfer-rules #transfer-rule-drawer .drawer-panel,#page-transfer-rules .drawer-panel-sm{width:100%}#page-transfer-rules #transfer-rule-drawer .drawer-header{align-items:center;padding:0 16px}#page-transfer-rules #transfer-rule-drawer .form-section,#page-transfer-rules #transfer-rule-drawer #transfer-rule-chains{padding-left:16px;padding-right:16px}#page-transfer-rules #transfer-rule-drawer .form-grid,#page-transfer-rules #transfer-rule-drawer .node-card .form-item,#page-transfer-rules #transfer-rule-drawer .node-card .target-form,#page-transfer-rules #transfer-rule-drawer .target-select-row{grid-template-columns:1fr;gap:8px}#page-transfer-rules #transfer-rule-drawer .node-card .form-label{text-align:left;margin-top:0}#page-transfer-rules #transfer-rule-drawer .node-ai-select{width:150px}#page-transfer-rules #transfer-rule-drawer .radio-list,#page-transfer-rules #transfer-rule-drawer .choice-grid,#page-transfer-rules #transfer-rule-drawer .inline-grid{grid-template-columns:1fr}}
+  @media(max-width:700px){#page-transfer-rules .transfer-list-view-header{margin-left:-16px;margin-right:-16px;padding-left:16px;padding-right:16px}#page-transfer-rules .transfer-filter-bar{align-items:flex-start;flex-direction:column}#page-transfer-rules .transfer-filter-bar .transfer-search-wrap,#page-transfer-rules .transfer-filter-bar .transfer-search-wrap .form-input{width:100%}#page-transfer-rules #transfer-rule-drawer .drawer-panel,#page-transfer-rules .drawer-panel-sm{width:100%}#page-transfer-rules #transfer-rule-drawer .drawer-header{align-items:center;padding:0 16px}#page-transfer-rules #transfer-rule-drawer .form-section,#page-transfer-rules #transfer-rule-drawer #transfer-common-chain,#page-transfer-rules #transfer-rule-drawer #transfer-rule-chains{padding-left:16px;padding-right:16px}#page-transfer-rules #transfer-rule-drawer .form-grid,#page-transfer-rules #transfer-rule-drawer .node-card .form-item,#page-transfer-rules #transfer-rule-drawer .node-card .target-form,#page-transfer-rules #transfer-rule-drawer .target-select-row{grid-template-columns:1fr;gap:8px}#page-transfer-rules #transfer-rule-drawer .node-card .form-label{text-align:left;margin-top:0}#page-transfer-rules #transfer-rule-drawer .node-ai-select{width:150px}#page-transfer-rules #transfer-rule-drawer .radio-list,#page-transfer-rules #transfer-rule-drawer .choice-grid,#page-transfer-rules #transfer-rule-drawer .inline-grid{grid-template-columns:1fr}}
 
 </style>
 </head>
@@ -4842,7 +4912,7 @@
     </div>
     <div class="nav-item" onclick="showPage('online-trigger')">
       <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M4 4h6v6H4zM14 4h6v6h-6zM9 14h6v6H9z"/><path d="M10 7h4M17 10v4M12 10v4"/></svg></span>
-      开口话术
+      开口策略
     </div>
     <div class="nav-item" onclick="showPage('transfer-rules')">
       <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M4 7h9a4 4 0 014 4v5"/><path d="M17 16l3-3-3-3"/><path d="M20 17H9a4 4 0 01-4-4V8"/><path d="M7 5l-3 3 3 3"/><path d="M10 11h4"/></svg></span>
@@ -6123,6 +6193,7 @@
             <button type="button" class="script-lib-tab active" id="script-lib-tab-category-btn" role="tab" aria-selected="true" aria-controls="script-lib-tab-category" onclick="switchScriptLibraryTab('category')">知识分类</button>
             <button type="button" class="script-lib-tab" id="script-lib-tab-matrix-btn" role="tab" aria-selected="false" aria-controls="script-lib-tab-matrix" onclick="switchScriptLibraryTab('matrix')">知识矩阵</button>
             <button type="button" class="script-lib-tab" id="script-lib-tab-list-btn" role="tab" aria-selected="false" aria-controls="script-lib-tab-list" onclick="switchScriptLibraryTab('list')">知识内容</button>
+            <button type="button" class="script-lib-tab" id="script-lib-tab-recommend-btn" role="tab" aria-selected="false" aria-controls="script-lib-tab-recommend" onclick="switchScriptLibraryTab('recommend')">推荐规则</button>
           </div>
         </div>
 
@@ -6332,6 +6403,197 @@
         </div>
       </div>
 
+      <div id="script-lib-tab-recommend" class="script-lib-pane hidden" role="tabpanel" aria-labelledby="script-lib-tab-recommend-btn">
+        <div class="ops-section-head opening-pane-head">
+          <div><div class="ops-section-title">智能分配</div></div>
+          <button class="btn btn-primary" type="button" data-open-recommend-rule="new" onclick="openRecommendRuleModal('new')">+ 新增分配规则</button>
+        </div>
+        <div class="speech-strategy-filter">
+          <div class="ops-filter-row"><input class="search-input" placeholder="搜索规则名称、ID 或策略范围"><select class="search-select"><option>全部状态</option><option>启用</option><option>停用</option></select></div>
+          <span class="text-muted">共 1 条规则</span>
+        </div>
+        <div class="panel">
+        <div class="table-wrap ops-table-strategy">
+          <table>
+            <thead><tr><th>规则名称 / ID</th><th>适用范围</th><th>分配算法</th><th>评估指标 / 周期</th><th>末位淘汰规则</th><th>启用状态</th><th>更新时间</th><th>操作</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><div class="ops-name-cell"><strong>知识内容默认推荐规则</strong><span>#1</span></div></td>
+                <td><span class="tag tag-blue">到店受阻</span><span class="tag tag-blue">时间不便</span><span class="tag tag-blue">信任疑虑</span></td>
+                <td><span class="tag tag-blue">智能加权</span></td>
+                <td><strong>开口 80% · 转化 20%</strong><div class="ops-mini-note">周期按指标独立配置</div></td>
+                <td><strong>淘汰末尾 10% · 至少保留 10 条</strong></td>
+                <td><span class="ops-switch-text"><label class="switch"><input type="checkbox" checked><span class="switch-slider"></span></label>启用</span></td>
+                <td><strong>2026-08-28 17:43:36</strong><div class="ops-mini-note">创建 2026-08-20 14:25:59</div></td>
+                <td>
+                  <div class="speech-strategy-action-icons">
+                    <button type="button" title="查看日志"><svg viewBox="0 0 24 24" width="18" height="18"><path d="M12 8v5l3 2M5 3v5h5M5.5 13a7 7 0 101.8-6.7" stroke="currentColor" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                    <button type="button" title="编辑" onclick="openRecommendRuleModal('edit', this)"><svg viewBox="0 0 24 24" width="18" height="18"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z" stroke="currentColor" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                    <button type="button" title="删除"><svg viewBox="0 0 24 24" width="18" height="18"><path d="M3 6h18M8 6V4h8v2M6 6l1 15h10l1-15M10 11v6M14 11v6" stroke="currentColor" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="ops-pagination"><strong>显示 1-1 条，共 1 条</strong><div class="ops-pagination-right"><button class="page-btn" type="button">上一页</button><button class="page-btn active" type="button">1</button><button class="page-btn" type="button">下一页</button></div></div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="modal-overlay" id="modal-recommend-rule">
+      <div class="modal modal-xl script-lib-page">
+        <div class="modal-header">
+          <span class="modal-title" id="recommend-rule-modal-title">新增分配规则</span>
+          <div class="recommend-rule-subtitle">配置话术策略的适用范围、流量算法与效果评估规则</div>
+          <button class="modal-close" type="button" onclick="closeModal('modal-recommend-rule')">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="recommend-step-tabs" role="tablist" aria-label="推荐规则配置步骤">
+            <button class="recommend-step-tab active" type="button" data-recommend-step-btn="base" onclick="switchRecommendRuleStep('base')"><span class="recommend-step-no">1</span>基础配置</button>
+            <button class="recommend-step-tab" type="button" data-recommend-step-btn="traffic" onclick="switchRecommendRuleStep('traffic')"><span class="recommend-step-no">2</span>流量与算法</button>
+            <button class="recommend-step-tab" type="button" data-recommend-step-btn="score" onclick="switchRecommendRuleStep('score')"><span class="recommend-step-no">3</span>效果评分</button>
+            <button class="recommend-step-tab" type="button" data-recommend-step-btn="flow" onclick="switchRecommendRuleStep('flow')"><span class="recommend-step-no">4</span>阶段流转</button>
+          </div>
+
+          <section class="recommend-step-pane active" data-recommend-step-pane="base">
+            <div class="recommend-section-head">
+              <div class="recommend-section-icon">▣</div>
+              <div><div class="recommend-section-title">基础信息</div><div class="recommend-section-desc">定义规则名称、适用策略范围和生效状态</div></div>
+            </div>
+            <div class="recommend-form-grid">
+              <div>
+                <label class="recommend-form-label required" for="recommend-rule-name">规则名称</label>
+                <input class="form-control" id="recommend-rule-name" placeholder="例如：新客首轮智能分配">
+                <div class="recommend-form-hint">用于在策略列表和操作日志中识别当前配置</div>
+              </div>
+              <div>
+                <label class="recommend-form-label" for="recommend-rule-scope-picker">适用范围</label>
+                <div class="multi-select" id="recommend-rule-scope-picker" data-placeholder="请选择知识分类">
+                  <div class="multi-select-control" onclick="toggleMultiSelect(event,this)">
+                    <div class="multi-select-selected"></div>
+                    <span class="selector-arrow"></span>
+                  </div>
+                  <div class="multi-select-dropdown"></div>
+                  <input type="hidden" id="recommend-rule-scope">
+                </div>
+                <div class="recommend-form-hint">选项来源于知识库「知识分类」下的全部分类</div>
+              </div>
+              <div class="recommend-enabled-card">
+                <div><strong>启用当前规则</strong><span>关闭后，新客户将不会进入该规则的分配流程</span></div>
+                <label class="switch"><input type="checkbox" id="recommend-rule-enabled" checked><span class="switch-slider"></span></label>
+              </div>
+            </div>
+          </section>
+
+          <section class="recommend-step-pane" data-recommend-step-pane="traffic">
+            <div class="recommend-section-head">
+              <div class="recommend-section-icon">⌁</div>
+              <div><div class="recommend-section-title">流量分配算法</div><div class="recommend-section-desc">配置三个流量池及探索池内部阶段的目标比例</div></div>
+            </div>
+            <div class="recommend-algo-card">
+              <div class="recommend-algo-title">✓ 三池分配 V1</div>
+              <div class="recommend-algo-desc">每次按目标比例与当日实际分配量的最大偏差选择池子；不可用池子的比例自动让渡给可用池。</div>
+            </div>
+            <div style="margin-top:16px">
+              <div class="recommend-total" id="recommend-pool-total">合计 100%</div>
+              <div class="recommend-percent-grid" data-recommend-percent-group="pool">
+                <div><label class="recommend-form-label">探索池</label><div class="recommend-input-group"><input class="form-control" type="number" min="0" max="100" value="30" oninput="refreshRecommendRuleTotals()"><span class="recommend-input-addon">%</span></div><div class="recommend-form-hint">冷启动与测试期策略</div></div>
+                <div><label class="recommend-form-label">智能池</label><div class="recommend-input-group"><input class="form-control" type="number" min="0" max="100" value="60" oninput="refreshRecommendRuleTotals()"><span class="recommend-input-addon">%</span></div><div class="recommend-form-hint">已成熟的高分策略</div></div>
+                <div><label class="recommend-form-label">随机池</label><div class="recommend-input-group"><input class="form-control" type="number" min="0" max="100" value="10" oninput="refreshRecommendRuleTotals()"><span class="recommend-input-addon">%</span></div><div class="recommend-form-hint">全部可用话术等概率随机</div></div>
+              </div>
+              <div class="recommend-ratio-bar" id="recommend-pool-bar"><span style="width:30%"></span><span style="width:60%"></span><span style="width:10%"></span></div>
+            </div>
+            <div class="recommend-stack-card">
+              <div class="recommend-total" id="recommend-explore-total">合计 100%</div>
+              <div><strong>探索池内部比例</strong><div class="recommend-form-hint">探索池命中后，再按当日偏差选择冷启动期或测试期。</div></div>
+              <div class="recommend-percent-grid" style="grid-template-columns:repeat(2,minmax(0,1fr));" data-recommend-percent-group="explore">
+                <div><label class="recommend-form-label">冷启动期比例</label><div class="recommend-input-group"><input class="form-control" type="number" min="0" max="100" value="50" oninput="refreshRecommendRuleTotals()"><span class="recommend-input-addon">%</span></div></div>
+                <div><label class="recommend-form-label">测试期比例</label><div class="recommend-input-group"><input class="form-control" type="number" min="0" max="100" value="50" oninput="refreshRecommendRuleTotals()"><span class="recommend-input-addon">%</span></div></div>
+              </div>
+              <div class="recommend-ratio-bar" id="recommend-explore-bar"><span style="width:50%"></span><span style="width:50%"></span></div>
+            </div>
+            <div class="recommend-green-card">
+              <div class="recommend-green-head">
+                <div>
+                  <div class="recommend-section-title">智能池温度设置</div>
+                  <div class="recommend-section-desc">温度等级越低越偏向高分策略，等级越高，分配越发散。</div>
+                </div>
+                <div>
+                  <div class="recommend-total">温度等级 <span id="recommend-temp-value">5</span></div>
+                  <div class="recommend-slider-row"><input type="range" min="0" max="10" value="5" oninput="syncRecommendTemperature(this)"><input class="form-control" id="recommend-temp-input" type="number" min="0" max="10" value="5" oninput="syncRecommendTemperature(this)" style="width:58px"></div>
+                  <div class="recommend-form-hint">可设置 0-10，建议默认使用 5</div>
+                </div>
+              </div>
+              <table class="recommend-mini-table">
+                <thead><tr><th>温度等级</th><th>效果</th></tr></thead>
+                <tbody><tr><td>0</td><td>最高分优先（不执行 Softmax）</td></tr><tr><td>1</td><td>强效果优先</td></tr><tr><td>5</td><td>效果与探索均衡</td></tr><tr><td>10</td><td>更发散，提升探索机会</td></tr></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="recommend-step-pane" data-recommend-step-pane="score">
+            <div class="recommend-section-head">
+              <div class="recommend-section-icon">▥</div>
+              <div><div class="recommend-section-title">效果评分</div><div class="recommend-section-desc">为每项效果指标独立配置统计周期与综合得分权重</div></div>
+            </div>
+            <table class="recommend-score-table">
+              <thead><tr><th>评分指标</th><th>统计周期</th><th>权重</th><th>数值</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td class="recommend-score-name"><strong>开口率</strong><span>成功开口数 ÷ 触达样本数</span></td>
+                  <td><select class="form-control"><option selected>最近 7 天</option><option>最近 14 天</option><option>最近 30 天</option></select></td>
+                  <td><div class="recommend-weight-cell"><input type="range" min="0" max="100" value="50" data-recommend-weight="open" oninput="syncRecommendScoreWeight(this)"></div></td>
+                  <td><div class="recommend-input-group"><input class="form-control" type="number" min="0" max="100" value="50" data-recommend-weight-input="open" oninput="syncRecommendScoreWeight(this)"><span class="recommend-input-addon">%</span></div></td>
+                </tr>
+                <tr>
+                  <td class="recommend-score-name"><strong>转化率</strong><span>完成目标转化的客户占比</span></td>
+                  <td><select class="form-control"><option>最近 7 天</option><option selected>最近 30 天</option><option>最近 60 天</option></select></td>
+                  <td><div class="recommend-weight-cell"><input type="range" min="0" max="100" value="50" data-recommend-weight="conversion" oninput="syncRecommendScoreWeight(this)"></div></td>
+                  <td><div class="recommend-input-group"><input class="form-control" type="number" min="0" max="100" value="50" data-recommend-weight-input="conversion" oninput="syncRecommendScoreWeight(this)"><span class="recommend-input-addon">%</span></div></td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="recommend-weight-valid" id="recommend-weight-total">✓ 权重合计 100%，设置有效</div>
+          </section>
+
+          <section class="recommend-step-pane" data-recommend-step-pane="flow">
+            <div class="recommend-section-head">
+              <div class="recommend-section-icon">⌘</div>
+              <div><div class="recommend-section-title">阶段流转</div><div class="recommend-section-desc">按话术跨天累计选中量划分冷启动期、测试期和成熟期</div></div>
+            </div>
+            <div class="recommend-flow-grid">
+              <div class="recommend-flow-card">
+                <label class="recommend-form-label required" for="recommend-cold-threshold">冷启动阈值</label>
+                <div class="recommend-input-group"><input class="form-control" id="recommend-cold-threshold" type="number" min="0" value="50"><span class="recommend-input-addon">次</span></div>
+                <div class="recommend-form-hint">累计选中量低于该值时属于冷启动期</div>
+              </div>
+              <div class="recommend-flow-card">
+                <label class="recommend-form-label required" for="recommend-mature-threshold">成熟阈值</label>
+                <div class="recommend-input-group"><input class="form-control" id="recommend-mature-threshold" type="number" min="0" value="200"><span class="recommend-input-addon">次</span></div>
+                <div class="recommend-form-hint">累计选中量达到该值后进入成熟期</div>
+              </div>
+              <div class="recommend-flow-line"><span class="recommend-pill">冷启动期 &lt; 50</span> → <span class="recommend-pill">测试期 50-199</span> → <span class="recommend-pill">成熟期 ≥ 200</span></div>
+              <div class="recommend-observe-card">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;">
+                  <div><div class="recommend-section-title">智能池观察与恢复</div><div class="recommend-section-desc">每日按综合得分更新观察名单；观察话术仍可通过随机池积累真实客户样本。</div></div>
+                  <span class="tag tag-orange">由每日任务执行</span>
+                </div>
+                <div class="recommend-form-row">
+                  <div><label class="recommend-form-label">观察比例</label><div class="recommend-input-group"><input class="form-control" type="number" min="0" max="100" value="10"><span class="recommend-input-addon">%</span></div><div class="recommend-form-hint">按成熟话术数量计算观察名单</div></div>
+                  <div><label class="recommend-form-label">最低保留量</label><div class="recommend-input-group"><input class="form-control" type="number" min="0" value="10"><span class="recommend-input-addon">条</span></div><div class="recommend-form-hint">探索池与智能池中的可用话术合计不得低于该值</div></div>
+                </div>
+                <div style="margin-top:14px;"><label class="recommend-form-label">恢复评估样本量</label><div class="recommend-input-group" style="max-width:245px;"><input class="form-control" type="number" min="0" value="20"><span class="recommend-input-addon">人</span></div><div class="recommend-form-hint">观察话术达到该随机客户样本量后，参与恢复排名</div></div>
+              </div>
+            </div>
+          </section>
+        </div>
+        <div class="modal-footer">
+          <div class="recommend-footer-note">ⓘ 保存后将按规则状态决定是否立即生效</div>
+          <div class="recommend-footer-actions"><button class="btn btn-default" type="button" onclick="closeModal('modal-recommend-rule')">取消</button><button class="btn btn-primary" type="button" onclick="saveRecommendRuleModal()">✓ 保存规则</button></div>
+        </div>
+      </div>
     </div>
 
     <div class="modal-overlay" id="modal-script-library-form">
@@ -6608,22 +6870,21 @@
           <span class="panel-title">客服号列表</span>
           <div class="ops-filter-row">
             <select class="search-select"><option>全部状态</option><option>启用</option><option>停用</option></select>
-            <select class="search-select"><option>全部在线状态</option><option>在线</option><option>离线</option><option>未观测</option></select>
             <select class="search-select"><option>全部业务类型</option><option>线上客服</option><option>门店回访</option></select>
-            <input class="search-input" placeholder="搜索客服号 / 名称">
+            <input class="search-input" placeholder="搜索聚合平台帐号">
             <button class="btn btn-default btn-sm" type="button">查询</button>
           </div>
         </div>
         <div class="table-wrap ops-table-service">
           <table>
-            <thead><tr><th>客服号</th><th>客服名称</th><th>业务类型</th><th>角色</th><th>启用</th><th>AI 开关</th><th>在线</th><th>接待上限</th><th>当前会话</th><th>负责账号</th><th>最近活跃</th><th>最近同步</th><th>绑定员工</th><th>操作</th></tr></thead>
+            <thead><tr><th>聚合平台帐号</th><th>绑定微动咨询</th><th>业务类型</th><th>最近活跃</th><th>最近同步</th><th>启用</th><th>操作</th></tr></thead>
             <tbody>
-              <tr><td>ceshi</td><td><strong>测试客户加微跟进</strong></td><td><span class="tag tag-green">线上客服</span></td><td>cs</td><td><span class="ops-status-green">启用</span></td><td>关闭</td><td><span class="ops-status-green">在线</span></td><td>不限制</td><td>0</td><td>5</td><td>2026-08-31 14:25:22</td><td>2026-08-31 14:26:49</td><td>未绑定</td><td><button class="btn-link" type="button">绑定员工</button></td></tr>
-              <tr><td>wumingjie</td><td><strong>吴明杰（未绑定企微）</strong></td><td><span class="tag tag-green">线上客服</span></td><td>cs</td><td><span class="ops-status-green">启用</span></td><td>关闭</td><td><span class="ops-status-gray">离线</span></td><td>不限制</td><td>29</td><td>0</td><td>2026-09-01 11:32:59</td><td>2026-09-01 13:34:44</td><td>吴明杰</td><td><button class="btn-link" type="button">绑定员工</button></td></tr>
-              <tr><td>baisejing</td><td><strong>白思静（未绑定企微）</strong></td><td><span class="tag tag-green">线上客服</span></td><td>cs</td><td><span class="ops-status-green">启用</span></td><td>关闭</td><td><span class="ops-status-gray">离线</span></td><td>不限制</td><td>29</td><td>0</td><td>2026-09-01 11:04:00</td><td>2026-09-01 13:34:44</td><td>白思静</td><td><button class="btn-link" type="button">绑定员工</button></td></tr>
-              <tr><td>system-default-cs</td><td><strong>超级客服</strong></td><td><span class="tag tag-green">线上客服</span></td><td>cs</td><td><span class="ops-status-green">启用</span></td><td>关闭</td><td><span class="ops-status-green">在线</span></td><td>不限制</td><td>5609</td><td>0</td><td>2026-09-01 13:34:35</td><td>2026-09-01 13:34:44</td><td>未绑定</td><td><button class="btn-link" type="button">绑定员工</button></td></tr>
-              <tr><td>LJH001</td><td><strong>林俊辉</strong></td><td><span class="tag tag-green">线上客服</span></td><td>cs</td><td><span class="ops-status-green">启用</span></td><td>关闭</td><td><span class="ops-status-orange">未观测</span></td><td>不限制</td><td>0</td><td>0</td><td>--</td><td>2026-09-01 13:34:44</td><td>未绑定</td><td><button class="btn-link" type="button">绑定员工</button></td></tr>
-              <tr><td>TZT123</td><td><strong>田忠涛</strong></td><td><span class="tag tag-green">线上客服</span></td><td>cs</td><td><span class="ops-status-green">启用</span></td><td>关闭</td><td><span class="ops-status-gray">离线</span></td><td>6</td><td>967</td><td>2</td><td>2026-09-01 09:48:59</td><td>2026-09-01 13:34:44</td><td>未绑定</td><td><button class="btn-link" type="button">绑定员工</button></td></tr>
+              <tr><td><strong>测试客户加微跟进</strong></td><td>未绑定</td><td>线上客服</td><td>2026-08-31 14:25:22</td><td>2026-08-31 14:26:49</td><td><span class="ops-status-green">启用</span></td><td><button class="btn-link" type="button">绑定微动咨询</button></td></tr>
+              <tr><td><strong>吴明杰（未绑定企微）</strong></td><td><span class="tag tag-blue">吴明杰</span></td><td>线上客服</td><td>2026-09-01 11:32:59</td><td>2026-09-01 13:34:44</td><td><span class="ops-status-green">启用</span></td><td><button class="btn-link" type="button">绑定微动咨询</button></td></tr>
+              <tr><td><strong>白思静（未绑定企微）</strong></td><td><span class="tag tag-blue">白思静</span></td><td>线上客服</td><td>2026-09-01 11:04:00</td><td>2026-09-01 13:34:44</td><td><span class="ops-status-green">启用</span></td><td><button class="btn-link" type="button">绑定微动咨询</button></td></tr>
+              <tr><td><strong>超级客服</strong></td><td>未绑定</td><td>线上客服</td><td>2026-09-01 13:34:35</td><td>2026-09-01 13:34:44</td><td><span class="ops-status-green">启用</span></td><td><button class="btn-link" type="button">绑定微动咨询</button></td></tr>
+              <tr><td><strong>林俊辉</strong></td><td>未绑定</td><td>线上客服</td><td>--</td><td>2026-09-01 13:34:44</td><td><span class="ops-status-green">启用</span></td><td><button class="btn-link" type="button">绑定微动咨询</button></td></tr>
+              <tr><td><strong>田忠涛</strong></td><td>未绑定</td><td>线上客服</td><td>2026-09-01 09:48:59</td><td>2026-09-01 13:34:44</td><td><span class="ops-status-green">启用</span></td><td><button class="btn-link" type="button">绑定微动咨询</button></td></tr>
             </tbody>
           </table>
         </div>
@@ -7249,27 +7510,17 @@
       </div>
     </div>
 
-    <!-- ==================== 线上销售：开口话术 ==================== -->
-    <div class="page" id="page-online-trigger">
+    <!-- ==================== 线上销售：sop管理 ==================== -->
+    <div class="page" id="page-opening-script-list">
       <div class="page-header online-page-header">
-        <div><h2>开口话术</h2><p>配置未开口客户的固定触达话术，包括业务场景、触发事件、任务节点、下发方式和终止条件。</p></div>
-        <div class="opening-mode-switch" aria-label="选择分配逻辑">
-          <button class="opening-mode-btn active" type="button" data-opening-mode-btn="package" onclick="requestOpeningAllocationMode('package')">规则+安全包</button>
-          <button class="opening-mode-btn" type="button" data-opening-mode-btn="smart" onclick="requestOpeningAllocationMode('smart')">智能分配</button>
-        </div>
+        <div><h2>sop管理</h2><p>管理开口策略使用的 sop，包括业务场景、触发事件、任务节点、下发方式和终止条件。</p></div>
       </div>
-      <div class="opening-speech-tabs">
-        <button class="opening-speech-tab active" type="button" onclick="switchOpeningSpeechTab(this,'opening-pane-script')">话术列表</button>
-        <button class="opening-speech-tab" type="button" data-opening-allocation="smart" onclick="switchOpeningSpeechTab(this,'opening-pane-strategy')">智能分配</button>
-        <button class="opening-speech-tab" type="button" data-opening-allocation="package" onclick="switchOpeningSpeechTab(this,'opening-pane-rule-package')">规则分配</button>
-        <button class="opening-speech-tab" type="button" data-opening-allocation="package" onclick="switchOpeningSpeechTab(this,'opening-pane-safety-package')">安全包</button>
-      </div>
-      <section class="opening-speech-pane active" id="opening-pane-script">
+      <section class="opening-speech-pane active" id="opening-pane-script-list">
         <div class="ops-section-head opening-pane-head">
-          <div><div class="ops-section-title">话术列表</div></div>
+          <div><div class="ops-section-title">sop管理</div></div>
           <div class="online-policy-actions">
             <button class="btn btn-default btn-sm" type="button" onclick="openModal('modal-online-global-send')">发送规则配置</button>
-            <button class="btn btn-primary btn-sm" type="button" onclick="openOnlineScheduleModal('new')">+ 新建开口话术</button>
+            <button class="btn btn-primary btn-sm" type="button" onclick="openOnlineScheduleModal('new')">+ 新建sop</button>
           </div>
         </div>
         <div class="sop-rule-layout">
@@ -7292,8 +7543,8 @@
         </aside>
         <section class="panel sop-rule-panel">
           <div class="sop-rule-toolbar">
-            <div class="sop-rule-title">线上客服规则列表</div>
-            <input class="form-control sop-search" placeholder="搜索规则名称">
+            <div class="sop-rule-title">sop列表</div>
+            <input class="form-control sop-search" placeholder="搜索sop名称">
             <select class="form-control"><option>全部业务场景</option><option>新客加微邀约</option><option>预约后催排客</option><option>未成交回访</option></select>
             <select class="form-control"><option>全部触发事件</option><option>加微</option><option>预约</option><option>下单</option><option>流退</option></select>
             <select class="form-control"><option>全部意向项目分类</option><option>S10N</option><option>不限分类</option><option>皮肤管理</option></select>
@@ -7302,7 +7553,7 @@
           </div>
           <div class="table-wrap sop-rule-table">
             <table>
-              <thead><tr><th>话术名称</th><th>分组</th><th>业务场景</th><th>触发事件</th><th>意向项目分类</th><th>是否兜底</th><th>任务节点</th><th>启用</th><th>操作</th></tr></thead>
+              <thead><tr><th>sop名称</th><th>分组</th><th>业务场景</th><th>触发事件</th><th>意向项目分类</th><th>是否兜底</th><th>任务节点</th><th>启用</th><th>操作</th></tr></thead>
               <tbody>
                 <tr><td><strong>王星策略快节奏</strong></td><td><span class="sop-muted">王星组</span></td><td>新客加微邀约</td><td><span class="tag tag-blue">加微</span></td><td>S10N</td><td><span class="tag tag-gray">否</span></td><td><div class="sop-node-summary">3分钟、10分钟、30分钟、40分钟、180分钟、立即执行、第120天17:30</div></td><td><label class="switch"><input type="checkbox"><span class="switch-slider"></span></label></td><td><div class="sop-row-actions"><button type="button">发布</button><button type="button" onclick="openOnlineScheduleModal('edit','王星策略快节奏')">编辑</button><button type="button">复制</button><button type="button">日志</button><button class="danger" type="button">删除</button></div></td></tr>
                 <tr><td><strong>加微客户-微动 副本</strong></td><td><span class="sop-muted">未成交回访策略一</span></td><td>新客加微邀约</td><td><span class="tag tag-blue">加微</span></td><td>不限分类</td><td><span class="tag tag-gray">否</span></td><td><div class="sop-node-summary">第3天10:00、第3天14:00、第3天18:00、第4天09:50、第4天14:00、第4天16:00...</div></td><td><label class="switch"><input type="checkbox"><span class="switch-slider"></span></label></td><td><div class="sop-row-actions"><button type="button">发布</button><button type="button" onclick="openOnlineScheduleModal('edit','加微客户-微动 副本')">编辑</button><button type="button">复制</button><button type="button">日志</button><button class="danger" type="button">删除</button></div></td></tr>
@@ -7318,6 +7569,23 @@
         </section>
       </div>
       </section>
+    </div>
+
+    <!-- ==================== 线上销售：开口策略 ==================== -->
+    <div class="page" id="page-online-trigger">
+      <div class="page-header online-page-header">
+        <div><h2>开口策略</h2><p>配置未开口客户的触达策略，包括分配逻辑、规则包、安全包和终止条件。</p></div>
+        <div class="opening-mode-switch" aria-label="选择分配逻辑">
+          <button class="opening-mode-btn active" type="button" data-opening-mode-btn="package" onclick="requestOpeningAllocationMode('package')">规则+安全包</button>
+          <button class="opening-mode-btn" type="button" data-opening-mode-btn="smart" onclick="requestOpeningAllocationMode('smart')">智能分配</button>
+        </div>
+      </div>
+      <div class="opening-speech-tabs">
+        <button class="opening-speech-tab active" type="button" onclick="switchOpeningSpeechTab(this,'page-opening-script-list')">sop管理</button>
+        <button class="opening-speech-tab" type="button" data-opening-allocation="smart" onclick="switchOpeningSpeechTab(this,'opening-pane-strategy')">智能分配</button>
+        <button class="opening-speech-tab" type="button" data-opening-allocation="package" onclick="switchOpeningSpeechTab(this,'opening-pane-rule-package')">规则分配</button>
+        <button class="opening-speech-tab" type="button" data-opening-allocation="package" onclick="switchOpeningSpeechTab(this,'opening-pane-safety-package')">安全包</button>
+      </div>
       <section class="opening-speech-pane" id="opening-pane-strategy" data-opening-allocation="smart">
         <div class="ops-section-head opening-pane-head">
           <div><div class="ops-section-title">智能分配</div></div>
@@ -7988,10 +8256,9 @@
               <input type="text" class="form-input pl-8 py-2 text-sm w-56" placeholder="搜索规则名称…">
             </div>
             <select id="transfer-type-filter" class="form-input form-select">
-              <option value="all">全部规则（7）</option>
-              <option value="open">ai聊开口后转接（3）</option>
-              <option value="multi">多轮后转接（2）</option>
-              <option value="pay">付款后转接（2）</option>
+              <option value="all">全部规则（5）</option>
+              <option value="open">ai开口后转人工（3）</option>
+              <option value="pay">ai聊天拿预约金（2）</option>
             </select>
             <button onclick="filterTransferList(document.getElementById('transfer-type-filter').value)" class="ant-btn" type="button">查询</button>
           </div>
@@ -8006,11 +8273,11 @@
                   <div class="flex items-start justify-between mb-3">
                     <div>
                       <div class="flex items-center gap-2.5 mb-1">
-                        <h3 class="font-bold text-gray-900 text-[15px]">抖音高意向 - ai聊开口后转接</h3>
-                        <span class="tag tag-open">ai聊开口后转接</span>
+                        <h3 class="font-bold text-gray-900 text-[15px]">抖音高意向 - ai开口后转人工</h3>
+                        <span class="tag tag-open">ai开口后转人工</span>
                         <span class="flex items-center gap-1.5 text-xs"><span class="w-2 h-2 rounded-full bg-green-500 inline-block"></span><span class="text-green-600 font-medium">启用中</span></span>
                       </div>
-                      <p class="text-sm text-gray-500">抖音渠道高意向客户，ai聊开口后转接</p>
+                      <p class="text-sm text-gray-500">抖音渠道高意向客户，ai开口后转人工</p>
                     </div>
                     <div class="flex items-center gap-2 flex-shrink-0">
                       <div class="toggle-track on" onclick="toggleTransferRule(this)"><div class="toggle-thumb"></div></div>
@@ -8072,11 +8339,11 @@
                   <div class="flex items-start justify-between mb-3">
                     <div>
                       <div class="flex items-center gap-2.5 mb-1">
-                        <h3 class="font-bold text-gray-900 text-[15px]">百度信息流 - ai聊开口后转接</h3>
-                        <span class="tag tag-open">ai聊开口后转接</span>
+                        <h3 class="font-bold text-gray-900 text-[15px]">百度信息流 - ai开口后转人工</h3>
+                        <span class="tag tag-open">ai开口后转人工</span>
                         <span class="flex items-center gap-1.5 text-xs"><span class="w-2 h-2 rounded-full bg-green-500 inline-block"></span><span class="text-green-600 font-medium">启用中</span></span>
                       </div>
-                      <p class="text-sm text-gray-500">百度信息流渠道，ai聊开口后转接</p>
+                      <p class="text-sm text-gray-500">百度信息流渠道，ai开口后转人工</p>
                     </div>
                     <div class="flex items-center gap-2 flex-shrink-0">
                       <div class="toggle-track on" onclick="toggleTransferRule(this)"><div class="toggle-thumb"></div></div>
@@ -8103,7 +8370,7 @@
                   <div class="bg-gray-50 rounded-lg px-4 py-3 flex items-center gap-3 text-xs rule-chain-summary">
                     <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-blue-500"></span><span class="text-gray-600">ai聊开口(任意消息)</span></div>
                     <i class="fas fa-arrow-right text-gray-300"></i>
-                    <span class="text-gray-700 font-medium">转接 → 客服组：百度跟进组</span>
+                    <span class="text-gray-700 font-medium">转接 → 加微规则包：百度信息流包</span>
                     <span class="text-gray-300 mx-1">|</span>
                     <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-amber-500"></span><span class="text-gray-600">首次接管10分钟未回复再转</span></div>
                     <span class="text-gray-300 mx-1">|</span>
@@ -8123,8 +8390,8 @@
                   <div class="flex items-start justify-between mb-3">
                     <div>
                       <div class="flex items-center gap-2.5 mb-1">
-                        <h3 class="font-bold text-gray-900 text-[15px]">快手渠道 - ai聊开口后转接</h3>
-                        <span class="tag tag-open">ai聊开口后转接</span>
+                        <h3 class="font-bold text-gray-900 text-[15px]">快手渠道 - ai开口后转人工</h3>
+                        <span class="tag tag-open">ai开口后转人工</span>
                         <span class="flex items-center gap-1.5 text-xs"><span class="w-2 h-2 rounded-full bg-gray-300 inline-block"></span><span class="text-gray-400 font-medium">已停用</span></span>
                       </div>
                       <p class="text-sm text-gray-500">快手渠道测试用，暂时停用</p>
@@ -8160,113 +8427,17 @@
             </div>
 
             <!-- 规则4 -->
-            <div class="rule-card" data-type="multi">
-              <div class="flex items-stretch">
-                <div class="flex-1 p-5">
-                  <div class="flex items-start justify-between mb-3">
-                    <div>
-                      <div class="flex items-center gap-2.5 mb-1">
-                        <h3 class="font-bold text-gray-900 text-[15px]">公众号沉默客户 - 多轮后转接</h3>
-                        <span class="tag tag-multi">多轮后转接</span>
-                        <span class="flex items-center gap-1.5 text-xs"><span class="w-2 h-2 rounded-full bg-green-500 inline-block"></span><span class="text-green-600 font-medium">启用中</span></span>
-                      </div>
-                      <p class="text-sm text-gray-500">公众号沉默客户，AI多轮培育后转接</p>
-                    </div>
-                    <div class="flex items-center gap-2 flex-shrink-0">
-                      <div class="toggle-track on" onclick="toggleTransferRule(this)"><div class="toggle-thumb"></div></div>
-                      <div class="relative transfer-search-wrap">
-                        <button onclick="toggleTransferDropdown(this)" class="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-400"><i class="fas fa-ellipsis-v text-sm"></i></button>
-                        <div class="dropdown-menu hidden absolute right-0 top-9 bg-white border border-gray-200 rounded-lg shadow-lg py-1 w-32 z-30">
-                          <button onclick="openTransferRuleDrawer('edit')" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"><i class="fas fa-edit text-xs text-gray-400 mr-2"></i>编辑</button>
-                          <button class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"><i class="fas fa-copy text-xs text-gray-400 mr-2"></i>复制</button>
-                          <button class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"><i class="fas fa-trash text-xs mr-2"></i>删除</button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="flex items-center gap-6 text-sm mb-3">
-                    <div class="flex items-center gap-2 text-gray-500">
-                      <i class="fab fa-weixin text-green-500 text-xs"></i><span>绑定企微：</span>
-                      <div class="flex gap-1">
-                        <span class="wx-badge text-xs">阿杰2号</span>
-                        <span class="wx-badge text-xs">小王1号</span>
-                        <span class="wx-badge text-xs">小王2号</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="bg-gray-50 rounded-lg px-4 py-3 flex items-center gap-3 text-xs rule-chain-summary">
-                    <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-violet-500"></span><span class="text-gray-600">AI对话满10轮(双方来回)</span></div>
-                    <i class="fas fa-arrow-right text-gray-300"></i>
-                    <span class="text-gray-700 font-medium">转接 → 客服组：二次跟进组</span>
-                    <span class="text-gray-300 mx-1">|</span>
-                    <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-amber-500"></span><span class="text-gray-600">首次接管10分钟未回复再转</span></div>
-                    <span class="text-gray-300 mx-1">|</span>
-                    <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-500"></span><span class="text-gray-600">订单状态=排客 → 转接</span></div>
-                  </div>
-                  <div class="flex items-center gap-6 mt-3 text-xs text-gray-400">
-                    <span><i class="fas fa-clock mr-1"></i>创建于 2026-08-18</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- 规则5 -->
-            <div class="rule-card" data-type="multi">
-              <div class="flex items-stretch">
-                <div class="flex-1 p-5">
-                  <div class="flex items-start justify-between mb-3">
-                    <div>
-                      <div class="flex items-center gap-2.5 mb-1">
-                        <h3 class="font-bold text-gray-900 text-[15px]">老客户激活 - 多轮后转接</h3>
-                        <span class="tag tag-multi">多轮后转接</span>
-                        <span class="flex items-center gap-1.5 text-xs"><span class="w-2 h-2 rounded-full bg-green-500 inline-block"></span><span class="text-green-600 font-medium">启用中</span></span>
-                      </div>
-                      <p class="text-sm text-gray-500">老客户回流，AI聊5轮后转接</p>
-                    </div>
-                    <div class="flex items-center gap-2 flex-shrink-0">
-                      <div class="toggle-track on" onclick="toggleTransferRule(this)"><div class="toggle-thumb"></div></div>
-                      <div class="relative transfer-search-wrap">
-                        <button onclick="toggleTransferDropdown(this)" class="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-400"><i class="fas fa-ellipsis-v text-sm"></i></button>
-                        <div class="dropdown-menu hidden absolute right-0 top-9 bg-white border border-gray-200 rounded-lg shadow-lg py-1 w-32 z-30">
-                          <button onclick="openTransferRuleDrawer('edit')" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"><i class="fas fa-edit text-xs text-gray-400 mr-2"></i>编辑</button>
-                          <button class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"><i class="fas fa-copy text-xs text-gray-400 mr-2"></i>复制</button>
-                          <button class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"><i class="fas fa-trash text-xs mr-2"></i>删除</button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="flex items-center gap-6 text-sm mb-3">
-                    <div class="flex items-center gap-2 text-gray-500">
-                      <i class="fab fa-weixin text-green-500 text-xs"></i><span>绑定企微：</span>
-                      <span class="wx-badge text-xs">小陈1号</span>
-                    </div>
-                  </div>
-                  <div class="bg-gray-50 rounded-lg px-4 py-3 flex items-center gap-3 text-xs rule-chain-summary">
-                    <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-violet-500"></span><span class="text-gray-600">AI对话满5轮</span></div>
-                    <i class="fas fa-arrow-right text-gray-300"></i>
-                    <span class="text-gray-700 font-medium">转接 → 加微规则包：老客跟进包</span>
-                    <span class="text-gray-300 mx-1">|</span>
-                    <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-amber-500"></span><span class="text-gray-600">超时5分钟再转</span></div>
-                  </div>
-                  <div class="flex items-center gap-6 mt-3 text-xs text-gray-400">
-                    <span><i class="fas fa-clock mr-1"></i>创建于 2026-08-25</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- 规则6 -->
             <div class="rule-card" data-type="pay">
               <div class="flex items-stretch">
                 <div class="flex-1 p-5">
                   <div class="flex items-start justify-between mb-3">
                     <div>
                       <div class="flex items-center gap-2.5 mb-1">
-                        <h3 class="font-bold text-gray-900 text-[15px]">低意向长培育 - 付款后转接</h3>
-                        <span class="tag tag-pay">付款后转接</span>
+                        <h3 class="font-bold text-gray-900 text-[15px]">低意向长培育 - ai聊天拿预约金</h3>
+                        <span class="tag tag-pay">ai聊天拿预约金</span>
                         <span class="flex items-center gap-1.5 text-xs"><span class="w-2 h-2 rounded-full bg-green-500 inline-block"></span><span class="text-green-600 font-medium">启用中</span></span>
                       </div>
-                      <p class="text-sm text-gray-500">低意向客户全程AI培育，付定金后转接</p>
+                      <p class="text-sm text-gray-500">低意向客户全程AI培育，ai聊天拿预约金</p>
                     </div>
                     <div class="flex items-center gap-2 flex-shrink-0">
                       <div class="toggle-track on" onclick="toggleTransferRule(this)"><div class="toggle-thumb"></div></div>
@@ -8290,7 +8461,7 @@
                   <div class="bg-gray-50 rounded-lg px-4 py-3 flex items-center gap-3 text-xs rule-chain-summary">
                     <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-500"></span><span class="text-gray-600">订单状态=排客</span></div>
                     <i class="fas fa-arrow-right text-gray-300"></i>
-                    <span class="text-gray-700 font-medium">转接 → 排课-王老师、排课-李老师</span>
+                    <span class="text-gray-700 font-medium">转接 → 排客-王老师、排客-李老师</span>
                   </div>
                   <div class="flex items-center gap-6 mt-3 text-xs text-gray-400">
                     <span><i class="fas fa-clock mr-1"></i>创建于 2026-08-15</span>
@@ -8306,8 +8477,8 @@
                   <div class="flex items-start justify-between mb-3">
                     <div>
                       <div class="flex items-center gap-2.5 mb-1">
-                        <h3 class="font-bold text-gray-900 text-[15px]">小红书种草 - 付款后转接</h3>
-                        <span class="tag tag-pay">付款后转接</span>
+                        <h3 class="font-bold text-gray-900 text-[15px]">小红书种草 - ai聊天拿预约金</h3>
+                        <span class="tag tag-pay">ai聊天拿预约金</span>
                         <span class="flex items-center gap-1.5 text-xs"><span class="w-2 h-2 rounded-full bg-gray-300 inline-block"></span><span class="text-gray-400 font-medium">已停用</span></span>
                       </div>
                       <p class="text-sm text-gray-500">小红书种草流量，尝试纯AI成交，暂时停用观察</p>
@@ -8333,7 +8504,7 @@
                   <div class="bg-gray-50 rounded-lg px-4 py-3 flex items-center gap-3 text-xs opacity-50 rule-chain-summary">
                     <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-500"></span><span class="text-gray-600">订单状态=排客</span></div>
                     <i class="fas fa-arrow-right text-gray-300"></i>
-                    <span class="text-gray-700 font-medium">转接 → 排课组</span>
+                    <span class="text-gray-700 font-medium">转接 → 加微规则包：排客分配包</span>
                   </div>
                   <div class="flex items-center gap-6 mt-3 text-xs text-gray-400">
                     <span><i class="fas fa-clock mr-1"></i>创建于 2026-08-29</span>
@@ -8373,9 +8544,26 @@
                 <div class="form-item">
                   <label class="form-label">规则类型 <span class="text-red-500">*</span></label>
                   <select class="form-input form-select" id="transfer-rule-type" onchange="selectTransferType(this.value)">
-                    <option value="open" selected>ai聊开口后转接</option>
-                    <option value="multi">多轮后转接</option>
-                    <option value="pay">付款后转接</option>
+                    <option value="open" selected>ai开口后转人工</option>
+                    <option value="pay">ai聊天拿预约金</option>
+                  </select>
+                </div>
+                <div class="form-item">
+                  <label class="form-label">ai策略 <span class="text-red-500">*</span></label>
+                  <select class="form-input form-select" id="transfer-ai-employee">
+                    <option value="open-ai">开口AI</option>
+                    <option value="high-intent-ai" selected>高意向开口AI</option>
+                    <option value="feed-ai">信息流开口AI</option>
+                    <option value="low-intent-ai">低意向唤醒AI</option>
+                  </select>
+                </div>
+                <div class="form-item">
+                  <label class="form-label">关联ai员工</label>
+                  <select class="form-input form-select" id="transfer-related-service-account">
+                    <option value="dy3510" selected>敏虔战队-黄天雄-DY3510</option>
+                    <option value="sl8076">叶久龙-SL8076</option>
+                    <option value="ww0601">思杰战队-吴明杰-WW0601</option>
+                    <option value="sl0080">江燕芬-SL0080</option>
                   </select>
                 </div>
                 <div class="form-item wide">
@@ -8388,19 +8576,13 @@
               </div>
             </section>
 
-            <h3 class="chain-heading">2. 节点配置</h3>
+            <h3 class="chain-heading">2. 业务转接节点</h3>
             <div id="transfer-rule-chains">
               <div id="transfer-chain-open">
                 <section class="rule-node">
                   <div class="node-card">
                     <div class="node-header">
                       <div class="node-title"><span class="node-index">节点 1 · 触发</span><h4>ai聊开口 → 转接</h4></div>
-                      <select class="form-input form-select node-ai-select" aria-label="选择开口AI">
-                        <option selected>开口AI</option>
-                        <option>高意向开口AI</option>
-                        <option>信息流开口AI</option>
-                        <option>低意向唤醒AI</option>
-                      </select>
                     </div>
                     <div class="form-item">
                       <label class="form-label">ai聊开口判定</label>
@@ -8425,8 +8607,8 @@
                       <div class="target-control">
                         <div class="target-select-row" data-target-config="n1" data-default-target="package">
                           <select class="form-input form-select target-type-select" onchange="changeTransferTargetType('n1',this.value)">
+                            <option value="all">全部</option>
                             <option value="person">指定人工</option>
-                            <option value="group">指定客服组</option>
                             <option value="package" selected>加微规则包</option>
                           </select>
                           <div class="target-multi-select" id="transfer-n1-target-picker">
@@ -8450,11 +8632,11 @@
                       <div class="form-item target-form">
                         <label class="form-label">转接目标</label>
                         <div class="target-control">
-                          <div class="target-select-row" data-target-config="n2" data-default-target="group">
+                          <div class="target-select-row" data-target-config="n2" data-default-target="package">
                             <select class="form-input form-select target-type-select" onchange="changeTransferTargetType('n2',this.value)">
+                              <option value="all">全部</option>
                               <option value="person">指定人工</option>
-                              <option value="group" selected>指定客服组</option>
-                              <option value="package">加微规则包</option>
+                              <option value="package" selected>加微规则包</option>
                             </select>
                             <div class="target-multi-select" id="transfer-n2-target-picker">
                               <button class="target-multi-trigger" type="button" onclick="toggleTransferTargetMulti(event,this)"><span class="target-multi-label target-multi-placeholder">请选择</span><span class="target-multi-arrow"></span></button>
@@ -8482,8 +8664,8 @@
                       <div class="target-control">
                         <div class="target-select-row" data-target-config="n3" data-default-target="person">
                           <select class="form-input form-select target-type-select" onchange="changeTransferTargetType('n3',this.value)">
+                            <option value="all">全部</option>
                             <option value="person" selected>指定人工</option>
-                            <option value="group">指定客服组</option>
                             <option value="package">加微规则包</option>
                           </select>
                           <div class="target-multi-select" id="transfer-n3-target-picker">
@@ -8497,69 +8679,10 @@
                 </section>
               </div>
 
-              <div id="transfer-chain-multi" class="hidden">
-                <section class="rule-node">
-                  <div class="node-card">
-                    <div class="node-header"><div class="node-title"><span class="node-index">节点 1</span><h4>达到对话轮次</h4></div><select class="form-input form-select node-ai-select" aria-label="选择开口AI"><option selected>开口AI</option><option>高意向开口AI</option><option>信息流开口AI</option><option>低意向唤醒AI</option></select></div>
-                    <div class="form-grid">
-                      <div class="form-item"><label class="form-label">对话轮次</label><div class="number-row"><input type="number" class="form-input number" value="10"><span class="unit">轮</span></div></div>
-                      <div class="form-item"><label class="form-label">最低客户回复数</label><div class="number-row"><input type="number" class="form-input number" value="3"><span class="unit">条</span></div></div>
-                    </div>
-                  </div>
-                </section>
-                <section class="rule-node">
-                  <div class="node-card">
-                    <div class="node-header"><div class="node-title"><span class="node-index">节点 2</span><h4>识别购买意向后转接</h4></div><div class="node-switch"><span>启用</span><div class="toggle-track on" onclick="toggleTransferNode(this)"><div class="toggle-thumb"></div></div></div></div>
-                    <div class="form-item"><label class="form-label">意向信号</label><div class="checkbox-list"><label class="ant-checkbox"><input type="checkbox" checked>询价</label><label class="ant-checkbox"><input type="checkbox" checked>主动要链接</label><label class="ant-checkbox"><input type="checkbox" checked>明确购买</label></div></div>
-                    <div class="form-item target-form">
-                      <label class="form-label">转接目标</label>
-                      <div class="target-control">
-                        <div class="target-select-row" data-target-config="m2" data-default-target="group">
-                          <select class="form-input form-select target-type-select" onchange="changeTransferTargetType('m2',this.value)">
-                            <option value="person">指定人工</option>
-                            <option value="group" selected>指定客服组</option>
-                            <option value="package">加微规则包</option>
-                          </select>
-                          <div class="target-multi-select" id="transfer-m2-target-picker">
-                            <button class="target-multi-trigger" type="button" onclick="toggleTransferTargetMulti(event,this)"><span class="target-multi-label target-multi-placeholder">请选择</span><span class="target-multi-arrow"></span></button>
-                            <div class="target-multi-menu"></div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </section>
-                <section class="rule-node">
-                  <div class="node-card">
-                    <div class="node-header"><div class="node-title"><span class="node-index">节点 3</span><h4>客户付定金后转接</h4></div><div class="node-switch"><span>启用</span><div class="toggle-track on" onclick="toggleTransferNode(this)"><div class="toggle-thumb"></div></div></div></div>
-                    <div class="form-item">
-                      <label class="form-label">订单状态</label>
-                      <select class="form-input form-select"><option>加微</option><option>下单</option><option>预约</option><option selected>排客</option><option>改约</option><option>取消排客</option><option>预约超时</option><option>到店</option><option>流退</option><option>结算</option></select>
-                    </div>
-                    <div class="form-item target-form">
-                      <label class="form-label">转接目标</label>
-                      <div class="target-control">
-                        <div class="target-select-row" data-target-config="m3" data-default-target="package">
-                          <select class="form-input form-select target-type-select" onchange="changeTransferTargetType('m3',this.value)">
-                            <option value="person">指定人工</option>
-                            <option value="group">指定客服组</option>
-                            <option value="package" selected>加微规则包</option>
-                          </select>
-                          <div class="target-multi-select" id="transfer-m3-target-picker">
-                            <button class="target-multi-trigger" type="button" onclick="toggleTransferTargetMulti(event,this)"><span class="target-multi-label target-multi-placeholder">请选择</span><span class="target-multi-arrow"></span></button>
-                            <div class="target-multi-menu"></div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </section>
-              </div>
-
               <div id="transfer-chain-pay" class="hidden">
                 <section class="rule-node">
                   <div class="node-card">
-                    <div class="node-header"><div class="node-title"><span class="node-index">节点 1</span><h4>客户付定金后转接</h4></div><select class="form-input form-select node-ai-select" aria-label="选择开口AI"><option selected>开口AI</option><option>高意向开口AI</option><option>信息流开口AI</option><option>低意向唤醒AI</option></select></div>
+                    <div class="node-header"><div class="node-title"><span class="node-index">节点 1</span><h4>客户付定金后转接</h4></div></div>
                     <div class="form-item">
                       <label class="form-label">订单状态</label>
                       <select class="form-input form-select"><option>加微</option><option>下单</option><option>预约</option><option selected>排客</option><option>改约</option><option>取消排客</option><option>预约超时</option><option>到店</option><option>流退</option><option>结算</option></select>
@@ -8569,8 +8692,8 @@
                       <div class="target-control">
                         <div class="target-select-row" data-target-config="p1" data-default-target="person">
                           <select class="form-input form-select target-type-select" onchange="changeTransferTargetType('p1',this.value)">
+                            <option value="all">全部</option>
                             <option value="person" selected>指定人工</option>
-                            <option value="group">指定客服组</option>
                             <option value="package">加微规则包</option>
                           </select>
                           <div class="target-multi-select" id="transfer-p1-target-picker">
@@ -8584,9 +8707,41 @@
                 </section>
               </div>
             </div>
+
+            <h3 class="chain-heading">3. 中断节点</h3>
+            <div id="transfer-common-chain">
+              <section class="rule-node">
+                <div class="node-card">
+                  <div class="node-header">
+                    <div class="node-title"><h4>触发转人工</h4></div>
+                    <div class="node-switch"><span>启用</span><div class="toggle-track on" onclick="toggleTransferNode(this)"><div class="toggle-thumb"></div></div></div>
+                  </div>
+                  <div class="form-item">
+                    <label class="form-label">触发来源</label>
+                    <div class="node-readonly-text">平台通知：该会话需要转人工</div>
+                  </div>
+                  <div class="form-item target-form">
+                    <label class="form-label">转接目标</label>
+                    <div class="target-control">
+                      <div class="target-select-row" data-target-config="ai0" data-default-target="package">
+                        <select class="form-input form-select target-type-select" onchange="changeTransferTargetType('ai0',this.value)">
+                          <option value="all">全部</option>
+                          <option value="person">指定人工</option>
+                          <option value="package" selected>加微规则包</option>
+                        </select>
+                        <div class="target-multi-select" id="transfer-ai0-target-picker">
+                          <button class="target-multi-trigger" type="button" onclick="toggleTransferTargetMulti(event,this)"><span class="target-multi-label target-multi-placeholder">请选择</span><span class="target-multi-arrow"></span></button>
+                          <div class="target-multi-menu"></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            </div>
           </div>
           <footer class="drawer-footer">
-            <div class="rule-footer-summary">当前链路 <strong id="transfer-rule-footer-summary">ai聊开口后转接 · 3 个节点</strong> · 转接目标联动多选</div>
+            <div class="rule-footer-summary">当前链路 <strong id="transfer-rule-footer-summary">ai开口后转人工 · 业务节点 3 个 · 中断节点 1 个</strong> · 转接目标联动多选</div>
             <button onclick="closeTransferRuleDrawer()" class="ant-btn">取消</button>
             <button onclick="saveTransferRule()" class="ant-btn ant-btn-primary">保存规则</button>
           </footer>
@@ -11370,7 +11525,7 @@ Z6a7b8c9d0e1f2g3h4i5j6k7l8m9n0o1p2q3r4s5t6u7v8w9x0y1z2AQAB
 <!-- 线上客服：基于发送时间的顺序调度 -->
 <div class="modal-overlay" id="modal-online-trigger">
   <div class="modal modal-xl">
-    <div class="modal-header"><span class="modal-title" id="online-schedule-modal-title">编辑调度策略</span><button class="modal-close" onclick="closeModal('modal-online-trigger')">×</button></div>
+    <div class="modal-header"><span class="modal-title" id="online-schedule-modal-title">编辑sop</span><button class="modal-close" onclick="closeModal('modal-online-trigger')">×</button></div>
     <div class="modal-body">
       <div class="schedule-modal-intro">
         <div class="schedule-basic-title">1. 基础信息</div>
@@ -11381,11 +11536,12 @@ Z6a7b8c9d0e1f2g3h4i5j6k7l8m9n0o1p2q3r4s5t6u7v8w9x0y1z2AQAB
           <div class="form-group"><label class="form-label required">触发事件类型</label><select class="form-control" id="online-schedule-trigger-type"><option>请选择</option><option selected>加微</option><option>下单</option><option>预约</option><option>排客</option><option>改约</option><option>取消排客</option><option>预约超时</option><option>到店</option><option>流退</option><option>结算</option></select></div>
           <div class="form-group"><label class="form-label">意向项目分类</label><select class="form-control" id="online-schedule-category"><option selected>不限分类</option><option>S10N</option><option>皮肤管理</option><option>身体管理</option><option>抗衰项目</option></select></div>
           <div class="form-group"><label class="form-label">是否兜底</label><select class="form-control" id="online-schedule-fallback"><option>是</option><option selected>否</option></select></div>
-          <div class="form-group schedule-basic-wide"><label class="form-label">终止条件</label><div class="schedule-condition-picker" id="online-schedule-stop-picker"><div class="schedule-condition-trigger" onclick="toggleScheduleConditionPicker(event,this)"><span id="online-schedule-stop-label">请选择终止条件</span><span class="schedule-condition-arrow">⌄</span></div><div class="schedule-condition-menu"><label><input type="checkbox" value="加微" onchange="syncScheduleConditionLabel()">加微</label><label><input type="checkbox" value="下单" onchange="syncScheduleConditionLabel()">下单</label><label><input type="checkbox" value="预约" onchange="syncScheduleConditionLabel()">预约</label><label><input type="checkbox" value="排客" onchange="syncScheduleConditionLabel()">排客</label><label><input type="checkbox" value="改约" onchange="syncScheduleConditionLabel()">改约</label><label><input type="checkbox" value="取消排客" onchange="syncScheduleConditionLabel()">取消排客</label><label><input type="checkbox" value="预约超时" onchange="syncScheduleConditionLabel()">预约超时</label><label><input type="checkbox" value="到店" onchange="syncScheduleConditionLabel()">到店</label><label><input type="checkbox" value="流退" onchange="syncScheduleConditionLabel()">流退</label><label><input type="checkbox" value="结算" onchange="syncScheduleConditionLabel()">结算</label></div></div></div>
+          <div class="form-group"><label class="form-label">终止条件</label><div class="schedule-condition-picker" id="online-schedule-stop-picker"><div class="schedule-condition-trigger" onclick="toggleScheduleConditionPicker(event,this)"><span id="online-schedule-stop-label">请选择终止条件</span><span class="schedule-condition-arrow">⌄</span></div><div class="schedule-condition-menu"><label><input type="checkbox" value="加微" onchange="syncScheduleConditionLabel()">加微</label><label><input type="checkbox" value="下单" onchange="syncScheduleConditionLabel()">下单</label><label><input type="checkbox" value="预约" onchange="syncScheduleConditionLabel()">预约</label><label><input type="checkbox" value="排客" onchange="syncScheduleConditionLabel()">排客</label><label><input type="checkbox" value="改约" onchange="syncScheduleConditionLabel()">改约</label><label><input type="checkbox" value="取消排客" onchange="syncScheduleConditionLabel()">取消排客</label><label><input type="checkbox" value="预约超时" onchange="syncScheduleConditionLabel()">预约超时</label><label><input type="checkbox" value="到店" onchange="syncScheduleConditionLabel()">到店</label><label><input type="checkbox" value="流退" onchange="syncScheduleConditionLabel()">流退</label><label><input type="checkbox" value="结算" onchange="syncScheduleConditionLabel()">结算</label></div></div></div>
+          <div class="form-group"><label class="form-label">内容选择模式</label><select class="form-control" id="online-schedule-content-mode" onchange="toggleOnlineScheduleContentMode(this.value)"><option value="fixed" selected>指定固定内容</option><option value="knowledge">从知识库中选择</option></select></div>
         </div>
       </div>
 
-      <div class="schedule-builder">
+      <div class="schedule-builder" id="online-schedule-fixed-content">
         <div class="schedule-tabs">
           <div class="schedule-tab-nav">
             <button class="schedule-tab-btn active" type="button" onclick="switchOnlineScheduleTab(this,'online-schedule-queue-tab')">消息队列</button>
@@ -11506,8 +11662,46 @@ Z6a7b8c9d0e1f2g3h4i5j6k7l8m9n0o1p2q3r4s5t6u7v8w9x0y1z2AQAB
       </div>
         </div>
       </div>
+      <div class="schedule-builder" id="online-schedule-knowledge-content" hidden>
+      <div class="follow-plan-panel active">
+        <section class="schedule-section">
+          <div class="schedule-section-head">
+            <div><div class="schedule-section-title">跟进节奏</div></div>
+            <button class="btn btn-default btn-sm" type="button" onclick="addOnlineKnowledgePlanGroup()">+ 添加一组</button>
+          </div>
+          <div class="schedule-section-body">
+            <div class="follow-plan-list" id="online-knowledge-plan-list">
+              <div class="follow-plan-card" data-follow-group>
+                <span class="follow-plan-index">M1</span>
+                <div class="follow-plan-main">
+                  <div class="follow-time-row"><span class="online-knowledge-trigger-text">加微后</span><span class="follow-time-editor" data-follow-time-editor><input class="form-control follow-delay-input" type="number" min="0" value="0" onchange="refreshOnlineKnowledgePlanSummary()"><select class="form-control follow-delay-unit" onchange="refreshOnlineKnowledgePlanSummary()"><option selected>分钟</option><option>小时</option><option>天</option></select></span><span>发送</span></div>
+                  <div class="follow-actions-list">
+                    <div class="follow-action-row" data-follow-action><span class="follow-action-label">跟进动作</span><select class="form-control"><option selected>共情承接</option><option>澄清追问</option><option>专业解答</option><option>证据举证</option><option>替代方案</option><option>价值重构</option><option>低门槛邀请</option><option>活动权益</option><option>预约确认</option><option>关怀回访</option></select><span class="follow-action-label">AI提示词</span><input class="form-control" placeholder="写给 AI 看的动作要求" value="先承接客户顾虑，再自然引出下一步"><button class="follow-action-delete" type="button" title="删除动作" onclick="removeOnlineKnowledgeAction(this)">×</button></div>
+                    <div class="follow-action-row" data-follow-action><span class="follow-action-label">跟进动作</span><select class="form-control"><option>共情承接</option><option>澄清追问</option><option>专业解答</option><option selected>证据举证</option><option>替代方案</option><option>价值重构</option><option>低门槛邀请</option><option>活动权益</option><option>预约确认</option><option>关怀回访</option></select><span class="follow-action-label">AI提示词</span><input class="form-control" placeholder="写给 AI 看的动作要求" value="优先使用同类客户案例，突出效果变化和可信度"><button class="follow-action-delete" type="button" title="删除动作" onclick="removeOnlineKnowledgeAction(this)">×</button></div>
+                  </div>
+                  <button class="follow-add-action" type="button" onclick="addOnlineKnowledgeAction(this)">+ 添加跟进动作</button>
+                </div>
+                <div class="follow-plan-actions"><button type="button" title="上移" onclick="moveOnlineKnowledgePlanGroup(this,-1)">↑</button><button type="button" title="下移" onclick="moveOnlineKnowledgePlanGroup(this,1)">↓</button><button class="follow-plan-delete" type="button" title="删除组" onclick="removeOnlineKnowledgePlanGroup(this)">×</button></div>
+              </div>
+              <div class="follow-plan-card" data-follow-group>
+                <span class="follow-plan-index">M2</span>
+                <div class="follow-plan-main">
+                  <div class="follow-time-row"><span class="online-knowledge-trigger-text">加微后</span><span class="follow-time-editor" data-follow-time-editor><input class="form-control follow-delay-input" type="number" min="0" value="0" onchange="refreshOnlineKnowledgePlanSummary()"><select class="form-control follow-delay-unit" onchange="refreshOnlineKnowledgePlanSummary()"><option selected>分钟</option><option>小时</option><option>天</option></select></span><span>发送</span></div>
+                  <div class="follow-actions-list">
+                    <div class="follow-action-row" data-follow-action><span class="follow-action-label">跟进动作</span><select class="form-control"><option>共情承接</option><option>澄清追问</option><option>专业解答</option><option>证据举证</option><option>替代方案</option><option selected>价值重构</option><option>低门槛邀请</option><option>活动权益</option><option>预约确认</option><option>关怀回访</option></select><span class="follow-action-label">AI提示词</span><input class="form-control" placeholder="写给 AI 看的动作要求" value="把价格拆成疗程价值和到店权益，避免直接压价"><button class="follow-action-delete" type="button" title="删除动作" onclick="removeOnlineKnowledgeAction(this)">×</button></div>
+                  </div>
+                  <button class="follow-add-action" type="button" onclick="addOnlineKnowledgeAction(this)">+ 添加跟进动作</button>
+                </div>
+                <div class="follow-plan-actions"><button type="button" title="上移" onclick="moveOnlineKnowledgePlanGroup(this,-1)">↑</button><button type="button" title="下移" onclick="moveOnlineKnowledgePlanGroup(this,1)">↓</button><button class="follow-plan-delete" type="button" title="删除组" onclick="removeOnlineKnowledgePlanGroup(this)">×</button></div>
+              </div>
+            </div>
+            <button class="follow-add-group" type="button" onclick="addOnlineKnowledgePlanGroup()">+ 添加跟进组</button>
+          </div>
+        </section>
+      </div>
+      </div>
     </div>
-    <div class="modal-footer"><div class="schedule-footer-summary">基础策略 <strong id="schedule-footer-slots">13 个发送时间点</strong> · 消息顺序固定 · 冲突自动顺延</div><button class="btn btn-default" onclick="closeModal('modal-online-trigger')">取消</button><button class="btn btn-primary" onclick="saveOnlineSchedule()">保存调度策略</button></div>
+    <div class="modal-footer"><div class="schedule-footer-summary">基础策略 <strong id="schedule-footer-slots">13 个发送时间点</strong> · 消息顺序固定 · 冲突自动顺延</div><button class="btn btn-default" onclick="closeModal('modal-online-trigger')">取消</button><button class="btn btn-primary" onclick="saveOnlineSchedule()">保存sop</button></div>
   </div>
 </div>
 
@@ -12541,8 +12735,8 @@ var transferScopeAccounts=[
   {name:'叶久龙-SL8076',id:'acc-c677ff6b9aed575d94b10da5d65e8d77',status:'current',selected:true},
   {name:'思杰战队-吴明杰-WW0601',id:'auto-128138db746fc41f',status:'current',selected:true},
   {name:'江燕芬-SL0080',id:'virtual-sl0080',status:'free',selected:false},
-  {name:'敬虔战队-9516',id:'auto-4fb5c9f6192d558db866e0c20755a00f',status:'bound',boundText:'已绑定：公众号沉默客户 - 多轮后转接',selected:false,disabled:true},
-  {name:'志伟战队-刘嘉俊-DY3184',id:'acc-1026d0345fa75d1ba587dbe00a3d30a1',status:'bound-green',boundText:'已绑定：低意向长培育 - 付款后转接',selected:false,disabled:true},
+  {name:'敬虔战队-9516',id:'auto-4fb5c9f6192d558db866e0c20755a00f',status:'bound',boundText:'已绑定：抖音高意向 - ai开口后转人工',selected:false,disabled:true},
+  {name:'志伟战队-刘嘉俊-DY3184',id:'acc-1026d0345fa75d1ba587dbe00a3d30a1',status:'bound-green',boundText:'已绑定：低意向长培育 - ai聊天拿预约金',selected:false,disabled:true},
   {name:'沈晓欣',id:'auto-T1007',status:'warning',selected:false},
   {name:'敏虔战队-李伟-DY3498',id:'acc-88b311c75d4d909ca9ef77a160bc6182',status:'free',selected:false}
 ];
@@ -12639,14 +12833,14 @@ function saveTransferRule(){
 
 // 类型选择
 function selectTransferType(type){
-  transferSelectedType=type||'open';
+  transferSelectedType=type==='pay'?'pay':'open';
   const select=document.getElementById('transfer-rule-type');
   if(select&&select.value!==transferSelectedType)select.value=transferSelectedType;
   renderTransferRuleChains();
 }
 
 function renderTransferRuleChains(){
-  ['open','multi','pay'].forEach(t=>{
+  ['open','pay'].forEach(t=>{
     const el=document.getElementById('transfer-chain-'+t);
     if(el)el.classList.toggle('hidden',t!==transferSelectedType);
   });
@@ -12656,10 +12850,10 @@ function renderTransferRuleChains(){
 function updateTransferRuleFooterSummary(){
   const summary=document.getElementById('transfer-rule-footer-summary');
   if(!summary)return;
-  const labels={open:'ai聊开口后转接',multi:'多轮后转接',pay:'付款后转接'};
+  const labels={open:'ai开口后转人工',pay:'ai聊天拿预约金'};
   const chain=document.getElementById('transfer-chain-'+transferSelectedType);
   const count=chain?chain.querySelectorAll('.rule-node').length:0;
-  summary.textContent=(labels[transferSelectedType]||'转接规则')+' · '+count+' 个节点';
+  summary.textContent=(labels[transferSelectedType]||'转接规则')+' · 业务节点 '+count+' 个 · 中断节点 1 个';
 }
 
 // RadioCard通用
@@ -12672,6 +12866,9 @@ function selectTransferRadioCard(el){
 }
 
 const transferTargetTypeOptions={
+  all:[
+    {value:'all',label:'全部',meta:'按当前规则可用客服范围分配'}
+  ],
   person:[
     {value:'xiaomei1',label:'小美1号',meta:'当前空闲 · 今日已接 18'},
     {value:'xiaomei2',label:'小美2号',meta:'忙碌 · 今日已接 24'},
@@ -12679,18 +12876,10 @@ const transferTargetTypeOptions={
     {value:'xiaoli2',label:'小丽2号',meta:'跟进中 · 今日已接 21'},
     {value:'xiaozhou2',label:'小周2号',meta:'当前空闲 · 今日已接 14'},
     {value:'ajie1',label:'阿杰1号',meta:'高意向承接 · 今日已接 19'},
-    {value:'paike-wang',label:'排课-王老师',meta:'排课负责人 · 今日已接 12'},
-    {value:'paike-li',label:'排课-李老师',meta:'排课负责人 · 今日已接 9'},
-    {value:'paike-chen',label:'排课-陈老师',meta:'排课负责人 · 今日已接 11'},
+    {value:'paike-wang',label:'排客-王老师',meta:'排客负责人 · 今日已接 12'},
+    {value:'paike-li',label:'排客-李老师',meta:'排客负责人 · 今日已接 9'},
+    {value:'paike-chen',label:'排客-陈老师',meta:'排客负责人 · 今日已接 11'},
     {value:'supervisor-ye',label:'值班主管-叶斌',meta:'兜底转接 · 今日已接 7'}
-  ],
-  group:[
-    {value:'open-pay',label:'开口&付款组',meta:'8 人 · 覆盖高意向承接'},
-    {value:'follow-up',label:'二次跟进组',meta:'2 人 · 超时/意向补接'},
-    {value:'douyin-group',label:'抖音高意向组',meta:'5 人 · 短视频线索优先'},
-    {value:'baidu-group',label:'百度信息流组',meta:'4 人 · 表单线索承接'},
-    {value:'paike-group',label:'排课组',meta:'3 人 · 付款后排课承接'},
-    {value:'night-duty',label:'夜间兜底组',meta:'2 人 · 20:00-24:00 在线'}
   ],
   package:[
     {value:'intent-a',label:'高意向包A',meta:'4客服 · 每人/日50个 · 剩余168',extra:'168 可分配'},
@@ -12699,18 +12888,17 @@ const transferTargetTypeOptions={
     {value:'baidu-package',label:'百度信息流包',meta:'4客服 · 每人/日30个 · 剩余84',extra:'84 可分配'},
     {value:'old-user-package',label:'老客激活包',meta:'3客服 · 每人/日25个 · 剩余61',extra:'61 可分配'},
     {value:'nurture',label:'培育转接包',meta:'二次跟进组 · 剩余73',extra:'73 可分配'},
-    {value:'paike-package',label:'排课分配包',meta:'排课组 · 剩余56',extra:'56 可分配'},
+    {value:'paike-package',label:'排客分配包',meta:'排客组 · 剩余56',extra:'56 可分配'},
     {value:'night-package',label:'夜间兜底包',meta:'夜间兜底组 · 剩余38',extra:'38 可分配'}
   ]
 };
 
 const transferTargetDefaults={
-  n1:{package:['intent-a','douyin-package'],person:['xiaomei1','xiaoli1'],group:['open-pay','douyin-group']},
-  n2:{group:['follow-up','night-duty'],person:['xiaozhou2','supervisor-ye'],package:['nurture','night-package']},
-  n3:{person:['paike-wang','paike-li'],group:['paike-group'],package:['paike-package']},
-  m2:{group:['follow-up','douyin-group'],person:['ajie1','xiaoli2'],package:['intent-b','douyin-package']},
-  m3:{package:['paike-package','baidu-package'],person:['paike-wang','paike-chen'],group:['paike-group','baidu-group']},
-  p1:{person:['paike-wang','paike-li'],group:['paike-group'],package:['paike-package','old-user-package']}
+  ai0:{all:['all'],person:['supervisor-ye','ajie1'],package:['nurture','night-package']},
+  n1:{all:['all'],package:['intent-a','douyin-package'],person:['xiaomei1','xiaoli1']},
+  n2:{all:['all'],person:['xiaozhou2','supervisor-ye'],package:['nurture','night-package']},
+  n3:{all:['all'],person:['paike-wang','paike-li'],package:['paike-package']},
+  p1:{all:['all'],person:['paike-wang','paike-li'],package:['paike-package','old-user-package']}
 };
 const transferTargetSelections={};
 
@@ -12784,7 +12972,7 @@ function renderTransferTargetMulti(prefix,type){
   const menu=row.querySelector('.target-multi-menu');
   if(label){
     const names=options.filter(item=>selected.includes(item.value)).map(item=>item.label);
-    label.textContent=names.length?(names.length>1?'已选 '+names.length+' 项：':'')+names.join('、'):'请选择';
+    label.textContent=names.length?names.join('、'):'请选择';
     label.classList.toggle('target-multi-placeholder',!names.length);
   }
   if(menu){
@@ -13135,7 +13323,7 @@ var pageTitleMap = {
   'ai-engine': '智能引擎',
   'wechat-rules': '加微规则',
   'wecom-remark-rules': '企微备注规则',
-  'online-trigger': '开口话术',
+  'online-trigger': '开口策略',
   'conversion-push': '成交策略',
   'transfer-rules': '转接规则',
   'follow-strategy': '卡点跟进',
@@ -14208,6 +14396,35 @@ function normalizeWechatRulesLayout() {
   });
 }
 
+function mountOpeningSopPane() {
+  var onlinePage = document.getElementById('page-online-trigger');
+  var sopPane = document.getElementById('page-opening-script-list');
+  var tabs = onlinePage ? onlinePage.querySelector('.opening-speech-tabs') : null;
+  if (!onlinePage || !sopPane || !tabs) return;
+  if (!tabs.querySelector('[onclick*="page-opening-script-list"]')) {
+    tabs.insertAdjacentHTML('afterbegin', '<button class="opening-speech-tab active" type="button" onclick="switchOpeningSpeechTab(this,&quot;page-opening-script-list&quot;)">sop管理</button>');
+  }
+  sopPane.classList.remove('page');
+  sopPane.classList.add('opening-speech-pane', 'active');
+  var header = unifiedDirect(sopPane, '.page-header');
+  if (header) header.remove();
+  var innerPane = unifiedDirect(sopPane, '#opening-pane-script-list');
+  if (innerPane) {
+    while (innerPane.firstChild) sopPane.appendChild(innerPane.firstChild);
+    innerPane.remove();
+  }
+  if (sopPane.parentElement !== onlinePage) {
+    var nextPane = tabs.nextElementSibling;
+    onlinePage.insertBefore(sopPane, nextPane || null);
+  }
+  tabs.querySelectorAll('.opening-speech-tab').forEach(function(tab) {
+    tab.classList.toggle('active', tab.getAttribute('onclick') && tab.getAttribute('onclick').indexOf('page-opening-script-list') > -1);
+  });
+  onlinePage.querySelectorAll('.opening-speech-pane').forEach(function(pane) {
+    pane.classList.toggle('active', pane.id === 'page-opening-script-list');
+  });
+}
+
 function normalizeOpeningSpeechLayout() {
   var page = document.getElementById('page-online-trigger');
   if (!page) return;
@@ -14219,7 +14436,7 @@ function normalizeOpeningSpeechLayout() {
       markUnifiedCard(sopPanel);
       var sopToolbar = sopPanel.querySelector('.sop-rule-toolbar');
       markUnifiedToolbar(sopToolbar);
-      ensureUnifiedTitle(sopToolbar, titleText || '话术列表');
+      ensureUnifiedTitle(sopToolbar, titleText || 'sop管理');
       if (head) {
         moveActionChildren(head, ensureUnifiedActionRow(sopToolbar));
         head.remove();
@@ -14309,6 +14526,27 @@ function normalizeScriptLibraryLayout() {
     markUnifiedCard(card);
     markUnifiedToolbar(card.querySelector('.ant-card-head'));
   });
+  var recommendPane = document.getElementById('script-lib-tab-recommend');
+  if (recommendPane) {
+    var head = unifiedDirect(recommendPane, '.ops-section-head');
+    var panel = unifiedDirect(recommendPane, '.panel');
+    if (panel) {
+      var titleText = head ? (head.querySelector('.ops-section-title') || {}).textContent : '推荐规则';
+      var filters = unifiedDirect(recommendPane, '.speech-strategy-filter') || panel.querySelector('.speech-strategy-filter');
+      var toolbar = buildUnifiedToolbar(panel, titleText || '推荐规则', filters, head);
+      var actions = ensureUnifiedActionRow(toolbar);
+      if (actions && !actions.querySelector('[data-open-recommend-rule]')) {
+        var addBtn = document.createElement('button');
+        addBtn.className = 'btn btn-primary btn-sm';
+        addBtn.type = 'button';
+        addBtn.setAttribute('data-open-recommend-rule', 'new');
+        addBtn.setAttribute('onclick', "openRecommendRuleModal('new')");
+        addBtn.textContent = '+ 新增分配规则';
+        actions.appendChild(addBtn);
+      }
+      if (head) head.remove();
+    }
+  }
 }
 
 function normalizeAiDecisionLayout() {
@@ -14358,6 +14596,7 @@ function normalizeAiDecisionLayout() {
 }
 
 function initUnifiedListLayout() {
+  mountOpeningSopPane();
   moveServiceListIntoWechatRules();
   unifiedListPageIds.forEach(function(id) {
     var page = document.getElementById(id);
@@ -14398,7 +14637,7 @@ var openingAllocationMode = 'package';
 var pendingOpeningAllocationMode = null;
 
 function initOpeningAllocationMode() {
-  setOpeningAllocationMode(openingAllocationMode, { preserveActive:true, silent:true });
+  setOpeningAllocationMode(openingAllocationMode, { silent:true });
 }
 
 function getOpeningAllocationModeLabel(mode) {
@@ -15316,7 +15555,7 @@ function toggleScriptMatrixGroup(btn, group) {
 
 function switchScriptLibraryTab(tab) {
   var activeTab = tab || 'category';
-  ['category', 'matrix', 'list'].forEach(function(name) {
+  ['category', 'matrix', 'list', 'recommend'].forEach(function(name) {
     var pane = document.getElementById('script-lib-tab-' + name);
     var btn = document.getElementById('script-lib-tab-' + name + '-btn');
     var active = name === activeTab;
@@ -15327,6 +15566,238 @@ function switchScriptLibraryTab(tab) {
     }
   });
   syncUnifiedQueryCards();
+}
+
+function switchRecommendRuleStep(step) {
+  var modal = document.getElementById('modal-recommend-rule');
+  if (!modal || !step) return;
+  modal.querySelectorAll('[data-recommend-step-btn]').forEach(function(btn) {
+    btn.classList.toggle('active', btn.getAttribute('data-recommend-step-btn') === step);
+  });
+  modal.querySelectorAll('[data-recommend-step-pane]').forEach(function(pane) {
+    pane.classList.toggle('active', pane.getAttribute('data-recommend-step-pane') === step);
+  });
+}
+
+function getRecommendRuleRowFromButton(button) {
+  return button ? button.closest('#script-lib-tab-recommend tbody tr') : null;
+}
+
+function getRecommendKnowledgeCategoryOptions() {
+  var rows = document.querySelectorAll('#script-lib-tab-category .script-category-table tbody tr');
+  var names = Array.prototype.slice.call(rows).map(function(row) {
+    var name = row.cells[0] ? row.cells[0].textContent.trim() : '';
+    return name;
+  }).filter(Boolean);
+  if (!names.length) names = ['到店受阻', '时间不便', '健康限制', '家人决策', '信任疑虑', '需求不匹配', '决策犹豫', '意向项目错误', '距离卡点', '价格卡点'];
+  return names.filter(function(name, index) { return names.indexOf(name) === index; });
+}
+
+function getRecommendRuleScopeFromRow(row) {
+  if (!row || !row.cells[1]) return [];
+  var tags = Array.prototype.slice.call(row.cells[1].querySelectorAll('.tag')).map(function(tag) {
+    return tag.textContent.trim();
+  }).filter(Boolean);
+  if (tags.length) return tags;
+  return row.cells[1].textContent.split(/[、,，]/).map(function(item) {
+    return item.trim();
+  }).filter(Boolean);
+}
+
+function renderRecommendScopeOptions(selectedValues) {
+  var picker = document.getElementById('recommend-rule-scope-picker');
+  if (!picker) return;
+  var selected = selectedValues || [];
+  var dropdown = picker.querySelector('.multi-select-dropdown');
+  if (dropdown) {
+    dropdown.innerHTML = getRecommendKnowledgeCategoryOptions().map(function(name) {
+      var checked = selected.indexOf(name) > -1 ? ' checked' : '';
+      return '<label class="multi-select-option"><input type="checkbox" value="' + escapeAttr(name) + '"' + checked + ' onchange="syncRecommendScopePicker(this)">' + escapeAttr(name) + '</label>';
+    }).join('');
+  }
+  syncRecommendScopePicker();
+}
+
+function getRecommendScopeValues() {
+  var picker = document.getElementById('recommend-rule-scope-picker');
+  if (!picker) return [];
+  return Array.prototype.slice.call(picker.querySelectorAll('.multi-select-option input:checked')).map(function(input) {
+    return input.value || '';
+  }).filter(Boolean);
+}
+
+function syncRecommendScopePicker(input) {
+  var picker = input ? input.closest('.multi-select') : document.getElementById('recommend-rule-scope-picker');
+  var hidden = document.getElementById('recommend-rule-scope');
+  if (hidden) hidden.value = getRecommendScopeValues().join('、');
+  renderMultiSelectSelected(picker);
+}
+
+function renderRecommendScopeTags(scope) {
+  var values = Array.isArray(scope) ? scope : String(scope || '').split(/[、,，]/);
+  values = values.map(function(item) { return item.trim(); }).filter(Boolean);
+  if (!values.length) return '<span class="tag tag-gray">未设置范围</span>';
+  return values.map(function(item) {
+    return '<span class="tag tag-blue">' + escapeAttr(item) + '</span>';
+  }).join('');
+}
+
+function openRecommendRuleModal(mode, button) {
+  var modal = document.getElementById('modal-recommend-rule');
+  var title = document.getElementById('recommend-rule-modal-title');
+  var nameInput = document.getElementById('recommend-rule-name');
+  var enabledInput = document.getElementById('recommend-rule-enabled');
+  var isEdit = mode === 'edit';
+  var row = getRecommendRuleRowFromButton(button);
+  if (modal) {
+    modal.setAttribute('data-mode', isEdit ? 'edit' : 'new');
+    modal.__recommendRuleRow = row || null;
+  }
+  if (title) title.textContent = isEdit ? '编辑分配规则' : '新增分配规则';
+  if (nameInput) {
+    var rowName = row && row.querySelector('.ops-name-cell strong') ? row.querySelector('.ops-name-cell strong').textContent.trim() : '';
+    nameInput.value = isEdit ? rowName : '';
+    nameInput.style.borderColor = '';
+  }
+  renderRecommendScopeOptions(isEdit ? getRecommendRuleScopeFromRow(row) : []);
+  if (enabledInput) {
+    var rowEnabled = !row || !row.cells[5] || row.cells[5].textContent.indexOf('启用') > -1;
+    enabledInput.checked = rowEnabled;
+  }
+  switchRecommendRuleStep('base');
+  refreshRecommendRuleTotals();
+  refreshRecommendWeightTotal();
+  openModal('modal-recommend-rule');
+  if (!isEdit && nameInput) setTimeout(function() { nameInput.focus(); }, 80);
+}
+
+function getRecommendPercentValues(groupName) {
+  var modal = document.getElementById('modal-recommend-rule');
+  if (!modal) return [];
+  return Array.prototype.slice.call(modal.querySelectorAll('[data-recommend-percent-group="' + groupName + '"] input[type="number"]')).map(function(input) {
+    var value = Number(input.value);
+    if (!Number.isFinite(value) || value < 0) value = 0;
+    if (value > 100) value = 100;
+    input.value = value;
+    return value;
+  });
+}
+
+function renderRecommendPercentBar(id, values) {
+  var bar = document.getElementById(id);
+  if (!bar) return;
+  Array.prototype.slice.call(bar.children).forEach(function(item, index) {
+    item.style.width = (values[index] || 0) + '%';
+  });
+}
+
+function refreshRecommendRuleTotals() {
+  var pool = getRecommendPercentValues('pool');
+  var explore = getRecommendPercentValues('explore');
+  var poolTotal = pool.reduce(function(sum, value) { return sum + value; }, 0);
+  var exploreTotal = explore.reduce(function(sum, value) { return sum + value; }, 0);
+  var poolTotalEl = document.getElementById('recommend-pool-total');
+  var exploreTotalEl = document.getElementById('recommend-explore-total');
+  if (poolTotalEl) {
+    poolTotalEl.textContent = '合计 ' + poolTotal + '%';
+    poolTotalEl.style.color = poolTotal === 100 ? '#059669' : '#fa8c16';
+  }
+  if (exploreTotalEl) {
+    exploreTotalEl.textContent = '合计 ' + exploreTotal + '%';
+    exploreTotalEl.style.color = exploreTotal === 100 ? '#059669' : '#fa8c16';
+  }
+  renderRecommendPercentBar('recommend-pool-bar', pool);
+  renderRecommendPercentBar('recommend-explore-bar', explore);
+}
+
+function syncRecommendTemperature(input) {
+  var modal = document.getElementById('modal-recommend-rule');
+  if (!modal || !input) return;
+  var value = Number(input.value);
+  if (!Number.isFinite(value)) value = 5;
+  value = Math.max(0, Math.min(10, value));
+  modal.querySelectorAll('#recommend-temp-input, input[type="range"][oninput*="syncRecommendTemperature"]').forEach(function(item) {
+    item.value = value;
+  });
+  var label = document.getElementById('recommend-temp-value');
+  if (label) label.textContent = value;
+}
+
+function syncRecommendScoreWeight(input) {
+  if (!input) return;
+  var key = input.getAttribute('data-recommend-weight') || input.getAttribute('data-recommend-weight-input');
+  var value = Number(input.value);
+  if (!Number.isFinite(value)) value = 0;
+  value = Math.max(0, Math.min(100, value));
+  document.querySelectorAll('[data-recommend-weight="' + key + '"], [data-recommend-weight-input="' + key + '"]').forEach(function(item) {
+    item.value = value;
+  });
+  refreshRecommendWeightTotal();
+}
+
+function refreshRecommendWeightTotal() {
+  var modal = document.getElementById('modal-recommend-rule');
+  if (!modal) return;
+  var inputs = Array.prototype.slice.call(modal.querySelectorAll('[data-recommend-weight-input]'));
+  var total = inputs.reduce(function(sum, input) { return sum + (Number(input.value) || 0); }, 0);
+  var text = document.getElementById('recommend-weight-total');
+  if (text) {
+    text.textContent = (total === 100 ? '✓ 权重合计 100%，设置有效' : '权重合计 ' + total + '%，需调整为 100%');
+    text.style.color = total === 100 ? '#059669' : '#fa8c16';
+  }
+}
+
+function getNextRecommendRuleId() {
+  var rows = document.querySelectorAll('#script-lib-tab-recommend .ops-table-strategy tbody tr');
+  return rows.length + 1;
+}
+
+function refreshRecommendRuleListCount() {
+  var pane = document.getElementById('script-lib-tab-recommend');
+  if (!pane) return;
+  var count = pane.querySelectorAll('.ops-table-strategy tbody tr').length;
+  var text = pane.querySelector('.speech-strategy-filter .text-muted');
+  if (text) text.textContent = '共 ' + count + ' 条规则';
+}
+
+function buildRecommendRuleRowHtml(name, scope, enabled, id) {
+  var status = enabled ? '启用' : '停用';
+  return '<tr>' +
+    '<td><div class="ops-name-cell"><strong>' + escapeAttr(name || '新客首轮智能分配') + '</strong><span>#' + (id || getNextRecommendRuleId()) + '</span></div></td>' +
+    '<td>' + renderRecommendScopeTags(scope) + '</td>' +
+    '<td><span class="tag tag-blue">智能加权</span></td>' +
+    '<td><strong>开口 50% · 转化 50%</strong><div class="ops-mini-note">周期按指标独立配置</div></td>' +
+    '<td><strong>淘汰末尾 10% · 至少保留 10 条</strong></td>' +
+    '<td><span class="ops-switch-text"><label class="switch"><input type="checkbox"' + (enabled ? ' checked' : '') + '><span class="switch-slider"></span></label>' + status + '</span></td>' +
+    '<td><strong>刚刚保存</strong><div class="ops-mini-note">创建 2026-09-08 00:00:00</div></td>' +
+    '<td><div class="speech-strategy-action-icons">' +
+    '<button type="button" title="查看日志"><svg viewBox="0 0 24 24" width="18" height="18"><path d="M12 8v5l3 2M5 3v5h5M5.5 13a7 7 0 101.8-6.7" stroke="currentColor" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>' +
+    '<button type="button" title="编辑" onclick="openRecommendRuleModal(&quot;edit&quot;, this)"><svg viewBox="0 0 24 24" width="18" height="18"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z" stroke="currentColor" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>' +
+    '<button type="button" title="删除"><svg viewBox="0 0 24 24" width="18" height="18"><path d="M3 6h18M8 6V4h8v2M6 6l1 15h10l1-15M10 11v6M14 11v6" stroke="currentColor" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>' +
+    '</div></td></tr>';
+}
+
+function saveRecommendRuleModal() {
+  var modal = document.getElementById('modal-recommend-rule');
+  var nameInput = document.getElementById('recommend-rule-name');
+  if (!modal || !nameInput) return;
+  if (!nameInput.value.trim()) {
+    nameInput.style.borderColor = '#ff4d4f';
+    switchRecommendRuleStep('base');
+    nameInput.focus();
+    return;
+  }
+  nameInput.style.borderColor = '';
+  var tbody = document.querySelector('#script-lib-tab-recommend .ops-table-strategy tbody');
+  var row = modal.__recommendRuleRow || null;
+  var enabled = document.getElementById('recommend-rule-enabled') ? document.getElementById('recommend-rule-enabled').checked : true;
+  var currentId = row && row.querySelector('.ops-name-cell span') ? row.querySelector('.ops-name-cell span').textContent.replace('#', '') : getNextRecommendRuleId();
+  var html = buildRecommendRuleRowHtml(nameInput.value.trim(), getRecommendScopeValues(), enabled, currentId);
+  if (row) row.outerHTML = html;
+  else if (tbody) tbody.insertAdjacentHTML('afterbegin', html);
+  refreshRecommendRuleListCount();
+  closeModal('modal-recommend-rule');
+  showToast('推荐规则已保存', 'success');
 }
 
 function getScriptObstacleParent(value) {
@@ -15706,6 +16177,95 @@ function switchOnlineScheduleTab(btn, panelId) {
   });
 }
 
+function toggleOnlineScheduleContentMode(mode) {
+  mode = mode === 'knowledge' ? 'knowledge' : 'fixed';
+  var fixed = document.getElementById('online-schedule-fixed-content');
+  var knowledge = document.getElementById('online-schedule-knowledge-content');
+  if (fixed) fixed.hidden = mode !== 'fixed';
+  if (knowledge) knowledge.hidden = mode !== 'knowledge';
+  if (mode === 'fixed') refreshOnlineScheduleSummary();
+  else refreshOnlineKnowledgePlanSummary();
+}
+
+function getOnlineKnowledgePlanList() {
+  return document.getElementById('online-knowledge-plan-list');
+}
+
+function buildOnlineKnowledgeAction(selected) {
+  return '<div class="follow-action-row" data-follow-action><span class="follow-action-label">跟进动作</span><select class="form-control">' + buildFollowActionOptions(selected || '共情承接') + '</select><span class="follow-action-label">AI提示词</span><input class="form-control" placeholder="写给 AI 看的动作要求"><button class="follow-action-delete" type="button" title="删除动作" onclick="removeOnlineKnowledgeAction(this)">×</button></div>';
+}
+
+function buildOnlineKnowledgeTimeEditor(mode, delay, unit) {
+  unit = unit || '分钟';
+  var units = ['分钟', '小时', '天'];
+  return '<span class="follow-time-editor" data-follow-time-editor><input class="form-control follow-delay-input" type="number" min="0" value="' + (typeof delay === 'number' ? delay : 0) + '" onchange="refreshOnlineKnowledgePlanSummary()"><select class="form-control follow-delay-unit" onchange="refreshOnlineKnowledgePlanSummary()">' + units.map(function(item) { return '<option' + (item === unit ? ' selected' : '') + '>' + item + '</option>'; }).join('') + '</select></span>';
+}
+
+function buildOnlineKnowledgePlanGroup(delay, unit, action) {
+  delay = typeof delay === 'number' ? delay : 0;
+  unit = unit || '分钟';
+  return '<div class="follow-plan-card" data-follow-group><span class="follow-plan-index"></span><div class="follow-plan-main"><div class="follow-time-row"><span class="online-knowledge-trigger-text">加微后</span>' + buildOnlineKnowledgeTimeEditor('加微后', delay, unit) + '<span>发送</span></div><div class="follow-actions-list">' + buildOnlineKnowledgeAction(action || '共情承接') + '</div><button class="follow-add-action" type="button" onclick="addOnlineKnowledgeAction(this)">+ 添加跟进动作</button></div><div class="follow-plan-actions"><button type="button" title="上移" onclick="moveOnlineKnowledgePlanGroup(this,-1)">↑</button><button type="button" title="下移" onclick="moveOnlineKnowledgePlanGroup(this,1)">↓</button><button class="follow-plan-delete" type="button" title="删除组" onclick="removeOnlineKnowledgePlanGroup(this)">×</button></div></div>';
+}
+
+function refreshOnlineKnowledgePlanSummary() {
+  var list = getOnlineKnowledgePlanList();
+  if (!list) return;
+  var groups = Array.prototype.slice.call(list.querySelectorAll('[data-follow-group]'));
+  var actionCount = 0;
+  groups.forEach(function(group, index) {
+    var marker = group.querySelector('.follow-plan-index');
+    if (marker) marker.textContent = 'M' + (index + 1);
+    actionCount += group.querySelectorAll('[data-follow-action]').length;
+  });
+  var summary = document.querySelector('#modal-online-trigger .schedule-footer-summary');
+  if (summary) summary.innerHTML = '知识库模式 <strong id="schedule-footer-slots">' + groups.length + ' 组 / ' + actionCount + ' 个动作</strong> · 按跟进动作从知识库匹配内容';
+}
+
+function addOnlineKnowledgeAction(btn) {
+  var main = btn ? btn.closest('.follow-plan-main') : null;
+  var list = main ? main.querySelector('.follow-actions-list') : null;
+  if (!list) return;
+  list.insertAdjacentHTML('beforeend', buildOnlineKnowledgeAction('共情承接'));
+  refreshOnlineKnowledgePlanSummary();
+}
+
+function removeOnlineKnowledgeAction(btn) {
+  var group = btn ? btn.closest('[data-follow-group]') : null;
+  if (!group || group.querySelectorAll('[data-follow-action]').length <= 1) {
+    showToast('每组至少保留一个跟进动作', 'info');
+    return;
+  }
+  var row = btn ? btn.closest('[data-follow-action]') : null;
+  if (row) row.remove();
+  refreshOnlineKnowledgePlanSummary();
+}
+
+function addOnlineKnowledgePlanGroup() {
+  var list = getOnlineKnowledgePlanList();
+  if (!list) return;
+  list.insertAdjacentHTML('beforeend', buildOnlineKnowledgePlanGroup(0, '分钟', '共情承接'));
+  refreshOnlineKnowledgePlanSummary();
+}
+
+function removeOnlineKnowledgePlanGroup(btn) {
+  var list = getOnlineKnowledgePlanList();
+  if (!list || list.querySelectorAll('[data-follow-group]').length <= 1) {
+    showToast('至少保留一组跟进动作', 'info');
+    return;
+  }
+  var group = btn ? btn.closest('[data-follow-group]') : null;
+  if (group) group.remove();
+  refreshOnlineKnowledgePlanSummary();
+}
+
+function moveOnlineKnowledgePlanGroup(btn, direction) {
+  var group = btn ? btn.closest('[data-follow-group]') : null;
+  if (!group || !group.parentElement) return;
+  if (direction < 0 && group.previousElementSibling) group.parentElement.insertBefore(group, group.previousElementSibling);
+  if (direction > 0 && group.nextElementSibling) group.parentElement.insertBefore(group.nextElementSibling, group);
+  refreshOnlineKnowledgePlanSummary();
+}
+
 function setSelectValue(select, value) {
   if (!select || !value) return;
   var matched = Array.prototype.slice.call(select.options).some(function(option) {
@@ -15719,7 +16279,7 @@ function setSelectValue(select, value) {
 }
 
 function findSopRuleRowByName(name) {
-  var tbody = document.querySelector('#page-online-trigger .sop-rule-table tbody');
+  var tbody = document.querySelector('#page-opening-script-list .sop-rule-table tbody');
   if (!tbody || !name) return null;
   var rows = Array.prototype.slice.call(tbody.querySelectorAll('tr:not(.sop-empty-row)'));
   return rows.find(function(row) { return getSopRuleNameFromRow(row) === name; }) || null;
@@ -15730,7 +16290,7 @@ function refreshOnlineScheduleGroupOptions() {
   if (!select) return;
   var current = select.value || '未分组';
   var names = ['未分组'];
-  document.querySelectorAll('#page-online-trigger .sop-group-item').forEach(function(item) {
+  document.querySelectorAll('#page-opening-script-list .sop-group-item').forEach(function(item) {
     var name = item.textContent.trim();
     if (name && name !== '全部' && names.indexOf(name) === -1) names.push(name);
   });
@@ -15805,10 +16365,13 @@ function openOnlineScheduleModal(mode, strategyName) {
     modal.setAttribute('data-mode', isNew ? 'new' : 'edit');
     modal.setAttribute('data-original-name', strategyName || '');
   }
-  if (title) title.textContent = isNew ? '新建调度策略' : '编辑调度策略';
+  if (title) title.textContent = isNew ? '新建sop' : '编辑sop';
   if (nameInput) nameInput.value = isNew ? '' : (strategyName || nameInput.value || '新客加微顺序跟进');
   fillOnlineScheduleBaseFieldsFromRow(isNew ? null : findSopRuleRowByName(strategyName));
   openModal('modal-online-trigger');
+  var contentMode = document.getElementById('online-schedule-content-mode');
+  if (contentMode) contentMode.value = 'fixed';
+  toggleOnlineScheduleContentMode('fixed');
   refreshOnlineScheduleSummary();
   if (isNew && nameInput) setTimeout(function() { nameInput.focus(); }, 80);
 }
@@ -15844,6 +16407,8 @@ function refreshOnlineScheduleSummary() {
   });
   var footerSlots = document.getElementById('schedule-footer-slots');
   if (footerSlots) footerSlots.textContent = slots.length + ' 个发送时间点';
+  var summary = document.querySelector('#modal-online-trigger .schedule-footer-summary');
+  if (summary) summary.innerHTML = '基础策略 <strong id="schedule-footer-slots">' + slots.length + ' 个发送时间点</strong> · 消息顺序固定 · 冲突自动顺延';
 }
 
 function buildSlotModeSelect(mode) {
@@ -16251,6 +16816,16 @@ function moveQueueMessage(btn, direction) {
 function getOnlineScheduleNodeSummary() {
   var modal = document.getElementById('modal-online-trigger');
   if (!modal) return '立即执行';
+  var contentMode = document.getElementById('online-schedule-content-mode');
+  if (contentMode && contentMode.value === 'knowledge') {
+    var groups = Array.prototype.slice.call(document.querySelectorAll('#online-knowledge-plan-list [data-follow-group]'));
+    return groups.map(function(group, index) {
+      var actions = Array.prototype.slice.call(group.querySelectorAll('[data-follow-action] select')).map(function(select) {
+        return select.value || '跟进动作';
+      }).filter(Boolean);
+      return 'M' + (index + 1) + '：' + (actions.length ? actions.join('、') : '知识库动作');
+    }).join('；') || '知识库跟进节奏';
+  }
   var days = Array.prototype.slice.call(modal.querySelectorAll('[data-schedule-day]'));
   var parts = [];
   Array.prototype.slice.call(modal.querySelectorAll('[data-slot]')).forEach(function(slot) {
@@ -16273,6 +16848,12 @@ function getOnlineScheduleNodeSummary() {
 function getOnlineScheduleMessageSummary() {
   var modal = document.getElementById('modal-online-trigger');
   if (!modal) return '0个消息组';
+  var contentMode = document.getElementById('online-schedule-content-mode');
+  if (contentMode && contentMode.value === 'knowledge') {
+    var groups = document.querySelectorAll('#online-knowledge-plan-list [data-follow-group]').length;
+    var actions = document.querySelectorAll('#online-knowledge-plan-list [data-follow-action]').length;
+    return '知识库模式：' + groups + '组 / ' + actions + '个动作';
+  }
   var groups = modal.querySelectorAll('[data-queue-message]').length;
   var units = modal.querySelectorAll('[data-group-message]').length;
   return groups + '个消息组 / ' + units + '条消息';
@@ -16291,7 +16872,7 @@ function buildSopRuleRowHtml(name, group, scene, eventName, category, fallback, 
 
 function saveGlobalSendRuleConfig() {
   var modal = document.getElementById('modal-online-global-send');
-  var button = document.querySelector('#page-online-trigger .online-policy-actions button[onclick*="modal-online-global-send"]');
+  var button = document.querySelector('#page-opening-script-list .online-policy-actions button[onclick*="modal-online-global-send"]');
   var times = modal ? Array.prototype.slice.call(modal.querySelectorAll('.schedule-time-range input[type="time"]')).map(function(input) { return input.value; }) : [];
   if (button && times.length >= 2) button.textContent = '发送规则：' + times[0] + '-' + times[1];
   closeModal('modal-online-global-send');
@@ -16306,7 +16887,7 @@ function saveOnlineSchedule() {
   }
   nameInput.style.borderColor = '';
   var modal = document.getElementById('modal-online-trigger');
-  var tbody = document.querySelector('#page-online-trigger .sop-rule-table tbody');
+  var tbody = document.querySelector('#page-opening-script-list .sop-rule-table tbody');
   var groupSelect = document.getElementById('online-schedule-group');
   var sceneSelect = document.getElementById('online-schedule-scene');
   var triggerSelect = document.getElementById('online-schedule-trigger-type');
@@ -16328,7 +16909,9 @@ function saveOnlineSchedule() {
     return;
   }
   if (triggerSelect) triggerSelect.style.borderColor = '';
-  refreshOnlineScheduleSummary();
+  var contentModeSelect = document.getElementById('online-schedule-content-mode');
+  if (contentModeSelect && contentModeSelect.value === 'knowledge') refreshOnlineKnowledgePlanSummary();
+  else refreshOnlineScheduleSummary();
   if (mode === 'edit' && originalName && tbody) {
     Array.prototype.slice.call(tbody.querySelectorAll('tr')).some(function(row) {
       if (getSopRuleNameFromRow(row) === originalName) {
@@ -19318,7 +19901,7 @@ function buildSopRowActionsHtml(published) {
 
 function normalizeSopRowActions(scope) {
   var root = scope || document;
-  root.querySelectorAll('#page-online-trigger .sop-row-actions').forEach(function(actions) {
+  root.querySelectorAll('#page-opening-script-list .sop-row-actions').forEach(function(actions) {
     if (actions.querySelector('.sop-more-wrap')) return;
     var row = actions.closest('tr');
     var toggle = row ? row.querySelector('.switch input') : null;
@@ -19328,7 +19911,7 @@ function normalizeSopRowActions(scope) {
 }
 
 function closeSopMoreMenus(exceptWrap) {
-  document.querySelectorAll('#page-online-trigger .sop-more-wrap.open').forEach(function(wrap) {
+  document.querySelectorAll('#page-opening-script-list .sop-more-wrap.open').forEach(function(wrap) {
     if (wrap !== exceptWrap) wrap.classList.remove('open');
   });
 }
@@ -19339,7 +19922,7 @@ function getSopRuleCellText(row, index) {
 }
 
 function applySopFilters() {
-  var page = document.getElementById('page-online-trigger');
+  var page = document.getElementById('page-opening-script-list');
   if (!page) return false;
   var activeGroup = page.querySelector('.sop-group-item.active');
   var groupName = activeGroup ? activeGroup.textContent.trim() : '全部';
@@ -19385,7 +19968,7 @@ function selectSopGroup(btn) {
 }
 
 function addSopGroup() {
-  var list = document.querySelector('#page-online-trigger .sop-group-list');
+  var list = document.querySelector('#page-opening-script-list .sop-group-list');
   if (!list) return false;
   var count = list.querySelectorAll('.sop-group-item.child').length + 1;
   var btn = document.createElement('button');
@@ -19510,7 +20093,7 @@ function syncSopRuleSwitch(input) {
 }
 
 function handleSopRuleButton(btn) {
-  if (!btn || btn.getAttribute('onclick') || !btn.closest('#page-online-trigger')) return false;
+  if (!btn || btn.getAttribute('onclick') || !btn.closest('#page-opening-script-list')) return false;
   if (btn.classList.contains('sop-group-item')) return selectSopGroup(btn);
   if (btn.classList.contains('sop-group-add')) return addSopGroup();
   var text = btn.textContent.trim();
@@ -21664,7 +22247,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (removeBtn) {
       removeAudienceCondition(removeBtn.closest('.condition-row'));
     }
-    var sopRuleButton = e.target.closest('#page-online-trigger button');
+    var sopRuleButton = e.target.closest('#page-opening-script-list button');
     if (sopRuleButton && handleSopRuleButton(sopRuleButton)) {
       return;
     }
@@ -21733,7 +22316,7 @@ document.addEventListener('DOMContentLoaded', function() {
       syncAccountRowStatus(e.target);
       return;
     }
-    if (e.target && e.target.matches('#page-online-trigger .sop-rule-table .switch input')) {
+    if (e.target && e.target.matches('#page-opening-script-list .sop-rule-table .switch input')) {
       syncSopRuleSwitch(e.target);
       return;
     }
