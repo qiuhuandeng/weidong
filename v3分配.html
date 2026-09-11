@@ -1,0 +1,2392 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>客户分配系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --primary: #4F6EF7;
+            --primary-light: #EEF1FE;
+            --primary-dark: #3A56D4;
+            --success: #34C759;
+            --warning: #FF9500;
+            --danger: #FF3B30;
+            --danger-light: #FFF0EF;
+            --text-primary: #1A1A2E;
+            --text-secondary: #6B7280;
+            --text-tertiary: #9CA3AF;
+            --bg-primary: #F5F7FA;
+            --bg-white: #FFFFFF;
+            --border: #E5E7EB;
+            --card-border: #EEF1F5;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg-white);
+            color: var(--text-primary);
+            font-size: 14px;
+            line-height: 1.5;
+            overflow-x: hidden;
+            min-height: 100vh;
+            min-height: 100dvh;
+        }
+
+        /* ==================== Phone Frame ==================== */
+        .phone-frame {
+            width: 100%;
+            max-width: 430px;
+            height: 100vh;
+            height: 100dvh;
+            margin: 0 auto;
+            background: var(--bg-primary);
+            position: relative;
+            overflow: hidden;
+        }
+
+        @media (min-width: 431px) {
+            .phone-frame {
+                border-left: 1px solid var(--border);
+                border-right: 1px solid var(--border);
+            }
+        }
+
+        /* ==================== Page System ==================== */
+        .page {
+            display: none;
+            height: 100%;
+            min-height: 0;
+            animation: pageSlideIn 0.3s ease;
+        }
+
+        .page.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .page-scroll {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        @keyframes pageSlideIn {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(100%);
+            }
+            to {
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(0);
+            }
+            to {
+                transform: translateY(100%);
+            }
+        }
+
+        /* ==================== Navigation Bar ==================== */
+        .nav-bar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--bg-white);
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 0.5px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .nav-bar .back-btn {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .nav-bar .back-btn:active {
+            background: var(--bg-primary);
+        }
+
+        .nav-bar .back-btn svg {
+            width: 20px;
+            height: 20px;
+            color: var(--text-primary);
+        }
+
+        .nav-bar .nav-title {
+            font-size: 17px;
+            font-weight: 600;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .nav-bar .nav-right {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border-radius: 8px;
+        }
+
+        .nav-bar .nav-right:active {
+            background: var(--bg-primary);
+        }
+
+        .nav-bar .nav-right svg {
+            width: 20px;
+            height: 20px;
+            color: var(--text-secondary);
+        }
+
+        .nav-placeholder {
+            width: 32px;
+        }
+
+        /* ==================== Stats Cards ==================== */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            padding: 16px;
+        }
+
+        .stat-card {
+            background: var(--bg-white);
+            border-radius: 14px;
+            padding: 16px;
+            border: 0.5px solid var(--card-border);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .stat-card:active {
+            transform: scale(0.97);
+        }
+
+        .stat-card .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .stat-card .stat-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .stat-card.highlight-warning .stat-value {
+            color: var(--warning);
+        }
+
+        .stat-card.highlight-danger .stat-value {
+            color: var(--danger);
+        }
+
+        .stat-card .stat-badge {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: var(--danger);
+            border-radius: 50%;
+            margin-left: 4px;
+            vertical-align: top;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        /* ==================== Section ==================== */
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 16px 12px;
+        }
+
+        .section-header .section-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .section-header .section-action {
+            font-size: 13px;
+            color: var(--primary);
+            cursor: pointer;
+        }
+
+        /* ==================== Search Bar ==================== */
+        .search-bar {
+            padding: 0 16px 10px;
+        }
+
+        .page-scroll > .search-bar:first-child {
+            padding-top: 12px;
+        }
+
+        .emp-detail-header + .search-bar,
+        .departed-detail-header + .search-bar {
+            padding-top: 12px;
+        }
+
+        .search-bar .search-input-wrap {
+            display: flex;
+            align-items: center;
+            background: var(--bg-white);
+            border: 1px solid #DDE3EC;
+            border-radius: 8px;
+            padding: 8px 12px;
+            gap: 8px;
+            min-height: 38px;
+            transition: border-color 0.2s, background 0.2s;
+        }
+
+        .search-bar .search-input-wrap:focus-within {
+            background: var(--bg-white);
+            border-color: var(--primary);
+        }
+
+        .search-bar .search-input-wrap svg {
+            width: 17px;
+            height: 17px;
+            color: #8D96A8;
+            flex-shrink: 0;
+        }
+
+        .search-bar .search-input-wrap input {
+            flex: 1;
+            border: none;
+            background: none;
+            outline: none;
+            font-size: 14px;
+            color: var(--text-primary);
+        }
+
+        .search-bar .search-input-wrap input::placeholder {
+            color: var(--text-tertiary);
+        }
+
+        /* ==================== Filter Tags ==================== */
+        .filter-tags {
+            display: flex;
+            gap: 8px;
+            padding: 0 16px 12px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .filter-tags::-webkit-scrollbar {
+            display: none;
+        }
+
+        .filter-tag {
+            flex-shrink: 0;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            background: var(--bg-white);
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-tag.active {
+            background: var(--primary-light);
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        /* ==================== Sort Bar ==================== */
+        .sort-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px 12px;
+        }
+
+        .sort-bar .sort-info {
+            font-size: 13px;
+            color: var(--text-tertiary);
+        }
+
+        .sort-bar .sort-btn {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+
+        .sort-bar .sort-btn svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        /* ==================== Employee Card ==================== */
+        .employee-list {
+            padding: 0 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .employee-card {
+            display: flex;
+            align-items: center;
+            background: var(--bg-white);
+            border-radius: 14px;
+            padding: 14px 16px;
+            border: 0.5px solid var(--card-border);
+            cursor: pointer;
+            transition: transform 0.2s;
+            gap: 12px;
+        }
+
+        .employee-card:active {
+            transform: scale(0.98);
+        }
+
+        .avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 16px;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .avatar.departed {
+            filter: grayscale(100%);
+            opacity: 0.6;
+        }
+
+        .employee-card .emp-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .employee-card .emp-name {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .employee-card .emp-role {
+            font-size: 12px;
+            color: var(--text-tertiary);
+        }
+
+        .employee-card .emp-count {
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        .employee-card .emp-count .count-num {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .employee-card .emp-count .count-label {
+            font-size: 11px;
+            color: var(--text-tertiary);
+        }
+
+        .employee-card .arrow-icon {
+            color: var(--text-tertiary);
+            flex-shrink: 0;
+        }
+
+        .employee-card .arrow-icon svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* ==================== Customer Card ==================== */
+        .customer-list {
+            padding: 0 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .customer-card {
+            display: flex;
+            align-items: center;
+            background: var(--bg-white);
+            border-radius: 14px;
+            padding: 14px 16px;
+            border: 0.5px solid var(--card-border);
+            gap: 12px;
+            transition: transform 0.15s;
+        }
+
+        .customer-card:active {
+            transform: scale(0.98);
+        }
+
+        .customer-card .checkbox {
+            width: 22px;
+            height: 22px;
+            border-radius: 6px;
+            border: 1.5px solid #D8DEE8;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .customer-card .checkbox.checked {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .customer-card .checkbox.checked::after {
+            content: '';
+            width: 6px;
+            height: 10px;
+            border: 2px solid white;
+            border-top: none;
+            border-left: none;
+            transform: rotate(45deg) translateY(-1px);
+        }
+
+        .customer-card .cust-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #EEF1FE;
+            color: var(--primary);
+        }
+
+        .customer-card .cust-avatar svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .customer-card .cust-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .customer-card .cust-name {
+            font-size: 15px;
+            font-weight: 500;
+            margin-bottom: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .customer-card .cust-meta {
+            font-size: 12px;
+            color: var(--text-tertiary);
+        }
+
+        .status-tag {
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .status-unassigned {
+            background: var(--danger-light);
+            color: var(--danger);
+        }
+
+        .status-assigned {
+            background: #E8F5E9;
+            color: #2E7D32;
+        }
+
+        .status-pending {
+            background: #FFF3E0;
+            color: #E65100;
+        }
+
+        /* ==================== Select All Bar ==================== */
+        .select-all-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 16px 12px;
+        }
+
+        .select-all-bar .select-all-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .select-all-bar .select-all-left .checkbox {
+            width: 22px;
+            height: 22px;
+            border-radius: 6px;
+            border: 1.5px solid #D8DEE8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .select-all-bar .select-all-left .checkbox.checked {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .select-all-bar .select-all-left .checkbox.checked::after {
+            content: '';
+            width: 6px;
+            height: 10px;
+            border: 2px solid white;
+            border-top: none;
+            border-left: none;
+            transform: rotate(45deg) translateY(-1px);
+        }
+
+        .select-all-bar .select-count {
+            font-size: 13px;
+            color: var(--text-tertiary);
+        }
+
+        /* ==================== Bottom Action Bar ==================== */
+        .bottom-bar {
+            width: 100%;
+            flex-shrink: 0;
+            background: var(--bg-white);
+            padding: 12px 16px;
+            padding-bottom: max(12px, env(safe-area-inset-bottom));
+            border-top: 0.5px solid var(--border);
+            z-index: 100;
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            outline: none;
+            gap: 6px;
+            height: 48px;
+            padding: 0 20px;
+        }
+
+        .btn:active {
+            transform: scale(0.97);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            flex: 1;
+        }
+
+        .btn-primary:active {
+            background: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            flex: 1;
+        }
+
+        .btn .badge {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 1px 6px;
+            border-radius: 10px;
+            margin-left: 4px;
+        }
+
+        .btn-secondary .badge {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-primary .badge {
+            background: rgba(255, 255, 255, 0.22);
+            color: white;
+        }
+
+        .btn-full {
+            width: 100%;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--primary);
+            border: 1.5px solid var(--primary);
+        }
+
+        .btn-disabled {
+            background: #E5E7EB;
+            color: #9CA3AF;
+            pointer-events: none;
+        }
+
+        /* ==================== Bottom Sheet Modal ==================== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 200;
+            animation: fadeIn 0.25s ease;
+        }
+
+        .modal-overlay.active {
+            display: block;
+        }
+
+        .bottom-sheet {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 430px;
+            background: var(--bg-white);
+            border-radius: 20px 20px 0 0;
+            border: 0.5px solid var(--card-border);
+            border-bottom: none;
+            z-index: 201;
+            max-height: 85vh;
+            display: none;
+            flex-direction: column;
+            animation: slideUp 0.3s ease;
+        }
+
+        .bottom-sheet.active {
+            display: flex;
+        }
+
+        .bottom-sheet .sheet-handle {
+            width: 36px;
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+            margin: 10px auto;
+        }
+
+        .bottom-sheet .sheet-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 4px 20px 16px;
+            border-bottom: 0.5px solid var(--border);
+        }
+
+        .bottom-sheet .sheet-title {
+            font-size: 17px;
+            font-weight: 600;
+        }
+
+        .bottom-sheet .sheet-subtitle {
+            font-size: 13px;
+            color: var(--text-tertiary);
+            margin-top: 2px;
+        }
+
+        .bottom-sheet .sheet-close {
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: var(--bg-primary);
+            cursor: pointer;
+        }
+
+        .bottom-sheet .sheet-close svg {
+            width: 14px;
+            height: 14px;
+            color: var(--text-secondary);
+        }
+
+        .bottom-sheet .sheet-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px 20px;
+        }
+
+        .bottom-sheet .sheet-footer {
+            padding: 12px 20px;
+            padding-bottom: max(12px, env(safe-area-inset-bottom));
+            border-top: 0.5px solid var(--border);
+        }
+
+        .bottom-sheet .sheet-footer .preview-text {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        /* ==================== Distribution Mode Tabs ==================== */
+        .mode-tabs {
+            display: flex;
+            background: var(--bg-primary);
+            border-radius: 10px;
+            padding: 3px;
+            margin-bottom: 16px;
+        }
+
+        .mode-tab {
+            flex: 1;
+            text-align: center;
+            padding: 8px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .mode-tab.active {
+            background: var(--bg-white);
+            color: var(--primary);
+        }
+
+        /* ==================== Employee Select List (in sheet) ==================== */
+        .emp-select-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .emp-select-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border-radius: 12px;
+            gap: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .emp-select-item:active,
+        .emp-select-item.selected {
+            background: var(--primary-light);
+        }
+
+        .emp-select-item .radio {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid var(--border);
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .emp-select-item.selected .radio {
+            border-color: var(--primary);
+        }
+
+        .emp-select-item.selected .radio::after {
+            content: '';
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--primary);
+        }
+
+        .emp-select-item .emp-select-info {
+            flex: 1;
+        }
+
+        .emp-select-item .emp-select-name {
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        .emp-select-item .emp-select-count {
+            font-size: 12px;
+            color: var(--text-tertiary);
+        }
+
+        /* ==================== Page Tabs ==================== */
+        .page-tabs {
+            display: flex;
+            padding: 0 16px;
+            border-bottom: 0.5px solid var(--border);
+            background: var(--bg-white);
+            flex-shrink: 0;
+        }
+
+        .page-tab {
+            flex: 1;
+            text-align: center;
+            padding: 12px 0;
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            position: relative;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .page-tab.active {
+            color: var(--primary);
+        }
+
+        .page-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 24px;
+            height: 3px;
+            background: var(--primary);
+            border-radius: 2px;
+        }
+
+        .page-tab .tab-badge {
+            display: inline-block;
+            background: var(--danger);
+            color: white;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 0 5px;
+            border-radius: 8px;
+            margin-left: 4px;
+            min-width: 16px;
+            text-align: center;
+            vertical-align: top;
+        }
+
+        /* ==================== Departed Employee Card ==================== */
+        .departed-card {
+            background: var(--bg-white);
+            border-radius: 14px;
+            padding: 16px;
+            border: 0.5px solid var(--card-border);
+            margin-bottom: 10px;
+        }
+
+        .departed-card .departed-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .departed-card .departed-info {
+            flex: 1;
+        }
+
+        .departed-card .departed-name {
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .departed-card .departed-date {
+            font-size: 12px;
+            color: var(--text-tertiary);
+        }
+
+        .departed-card .departed-status {
+            font-size: 12px;
+            padding: 3px 8px;
+            border-radius: 6px;
+            background: #FFF3E0;
+            color: #E65100;
+        }
+
+        .departed-card .departed-stats {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-top: 0.5px solid var(--border);
+        }
+
+        .departed-card .departed-count {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .departed-card .departed-count strong {
+            color: var(--danger);
+            font-size: 16px;
+        }
+
+        .departed-card .btn-sm {
+            padding: 8px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            border: none;
+            background: var(--primary);
+            color: white;
+            cursor: pointer;
+        }
+
+        .departed-card .btn-sm:active {
+            background: var(--primary-dark);
+        }
+
+        /* History card */
+        .history-card {
+            background: var(--bg-white);
+            border-radius: 14px;
+            padding: 16px;
+            border: 0.5px solid var(--card-border);
+            margin-bottom: 10px;
+        }
+
+        .history-card .history-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .history-card .history-name {
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .history-card .history-method {
+            font-size: 12px;
+            padding: 3px 8px;
+            border-radius: 6px;
+        }
+
+        .method-manual {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .method-auto {
+            background: #E8F5E9;
+            color: #2E7D32;
+        }
+
+        .history-card .history-meta {
+            font-size: 12px;
+            color: var(--text-tertiary);
+            line-height: 1.8;
+        }
+
+        /* ==================== Settings Page ==================== */
+        .settings-section {
+            margin: 16px;
+            background: var(--bg-white);
+            border-radius: 14px;
+            border: 0.5px solid var(--card-border);
+            overflow: hidden;
+        }
+
+        .settings-section .settings-section-title {
+            font-size: 13px;
+            color: var(--text-tertiary);
+            padding: 16px 16px 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .setting-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            border-bottom: 0.5px solid var(--border);
+        }
+
+        .setting-item:last-child {
+            border-bottom: none;
+        }
+
+        .setting-item .setting-left {
+            flex: 1;
+        }
+
+        .setting-item .setting-title {
+            font-size: 15px;
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+
+        .setting-item .setting-desc {
+            font-size: 12px;
+            color: var(--text-tertiary);
+            line-height: 1.5;
+        }
+
+        /* Toggle Switch */
+        .toggle {
+            width: 50px;
+            height: 30px;
+            background: #E5E7EB;
+            border-radius: 15px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.3s;
+            flex-shrink: 0;
+        }
+
+        .toggle.active {
+            background: var(--primary);
+        }
+
+        .toggle::after {
+            content: '';
+            position: absolute;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: white;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.3s;
+        }
+
+        .toggle.active::after {
+            transform: translateX(20px);
+        }
+
+        /* Radio option */
+        .radio-option {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 14px 16px;
+            border-bottom: 0.5px solid var(--border);
+            cursor: pointer;
+        }
+
+        .radio-option:last-child {
+            border-bottom: none;
+        }
+
+        .radio-option .radio-circle {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid var(--border);
+            flex-shrink: 0;
+            margin-top: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .radio-option.selected .radio-circle {
+            border-color: var(--primary);
+        }
+
+        .radio-option.selected .radio-circle::after {
+            content: '';
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--primary);
+        }
+
+        .radio-option .radio-content {
+            flex: 1;
+        }
+
+        .radio-option .radio-title {
+            font-size: 15px;
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+
+        .radio-option .radio-desc {
+            font-size: 12px;
+            color: var(--text-tertiary);
+            line-height: 1.5;
+        }
+
+        .role-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 0 16px 16px 48px;
+        }
+
+        .role-option {
+            padding: 6px 14px;
+            border-radius: 8px;
+            border: 0.5px solid var(--card-border);
+            background: var(--bg-white);
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .role-option.selected {
+            border-color: var(--primary);
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        /* ==================== Assigned employee tags ==================== */
+        .selected-employees {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 12px 16px;
+        }
+
+        .selected-emp-tag {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            background: var(--primary-light);
+            border-radius: 8px;
+            font-size: 13px;
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        .selected-emp-tag .remove-tag {
+            width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            font-size: 10px;
+            cursor: pointer;
+        }
+
+        /* ==================== Empty State ==================== */
+        .empty-state {
+            text-align: center;
+            padding: 60px 40px;
+        }
+
+        .empty-state .empty-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-state .empty-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+
+        .empty-state .empty-desc {
+            font-size: 13px;
+            color: var(--text-tertiary);
+        }
+
+        /* ==================== Toast ==================== */
+        .toast {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            z-index: 300;
+            display: none;
+            text-align: center;
+            max-width: 80%;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .toast.show {
+            display: block;
+        }
+
+        /* ==================== Confirm Dialog ==================== */
+        .dialog-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 250;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .dialog-overlay.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .dialog {
+            background: var(--bg-white);
+            border-radius: 16px;
+            width: 85%;
+            max-width: 320px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+
+        .dialog .dialog-body {
+            padding: 28px 24px;
+            text-align: center;
+        }
+
+        .dialog .dialog-title {
+            font-size: 17px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .dialog .dialog-message {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .dialog .dialog-actions {
+            display: flex;
+            border-top: 0.5px solid var(--border);
+        }
+
+        .dialog .dialog-btn {
+            flex: 1;
+            padding: 14px;
+            text-align: center;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            background: none;
+            transition: background 0.2s;
+        }
+
+        .dialog .dialog-btn:first-child {
+            color: var(--text-secondary);
+            border-right: 0.5px solid var(--border);
+        }
+
+        .dialog .dialog-btn:last-child {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .dialog .dialog-btn:active {
+            background: var(--bg-primary);
+        }
+
+        /* ==================== Employee Detail Header ==================== */
+        .emp-detail-header {
+            background: var(--bg-white);
+            padding: 20px 16px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 4px;
+        }
+
+        .emp-detail-header .avatar {
+            width: 56px;
+            height: 56px;
+            font-size: 20px;
+            border-radius: 16px;
+        }
+
+        .emp-detail-header .emp-detail-info .emp-detail-name {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .emp-detail-header .emp-detail-info .emp-detail-meta {
+            font-size: 13px;
+            color: var(--text-tertiary);
+            margin-top: 2px;
+        }
+
+        .emp-detail-header .emp-detail-stat {
+            margin-left: auto;
+            text-align: center;
+        }
+
+        .emp-detail-header .emp-detail-stat .stat-num {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .emp-detail-header .emp-detail-stat .stat-label {
+            font-size: 12px;
+            color: var(--text-tertiary);
+        }
+
+        /* ==================== Departed Detail Header ==================== */
+        .departed-detail-header {
+            background: var(--bg-white);
+            padding: 20px 16px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 4px;
+        }
+
+        .departed-detail-header .departed-detail-info {
+            flex: 1;
+        }
+
+        .departed-detail-header .departed-detail-name {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .departed-detail-header .departed-detail-meta {
+            font-size: 13px;
+            color: var(--text-tertiary);
+            margin-top: 2px;
+        }
+
+        .departed-detail-header .departed-detail-meta .danger {
+            color: var(--danger);
+            font-weight: 600;
+        }
+
+        /* ==================== Utility ==================== */
+        .hidden {
+            display: none !important;
+        }
+
+        .mt-8 { margin-top: 8px; }
+        .mb-16 { margin-bottom: 16px; }
+        .px-16 { padding-left: 16px; padding-right: 16px; }
+    </style>
+</head>
+<body>
+
+<div class="phone-frame">
+
+    <!-- ============================================================ -->
+    <!-- PAGE 1: HOME - Dashboard -->
+    <!-- ============================================================ -->
+    <div class="page active" id="page-home">
+        <div class="nav-bar">
+            <div class="nav-placeholder"></div>
+            <div class="nav-title">客户分配</div>
+            <div class="nav-right" onclick="navigateTo('page-settings')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                </svg>
+            </div>
+        </div>
+
+        <div class="page-scroll">
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card" onclick="navigateTo('page-assign')">
+                <div class="stat-value">386</div>
+                <div class="stat-label">客户总数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">342</div>
+                <div class="stat-label">已分配</div>
+            </div>
+            <div class="stat-card highlight-warning" onclick="navigateTo('page-assign')">
+                <div class="stat-value">27<span class="stat-badge"></span></div>
+                <div class="stat-label">待分配</div>
+            </div>
+            <div class="stat-card highlight-danger" onclick="navigateTo('page-departed')">
+                <div class="stat-value">17<span class="stat-badge"></span></div>
+                <div class="stat-label">离职待继承</div>
+            </div>
+        </div>
+
+        <!-- Employee Overview -->
+        <div class="section-header">
+            <div class="section-title">员工分配概况</div>
+            <div class="section-action">
+                <div class="sort-btn" onclick="toggleSort()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px">
+                        <path d="M11 5h10M11 9h7M11 13h4M3 17l3 3 3-3M6 18V4"/>
+                    </svg>
+                    按客户数排序
+                </div>
+            </div>
+        </div>
+
+        <div class="search-bar">
+            <div class="search-input-wrap">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                <input type="text" placeholder="搜索员工姓名">
+            </div>
+        </div>
+
+        <div class="employee-list">
+            <div class="employee-card" onclick="navigateTo('page-emp-detail')">
+                <div class="avatar" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)">张</div>
+                <div class="emp-info">
+                    <div class="emp-name">张美丽</div>
+                    <div class="emp-role">高级顾问</div>
+                </div>
+                <div class="emp-count">
+                    <div class="count-num">86</div>
+                    <div class="count-label">位客户</div>
+                </div>
+                <div class="arrow-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </div>
+            </div>
+
+            <div class="employee-card" onclick="navigateTo('page-emp-detail')">
+                <div class="avatar" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%)">李</div>
+                <div class="emp-info">
+                    <div class="emp-name">李小雨</div>
+                    <div class="emp-role">美容顾问</div>
+                </div>
+                <div class="emp-count">
+                    <div class="count-num">72</div>
+                    <div class="count-label">位客户</div>
+                </div>
+                <div class="arrow-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </div>
+            </div>
+
+            <div class="employee-card" onclick="navigateTo('page-emp-detail')">
+                <div class="avatar" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)">王</div>
+                <div class="emp-info">
+                    <div class="emp-name">王思思</div>
+                    <div class="emp-role">美容顾问</div>
+                </div>
+                <div class="emp-count">
+                    <div class="count-num">65</div>
+                    <div class="count-label">位客户</div>
+                </div>
+                <div class="arrow-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </div>
+            </div>
+
+            <div class="employee-card" onclick="navigateTo('page-emp-detail')">
+                <div class="avatar" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)">赵</div>
+                <div class="emp-info">
+                    <div class="emp-name">赵小棠</div>
+                    <div class="emp-role">实习顾问</div>
+                </div>
+                <div class="emp-count">
+                    <div class="count-num">58</div>
+                    <div class="count-label">位客户</div>
+                </div>
+                <div class="arrow-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </div>
+            </div>
+
+            <div class="employee-card" onclick="navigateTo('page-emp-detail')">
+                <div class="avatar" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%)">陈</div>
+                <div class="emp-info">
+                    <div class="emp-name">陈阿花</div>
+                    <div class="emp-role">美容顾问</div>
+                </div>
+                <div class="emp-count">
+                    <div class="count-num">61</div>
+                    <div class="count-label">位客户</div>
+                </div>
+                <div class="arrow-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </div>
+            </div>
+        </div>
+
+        </div>
+        <!-- Bottom Bar -->
+        <div class="bottom-bar">
+            <button class="btn btn-primary" onclick="navigateTo('page-assign')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="11" x2="20" y2="17"/><line x1="17" y1="14" x2="23" y2="14"/></svg>
+                分配客户
+            </button>
+            <button class="btn btn-secondary" onclick="navigateTo('page-departed')">
+                离职继承
+                <span class="badge">2</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- PAGE 2: ASSIGN - Unassigned Customer List -->
+    <!-- ============================================================ -->
+    <div class="page" id="page-assign">
+        <div class="nav-bar">
+            <div class="back-btn" onclick="navigateTo('page-home')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            </div>
+            <div class="nav-title">待分配客户</div>
+            <div class="nav-placeholder"></div>
+        </div>
+
+        <div class="page-scroll">
+        <div class="search-bar">
+            <div class="search-input-wrap">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                <input type="text" placeholder="搜索客户昵称、备注名、手机号" oninput="filterCustomers(this)">
+            </div>
+        </div>
+
+        <div class="filter-tags">
+            <div class="filter-tag active" onclick="toggleFilter(this)">全部</div>
+            <div class="filter-tag" onclick="toggleFilter(this)">最近7天</div>
+            <div class="filter-tag" onclick="toggleFilter(this)">最近30天</div>
+        </div>
+
+        <div class="select-all-bar">
+            <div class="select-all-left" onclick="toggleSelectAll('assign')">
+                <div class="checkbox" id="assign-select-all"></div>
+                <span style="font-size:14px;font-weight:500">全选</span>
+            </div>
+            <div class="select-count" id="assign-count">共 27 位客户</div>
+        </div>
+
+        <div class="customer-list" id="assign-customer-list">
+            <!-- Customers dynamically generated -->
+        </div>
+
+        </div>
+        <!-- Bottom Bar -->
+        <div class="bottom-bar" id="assign-bottom-bar">
+            <button class="btn btn-primary btn-full btn-disabled" id="assign-btn" onclick="openAssignSheet()">
+                请先选择客户
+            </button>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- PAGE 3: EMPLOYEE DETAIL -->
+    <!-- ============================================================ -->
+    <div class="page" id="page-emp-detail">
+        <div class="nav-bar">
+            <div class="back-btn" onclick="navigateTo('page-home')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            </div>
+            <div class="nav-title">客户明细</div>
+            <div class="nav-placeholder"></div>
+        </div>
+
+        <div class="page-scroll">
+        <div class="emp-detail-header">
+            <div class="avatar" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); width:56px; height:56px; font-size:20px; border-radius:16px">张</div>
+            <div class="emp-detail-info">
+                <div class="emp-detail-name">张美丽</div>
+                <div class="emp-detail-meta">高级顾问 · 在职</div>
+            </div>
+            <div class="emp-detail-stat">
+                <div class="stat-num">86</div>
+                <div class="stat-label">位客户</div>
+            </div>
+        </div>
+
+        <div class="search-bar">
+            <div class="search-input-wrap">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                <input type="text" placeholder="搜索客户">
+            </div>
+        </div>
+
+        <div class="select-all-bar">
+            <div class="select-all-left" onclick="toggleSelectAll('emp-detail')">
+                <div class="checkbox" id="emp-detail-select-all"></div>
+                <span style="font-size:14px;font-weight:500">全选</span>
+            </div>
+            <div class="select-count" id="emp-detail-count">共 86 位客户</div>
+        </div>
+
+        <div class="customer-list" id="emp-detail-customer-list">
+            <!-- Customers dynamically generated -->
+        </div>
+
+        </div>
+        <div class="bottom-bar" id="emp-detail-bottom-bar">
+            <button class="btn btn-primary btn-full btn-disabled" id="emp-detail-btn" onclick="openAssignSheet()">
+                请先选择客户
+            </button>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- PAGE 4: DEPARTED INHERITANCE -->
+    <!-- ============================================================ -->
+    <div class="page" id="page-departed">
+        <div class="nav-bar">
+            <div class="back-btn" onclick="navigateTo('page-home')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            </div>
+            <div class="nav-title">离职继承</div>
+            <div class="nav-right" onclick="navigateTo('page-settings')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                </svg>
+            </div>
+        </div>
+
+        <div class="page-tabs">
+            <div class="page-tab active" onclick="switchDepartedTab(this, 'pending')">
+                待处理<span class="tab-badge">2</span>
+            </div>
+            <div class="page-tab" onclick="switchDepartedTab(this, 'done')">
+                已处理
+            </div>
+        </div>
+
+        <!-- Pending Tab -->
+        <div class="page-scroll">
+        <div class="departed-tab-content" id="departed-pending" style="padding:16px">
+            <div class="departed-card">
+                <div class="departed-header">
+                    <div class="avatar departed" style="background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)">周</div>
+                    <div class="departed-info">
+                        <div class="departed-name">周佳佳</div>
+                        <div class="departed-date">离职日期：2026-09-05</div>
+                    </div>
+                    <div class="departed-status">待处理</div>
+                </div>
+                <div class="departed-stats">
+                    <div class="departed-count">待继承客户 <strong>12</strong> 位</div>
+                    <button class="btn-sm" onclick="navigateTo('page-departed-detail')">去分配</button>
+                </div>
+            </div>
+
+            <div class="departed-card">
+                <div class="departed-header">
+                    <div class="avatar departed" style="background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)">刘</div>
+                    <div class="departed-info">
+                        <div class="departed-name">刘婷婷</div>
+                        <div class="departed-date">离职日期：2026-09-02</div>
+                    </div>
+                    <div class="departed-status">自动分配中</div>
+                </div>
+                <div class="departed-stats">
+                    <div class="departed-count">待继承客户 <strong>5</strong> 位</div>
+                    <button class="btn-sm" onclick="navigateTo('page-departed-detail')">去分配</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Done Tab -->
+        <div class="departed-tab-content hidden" id="departed-done" style="padding:16px">
+            <div class="history-card">
+                <div class="history-header">
+                    <div class="history-name">孙倩倩</div>
+                    <span class="history-method method-manual">手动分配</span>
+                </div>
+                <div class="history-meta">
+                    离职日期：2026-08-20<br>
+                    客户数量：23 位<br>
+                    完成时间：2026-08-21 14:30<br>
+                    操作人：店长 王店长
+                </div>
+            </div>
+            <div class="history-card">
+                <div class="history-header">
+                    <div class="history-name">黄丽丽</div>
+                    <span class="history-method method-auto">自动分配</span>
+                </div>
+                <div class="history-meta">
+                    离职日期：2026-08-10<br>
+                    客户数量：15 位<br>
+                    完成时间：2026-08-10 18:00<br>
+                    规则：轮流分配给可分配岗位员工
+                </div>
+            </div>
+            <div class="history-card">
+                <div class="history-header">
+                    <div class="history-name">吴静静</div>
+                    <span class="history-method method-manual">手动分配</span>
+                </div>
+                <div class="history-meta">
+                    离职日期：2026-07-25<br>
+                    客户数量：31 位<br>
+                    完成时间：2026-07-26 10:15<br>
+                    操作人：店长 王店长
+                </div>
+            </div>
+        </div>
+
+        </div>
+        <div class="bottom-bar">
+            <button class="btn btn-secondary" onclick="navigateTo('page-assign')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="11" x2="20" y2="17"/><line x1="17" y1="14" x2="23" y2="14"/></svg>
+                分配客户
+            </button>
+            <button class="btn btn-primary">
+                离职继承
+                <span class="badge">2</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- PAGE 5: DEPARTED EMPLOYEE DETAIL -->
+    <!-- ============================================================ -->
+    <div class="page" id="page-departed-detail">
+        <div class="nav-bar">
+            <div class="back-btn" onclick="navigateTo('page-departed')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            </div>
+            <div class="nav-title">离职客户分配</div>
+            <div class="nav-placeholder"></div>
+        </div>
+
+        <div class="page-scroll">
+        <div class="departed-detail-header">
+            <div class="avatar departed" style="background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%); width:56px; height:56px; font-size:20px; border-radius:16px">周</div>
+            <div class="departed-detail-info">
+                <div class="departed-detail-name">周佳佳</div>
+                <div class="departed-detail-meta">离职日期：2026-09-05 · 待继承 <span class="danger">12</span> 位</div>
+            </div>
+        </div>
+
+        <div class="search-bar">
+            <div class="search-input-wrap">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                <input type="text" placeholder="搜索客户">
+            </div>
+        </div>
+
+        <div class="select-all-bar">
+            <div class="select-all-left" onclick="toggleSelectAll('departed-detail')">
+                <div class="checkbox" id="departed-detail-select-all"></div>
+                <span style="font-size:14px;font-weight:500">全选</span>
+            </div>
+            <div class="select-count" id="departed-detail-count">共 12 位客户</div>
+        </div>
+
+        <div class="customer-list" id="departed-detail-customer-list">
+            <!-- Customers dynamically generated -->
+        </div>
+
+        </div>
+        <div class="bottom-bar">
+            <button class="btn btn-outline" onclick="selectAllAndAssign('departed-detail')" style="flex:none; padding:0 16px;">
+                一键全部分配
+            </button>
+            <button class="btn btn-primary btn-disabled" id="departed-detail-btn" onclick="openAssignSheet()" style="flex:1">
+                请先选择客户
+            </button>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- PAGE 6: SETTINGS -->
+    <!-- ============================================================ -->
+    <div class="page" id="page-settings">
+        <div class="nav-bar">
+            <div class="back-btn" onclick="navigateTo('page-home')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            </div>
+            <div class="nav-title">分配规则设置</div>
+            <div class="nav-placeholder"></div>
+        </div>
+
+        <div class="page-scroll">
+        <!-- Auto Assign Switch -->
+        <div class="settings-section">
+            <div class="setting-item">
+                <div class="setting-left">
+                    <div class="setting-title">离职自动分配</div>
+                    <div class="setting-desc">开启后，员工离职时其名下客户将按规则自动分配给其他员工</div>
+                </div>
+                <div class="toggle active" id="auto-assign-toggle" onclick="toggleAutoAssign(this)"></div>
+            </div>
+        </div>
+
+        <!-- Auto Assign Method -->
+        <div class="settings-section" id="auto-assign-options">
+            <div class="settings-section-title">自动分配方式</div>
+            <div class="radio-option selected">
+                <div class="radio-circle"></div>
+                <div class="radio-content">
+                    <div class="radio-title">轮流分配</div>
+                    <div class="radio-desc">系统按顺序将离职员工客户分配给可分配岗位的在职员工</div>
+                </div>
+            </div>
+            <div class="settings-section-title">可分配岗位</div>
+            <div class="role-options">
+                <div class="role-option selected" onclick="toggleRoleOption(this)">顾问</div>
+                <div class="role-option" onclick="toggleRoleOption(this)">高级顾问</div>
+                <div class="role-option" onclick="toggleRoleOption(this)">美容师</div>
+                <div class="role-option" onclick="toggleRoleOption(this)">店长</div>
+            </div>
+        </div>
+
+        <!-- Capacity Settings -->
+        <div class="settings-section">
+            <div class="settings-section-title">客户上限设置</div>
+            <div class="setting-item">
+                <div class="setting-left">
+                    <div class="setting-title">启用客户上限</div>
+                    <div class="setting-desc">超过上限的员工在自动分配时会被跳过</div>
+                </div>
+                <div class="toggle" onclick="toggleCapacity(this)"></div>
+            </div>
+        </div>
+
+        <div class="settings-section hidden" id="capacity-list">
+            <div class="setting-item">
+                <div class="setting-left">
+                    <div class="setting-title" style="font-size:14px">张美丽 <span style="color:var(--text-tertiary);font-weight:400">· 当前 86 位</span></div>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px">
+                    <input type="number" placeholder="不限" style="width:64px;text-align:center;border:1.5px solid var(--border);border-radius:8px;padding:6px;font-size:14px;outline:none" value="200">
+                    <span style="font-size:13px;color:var(--text-tertiary)">位</span>
+                </div>
+            </div>
+            <div class="setting-item">
+                <div class="setting-left">
+                    <div class="setting-title" style="font-size:14px">李小雨 <span style="color:var(--text-tertiary);font-weight:400">· 当前 72 位</span></div>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px">
+                    <input type="number" placeholder="不限" style="width:64px;text-align:center;border:1.5px solid var(--border);border-radius:8px;padding:6px;font-size:14px;outline:none" value="200">
+                    <span style="font-size:13px;color:var(--text-tertiary)">位</span>
+                </div>
+            </div>
+            <div class="setting-item">
+                <div class="setting-left">
+                    <div class="setting-title" style="font-size:14px">王思思 <span style="color:var(--text-tertiary);font-weight:400">· 当前 65 位</span></div>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px">
+                    <input type="number" placeholder="不限" style="width:64px;text-align:center;border:1.5px solid var(--border);border-radius:8px;padding:6px;font-size:14px;outline:none" placeholder="不限">
+                    <span style="font-size:13px;color:var(--text-tertiary)">位</span>
+                </div>
+            </div>
+            <div class="setting-item">
+                <div class="setting-left">
+                    <div class="setting-title" style="font-size:14px">赵小棠 <span style="color:var(--text-tertiary);font-weight:400">· 当前 58 位</span></div>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px">
+                    <input type="number" placeholder="不限" style="width:64px;text-align:center;border:1.5px solid var(--border);border-radius:8px;padding:6px;font-size:14px;outline:none" placeholder="不限">
+                    <span style="font-size:13px;color:var(--text-tertiary)">位</span>
+                </div>
+            </div>
+            <div class="setting-item">
+                <div class="setting-left">
+                    <div class="setting-title" style="font-size:14px">陈阿花 <span style="color:var(--text-tertiary);font-weight:400">· 当前 61 位</span></div>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px">
+                    <input type="number" placeholder="不限" style="width:64px;text-align:center;border:1.5px solid var(--border);border-radius:8px;padding:6px;font-size:14px;outline:none" placeholder="不限">
+                    <span style="font-size:13px;color:var(--text-tertiary)">位</span>
+                </div>
+            </div>
+        </div>
+
+        <div style="padding:16px 16px 100px">
+            <button class="btn btn-primary btn-full" onclick="showToast('设置已保存')">保存设置</button>
+        </div>
+        </div>
+    </div>
+
+
+    <!-- ============================================================ -->
+    <!-- BOTTOM SHEET: Employee Selection -->
+    <!-- ============================================================ -->
+    <div class="modal-overlay" id="modal-overlay" onclick="closeAssignSheet()"></div>
+    <div class="bottom-sheet" id="assign-sheet">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header">
+            <div>
+                <div class="sheet-title">选择接收员工</div>
+                <div class="sheet-subtitle" id="sheet-subtitle">将 0 位客户分配给以下员工</div>
+            </div>
+            <div class="sheet-close" onclick="closeAssignSheet()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </div>
+        </div>
+
+        <!-- Mode Tabs -->
+        <div style="padding: 16px 20px 0;">
+            <div class="mode-tabs">
+                <div class="mode-tab active" onclick="switchAssignMode(this, 'single')">指定员工</div>
+                <div class="mode-tab" onclick="switchAssignMode(this, 'average')">平均分配</div>
+            </div>
+        </div>
+
+        <div class="sheet-body">
+            <div class="emp-select-list" id="emp-select-list">
+                <div class="emp-select-item" onclick="selectEmployee(this)">
+                    <div class="radio"></div>
+                    <div class="avatar" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); width:38px; height:38px; font-size:14px">张</div>
+                    <div class="emp-select-info">
+                        <div class="emp-select-name">张美丽</div>
+                        <div class="emp-select-count">当前 86 位客户</div>
+                    </div>
+                </div>
+                <div class="emp-select-item" onclick="selectEmployee(this)">
+                    <div class="radio"></div>
+                    <div class="avatar" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); width:38px; height:38px; font-size:14px">李</div>
+                    <div class="emp-select-info">
+                        <div class="emp-select-name">李小雨</div>
+                        <div class="emp-select-count">当前 72 位客户</div>
+                    </div>
+                </div>
+                <div class="emp-select-item" onclick="selectEmployee(this)">
+                    <div class="radio"></div>
+                    <div class="avatar" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); width:38px; height:38px; font-size:14px">王</div>
+                    <div class="emp-select-info">
+                        <div class="emp-select-name">王思思</div>
+                        <div class="emp-select-count">当前 65 位客户</div>
+                    </div>
+                </div>
+                <div class="emp-select-item" onclick="selectEmployee(this)">
+                    <div class="radio"></div>
+                    <div class="avatar" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); width:38px; height:38px; font-size:14px">赵</div>
+                    <div class="emp-select-info">
+                        <div class="emp-select-name">赵小棠</div>
+                        <div class="emp-select-count">当前 58 位客户</div>
+                    </div>
+                </div>
+                <div class="emp-select-item" onclick="selectEmployee(this)">
+                    <div class="radio"></div>
+                    <div class="avatar" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); width:38px; height:38px; font-size:14px">陈</div>
+                    <div class="emp-select-info">
+                        <div class="emp-select-name">陈阿花</div>
+                        <div class="emp-select-count">当前 61 位客户</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="sheet-footer">
+            <div class="preview-text" id="assign-preview">请选择接收员工</div>
+            <button class="btn btn-primary btn-full btn-disabled" id="confirm-assign-btn" onclick="confirmAssign()">确认分配</button>
+        </div>
+    </div>
+
+
+    <!-- ============================================================ -->
+    <!-- CONFIRM DIALOG -->
+    <!-- ============================================================ -->
+    <div class="dialog-overlay" id="dialog-overlay">
+        <div class="dialog">
+            <div class="dialog-body">
+                <div class="dialog-title">确认分配</div>
+                <div class="dialog-message" id="dialog-message">确定将 5 位客户分配给张美丽？分配后该员工可在其客户列表中查看。</div>
+            </div>
+            <div class="dialog-actions">
+                <button class="dialog-btn" onclick="closeDialog()">取消</button>
+                <button class="dialog-btn" onclick="executeAssign()">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- TOAST -->
+    <!-- ============================================================ -->
+    <div class="toast" id="toast"></div>
+
+</div>
+
+<script>
+    // ==================== Data ====================
+    const customerNames = [
+        '小鹿', '蜜蜜', '芳芳', 'Coco', '甜甜', '阿雅', '小叶', '彤彤',
+        '珊珊', 'Amy', '小月', '花花', '露露', '琪琪', '薇薇', '妮妮',
+        '悠悠', 'Linda', '静静', '萱萱', '颖颖', '莎莎', '安安', '欣欣',
+        '朵朵', '萌萌', '丹丹', '苗苗', '贝贝', '楠楠'
+    ];
+
+    let currentAssignMode = 'single';
+    let selectedCustomerCount = 0;
+    let selectedEmployees = [];
+
+    // ==================== Page Navigation ====================
+    function navigateTo(pageId) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        const page = document.getElementById(pageId);
+        page.classList.add('active');
+        window.scrollTo(0, 0);
+
+        // Generate customer list if needed
+        if (pageId === 'page-assign') {
+            generateCustomerList('assign-customer-list', 27);
+            resetSelection('assign');
+        } else if (pageId === 'page-emp-detail') {
+            generateCustomerList('emp-detail-customer-list', 15);
+            resetSelection('emp-detail');
+        } else if (pageId === 'page-departed-detail') {
+            generateCustomerList('departed-detail-customer-list', 12);
+            resetSelection('departed-detail');
+        }
+    }
+
+    // ==================== Generate Customer Cards ====================
+    function generateCustomerList(containerId, count) {
+        const container = document.getElementById(containerId);
+        if (container.children.length > 0) return; // already generated
+
+        let html = '';
+        for (let i = 0; i < count; i++) {
+            const name = customerNames[i % customerNames.length];
+            const daysAgo = Math.floor(Math.random() * 30) + 1;
+            const dateStr = getDateStr(daysAgo);
+
+            html += `
+                <div class="customer-card" onclick="toggleCustomer(this, '${containerId}')">
+                    <div class="checkbox"></div>
+                    <div class="cust-avatar">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 21a8 8 0 0 0-16 0"/>
+                            <circle cx="12" cy="7" r="4"/>
+                        </svg>
+                    </div>
+                    <div class="cust-info">
+                        <div class="cust-name">${name}</div>
+                        <div class="cust-meta">最近到店时间：${dateStr}</div>
+                    </div>
+                </div>
+            `;
+        }
+        container.innerHTML = html;
+    }
+
+    function getDateStr(daysAgo) {
+        const d = new Date();
+        d.setDate(d.getDate() - daysAgo);
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    }
+
+    // ==================== Customer Selection ====================
+    function toggleCustomer(card, listId) {
+        const checkbox = card.querySelector('.checkbox');
+        checkbox.classList.toggle('checked');
+        updateSelectionCount(listId);
+    }
+
+    function toggleSelectAll(prefix) {
+        const selectAllBox = document.getElementById(`${prefix}-select-all`);
+        const isChecked = selectAllBox.classList.toggle('checked');
+        const listId = `${prefix}-customer-list`;
+        const cards = document.querySelectorAll(`#${listId} .customer-card .checkbox`);
+        cards.forEach(cb => {
+            if (isChecked) cb.classList.add('checked');
+            else cb.classList.remove('checked');
+        });
+        updateSelectionCount(listId);
+    }
+
+    function updateSelectionCount(listId) {
+        const cards = document.querySelectorAll(`#${listId} .customer-card .checkbox.checked`);
+        const count = cards.length;
+        const total = document.querySelectorAll(`#${listId} .customer-card`).length;
+        selectedCustomerCount = count;
+
+        // Determine prefix from listId
+        const prefix = listId.replace('-customer-list', '');
+        const btn = document.getElementById(`${prefix}-btn`);
+        const countEl = document.getElementById(`${prefix}-count`);
+
+        if (countEl) {
+            countEl.textContent = count > 0 ? `已选 ${count} / ${total} 位` : `共 ${total} 位客户`;
+        }
+
+        if (btn) {
+            if (count > 0) {
+                btn.classList.remove('btn-disabled');
+                btn.textContent = `分配 ${count} 位客户`;
+            } else {
+                btn.classList.add('btn-disabled');
+                btn.textContent = '请先选择客户';
+            }
+        }
+
+        // Update select all checkbox
+        const selectAllBox = document.getElementById(`${prefix}-select-all`);
+        if (selectAllBox) {
+            if (count === total && total > 0) {
+                selectAllBox.classList.add('checked');
+            } else {
+                selectAllBox.classList.remove('checked');
+            }
+        }
+    }
+
+    function resetSelection(prefix) {
+        const listId = `${prefix}-customer-list`;
+        const checkboxes = document.querySelectorAll(`#${listId} .checkbox`);
+        checkboxes.forEach(cb => cb.classList.remove('checked'));
+        const selectAllBox = document.getElementById(`${prefix}-select-all`);
+        if (selectAllBox) selectAllBox.classList.remove('checked');
+        updateSelectionCount(listId);
+    }
+
+    function selectAllAndAssign(prefix) {
+        // Select all first
+        const selectAllBox = document.getElementById(`${prefix}-select-all`);
+        if (!selectAllBox.classList.contains('checked')) {
+            selectAllBox.classList.add('checked');
+            const listId = `${prefix}-customer-list`;
+            document.querySelectorAll(`#${listId} .customer-card .checkbox`).forEach(cb => cb.classList.add('checked'));
+            updateSelectionCount(listId);
+        }
+        openAssignSheet();
+    }
+
+    // ==================== Assign Sheet ====================
+    function openAssignSheet() {
+        if (selectedCustomerCount === 0) return;
+
+        document.getElementById('modal-overlay').classList.add('active');
+        document.getElementById('assign-sheet').classList.add('active');
+        document.getElementById('sheet-subtitle').textContent = `将 ${selectedCustomerCount} 位客户分配给以下员工`;
+
+        // Reset employee selection
+        selectedEmployees = [];
+        document.querySelectorAll('.emp-select-item').forEach(item => item.classList.remove('selected'));
+        updateAssignPreview();
+    }
+
+    function closeAssignSheet() {
+        document.getElementById('modal-overlay').classList.remove('active');
+        document.getElementById('assign-sheet').classList.remove('active');
+    }
+
+    function switchAssignMode(tab, mode) {
+        currentAssignMode = mode;
+        document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+
+        // Reset selection when switching mode
+        selectedEmployees = [];
+        document.querySelectorAll('.emp-select-item').forEach(item => item.classList.remove('selected'));
+        updateAssignPreview();
+    }
+
+    function selectEmployee(item) {
+        const name = item.querySelector('.emp-select-name').textContent;
+
+        if (currentAssignMode === 'single') {
+            document.querySelectorAll('.emp-select-item').forEach(i => i.classList.remove('selected'));
+            item.classList.add('selected');
+            selectedEmployees = [name];
+        } else {
+            item.classList.toggle('selected');
+            if (item.classList.contains('selected')) {
+                selectedEmployees.push(name);
+            } else {
+                selectedEmployees = selectedEmployees.filter(n => n !== name);
+            }
+        }
+        updateAssignPreview();
+    }
+
+    function updateAssignPreview() {
+        const preview = document.getElementById('assign-preview');
+        const btn = document.getElementById('confirm-assign-btn');
+
+        if (selectedEmployees.length === 0) {
+            preview.textContent = '请选择接收员工';
+            btn.classList.add('btn-disabled');
+            return;
+        }
+
+        btn.classList.remove('btn-disabled');
+
+        if (currentAssignMode === 'single') {
+            preview.textContent = `将 ${selectedCustomerCount} 位客户全部分配给${selectedEmployees[0]}`;
+        } else {
+            const perPerson = Math.ceil(selectedCustomerCount / selectedEmployees.length);
+            preview.textContent = `将 ${selectedCustomerCount} 位客户平均分配给${selectedEmployees.join('、')}（每人约 ${perPerson} 位）`;
+        }
+    }
+
+    function confirmAssign() {
+        if (selectedEmployees.length === 0) return;
+
+        const message = currentAssignMode === 'single'
+            ? `确定将 ${selectedCustomerCount} 位客户分配给${selectedEmployees[0]}？分配后该员工可在其客户列表中查看。`
+            : `确定将 ${selectedCustomerCount} 位客户平均分配给${selectedEmployees.join('、')}？`;
+
+        document.getElementById('dialog-message').textContent = message;
+        document.getElementById('dialog-overlay').classList.add('active');
+    }
+
+    function closeDialog() {
+        document.getElementById('dialog-overlay').classList.remove('active');
+    }
+
+    function executeAssign() {
+        closeDialog();
+        closeAssignSheet();
+        showToast('分配成功');
+
+        // Navigate back after a short delay
+        setTimeout(() => {
+            navigateTo('page-home');
+        }, 1200);
+    }
+
+    // ==================== Filter & Sort ====================
+    function toggleFilter(tag) {
+        // Simple toggle for demo
+        document.querySelectorAll('.filter-tag').forEach(t => t.classList.remove('active'));
+        tag.classList.add('active');
+    }
+
+    function toggleSort() {
+        showToast('已按客户数排序');
+    }
+
+    function filterCustomers(input) {
+        // Simple filter demo
+        const keyword = input.value.toLowerCase();
+        const cards = input.closest('.page').querySelectorAll('.customer-card');
+        cards.forEach(card => {
+            const name = card.querySelector('.cust-name').textContent.toLowerCase();
+            card.style.display = name.includes(keyword) || keyword === '' ? 'flex' : 'none';
+        });
+    }
+
+    // ==================== Departed Tab ====================
+    function switchDepartedTab(tab, type) {
+        document.querySelectorAll('.page-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+
+        document.querySelectorAll('.departed-tab-content').forEach(c => c.classList.add('hidden'));
+        document.getElementById(`departed-${type}`).classList.remove('hidden');
+    }
+
+    // ==================== Settings ====================
+    function toggleAutoAssign(toggle) {
+        toggle.classList.toggle('active');
+        const options = document.getElementById('auto-assign-options');
+        if (toggle.classList.contains('active')) {
+            options.style.display = 'block';
+        } else {
+            options.style.display = 'none';
+        }
+    }
+
+    function selectRadio(option, group) {
+        const parent = option.parentElement;
+        parent.querySelectorAll('.radio-option').forEach(o => o.classList.remove('selected'));
+        option.classList.add('selected');
+    }
+
+    function toggleRoleOption(option) {
+        option.classList.toggle('selected');
+    }
+
+    function toggleCapacity(toggle) {
+        toggle.classList.toggle('active');
+        const list = document.getElementById('capacity-list');
+        if (toggle.classList.contains('active')) {
+            list.classList.remove('hidden');
+        } else {
+            list.classList.add('hidden');
+        }
+    }
+
+    // ==================== Toast ====================
+    function showToast(message) {
+        const toast = document.getElementById('toast');
+        toast.textContent = message;
+        toast.classList.add('show');
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 2000);
+    }
+
+    // ==================== Initialize ====================
+    // Pre-generate customer lists
+    document.addEventListener('DOMContentLoaded', () => {
+        // Lists will be generated on navigation
+    });
+</script>
+
+</body>
+</html>

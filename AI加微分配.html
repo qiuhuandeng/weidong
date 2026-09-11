@@ -1012,12 +1012,28 @@
         .handoff-metric-note.up { color: #168a4b; }
         .handoff-metric-note.down { color: #e03f3f; }
 
-        .handoff-analysis-table {
+        .handoff-analysis-tables {
+            display: grid;
+            grid-template-columns: minmax(300px, 0.28fr) minmax(760px, 0.72fr);
+            gap: 12px;
             overflow-x: auto;
         }
 
+        .handoff-analysis-table {
+            min-width: 0;
+            height: 430px;
+            overflow: auto;
+            border: 1px solid #dbe6fb;
+            border-radius: 4px;
+            background: #ffffff;
+        }
+
         .handoff-analysis-table .data-table {
-            min-width: 980px;
+            min-width: 100%;
+        }
+
+        .handoff-transfer-table {
+            min-width: 820px !important;
         }
 
         .handoff-total-cell {
@@ -1038,7 +1054,7 @@
         }
 
         .open-message-table {
-            min-width: 1260px;
+            min-width: 1500px;
         }
 
         .open-detail-head {
@@ -1067,38 +1083,93 @@
             flex-wrap: wrap;
         }
 
+        .script-effect-grid {
+            display: grid;
+            grid-template-columns: minmax(460px, 1fr) minmax(520px, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .script-effect-grid > .section {
+            margin-bottom: 0;
+            min-width: 0;
+        }
+
+        .script-effect-table {
+            min-width: 1080px;
+        }
+
+        .open-trigger-chart {
+            min-height: 252px;
+            padding: 14px 18px 10px;
+        }
+
+        .open-trigger-row {
+            display: grid;
+            grid-template-columns: 86px 1fr 38px;
+            min-height: 31px;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .open-trigger-label {
+            color: #5b606b;
+            font-size: 11px;
+            text-align: right;
+        }
+
+        .open-trigger-track {
+            height: 18px;
+            background-image: linear-gradient(to right, transparent 0, transparent calc(25% - 1px), #eef0f2 calc(25% - 1px), #eef0f2 25%, transparent 25%, transparent calc(50% - 1px), #eef0f2 calc(50% - 1px), #eef0f2 50%, transparent 50%, transparent calc(75% - 1px), #eef0f2 calc(75% - 1px), #eef0f2 75%, transparent 75%, transparent calc(100% - 1px), #eef0f2 calc(100% - 1px), #eef0f2 100%);
+        }
+
+        .open-trigger-bar {
+            height: 9px;
+            margin-top: 4px;
+            border-radius: 2px;
+            background: #4f8df7;
+        }
+
+        .open-trigger-value {
+            color: #30343b;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .open-trigger-axis {
+            display: grid;
+            grid-template-columns: 86px repeat(5, 1fr) 38px;
+            margin-top: 2px;
+            color: #8b9099;
+            font-size: 10px;
+        }
+
+        .open-trigger-axis span {
+            text-align: center;
+        }
+
+        .open-trigger-axis span:first-child,
+        .open-trigger-axis span:last-child {
+            text-align: left;
+        }
+
+        .open-node-table {
+            min-width: 720px;
+        }
+
+        .open-node-table th:first-child,
+        .open-node-table td:first-child {
+            max-width: 420px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
         .open-detail-filter {
             display: flex;
             align-items: center;
             gap: 5px;
             color: #6f7682;
             font-size: 11px;
-        }
-
-        .dashboard-overview-grid {
-            display: grid;
-            grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
-            gap: 12px;
-            align-items: start;
-            margin-bottom: 12px;
-        }
-
-        .dashboard-overview-grid .section {
-            margin-bottom: 0;
-        }
-
-        .dashboard-overview-grid .data-table {
-            min-width: 0;
-        }
-
-        .dashboard-funnel-table th:first-child,
-        .dashboard-funnel-table td:first-child {
-            min-width: 190px;
-        }
-
-        .dashboard-latency-table th:nth-child(4),
-        .dashboard-latency-table td:nth-child(4) {
-            min-width: 180px;
         }
 
         .badge {
@@ -1778,45 +1849,95 @@
         }
 
         .reason-chart {
-            padding: 12px 14px 14px;
+            display: grid;
+            grid-template-columns: 190px minmax(220px, 1fr);
+            gap: 18px;
+            align-items: center;
+            padding: 18px 20px;
         }
 
-        .reason-chart-row {
-            display: grid;
-            grid-template-columns: 96px minmax(120px, 1fr) 46px 46px;
+        .reason-pie {
+            width: 176px;
+            aspect-ratio: 1;
+            border-radius: 50%;
+            background:
+                conic-gradient(
+                    #4f7cff 0 40.9%,
+                    #49bfd3 40.9% 68.2%,
+                    #e79a45 68.2% 86.4%,
+                    #8f96b3 86.4% 95.5%,
+                    #b8751f 95.5% 100%
+                );
+            position: relative;
+            box-shadow: inset 0 0 0 1px rgba(31, 35, 41, 0.08);
+        }
+
+        .reason-pie::after {
+            content: "";
+            position: absolute;
+            inset: 42px;
+            border-radius: 50%;
+            background: #ffffff;
+            box-shadow: 0 0 0 1px rgba(31, 35, 41, 0.06);
+        }
+
+        .reason-pie-label {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
             align-items: center;
-            min-height: 36px;
-            gap: 10px;
+            justify-content: center;
+            gap: 2px;
+            color: #30343b;
+        }
+
+        .reason-pie-label strong {
+            font-size: 22px;
+            line-height: 1;
+        }
+
+        .reason-pie-label span {
+            color: #6f7682;
+            font-size: 11px;
+        }
+
+        .reason-legend {
+            display: grid;
+            gap: 9px;
+        }
+
+        .reason-legend-row {
+            display: grid;
+            grid-template-columns: 10px minmax(120px, 1fr) 46px 48px;
+            align-items: center;
+            gap: 8px;
             color: #1f2329;
             font-size: 11px;
         }
 
-        .reason-chart-label {
+        .reason-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #4f7cff;
+        }
+
+        .reason-dot.secondary { background: #49bfd3; }
+        .reason-dot.warning { background: #e79a45; }
+        .reason-dot.muted { background: #8f96b3; }
+        .reason-dot.purple { background: #b8751f; }
+
+        .reason-legend-label {
             overflow: hidden;
             color: #3d414a;
             text-overflow: ellipsis;
             white-space: nowrap;
         }
 
-        .reason-chart-track {
-            height: 7px;
-            overflow: hidden;
-            border-radius: 2px;
-            background: #eef1f6;
-        }
-
-        .reason-chart-fill {
-            height: 100%;
-            border-radius: 2px;
-            background: #4f7cff;
-        }
-
-        .reason-chart-fill.secondary { background: #49bfd3; }
-        .reason-chart-fill.warning { background: #e79a45; }
-        .reason-chart-fill.muted { background: #8f96b3; }
-
-        .reason-chart-count,
-        .reason-chart-rate {
+        .reason-legend-count,
+        .reason-legend-rate {
             color: #1f2329;
             font-variant-numeric: tabular-nums;
             text-align: right;
@@ -2159,13 +2280,16 @@
             .alert-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
             .alert-card:nth-child(2) { border-right: 0; }
             .alert-card:nth-child(-n + 2) { border-bottom: 1px solid #e8eaed; }
-            .dashboard-overview-grid { grid-template-columns: 1fr; }
+            .handoff-analysis-tables { grid-template-columns: 1fr; }
             .rules-insight-grid { grid-template-columns: 1fr; }
             .allocation-scope-note { display: block; }
             .allocation-scope-formula { margin-top: 4px; white-space: normal; }
             .open-detail-head {
                 align-items: flex-start;
                 flex-direction: column;
+            }
+            .script-effect-grid {
+                grid-template-columns: 1fr;
             }
         }
 
@@ -2245,8 +2369,9 @@
 <!-- ========== LAYER TABS ========== -->
 <div class="layer-tabs">
     <div class="layer-tab active" onclick="switchLayer('dashboard')">总览</div>
-    <div class="layer-tab" onclick="switchLayer('open-analysis')">AI触达</div>
-    <div class="layer-tab" onclick="switchLayer('staff')">加微分配</div>
+    <div class="layer-tab" onclick="switchLayer('open-analysis')">发送监控</div>
+    <div class="layer-tab" onclick="switchLayer('script-effect')">开口策略</div>
+    <div class="layer-tab" onclick="switchLayer('staff')">分配规则</div>
     <div class="layer-tab" onclick="switchLayer('customer')">分配明细</div>
 </div>
 
@@ -2286,278 +2411,221 @@
                     <div class="handoff-metric-note">含AI直转与人工承接</div>
                 </div>
             </div>
-            <div class="handoff-analysis-table">
-                <table class="data-table" aria-label="转人工数据分析明细">
-                    <thead>
-                        <tr class="column-group-row">
-                            <th colspan="4">开口总量</th>
-                            <th colspan="6">转人工数据</th>
-                        </tr>
-                        <tr>
-                            <th>日期</th>
-                            <th class="right">总加微</th>
-                            <th class="right">开口数</th>
-                            <th class="right">开口率</th>
-                            <th class="group-start">人工客服</th>
-                            <th class="right">转人工加微</th>
-                            <th class="right">转人工预约</th>
-                            <th class="right">现预约率</th>
-                            <th class="right">总预约</th>
-                            <th class="right">总预约率</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td class="mono handoff-total-cell" rowspan="10">2026-09-02</td>
-                            <td class="right mono handoff-total-cell" rowspan="10">1,280</td>
-                            <td class="right mono handoff-total-cell" rowspan="10">412</td>
-                            <td class="right mono handoff-total-cell" rowspan="10">32.2%</td>
-                            <td class="group-start">白思静</td>
-                            <td class="right mono">86</td>
-                            <td class="right mono">18</td>
-                            <td class="right mono">20.9%</td>
-                            <td class="right mono">42</td>
-                            <td class="right mono">3.3%</td>
-                        </tr>
-                        <tr>
-                            <td class="group-start">王五</td>
-                            <td class="right mono">73</td>
-                            <td class="right mono">16</td>
-                            <td class="right mono">21.9%</td>
-                            <td class="right mono">42</td>
-                            <td class="right mono">3.3%</td>
-                        </tr>
-                        <tr>
-                            <td class="group-start">张三</td>
-                            <td class="right mono">64</td>
-                            <td class="right mono">8</td>
-                            <td class="right mono">12.5%</td>
-                            <td class="right mono">42</td>
-                            <td class="right mono">3.3%</td>
-                        </tr>
-                        <tr>
-                            <td class="group-start">李四</td>
-                            <td class="right mono">58</td>
-                            <td class="right mono">11</td>
-                            <td class="right mono">19.0%</td>
-                            <td class="right mono">42</td>
-                            <td class="right mono">3.3%</td>
-                        </tr>
-                        <tr>
-                            <td class="group-start">赵六</td>
-                            <td class="right mono">52</td>
-                            <td class="right mono">7</td>
-                            <td class="right mono">13.5%</td>
-                            <td class="right mono">42</td>
-                            <td class="right mono">3.3%</td>
-                        </tr>
-                        <tr>
-                            <td class="group-start">钱七</td>
-                            <td class="right mono">47</td>
-                            <td class="right mono">10</td>
-                            <td class="right mono">21.3%</td>
-                            <td class="right mono">42</td>
-                            <td class="right mono">3.3%</td>
-                        </tr>
-                        <tr>
-                            <td class="group-start">孙悦</td>
-                            <td class="right mono">43</td>
-                            <td class="right mono">6</td>
-                            <td class="right mono">14.0%</td>
-                            <td class="right mono">42</td>
-                            <td class="right mono">3.3%</td>
-                        </tr>
-                        <tr>
-                            <td class="group-start">周明</td>
-                            <td class="right mono">39</td>
-                            <td class="right mono">5</td>
-                            <td class="right mono">12.8%</td>
-                            <td class="right mono">42</td>
-                            <td class="right mono">3.3%</td>
-                        </tr>
-                        <tr>
-                            <td class="group-start">吴迪</td>
-                            <td class="right mono">35</td>
-                            <td class="right mono">4</td>
-                            <td class="right mono">11.4%</td>
-                            <td class="right mono">42</td>
-                            <td class="right mono">3.3%</td>
-                        </tr>
-                        <tr>
-                            <td class="group-start">郑琳</td>
-                            <td class="right mono">31</td>
-                            <td class="right mono">3</td>
-                            <td class="right mono">9.7%</td>
-                            <td class="right mono">42</td>
-                            <td class="right mono">3.3%</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <div class="dashboard-overview-grid">
-        <!-- ===== 表1：每日全链路漏斗表 ===== -->
-        <div class="section">
-            <div class="section-header">
-                <div class="section-title-group">
-                    <div>
-                        <div class="section-title">全链路漏斗</div>
-                    </div>
+            <div class="handoff-analysis-tables">
+                <div class="handoff-analysis-table">
+                    <table class="data-table handoff-open-total-table" aria-label="开口总量">
+                        <thead>
+                            <tr>
+                                <th>日期</th>
+                                <th class="right">总加微</th>
+                                <th class="right">开口数</th>
+                                <th class="right">开口率</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="mono handoff-total-cell">2026-09-02</td>
+                                <td class="right mono handoff-total-cell">1,280</td>
+                                <td class="right mono handoff-total-cell">412</td>
+                                <td class="right mono handoff-total-cell">32.2%</td>
+                            </tr>
+                            <tr>
+                                <td class="mono">2026-09-01</td>
+                                <td class="right mono">1,195</td>
+                                <td class="right mono">398</td>
+                                <td class="right mono">33.3%</td>
+                            </tr>
+                            <tr>
+                                <td class="mono">2026-08-31</td>
+                                <td class="right mono">1,236</td>
+                                <td class="right mono">407</td>
+                                <td class="right mono">32.9%</td>
+                            </tr>
+                            <tr>
+                                <td class="mono">2026-08-30</td>
+                                <td class="right mono">1,208</td>
+                                <td class="right mono">389</td>
+                                <td class="right mono">32.2%</td>
+                            </tr>
+                            <tr>
+                                <td class="mono">2026-08-29</td>
+                                <td class="right mono">1,264</td>
+                                <td class="right mono">421</td>
+                                <td class="right mono">33.3%</td>
+                            </tr>
+                            <tr>
+                                <td class="mono">2026-08-28</td>
+                                <td class="right mono">1,219</td>
+                                <td class="right mono">392</td>
+                                <td class="right mono">32.2%</td>
+                            </tr>
+                            <tr>
+                                <td class="mono">2026-08-27</td>
+                                <td class="right mono">1,231</td>
+                                <td class="right mono">405</td>
+                                <td class="right mono">32.9%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="handoff-analysis-table">
+                    <table class="data-table handoff-transfer-table" aria-label="转人工数据">
+                        <thead>
+                            <tr>
+                                <th>日期</th>
+                                <th>人工客服</th>
+                                <th class="right">加微</th>
+                                <th class="right">现预约</th>
+                                <th class="right">现预约率</th>
+                                <th class="right">总预约</th>
+                                <th class="right">总预约率</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="mono">2026-09-02</td>
+                                <td>白思静</td>
+                                <td class="right mono">86</td>
+                                <td class="right mono">18</td>
+                                <td class="right mono">20.9%</td>
+                                <td class="right mono">42</td>
+                                <td class="right mono">48.8%</td>
+                            </tr>
+                            <tr>
+                                <td class="mono">2026-09-02</td>
+                                <td>程华静</td>
+                                <td class="right mono">73</td>
+                                <td class="right mono">16</td>
+                                <td class="right mono">21.9%</td>
+                                <td class="right mono">38</td>
+                                <td class="right mono">52.1%</td>
+                            </tr>
+                            <tr>
+                                <td class="mono">2026-09-01</td>
+                                <td>白思静</td>
+                                <td class="right mono">79</td>
+                                <td class="right mono">15</td>
+                                <td class="right mono">19.0%</td>
+                                <td class="right mono">36</td>
+                                <td class="right mono">45.6%</td>
+                            </tr>
+                            <tr>
+                                <td class="mono">2026-09-01</td>
+                                <td>程华静</td>
+                                <td class="right mono">68</td>
+                                <td class="right mono">14</td>
+                                <td class="right mono">20.6%</td>
+                                <td class="right mono">34</td>
+                                <td class="right mono">50.0%</td>
+                            </tr>
+                            <tr>
+                                <td class="mono">2026-08-31</td>
+                                <td>白思静</td>
+                                <td class="right mono">82</td>
+                                <td class="right mono">17</td>
+                                <td class="right mono">20.7%</td>
+                                <td class="right mono">39</td>
+                                <td class="right mono">47.6%</td>
+                            </tr>
+                            <tr>
+                                <td class="mono">2026-08-31</td>
+                                <td>程华静</td>
+                                <td class="right mono">71</td>
+                                <td class="right mono">13</td>
+                                <td class="right mono">18.3%</td>
+                                <td class="right mono">32</td>
+                                <td class="right mono">45.1%</td>
+                            </tr>
+                            <tr>
+                                <td class="mono">2026-08-30</td>
+                                <td>白思静</td>
+                                <td class="right mono">76</td>
+                                <td class="right mono">14</td>
+                                <td class="right mono">18.4%</td>
+                                <td class="right mono">35</td>
+                                <td class="right mono">46.1%</td>
+                            </tr>
+                            <tr>
+                                <td class="mono">2026-08-30</td>
+                                <td>程华静</td>
+                                <td class="right mono">65</td>
+                                <td class="right mono">12</td>
+                                <td class="right mono">18.5%</td>
+                                <td class="right mono">30</td>
+                                <td class="right mono">46.2%</td>
+                            </tr>
+                            <tr>
+                                <td class="mono">2026-08-29</td>
+                                <td>白思静</td>
+                                <td class="right mono">88</td>
+                                <td class="right mono">19</td>
+                                <td class="right mono">21.6%</td>
+                                <td class="right mono">43</td>
+                                <td class="right mono">48.9%</td>
+                            </tr>
+                            <tr>
+                                <td class="mono">2026-08-29</td>
+                                <td>程华静</td>
+                                <td class="right mono">74</td>
+                                <td class="right mono">15</td>
+                                <td class="right mono">20.3%</td>
+                                <td class="right mono">36</td>
+                                <td class="right mono">48.6%</td>
+                            </tr>
+                            <tr>
+                                <td class="mono">2026-08-28</td>
+                                <td>白思静</td>
+                                <td class="right mono">81</td>
+                                <td class="right mono">16</td>
+                                <td class="right mono">19.8%</td>
+                                <td class="right mono">37</td>
+                                <td class="right mono">45.7%</td>
+                            </tr>
+                            <tr>
+                                <td class="mono">2026-08-28</td>
+                                <td>程华静</td>
+                                <td class="right mono">69</td>
+                                <td class="right mono">13</td>
+                                <td class="right mono">18.8%</td>
+                                <td class="right mono">31</td>
+                                <td class="right mono">44.9%</td>
+                            </tr>
+                            <tr>
+                                <td class="mono">2026-08-27</td>
+                                <td>白思静</td>
+                                <td class="right mono">84</td>
+                                <td class="right mono">17</td>
+                                <td class="right mono">20.2%</td>
+                                <td class="right mono">40</td>
+                                <td class="right mono">47.6%</td>
+                            </tr>
+                            <tr>
+                                <td class="mono">2026-08-27</td>
+                                <td>程华静</td>
+                                <td class="right mono">70</td>
+                                <td class="right mono">14</td>
+                                <td class="right mono">20.0%</td>
+                                <td class="right mono">33</td>
+                                <td class="right mono">47.1%</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
-            <div class="section-body">
-                <table class="data-table dashboard-funnel-table">
-                    <thead>
-                        <tr>
-                            <th>指标</th>
-                            <th class="right">今日值</th>
-                            <th class="right">昨日值</th>
-                            <th class="right">近7日均值</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>① 今日加微总量</td>
-                            <td class="right mono">1,280</td>
-                            <td class="right mono">1,195</td>
-                            <td class="right mono">1,230</td>
-                        </tr>
-                        <tr>
-                            <td>② AI开口客户数</td>
-                            <td class="right mono">412</td>
-                            <td class="right mono">398</td>
-                            <td class="right mono">405</td>
-                        </tr>
-                        <tr>
-                            <td>③ AI开口率</td>
-                            <td class="right mono">32.2%</td>
-                            <td class="right mono">33.3%</td>
-                            <td class="right mono">32.9%</td>
-                        </tr>
-                        <tr>
-                            <td>④ 触发分配请求数</td>
-                            <td class="right mono">410</td>
-                            <td class="right mono">396</td>
-                            <td class="right mono">403</td>
-                        </tr>
-                        <tr style="background:#f0f5ff;">
-                            <td><strong>⑤ 实际需分配数</strong></td>
-                            <td class="right mono"><strong>312</strong></td>
-                            <td class="right mono"><strong>307</strong></td>
-                            <td class="right mono"><strong>311</strong></td>
-                        </tr>
-                        <tr>
-                            <td>⑥ 分配成功总数</td>
-                            <td class="right mono">302</td>
-                            <td class="right mono">298</td>
-                            <td class="right mono">300</td>
-                        </tr>
-                        <tr>
-                            <td>⑦ 无人可分数</td>
-                            <td class="right mono" style="color:#dc2626;font-weight:600">10</td>
-                            <td class="right mono">3</td>
-                            <td class="right mono">5</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- ===== 表2：分配时效分布表 ===== -->
-        <div class="section">
-            <div class="section-header">
-                <div class="section-title-group">
-                    <div>
-                        <div class="section-title">分配时效</div>
-                    </div>
-                </div>
-            </div>
-            <div class="section-body">
-                <table class="data-table dashboard-latency-table">
-                    <thead>
-                        <tr>
-                            <th>时效区间</th>
-                            <th class="right">客户数</th>
-                            <th class="right">占比</th>
-                            <th style="min-width:200px">分布</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><span class="cell-tag green">≤ 5秒</span></td>
-                            <td class="right mono">285</td>
-                            <td class="right mono">69.5%</td>
-                            <td>
-                                <div class="cell-bar">
-                                    <div class="cell-bar-track"><div class="cell-bar-fill green" style="width:69.5%"></div></div>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><span class="cell-tag blue">5秒~30秒</span></td>
-                            <td class="right mono">88</td>
-                            <td class="right mono">21.5%</td>
-                            <td>
-                                <div class="cell-bar">
-                                    <div class="cell-bar-track"><div class="cell-bar-fill blue" style="width:21.5%"></div></div>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><span class="cell-tag orange">30秒~1分钟</span></td>
-                            <td class="right mono">22</td>
-                            <td class="right mono">5.4%</td>
-                            <td>
-                                <div class="cell-bar">
-                                    <div class="cell-bar-track"><div class="cell-bar-fill orange" style="width:5.4%"></div></div>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><span class="cell-tag orange">1~5分钟</span></td>
-                            <td class="right mono">10</td>
-                            <td class="right mono">2.4%</td>
-                            <td>
-                                <div class="cell-bar">
-                                    <div class="cell-bar-track"><div class="cell-bar-fill orange" style="width:2.4%"></div></div>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><span class="cell-tag red">> 5分钟</span></td>
-                            <td class="right mono">3</td>
-                            <td class="right mono">0.7%</td>
-                            <td>
-                                <div class="cell-bar">
-                                    <div class="cell-bar-track"><div class="cell-bar-fill red" style="width:0.7%"></div></div>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><span class="cell-tag red">未触发分配</span></td>
-                            <td class="right mono" style="color:#dc2626;font-weight:600">2</td>
-                            <td class="right mono">—</td>
-                            <td>—</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
         </div>
 
     </div>
 
 
     <!-- =====================================================================
-     第二层：AI触达层
+     第二层：发送监控层
      ===================================================================== -->
 <div class="layer-content" id="layer-open-analysis">
     <div class="section">
         <div class="section-header">
             <div class="section-title-group">
                 <div>
-                    <div class="section-title">AI触达</div>
+                    <div class="section-title">发送监控</div>
                 </div>
             </div>
         </div>
@@ -2568,23 +2636,23 @@
 
         <div class="subtab-content active" id="open-account-tab">
             <div class="open-analysis-table">
-                <table class="data-table open-account-table" aria-label="账号维度AI触达">
+                <table class="data-table open-account-table" aria-label="账号维度发送监控">
                     <thead>
                         <tr class="column-group-row">
                             <th colspan="3">账户信息</th>
-                            <th colspan="5">首条消息</th>
+                            <th colspan="5">加微后首条消息</th>
                             <th colspan="5">全部消息</th>
                         </tr>
                         <tr>
                             <th>企微ID</th>
                             <th>企微名称</th>
                             <th class="right">加微数</th>
-                            <th class="right">3分内送达数</th>
-                            <th class="right">3分内送达率</th>
-                            <th class="right">3分以上送达数</th>
-                            <th class="right">3分以上送达率</th>
+                            <th class="right">3分内及时发送数</th>
+                            <th class="right">3分内及时发送率</th>
+                            <th class="right">3分以上延迟数</th>
+                            <th class="right">3分以上延迟率</th>
                             <th class="right">首条失败率</th>
-                            <th class="right">应发指令数</th>
+                            <th class="right">应发消息数</th>
                             <th class="right">发送成功数</th>
                             <th class="right">发送成功率</th>
                             <th class="right">发送失败数</th>
@@ -2597,7 +2665,7 @@
                             <td>—</td>
                             <td class="right mono">14</td>
                             <td class="right mono">13</td>
-                            <td class="right mono">108.3%</td>
+                            <td class="right mono">92.9%</td>
                             <td class="right mono">0</td>
                             <td class="right mono">0.0%</td>
                             <td class="right mono">8.3%</td>
@@ -2627,7 +2695,7 @@
                             <td>志伟战队-刘敬林</td>
                             <td class="right mono">10</td>
                             <td class="right mono">10</td>
-                            <td class="right mono">111.1%</td>
+                            <td class="right mono">100.0%</td>
                             <td class="right mono">0</td>
                             <td class="right mono">0.0%</td>
                             <td class="right mono">0.0%</td>
@@ -2682,9 +2750,9 @@
                         </select>
                     </label>
                     <label class="open-detail-filter">
-                        结果
+                        发送状态
                         <select class="section-filter-select open-message-filter" data-target="account-message-table" data-filter="result">
-                            <option value="all">全部结果</option>
+                            <option value="all">全部状态</option>
                             <option value="成功">成功</option>
                             <option value="失败">失败</option>
                         </select>
@@ -2696,51 +2764,59 @@
                     <thead>
                         <tr>
                             <th>企微ID</th>
-                            <th>企微名称</th>
                             <th>客户ID</th>
                             <th>客户名称</th>
-                            <th class="right">消息节点</th>
-                            <th>消息生成时间</th>
-                            <th>消息排队时间</th>
-                            <th>消息送达时间</th>
+                            <th>发送总任务创建时间</th>
+                            <th>脚本开始执行时间</th>
+                            <th>任务更新时间</th>
+                            <th class="right">上下任务间等待</th>
+                            <th class="right">分发耗时</th>
+                            <th class="right">排队耗时</th>
+                            <th class="right">执行耗时</th>
                             <th class="right">总耗时</th>
-                            <th>结果</th>
+                            <th>发送状态</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr data-wechat="SL2478" data-result="成功">
                             <td class="mono">SL2478</td>
-                            <td>志伟战队-白思静SL2478</td>
                             <td class="mono">1212</td>
                             <td>邱天</td>
-                            <td class="right mono">1</td>
                             <td class="mono">2026-09-04 14:37:12</td>
-                            <td class="mono">2026-09-04 14:37:12</td>
+                            <td class="mono">2026-09-04 14:37:13</td>
                             <td class="mono">2026-09-04 14:37:26</td>
+                            <td class="right mono">0s</td>
+                            <td class="right mono">0.42s</td>
+                            <td class="right mono">1.03s</td>
+                            <td class="right mono">12.63s</td>
                             <td class="right mono">14.08s</td>
                             <td><span class="cell-tag green">成功</span></td>
                         </tr>
                         <tr data-wechat="SL2478" data-result="失败">
                             <td class="mono">SL2478</td>
-                            <td>志伟战队-白思静SL2478</td>
                             <td class="mono">1212</td>
                             <td>邱天</td>
-                            <td class="right mono">2</td>
                             <td class="mono">2026-09-04 15:47:35</td>
-                            <td class="mono">2026-09-04 15:47:35</td>
-                            <td class="mono">—</td>
+                            <td class="mono">2026-09-04 15:47:36</td>
+                            <td class="mono">2026-09-04 15:50:36</td>
+                            <td class="right mono">70m 09s</td>
+                            <td class="right mono">0.37s</td>
+                            <td class="right mono" style="color:#e03f3f;font-weight:600">180.44s</td>
+                            <td class="right mono">—</td>
                             <td class="right mono">—</td>
                             <td><span class="cell-tag red">失败</span></td>
                         </tr>
                         <tr data-wechat="SL1580" data-result="成功">
                             <td class="mono">SL1580</td>
-                            <td>志伟战队-刘敬林</td>
                             <td class="mono">15179459</td>
                             <td>最好</td>
-                            <td class="right mono">1</td>
                             <td class="mono">2026-09-04 06:47:58</td>
-                            <td class="mono">2026-09-04 06:47:58</td>
+                            <td class="mono">2026-09-04 06:47:59</td>
                             <td class="mono">2026-09-04 06:48:07</td>
+                            <td class="right mono">0s</td>
+                            <td class="right mono">0.31s</td>
+                            <td class="right mono">0.86s</td>
+                            <td class="right mono">7.82s</td>
                             <td class="right mono">8.99s</td>
                             <td><span class="cell-tag green">成功</span></td>
                         </tr>
@@ -2751,11 +2827,11 @@
 
         <div class="subtab-content" id="open-customer-tab">
             <div class="open-analysis-table customer">
-                <table class="data-table open-customer-table" aria-label="客户维度AI触达">
+                <table class="data-table open-customer-table" aria-label="客户维度发送监控">
                     <thead>
                         <tr class="column-group-row">
                             <th colspan="3">客户信息</th>
-                            <th colspan="5">首条消息</th>
+                            <th colspan="5">加微后首条消息</th>
                             <th colspan="4">全部消息</th>
                         </tr>
                         <tr>
@@ -2764,10 +2840,10 @@
                             <th>首次加微时间</th>
                             <th class="right">AI前置准备耗时</th>
                             <th class="right">AI思考耗时</th>
-                            <th>首条消息排队时间</th>
-                            <th class="right">首条消息耗时</th>
-                            <th>首条消息送达时间</th>
-                            <th class="right">应发指令数</th>
+                            <th>加微后首条消息排队时间</th>
+                            <th class="right">加微后首条消息耗时</th>
+                            <th>加微后首条消息送达时间</th>
+                            <th class="right">应发消息数</th>
                             <th class="right">发送成功数</th>
                             <th class="right">发送成功率</th>
                             <th class="right">发送失败数</th>
@@ -2873,9 +2949,9 @@
                         </select>
                     </label>
                     <label class="open-detail-filter">
-                        结果
+                        发送状态
                         <select class="section-filter-select open-message-filter" data-target="customer-message-table" data-filter="result">
-                            <option value="all">全部结果</option>
+                            <option value="all">全部状态</option>
                             <option value="成功">成功</option>
                             <option value="失败">失败</option>
                         </select>
@@ -2887,51 +2963,59 @@
                     <thead>
                         <tr>
                             <th>企微ID</th>
-                            <th>企微名称</th>
                             <th>客户ID</th>
                             <th>客户名称</th>
-                            <th class="right">消息节点</th>
-                            <th>消息生成时间</th>
-                            <th>消息排队时间</th>
-                            <th>消息送达时间</th>
+                            <th>发送总任务创建时间</th>
+                            <th>脚本开始执行时间</th>
+                            <th>任务更新时间</th>
+                            <th class="right">上下任务间等待</th>
+                            <th class="right">分发耗时</th>
+                            <th class="right">排队耗时</th>
+                            <th class="right">执行耗时</th>
                             <th class="right">总耗时</th>
-                            <th>结果</th>
+                            <th>发送状态</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr data-wechat="SL2478" data-result="成功">
                             <td class="mono">SL2478</td>
-                            <td>志伟战队-白思静SL2478</td>
                             <td class="mono">1212</td>
                             <td>邱天</td>
-                            <td class="right mono">1</td>
                             <td class="mono">2026-09-04 14:37:12</td>
-                            <td class="mono">2026-09-04 14:37:12</td>
+                            <td class="mono">2026-09-04 14:37:13</td>
                             <td class="mono">2026-09-04 14:37:26</td>
+                            <td class="right mono">0s</td>
+                            <td class="right mono">0.42s</td>
+                            <td class="right mono">1.03s</td>
+                            <td class="right mono">12.63s</td>
                             <td class="right mono">14.08s</td>
                             <td><span class="cell-tag green">成功</span></td>
                         </tr>
                         <tr data-wechat="SL2478" data-result="失败">
                             <td class="mono">SL2478</td>
-                            <td>志伟战队-白思静SL2478</td>
                             <td class="mono">1212</td>
                             <td>邱天</td>
-                            <td class="right mono">2</td>
                             <td class="mono">2026-09-04 15:47:35</td>
-                            <td class="mono">2026-09-04 15:47:35</td>
-                            <td class="mono">—</td>
+                            <td class="mono">2026-09-04 15:47:36</td>
+                            <td class="mono">2026-09-04 15:50:36</td>
+                            <td class="right mono">70m 09s</td>
+                            <td class="right mono">0.37s</td>
+                            <td class="right mono" style="color:#e03f3f;font-weight:600">180.44s</td>
+                            <td class="right mono">—</td>
                             <td class="right mono">—</td>
                             <td><span class="cell-tag red">失败</span></td>
                         </tr>
                         <tr data-wechat="SL1580" data-result="成功">
                             <td class="mono">SL1580</td>
-                            <td>志伟战队-刘敬林</td>
                             <td class="mono">15179459</td>
                             <td>最好</td>
-                            <td class="right mono">1</td>
                             <td class="mono">2026-09-04 06:47:58</td>
-                            <td class="mono">2026-09-04 06:47:58</td>
+                            <td class="mono">2026-09-04 06:47:59</td>
                             <td class="mono">2026-09-04 06:48:07</td>
+                            <td class="right mono">0s</td>
+                            <td class="right mono">0.31s</td>
+                            <td class="right mono">0.86s</td>
+                            <td class="right mono">7.82s</td>
                             <td class="right mono">8.99s</td>
                             <td><span class="cell-tag green">成功</span></td>
                         </tr>
@@ -2944,7 +3028,105 @@
 
 
     <!-- =============================================
-         第三层：加微分配层
+         第三层：开口策略层
+         ============================================= -->
+    <div class="layer-content" id="layer-script-effect">
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title-group">
+            <div>
+              <div class="section-title">开口策略明细</div>
+            </div>
+          </div>
+          <div class="section-filters">
+            <select class="section-filter-select">
+              <option>按开口率</option>
+              <option>按现预约率</option>
+              <option>按开口后预约率</option>
+              <option>按删除率</option>
+            </select>
+          </div>
+        </div>
+        <div class="section-body">
+          <table class="data-table script-effect-table" id="scriptEffectTable">
+            <thead>
+              <tr>
+                <th>策略名称</th>
+                <th class="right">客户数</th>
+                <th class="right">开口数</th>
+                <th class="right">开口率</th>
+                <th class="right">现预约数</th>
+                <th class="right">现预约率</th>
+                <th class="right">开口后预约数</th>
+                <th class="right">开口后预约率</th>
+                <th class="right">删除数</th>
+                <th class="right">删除率</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="total-row"><td><strong>总计</strong></td><td class="right mono">4,924</td><td class="right mono">754</td><td class="right mono">15.31%</td><td class="right mono">86</td><td class="right mono">1.75%</td><td class="right mono">58</td><td class="right mono">7.69%</td><td class="right mono">447</td><td class="right mono">9.08%</td></tr>
+              <tr><td><strong>案例共鸣型</strong></td><td class="right mono">1,486</td><td class="right mono">311</td><td class="right mono">20.93%</td><td class="right mono">35</td><td class="right mono">2.36%</td><td class="right mono">27</td><td class="right mono">8.68%</td><td class="right mono">170</td><td class="right mono">11.44%</td></tr>
+              <tr><td><strong>专家问诊型</strong></td><td class="right mono">1,372</td><td class="right mono">70</td><td class="right mono">5.10%</td><td class="right mono">7</td><td class="right mono">0.51%</td><td class="right mono">3</td><td class="right mono">4.29%</td><td class="right mono">33</td><td class="right mono">2.41%</td></tr>
+              <tr><td><strong>到店福利型</strong></td><td class="right mono">624</td><td class="right mono">118</td><td class="right mono">18.91%</td><td class="right mono">14</td><td class="right mono">2.24%</td><td class="right mono">9</td><td class="right mono">7.63%</td><td class="right mono">61</td><td class="right mono">9.78%</td></tr>
+              <tr><td><strong>痛点追问型</strong></td><td class="right mono">946</td><td class="right mono">156</td><td class="right mono">16.49%</td><td class="right mono">18</td><td class="right mono">1.90%</td><td class="right mono">12</td><td class="right mono">7.69%</td><td class="right mono">89</td><td class="right mono">9.41%</td></tr>
+              <tr><td><strong>真人案例短版</strong></td><td class="right mono">98</td><td class="right mono">26</td><td class="right mono">26.53%</td><td class="right mono">3</td><td class="right mono">3.06%</td><td class="right mono">2</td><td class="right mono">7.69%</td><td class="right mono">13</td><td class="right mono">13.27%</td></tr>
+              <tr><td><strong>长图科普型</strong></td><td class="right mono">327</td><td class="right mono">44</td><td class="right mono">13.46%</td><td class="right mono">4</td><td class="right mono">1.22%</td><td class="right mono">2</td><td class="right mono">4.55%</td><td class="right mono">35</td><td class="right mono">10.70%</td></tr>
+              <tr><td><strong>强促销型</strong></td><td class="right mono">518</td><td class="right mono">73</td><td class="right mono">14.09%</td><td class="right mono">5</td><td class="right mono">0.97%</td><td class="right mono">3</td><td class="right mono">4.11%</td><td class="right mono">46</td><td class="right mono">8.88%</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="script-effect-grid">
+        <div class="section">
+          <div class="section-header">
+            <div class="section-title-group">
+              <div>
+                <div class="section-title">开口触发</div>
+              </div>
+            </div>
+          </div>
+          <div class="open-trigger-chart">
+            <div class="open-trigger-row"><div class="open-trigger-label">1次</div><div class="open-trigger-track"><div class="open-trigger-bar" style="width:55%"></div></div><div class="open-trigger-value mono">110</div></div>
+            <div class="open-trigger-row"><div class="open-trigger-label">2-3次</div><div class="open-trigger-track"><div class="open-trigger-bar" style="width:67%"></div></div><div class="open-trigger-value mono">134</div></div>
+            <div class="open-trigger-row"><div class="open-trigger-label">4-5次</div><div class="open-trigger-track"><div class="open-trigger-bar" style="width:8%"></div></div><div class="open-trigger-value mono">16</div></div>
+            <div class="open-trigger-row"><div class="open-trigger-label">6-10次</div><div class="open-trigger-track"><div class="open-trigger-bar" style="width:6%"></div></div><div class="open-trigger-value mono">12</div></div>
+            <div class="open-trigger-row"><div class="open-trigger-label">10次以上</div><div class="open-trigger-track"><div class="open-trigger-bar" style="width:10.5%"></div></div><div class="open-trigger-value mono">21</div></div>
+            <div class="open-trigger-row"><div class="open-trigger-label">AI未发送开口</div><div class="open-trigger-track"><div class="open-trigger-bar" style="width:9%"></div></div><div class="open-trigger-value mono">18</div></div>
+            <div class="open-trigger-row"><div class="open-trigger-label">未开口</div><div class="open-trigger-track"><div class="open-trigger-bar" style="width:90.5%"></div></div><div class="open-trigger-value mono">181</div></div>
+            <div class="open-trigger-axis"><span></span><span>0</span><span>50</span><span>100</span><span>150</span><span>200</span><span></span></div>
+          </div>
+        </div>
+        <div class="section">
+          <div class="section-header">
+            <div class="section-title-group">
+              <div>
+                <div class="section-title">高开口节点</div>
+              </div>
+            </div>
+            <div class="section-desc">已选择字段(4)</div>
+          </div>
+          <div class="section-body">
+            <table class="data-table open-node-table">
+              <thead><tr><th>发送内容</th><th class="right">开口数</th><th class="right">发送总次数</th><th class="right">开口率</th></tr></thead>
+              <tbody>
+                <tr><td>您也是来领取199斑点特惠活动的吗?</td><td class="right mono">57</td><td class="right mono">122</td><td class="right mono">46.72%</td></tr>
+                <tr><td>亲，给您介绍一下。我们采用目前属于先进有效的第三代操作斑点技术...</td><td class="right mono">9</td><td class="right mono">29</td><td class="right mono">31.03%</td></tr>
+                <tr><td>亲爱的，咨询斑点问题吗?</td><td class="right mono">23</td><td class="right mono">79</td><td class="right mono">29.11%</td></tr>
+                <tr><td>您是来了解淡斑项目的吗?</td><td class="right mono">38</td><td class="right mono">138</td><td class="right mono">27.54%</td></tr>
+                <tr><td>您好，我们专业做 斑20年，全国连锁300+家直营门店，您在哪个城市呢？...</td><td class="right mono">10</td><td class="right mono">42</td><td class="right mono">23.81%</td></tr>
+                <tr><td>我们全国连锁专业解决斑点问题的，您是在哪个城市呢?</td><td class="right mono">10</td><td class="right mono">49</td><td class="right mono">20.41%</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+
+    <!-- =============================================
+         第四层：分配规则层
          ============================================= -->
     <div class="layer-content" id="layer-staff">
 
@@ -2953,7 +3135,7 @@
             <div class="section-header">
                 <div class="section-title-group">
                     <div>
-                        <div class="section-title">加微分配检查</div>
+                        <div class="section-title">分配规则检查</div>
                     </div>
                 </div>
                 <div class="section-filters">
@@ -3083,35 +3265,43 @@
                       </div>
                     </div>
                     <div class="reason-chart">
-                      <div class="reason-chart-row">
-                        <div class="reason-chart-label">抽中规则无候选</div>
-                        <div class="reason-chart-track"><div class="reason-chart-fill" style="width:100%"></div></div>
-                        <div class="reason-chart-count">9次</div>
-                        <div class="reason-chart-rate">40.9%</div>
+                      <div class="reason-pie" role="img" aria-label="转安全包原因占比饼图">
+                        <div class="reason-pie-label">
+                          <strong>22</strong>
+                          <span>转安全包</span>
+                        </div>
                       </div>
-                      <div class="reason-chart-row">
-                        <div class="reason-chart-label">全员被排除</div>
-                        <div class="reason-chart-track"><div class="reason-chart-fill secondary" style="width:66.7%"></div></div>
-                        <div class="reason-chart-count">6次</div>
-                        <div class="reason-chart-rate">27.3%</div>
-                      </div>
-                      <div class="reason-chart-row">
-                        <div class="reason-chart-label">指标数据不完整</div>
-                        <div class="reason-chart-track"><div class="reason-chart-fill warning" style="width:44.4%"></div></div>
-                        <div class="reason-chart-count">4次</div>
-                        <div class="reason-chart-rate">18.2%</div>
-                      </div>
-                      <div class="reason-chart-row">
-                        <div class="reason-chart-label">无有效普通规则</div>
-                        <div class="reason-chart-track"><div class="reason-chart-fill muted" style="width:22.2%"></div></div>
-                        <div class="reason-chart-count">2次</div>
-                        <div class="reason-chart-rate">9.1%</div>
-                      </div>
-                      <div class="reason-chart-row">
-                        <div class="reason-chart-label">阈值配置异常</div>
-                        <div class="reason-chart-track"><div class="reason-chart-fill muted" style="width:11.1%"></div></div>
-                        <div class="reason-chart-count">1次</div>
-                        <div class="reason-chart-rate">4.5%</div>
+                      <div class="reason-legend" aria-label="转安全包原因图例">
+                        <div class="reason-legend-row">
+                          <span class="reason-dot"></span>
+                          <span class="reason-legend-label">抽中规则无候选</span>
+                          <strong class="reason-legend-count">9次</strong>
+                          <strong class="reason-legend-rate">40.9%</strong>
+                        </div>
+                        <div class="reason-legend-row">
+                          <span class="reason-dot secondary"></span>
+                          <span class="reason-legend-label">全员被排除</span>
+                          <strong class="reason-legend-count">6次</strong>
+                          <strong class="reason-legend-rate">27.3%</strong>
+                        </div>
+                        <div class="reason-legend-row">
+                          <span class="reason-dot warning"></span>
+                          <span class="reason-legend-label">指标数据不完整</span>
+                          <strong class="reason-legend-count">4次</strong>
+                          <strong class="reason-legend-rate">18.2%</strong>
+                        </div>
+                        <div class="reason-legend-row">
+                          <span class="reason-dot muted"></span>
+                          <span class="reason-legend-label">无有效普通规则</span>
+                          <strong class="reason-legend-count">2次</strong>
+                          <strong class="reason-legend-rate">9.1%</strong>
+                        </div>
+                        <div class="reason-legend-row">
+                          <span class="reason-dot purple"></span>
+                          <span class="reason-legend-label">阈值配置异常</span>
+                          <strong class="reason-legend-count">1次</strong>
+                          <strong class="reason-legend-rate">4.5%</strong>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -3909,7 +4099,7 @@
 
 
     <!-- =====================================================================
-     第四层：分配明细层
+     第五层：分配明细层
      ===================================================================== -->
 <div class="layer-content" id="layer-customer">
   <div class="customer-filter-bar">
