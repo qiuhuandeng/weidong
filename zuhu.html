@@ -249,6 +249,73 @@
 
   /* ===== EMPLOYEE ABILITY ===== */
   .ability-score { font-size: 20px; font-weight: 700; color: #1677ff; }
+  .teacher-employment-status { font-size: 13px; font-weight: 700; }
+  .teacher-employment-status.active { color: #52c41a; }
+  .teacher-employment-status.left { color: #ff4d4f; }
+  #page-employee-ability .teacher-query-card { margin-bottom:16px; border:1px solid #e2e9f1; border-radius:8px; background:#fff; overflow:hidden; box-shadow:0 1px 3px rgba(15,35,70,.035); }
+  #page-employee-ability .teacher-page-tabs { height:50px; margin:0; padding:0 24px; border:0; border-bottom:1px solid #e4eaf2; border-radius:0; display:flex; align-items:flex-end; gap:32px; }
+  #page-employee-ability .teacher-page-tabs .tab { position:relative; height:50px; margin:0; padding:0 2px; border:0; display:inline-flex; align-items:center; color:#64748b; font-size:14px; font-weight:600; }
+  #page-employee-ability .teacher-page-tabs .tab::after { content:''; position:absolute; right:0; bottom:0; left:0; height:3px; border-radius:3px 3px 0 0; background:transparent; }
+  #page-employee-ability .teacher-page-tabs .tab.active { color:#1677ff; font-weight:700; }
+  #page-employee-ability .teacher-page-tabs .tab.active::after { background:#1677ff; }
+  #page-employee-ability .teacher-query-body { min-height:60px; padding:12px 24px; display:flex; align-items:center; background:#fff; }
+  #page-employee-ability .teacher-query-row { width:100%; display:none; align-items:center; gap:8px; flex-wrap:wrap; }
+  #page-employee-ability .teacher-query-row.active { display:flex; }
+  #page-employee-ability .teacher-query-row .search-input { width:220px; }
+  #page-employee-ability .teacher-query-row .search-select { min-width:150px; }
+  #page-employee-ability .teacher-content-toolbar { min-height:58px; display:flex; align-items:center; justify-content:space-between; gap:12px; }
+  #page-employee-ability .teacher-qr-table { min-width:1180px; }
+  #page-employee-ability .teacher-qr-code-cell { display:flex; align-items:center; gap:10px; }
+  #page-employee-ability .teacher-qr-code { width:38px; height:38px; border:1px solid #d9e0e8; border-radius:3px; background:#fff; color:#1f2937; display:inline-flex; align-items:center; justify-content:center; font-size:30px; flex:none; }
+  #page-employee-ability .teacher-qr-name { display:grid; gap:2px; }
+  #page-employee-ability .teacher-qr-name strong { color:#1a2332; font-size:13px; }
+  #page-employee-ability .teacher-qr-name span { color:#8c9bab; font-size:11px; }
+  #page-employee-ability .teacher-qr-actions { display:flex; align-items:center; gap:16px; white-space:nowrap; }
+  #page-employee-ability .teacher-qr-actions button { padding:0; border:0; background:transparent; color:#1677ff; font-size:12px; font-weight:600; cursor:pointer; }
+  #page-employee-ability .teacher-qr-actions button.danger { color:#ff4d4f; }
+  #page-employee-ability .teacher-qr-drawer { position:fixed; inset:0; z-index:2300; display:none; justify-content:flex-end; background:rgba(15,23,42,.38); }
+  #page-employee-ability .teacher-qr-drawer.show { display:flex; }
+  #page-employee-ability .teacher-qr-drawer-panel { width:min(560px,100vw); height:100vh; border-left:1px solid #e5e7eb; background:#fff; display:flex; flex-direction:column; }
+  #page-employee-ability .teacher-qr-drawer-header { min-height:72px; padding:16px 20px; border-bottom:1px solid #e8edf2; display:flex; align-items:flex-start; justify-content:space-between; gap:16px; }
+  #page-employee-ability .teacher-qr-drawer-header h3 { margin:0 0 3px; color:#1a2332; font-size:16px; line-height:24px; }
+  #page-employee-ability .teacher-qr-drawer-header p { margin:0; color:#8c9bab; font-size:12px; line-height:18px; }
+  #page-employee-ability .teacher-qr-drawer-close { width:28px; height:28px; border:0; border-radius:6px; background:#f3f6fb; color:#64748b; font-size:20px; cursor:pointer; flex:none; }
+  #page-employee-ability .teacher-qr-drawer-body { flex:1; min-height:0; overflow-y:auto; padding:20px; background:#fff; }
+  #page-employee-ability .teacher-qr-field { margin-bottom:18px; }
+  #page-employee-ability .teacher-qr-field-label { margin-bottom:7px; color:#1a2332; font-size:13px; font-weight:700; }
+  #page-employee-ability .teacher-qr-field-label b { color:#ff4d4f; }
+  #page-employee-ability .teacher-qr-field-help { margin:-3px 0 9px; color:#8c9bab; font-size:11px; line-height:17px; }
+  #page-employee-ability .teacher-qr-service-picker { position:relative; }
+  #page-employee-ability .teacher-qr-choose { position:relative; width:100%; min-height:36px; padding:7px 34px 7px 11px; border:1px solid #d9e0e8; border-radius:6px; background:#fff; color:#1a2332; font-size:13px; font-weight:400; text-align:left; cursor:pointer; }
+  #page-employee-ability .teacher-qr-choose::after { content:''; position:absolute; right:13px; top:50%; width:6px; height:6px; border-right:1.5px solid #8c9bab; border-bottom:1.5px solid #8c9bab; transform:translateY(-70%) rotate(45deg); transition:transform .16s; }
+  #page-employee-ability .teacher-qr-service-picker.open .teacher-qr-choose { border-color:#1677ff; box-shadow:0 0 0 2px rgba(22,119,255,.08); }
+  #page-employee-ability .teacher-qr-service-picker.open .teacher-qr-choose::after { transform:translateY(-30%) rotate(225deg); }
+  #page-employee-ability .teacher-qr-choose:disabled { border-color:#d9e0e8; background:#f5f7fa; color:#a8b3c2; cursor:not-allowed; }
+  #page-employee-ability .teacher-qr-employee-options { display:none; position:absolute; right:0; left:0; top:calc(100% + 6px); z-index:20; padding:6px; border:1px solid #d9e0e8; border-radius:7px; background:#fff; box-shadow:0 8px 20px rgba(15,35,70,.12); }
+  #page-employee-ability .teacher-qr-employee-options.show { display:block; }
+  #page-employee-ability .teacher-qr-service-search { padding:2px 2px 7px; }
+  #page-employee-ability .teacher-qr-service-search input { width:100%; height:34px; padding:6px 10px; border:1px solid #d9e0e8; border-radius:5px; color:#1a2332; font:inherit; font-size:12px; outline:none; }
+  #page-employee-ability .teacher-qr-service-search input:focus { border-color:#1677ff; box-shadow:0 0 0 2px rgba(22,119,255,.08); }
+  #page-employee-ability .teacher-qr-service-options-scroll { max-height:220px; overflow-y:auto; }
+  #page-employee-ability .teacher-qr-employee-option { min-height:44px; padding:7px 9px; border-radius:5px; display:flex; align-items:center; gap:9px; color:#344054; font-size:13px; cursor:pointer; }
+  #page-employee-ability .teacher-qr-employee-option:hover { background:#f5f9ff; }
+  #page-employee-ability .teacher-qr-employee-option input { accent-color:#1677ff; }
+  #page-employee-ability .teacher-qr-service-option-head { padding:3px 9px 6px 34px; display:grid; grid-template-columns:minmax(0,1fr) auto; gap:16px; color:#8c9bab; font-size:11px; }
+  #page-employee-ability .teacher-qr-service-option-main { min-width:0; flex:1; display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:16px; }
+  #page-employee-ability .teacher-qr-service-name { overflow:hidden; color:#344054; font-weight:600; text-overflow:ellipsis; white-space:nowrap; }
+  #page-employee-ability .teacher-qr-bound-teacher { color:#64748b; white-space:nowrap; }
+  #page-employee-ability .teacher-qr-service-empty { display:none; padding:18px 10px; color:#8c9bab; font-size:12px; text-align:center; }
+  #page-employee-ability .teacher-qr-employee-summary { margin-top:10px; padding:13px; border:1px solid #e8edf2; border-radius:7px; background:#fff; }
+  #page-employee-ability .teacher-qr-employee-summary strong { display:block; margin-bottom:4px; color:#1a2332; font-size:13px; }
+  #page-employee-ability .teacher-qr-employee-summary span { color:#8c9bab; font-size:11px; line-height:18px; }
+  #page-employee-ability .teacher-qr-rule-note { padding:13px; border:1px solid #e8edf2; border-radius:7px; background:#f8fafc; color:#64748b; font-size:12px; line-height:20px; }
+  #page-employee-ability .teacher-qr-field textarea { width:100%; min-height:72px; padding:10px 12px; border:1px solid #d9e0e8; border-radius:7px; color:#1a2332; font:inherit; resize:vertical; outline:none; }
+  #page-employee-ability .teacher-qr-field textarea:focus { border-color:#1677ff; box-shadow:0 0 0 2px rgba(22,119,255,.08); }
+  #page-employee-ability .teacher-qr-drawer-footer { min-height:64px; padding:12px 20px; border-top:1px solid #e8edf2; display:flex; align-items:center; justify-content:flex-end; gap:8px; }
+  @media (max-width:760px) {
+    #page-employee-ability .teacher-query-body { padding:12px 16px; }
+    #page-employee-ability .teacher-query-row, #page-employee-ability .teacher-query-row .search-select, #page-employee-ability .teacher-query-row .search-input { width:100%; }
+  }
   .ability-mini-list { display: flex; flex-wrap: wrap; gap: 6px; max-width: 260px; }
   .ability-bar-list { display: grid; gap: 12px; }
   .ability-bar-row { display: grid; grid-template-columns: 92px minmax(0, 1fr) 44px; gap: 10px; align-items: center; font-size: 13px; color: #1a2332; }
@@ -358,6 +425,43 @@
   .org-more-item { display: block; width: 100%; padding: 8px 14px; border: 0; background: #fff; text-align: left; font-size: 13px; color: #555; cursor: pointer; }
   .org-more-item:hover { background: #f5f7fa; color: #1677ff; }
   .org-more-item.danger { color: #ff4d4f; }
+  #page-store .table-wrap { overflow: visible; }
+  #page-store .store-table-actions { gap: 14px; }
+  #page-store .store-table-actions .org-more-menu { right: 0; }
+  .store-wecom-drawer-overlay { position: fixed; inset: 0; z-index: 1000; display: none; justify-content: flex-end; background: rgba(15, 23, 42, .38); }
+  .store-wecom-drawer-overlay.show { display: flex; }
+  .store-wecom-drawer-panel { width: min(620px, 100vw); height: 100%; display: flex; flex-direction: column; background: #fff; box-shadow: -8px 0 28px rgba(15, 35, 70, .14); }
+  .store-wecom-drawer-header { min-height: 56px; padding: 0 22px; border-bottom: 1px solid #e8edf2; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .store-wecom-drawer-header h3 { margin: 0; color: #1a2332; font-size: 15px; line-height: 22px; }
+  .store-wecom-drawer-close { width: 28px; height: 28px; padding: 0; border: 0; border-radius: 4px; background: transparent; color: #8c9bab; font-size: 20px; line-height: 1; cursor: pointer; }
+  .store-wecom-drawer-close:hover { background: #f5f7fa; color: #1677ff; }
+  .store-wecom-drawer-body { flex: 1; min-height: 0; overflow-y: auto; padding: 20px 22px; background: #f6f8fb; }
+  .store-wecom-section { padding: 18px; border: 1px solid #e8edf2; border-radius: 6px; background: #fff; }
+  .store-wecom-section + .store-wecom-section { margin-top: 14px; }
+  .store-wecom-section-title { margin-bottom: 14px; color: #1a2332; font-size: 14px; font-weight: 600; }
+  .store-wecom-section-title span { margin-left: 8px; color: #8c9bab; font-size: 12px; font-weight: 400; }
+  .store-wecom-account-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+  .store-wecom-account-toolbar .search-input { width: 260px; }
+  .store-wecom-account-count { color: #8c9bab; font-size: 12px; white-space: nowrap; }
+  .store-wecom-account-list { display: grid; gap: 8px; }
+  .store-wecom-account-row { min-height: 58px; padding: 10px 12px; border: 1px solid #e8edf2; border-radius: 6px; display: grid; grid-template-columns: 18px minmax(0, 1fr) auto; align-items: center; gap: 10px; background: #fff; cursor: pointer; }
+  .store-wecom-account-row:hover { border-color: #91caff; background: #fbfdff; }
+  .store-wecom-account-row.selected { border-color: #91caff; background: #f0f7ff; }
+  .store-wecom-account-row.bound-other { cursor: not-allowed; background: #fafafa; }
+  .store-wecom-account-row.bound-other:hover { border-color: #e8edf2; }
+  .store-wecom-account-row input { width: 15px; height: 15px; margin: 0; accent-color: #1677ff; }
+  .store-wecom-account-main { min-width: 0; }
+  .store-wecom-account-name { color: #1a2332; font-size: 13px; font-weight: 600; }
+  .store-wecom-account-meta { margin-top: 3px; color: #8c9bab; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .store-wecom-account-status { padding: 3px 8px; border-radius: 4px; background: #f5f7fa; color: #64748b; font-size: 12px; white-space: nowrap; }
+  .store-wecom-account-status.current { background: #e6f4ff; color: #1677ff; }
+  .store-wecom-account-status.bound { background: #fff7e6; color: #d46b08; }
+  .store-wecom-drawer-footer { min-height: 56px; padding: 10px 22px; border-top: 1px solid #e8edf2; display: flex; align-items: center; justify-content: flex-end; gap: 8px; background: #fff; }
+  @media (max-width: 640px) {
+    .store-wecom-drawer-body { padding: 16px; }
+    .store-wecom-account-toolbar { align-items: stretch; flex-direction: column; }
+    .store-wecom-account-toolbar .search-input { width: 100%; }
+  }
   .org-parent-picker { position: relative; }
   .org-parent-trigger { cursor: pointer; }
   .org-parent-menu { display: none; position: absolute; left: 0; top: calc(100% + 6px); z-index: 50; width: 100%; max-height: 360px; overflow-y: auto; padding: 8px; border: 1px solid #d9e0e8; border-radius: 6px; background: #fff; box-shadow: 0 8px 24px rgba(15,35,70,.12); }
@@ -374,6 +478,11 @@
   .account-layout { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 16px; align-items: start; }
   .account-tree-panel { background: #fff; border-radius: 8px; border: 1px solid #e8edf2; overflow: hidden; min-height: 0; }
   .account-tree-body { padding: 14px; max-height: 720px; overflow-y: auto; }
+  .employee-layout .panel { min-width: 0; }
+  @media (max-width: 1000px) {
+    .employee-layout { grid-template-columns: 1fr; }
+    .employee-layout .account-tree-body { max-height: 320px; }
+  }
   .account-filter-bar { background: #fff; border-bottom: 1px solid #eef2f7; padding: 14px 20px; margin: 0; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
   .account-filter-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #555; }
   .account-table-actions { display: flex; align-items: center; gap: 10px; white-space: nowrap; color: #1677ff; font-size: 13px; }
@@ -4149,7 +4258,7 @@
   .opening-mode-confirm-title { margin:0 0 8px; color:#1a2332; font-size:16px; line-height:24px; font-weight:800; text-align:center; }
   .opening-mode-confirm-copy { margin:0; color:#64748b; font-size:13px; line-height:22px; text-align:center; }
   .opening-mode-confirm-copy strong { color:#ff4d4f; font-weight:800; }
-  #wechat-pane-service .ops-sync-bar {
+  #page-service-list .ops-sync-bar {
     min-height:24px;
     margin:4px 0 14px;
     padding:0;
@@ -4165,7 +4274,7 @@
     justify-content:flex-start;
     box-shadow:none;
   }
-  #wechat-pane-service .ops-sync-bar.unified-list-note { border-bottom:0; }
+  #page-service-list .ops-sync-bar.unified-list-note { border-bottom:0; }
 
   .unified-list-page .ops-tabs,
   .unified-list-page .opening-speech-tabs,
@@ -4890,16 +4999,13 @@
   #page-customer-allocation .allocation-table td:first-child { width:220px; }
   #page-customer-allocation .allocation-table th:last-child,
   #page-customer-allocation .allocation-table td:last-child { width:140px; }
-  #page-customer-allocation #allocation-pane-tasks .allocation-wide-table table { min-width:1160px; }
-  #page-customer-allocation #allocation-pane-logs .allocation-wide-table table { min-width:1360px; }
-  #page-customer-allocation #allocation-pane-tasks .allocation-wide-table th:first-child,
-  #page-customer-allocation #allocation-pane-tasks .allocation-wide-table td:first-child { width:180px; }
-  #page-customer-allocation #allocation-pane-tasks .allocation-wide-table th:nth-child(6),
-  #page-customer-allocation #allocation-pane-tasks .allocation-wide-table td:nth-child(6) { width:140px; }
-  #page-customer-allocation #allocation-pane-tasks .allocation-wide-table th:last-child,
-  #page-customer-allocation #allocation-pane-tasks .allocation-wide-table td:last-child { width:250px; }
-  #page-customer-allocation #allocation-pane-logs .allocation-wide-table th:last-child,
-  #page-customer-allocation #allocation-pane-logs .allocation-wide-table td:last-child { width:100px; }
+  #page-customer-allocation #allocation-pane-records .allocation-wide-table table { min-width:1420px; }
+  #page-customer-allocation #allocation-pane-records .allocation-wide-table th:first-child,
+  #page-customer-allocation #allocation-pane-records .allocation-wide-table td:first-child { width:220px; }
+  #page-customer-allocation #allocation-pane-records .allocation-wide-table th:nth-child(6),
+  #page-customer-allocation #allocation-pane-records .allocation-wide-table td:nth-child(6) { width:170px; }
+  #page-customer-allocation #allocation-pane-records .allocation-wide-table th:last-child,
+  #page-customer-allocation #allocation-pane-records .allocation-wide-table td:last-child { width:250px; }
   #page-customer-allocation .allocation-customer-icon { width:32px; height:32px; border-radius:6px; background:#f2f4f7; color:#667085; font-size:13px; }
   #page-customer-allocation .allocation-name-cell strong { font-weight:600; }
   #page-customer-allocation .allocation-name-cell span { margin-top:1px; font-weight:400; }
@@ -4994,6 +5100,9 @@
   #page-customer-allocation #allocation-transfer-drawer .allocation-transfer-multi .multi-select-control { min-height:34px; padding-top:4px; padding-bottom:4px; }
   #page-customer-allocation #allocation-transfer-drawer .allocation-transfer-multi .multi-select-dropdown { z-index:220; box-shadow:none; }
   #page-customer-allocation #allocation-transfer-drawer .allocation-transfer-multi .multi-select-option small { margin-left:auto; color:#8c9bab; font-size:12px; line-height:18px; }
+  #page-customer-allocation #allocation-transfer-drawer .allocation-transfer-target { margin-top:18px; }
+  #page-customer-allocation #allocation-transfer-drawer .allocation-transfer-target[hidden] { display:none; }
+  #page-customer-allocation #allocation-transfer-drawer .allocation-transfer-target .allocation-check-row { margin-top:8px; }
   @media (max-width:640px) {
     #page-customer-allocation .allocation-drawer-panel,
     #page-customer-allocation .allocation-drawer-panel.detail { width:100%; }
@@ -5007,20 +5116,19 @@
   }
   /* ===== TRANSFER RULES PAGE ===== */
   .transfer-rules-page { --tr-primary-50:#eff6ff; --tr-primary-100:#dbeafe; --tr-primary-200:#bfdbfe; --tr-primary-300:#93c5fd; --tr-primary-500:#3b82f6; --tr-primary-600:#2563eb; --tr-primary-700:#1d4ed8; --tr-gray-50:#f8fafc; --tr-gray-100:#f1f5f9; --tr-gray-200:#e5e7eb; --tr-gray-300:#d1d5db; --tr-gray-400:#94a3b8; --tr-gray-500:#64748b; --tr-gray-600:#475569; --tr-gray-700:#374151; --tr-gray-800:#1f2937; --tr-gray-900:#111827; }
-  #page-transfer-rules .reception-strategy-tabs{height:50px;margin:0;padding:0 24px;border:0;border-bottom:1px solid #e4eaf2;border-radius:0;background:transparent;display:flex;align-items:flex-end;gap:32px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none}
-  #page-transfer-rules .reception-strategy-tabs::-webkit-scrollbar{display:none}
+  #page-transfer-rules .reception-strategy-tabs,#page-customer-allocation .reception-strategy-tabs{height:50px;margin:0;padding:0 24px;border:0;border-bottom:1px solid #e4eaf2;border-radius:0;background:transparent;display:flex;align-items:flex-end;gap:32px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none}
+  #page-transfer-rules .reception-strategy-tabs::-webkit-scrollbar,#page-customer-allocation .reception-strategy-tabs::-webkit-scrollbar{display:none}
   #page-transfer-rules.unified-list-page > .page-header{display:flex!important;align-items:center;justify-content:space-between;gap:16px}
   #page-transfer-rules.unified-list-page > .page-header .online-policy-actions{display:flex!important}
   #page-transfer-rules .ai-route-entry-btn{height:34px;padding:0 14px;border:1px solid #1677ff;border-radius:6px;background:#fff;color:#1677ff;display:inline-flex;align-items:center;justify-content:center;gap:7px;font-size:13px;font-weight:600;line-height:20px;white-space:nowrap;cursor:pointer}
   #page-transfer-rules .ai-route-entry-btn:hover{border-color:#0958d9;background:#f5f9ff;color:#0958d9}
-  #page-transfer-rules .reception-strategy-tab{position:relative;min-width:max-content;height:49px;padding:0 2px;border:0;background:transparent;color:#64748b;display:inline-flex;align-items:center;font-size:14px;line-height:22px;font-weight:600;cursor:pointer}
-  #page-transfer-rules .reception-strategy-tab::after{content:'';position:absolute;right:0;bottom:-1px;left:0;height:3px;border-radius:3px 3px 0 0;background:transparent}
-  #page-transfer-rules .reception-strategy-tab:hover,#page-transfer-rules .reception-strategy-tab.active{color:#1677ff}
-  #page-transfer-rules .reception-strategy-tab.active{font-weight:700}
-  #page-transfer-rules .reception-strategy-tab.active::after{background:#1677ff}
+  #page-transfer-rules .reception-strategy-tab,#page-customer-allocation .reception-strategy-tab{position:relative;min-width:max-content;height:49px;padding:0 2px;border:0;background:transparent;color:#64748b;display:inline-flex;align-items:center;font-size:14px;line-height:22px;font-weight:600;cursor:pointer}
+  #page-transfer-rules .reception-strategy-tab::after,#page-customer-allocation .reception-strategy-tab::after{content:'';position:absolute;right:0;bottom:-1px;left:0;height:3px;border-radius:3px 3px 0 0;background:transparent}
+  #page-transfer-rules .reception-strategy-tab:hover,#page-transfer-rules .reception-strategy-tab.active,#page-customer-allocation .reception-strategy-tab:hover,#page-customer-allocation .reception-strategy-tab.active{color:#1677ff}
+  #page-transfer-rules .reception-strategy-tab.active,#page-customer-allocation .reception-strategy-tab.active{font-weight:700}
+  #page-transfer-rules .reception-strategy-tab.active::after,#page-customer-allocation .reception-strategy-tab.active::after{background:#1677ff}
   #page-transfer-rules > .unified-query-card:not(.has-filters) > .unified-query-body{display:none}
   #page-transfer-rules .reception-strategy-panel[hidden]{display:none!important}
-  #page-transfer-rules #page-customer-allocation{width:100%;min-width:0}
   #page-transfer-rules, #page-transfer-rules * { box-sizing:border-box; }
   #page-transfer-rules button { appearance:none; border:0; background:transparent; font:inherit; margin:0; }
   #page-transfer-rules button:focus { outline:none; }
@@ -5151,6 +5259,9 @@
   #page-transfer-rules #transfer-rule-drawer .interrupt-reset-fields{border-top:1px solid #eef2f7;background:#fbfcfe}
   #page-transfer-rules #transfer-rule-drawer .interrupt-reset-fields>.form-item{padding:12px}
   #page-transfer-rules #transfer-rule-drawer .interrupt-reset-fields>.form-item+.form-item{padding-top:0}
+  #page-transfer-rules #transfer-rule-drawer #transfer-common-chain .manual-intervention-card>.form-item{padding:14px 16px}
+  #page-transfer-rules #transfer-rule-drawer #transfer-common-chain .manual-intervention-card>.form-item+.form-item{padding-top:14px;border-top:1px solid #eef2f7}
+  #page-transfer-rules #transfer-rule-drawer #transfer-common-chain .manual-intervention-card>.interrupt-reset-fields>.form-item{padding:14px 16px}
   #page-transfer-rules #transfer-rule-drawer .number-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;max-width:240px}
   #page-transfer-rules #transfer-rule-drawer .number-row.with-operator{grid-template-columns:72px minmax(0,1fr) auto;max-width:300px}
   #page-transfer-rules #transfer-rule-drawer .number-row .unit{font-size:13px;color:#64748b;white-space:nowrap}
@@ -5231,13 +5342,16 @@
   #page-ai-reception-route .ai-route-table th:nth-child(4),#page-ai-reception-route .ai-route-table td:nth-child(4){width:18%}
   #page-ai-reception-route .ai-route-table th:nth-child(5),#page-ai-reception-route .ai-route-table td:nth-child(5){width:10%}
   #page-ai-reception-route .ai-route-status-name{display:block;color:#1a2332;font-weight:600}
-  #page-ai-reception-route .ai-route-strategy{display:flex;align-items:center;gap:8px;min-height:24px;color:#273244;font-weight:500}
-  #page-ai-reception-route .ai-route-strategy.is-disabled{color:#8c9bab}
+  #page-ai-reception-route .ai-route-strategy{display:inline-flex;align-items:center;gap:8px;min-height:24px;padding:2px 9px;border:1px solid #d6e9ff;border-radius:4px;background:#e6f4ff;color:#1677ff;font-weight:500;line-height:20px}
+  #page-ai-reception-route .ai-route-strategy.is-disabled{padding:0;border:0;background:transparent;color:#8c9bab}
   #page-ai-reception-route .ai-route-empty{color:#8c9bab;font-size:13px}
   #page-ai-reception-route .ai-route-updated{color:#64748b;font-size:12px;line-height:1.6}
   #page-ai-reception-route .ai-route-edit{padding:0;border:0;background:transparent;color:#1677ff;font-size:13px;cursor:pointer}
   #page-ai-reception-route .ai-route-edit:hover{color:#0958d9}
   #modal-ai-reception-route .modal{width:min(520px,100vw);max-width:min(520px,100vw)}
+  #page-transfer-rules #modal-ai-reception-route .btn{min-width:64px;height:32px;padding:4px 15px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:13px;line-height:22px;cursor:pointer}
+  #page-transfer-rules #modal-ai-reception-route .btn-default{border:1px solid #d9d9d9;background:#fff;color:#555}
+  #page-transfer-rules #modal-ai-reception-route .btn-primary{border:1px solid #1677ff;background:#1677ff;color:#fff}
   #modal-ai-reception-route .ai-route-readonly{min-height:34px;padding:7px 11px;border:1px solid #e8edf2;border-radius:6px;background:#f8fafc;color:#334155;font-size:13px;line-height:20px}
   #modal-ai-reception-route .ai-route-drawer-note{margin-bottom:18px;padding:10px 12px;border:1px solid #d6e8ff;border-radius:6px;background:#f5f9ff;color:#52657a;font-size:12px;line-height:1.65}
   #modal-ai-reception-route .ai-route-customer-definition{margin-top:14px;padding-top:14px;border-top:1px solid #eef2f6;color:#8c9bab;font-size:12px;line-height:1.7}
@@ -5269,6 +5383,10 @@
   <!-- 一、线上销售 -->
   <div class="nav-section">
     <div class="nav-group-title" onclick="toggleNavSection(this)"><span>一、线上销售</span><span class="nav-group-arrow">⌄</span></div>
+    <div class="nav-item" onclick="showPage('service-list')">
+      <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 0116 0v4a3 3 0 01-3 3h-2"/><path d="M4 12v3a2 2 0 002 2h1v-6H6a2 2 0 00-2 2zM20 12v3a2 2 0 01-2 2h-1v-6h1a2 2 0 012 2zM9 19h6"/></svg></span>
+      客服管理
+    </div>
     <div class="nav-item" onclick="showPage('wechat-rules')">
       <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M7 8h10M7 12h6"/><path d="M12 20l-3-3H6a4 4 0 01-4-4V7a4 4 0 014-4h12a4 4 0 014 4v6a4 4 0 01-4 4h-2l-4 3z"/></svg></span>
       加微规则
@@ -5279,7 +5397,11 @@
     </div>
     <div class="nav-item" onclick="showPage('transfer-rules')">
       <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M4 7h9a4 4 0 014 4v5"/><path d="M17 16l3-3-3-3"/><path d="M20 17H9a4 4 0 01-4-4V8"/><path d="M7 5l-3 3 3 3"/><path d="M10 11h4"/></svg></span>
-      AI协同接待
+      AI协作策略
+    </div>
+    <div class="nav-item" onclick="showPage('customer-allocation')">
+      <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M4 7h11M12 4l3 3-3 3"/><path d="M20 17H9M12 14l-3 3 3 3"/><circle cx="6" cy="17" r="2"/><circle cx="18" cy="7" r="2"/></svg></span>
+      客户交接
     </div>
     <div class="nav-item" onclick="showPage('wecom-remark-rules')">
       <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M6 3h9l3 3v15H6z"/><path d="M14 3v4h4"/><path d="M9 11h6M9 15h6M9 19h4"/></svg></span>
@@ -5319,13 +5441,17 @@
   <!-- 三、老客营销 -->
   <div class="nav-section">
     <div class="nav-group-title" onclick="toggleNavSection(this)"><span>三、老客营销</span><span class="nav-group-arrow">⌄</span></div>
+    <div class="nav-item" onclick="showPage('store')">
+      <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M3 9l9-6 9 6v11a1 1 0 01-1 1H4a1 1 0 01-1-1z"/><path d="M9 21V12h6v9"/></svg></span>
+      门店档案
+    </div>
+    <div class="nav-item" onclick="showPage('employee-ability')">
+      <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M4 19V5"/><path d="M4 19h16"/><path d="M8 15l3-4 3 2 4-6"/><circle cx="11" cy="11" r="1"/><circle cx="14" cy="13" r="1"/><circle cx="18" cy="7" r="1"/></svg></span>
+      门店老师
+    </div>
     <div class="nav-item" onclick="showPage('recall-strategy')">
       <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M4 19V5"/><path d="M4 5h14l-2 4 2 4H4"/><path d="M8 19h12"/></svg></span>
       业务场景
-    </div>
-    <div class="nav-item" onclick="showPage('knowledge-base')">
-      <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 016.5 3H20v16H6.5A2.5 2.5 0 014 16.5z"/><path d="M20 19H6.5A2.5 2.5 0 004 21.5V5.5"/><path d="M8 7h8M8 11h6"/></svg></span>
-      知识库
     </div>
     <div class="nav-item" onclick="showPage('recall-trigger')">
       <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M4 4h6v6H4zM14 4h6v6h-6zM14 14h6v6h-6z"/><path d="M7 10v4h4M4 17h6v3H4z"/></svg></span>
@@ -5334,6 +5460,10 @@
     <div class="nav-item" onclick="showPage('ai-engine')">
       <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/><circle cx="12" cy="12" r="4"/></svg></span>
       智能引擎
+    </div>
+    <div class="nav-item" onclick="showPage('knowledge-base')">
+      <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 016.5 3H20v16H6.5A2.5 2.5 0 014 16.5z"/><path d="M20 19H6.5A2.5 2.5 0 004 21.5V5.5"/><path d="M8 7h8M8 11h6"/></svg></span>
+      知识库
     </div>
   </div>
 
@@ -5352,10 +5482,6 @@
       <span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/><path d="M16 3l2 2-6 6"/></svg></span>
       员工档案
     </div>
-    <div class="nav-item" onclick="showPage('employee-ability')">
-      <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M4 19V5"/><path d="M4 19h16"/><path d="M8 15l3-4 3 2 4-6"/><circle cx="11" cy="11" r="1"/><circle cx="14" cy="13" r="1"/><circle cx="18" cy="7" r="1"/></svg></span>
-      能力画像
-    </div>
   </div>
 
   <!-- 五、组织与人员 -->
@@ -5364,10 +5490,6 @@
     <div class="nav-item" onclick="showPage('org')">
       <span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="4" rx="1"/><rect x="3" y="15" width="6" height="4" rx="1"/><rect x="15" y="15" width="6" height="4" rx="1"/><path d="M12 7v4M6 15V13a2 2 0 012-2h8a2 2 0 012 2v2"/></svg></span>
       组织架构
-    </div>
-    <div class="nav-item" onclick="showPage('store')">
-      <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M3 9l9-6 9 6v11a1 1 0 01-1 1H4a1 1 0 01-1-1z"/><path d="M9 21V12h6v9"/></svg></span>
-      门店档案
     </div>
     <div class="nav-item" onclick="showPage('account')">
       <span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></span>
@@ -5591,12 +5713,6 @@
           <button class="btn btn-primary btn-sm" onclick="triggerSync('门店档案')">立即同步</button>
         </div>
       </div>
-      <div class="stat-row">
-        <div class="stat-card"><div class="stat-label">门店总数</div><div class="stat-value blue">217</div></div>
-        <div class="stat-card"><div class="stat-label">营业中</div><div class="stat-value green">198</div><div class="stat-sub">状态码 10</div></div>
-        <div class="stat-card"><div class="stat-label">停止营业</div><div class="stat-value" style="color:#ff4d4f">7</div><div class="stat-sub">状态码 20</div></div>
-        <div class="stat-card"><div class="stat-label">暂停营业</div><div class="stat-value orange">12</div><div class="stat-sub">状态码 30</div></div>
-      </div>
       <div class="panel panel-float-visible">
         <div class="panel-header">
           <span class="panel-title">门店列表</span>
@@ -5654,18 +5770,17 @@
                 </div>
               </div>
             </div>
-            <select class="search-select"><option>全部门店类型</option><option>直营门店</option><option>加盟门店</option><option>旗舰门店</option></select>
             <button class="btn btn-primary" onclick="openModal('modal-add-store')">+ 新增门店</button>
           </div>
         </div>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>门店名称</th><th>门店编码</th><th>所在部门</th><th>城市</th><th>门店类型</th><th>经营方式</th><th>营业时间</th><th>状态</th><th>最后更新</th><th>操作</th></tr></thead>
+            <thead><tr><th>门店名称</th><th>所在部门</th><th>城市</th><th>营业时间</th><th>状态</th><th>最后更新</th><th>操作</th></tr></thead>
             <tbody>
-              <tr><td><strong>南京浦口店</strong><div class="text-muted">江苏省南京市浦口区江浦街道88号</div></td><td>SHOP-320111-001</td><td>慧娟大区 / 华东区域</td><td>南京</td><td><span class="tag tag-blue">直营门店</span></td><td>直营</td><td>09:30-19:00</td><td><span class="status-dot dot-green"></span>10 营业中</td><td>2026-06-11 10:40:00</td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-store')">编辑</button> <button class="btn btn-default btn-sm" onclick="openModal('modal-store-detail')">详情</button> <button class="btn btn-danger btn-sm" onclick="openModal('modal-del-confirm')">删除</button></td></tr>
-              <tr><td><strong>昆山玉山店</strong><div class="text-muted">江苏省苏州市昆山市玉山镇人民路15号</div></td><td>SHOP-320583-014</td><td>慧娟大区 / 华东区域</td><td>昆山</td><td><span class="tag tag-blue">直营门店</span></td><td>直营</td><td>10:00-20:00</td><td><span class="status-dot dot-green"></span>10 营业中</td><td>2026-06-11 09:40:00</td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-store')">编辑</button> <button class="btn btn-default btn-sm" onclick="openModal('modal-store-detail')">详情</button> <button class="btn btn-danger btn-sm" onclick="openModal('modal-del-confirm')">删除</button></td></tr>
-              <tr><td><strong>上海静安店</strong><div class="text-muted">上海市静安区南京西路1266号</div></td><td>SHOP-310106-009</td><td>慧娟大区 / 文莉区域</td><td>上海</td><td><span class="tag tag-purple">旗舰门店</span></td><td>联营</td><td>09:30-21:00</td><td><span class="status-dot dot-orange"></span>30 暂停营业</td><td>2026-06-10 10:40:00</td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-store')">编辑</button> <button class="btn btn-default btn-sm" onclick="openModal('modal-store-detail')">详情</button> <button class="btn btn-danger btn-sm" onclick="openModal('modal-del-confirm')">删除</button></td></tr>
-              <tr><td><strong>合肥政务店</strong><div class="text-muted">安徽省合肥市蜀山区怀宁路288号</div></td><td>SHOP-340104-021</td><td>云凤区域</td><td>合肥</td><td><span class="tag tag-green">加盟门店</span></td><td>加盟</td><td>10:00-19:30</td><td><span class="status-dot dot-red"></span>20 停止营业</td><td>2026-06-09 10:40:00</td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-store')">编辑</button> <button class="btn btn-default btn-sm" onclick="openModal('modal-store-detail')">详情</button> <button class="btn btn-danger btn-sm" onclick="openModal('modal-del-confirm')">删除</button></td></tr>
+              <tr><td><strong>南京浦口店</strong><div class="text-muted">SHOP-320111-001</div></td><td>慧娟大区 / 华东区域</td><td>南京</td><td>09:30-19:00</td><td><span class="status-dot dot-green"></span>10 营业中</td><td>2026-06-11 10:40:00</td><td><div class="org-table-actions store-table-actions"><button class="org-action-link" onclick="openStoreWecomBinding(event,'南京浦口店')">绑定企微</button><button class="org-action-link" onclick="openModal('modal-edit-store')">编辑</button><button class="org-action-link" onclick="toggleStoreMoreMenu(event,this)">更多</button><div class="org-more-menu"><button class="org-more-item" onclick="openStoreMoreAction(event,'detail')">详情</button><button class="org-more-item danger" onclick="openStoreMoreAction(event,'delete')">删除</button></div></div></td></tr>
+              <tr><td><strong>昆山玉山店</strong><div class="text-muted">SHOP-320583-014</div></td><td>慧娟大区 / 华东区域</td><td>昆山</td><td>10:00-20:00</td><td><span class="status-dot dot-green"></span>10 营业中</td><td>2026-06-11 09:40:00</td><td><div class="org-table-actions store-table-actions"><button class="org-action-link" onclick="openStoreWecomBinding(event,'昆山玉山店')">绑定企微</button><button class="org-action-link" onclick="openModal('modal-edit-store')">编辑</button><button class="org-action-link" onclick="toggleStoreMoreMenu(event,this)">更多</button><div class="org-more-menu"><button class="org-more-item" onclick="openStoreMoreAction(event,'detail')">详情</button><button class="org-more-item danger" onclick="openStoreMoreAction(event,'delete')">删除</button></div></div></td></tr>
+              <tr><td><strong>上海静安店</strong><div class="text-muted">SHOP-310106-009</div></td><td>慧娟大区 / 文莉区域</td><td>上海</td><td>09:30-21:00</td><td><span class="status-dot dot-orange"></span>30 暂停营业</td><td>2026-06-10 10:40:00</td><td><div class="org-table-actions store-table-actions"><button class="org-action-link" onclick="openStoreWecomBinding(event,'上海静安店')">绑定企微</button><button class="org-action-link" onclick="openModal('modal-edit-store')">编辑</button><button class="org-action-link" onclick="toggleStoreMoreMenu(event,this)">更多</button><div class="org-more-menu"><button class="org-more-item" onclick="openStoreMoreAction(event,'detail')">详情</button><button class="org-more-item danger" onclick="openStoreMoreAction(event,'delete')">删除</button></div></div></td></tr>
+              <tr><td><strong>合肥政务店</strong><div class="text-muted">SHOP-340104-021</div></td><td>云凤区域</td><td>合肥</td><td>10:00-19:30</td><td><span class="status-dot dot-red"></span>20 停止营业</td><td>2026-06-09 10:40:00</td><td><div class="org-table-actions store-table-actions"><button class="org-action-link" onclick="openStoreWecomBinding(event,'合肥政务店')">绑定企微</button><button class="org-action-link" onclick="openModal('modal-edit-store')">编辑</button><button class="org-action-link" onclick="toggleStoreMoreMenu(event,this)">更多</button><div class="org-more-menu"><button class="org-more-item" onclick="openStoreMoreAction(event,'detail')">详情</button><button class="org-more-item danger" onclick="openStoreMoreAction(event,'delete')">删除</button></div></div></td></tr>
             </tbody>
           </table>
         </div>
@@ -5821,9 +5936,57 @@
     <!-- ==================== 员工档案 ==================== -->
     <div class="page" id="page-employee-data">
       <div class="page-header"><h2>员工档案</h2><p>查看从钉钉同步的员工主数据；姓名、手机号、在职状态和备注由外部系统同步，当前仅支持调整所在门店和岗位。</p></div>
-      <div class="panel">
+      <div class="account-layout employee-layout">
+        <div class="account-tree-panel">
+          <div class="org-tree-header"><span style="font-weight:600;color:#1a2332">组织部门</span><button class="btn btn-default btn-sm" type="button" onclick="triggerSync('组织部门')">同步</button></div>
+          <div class="account-tree-body">
+            <input class="search-input" placeholder="搜索节点 / 门店" style="width:100%;margin-bottom:12px">
+            <div class="tree-node selected"><span class="tree-toggle open">▶</span><strong>贝颜</strong></div>
+            <div class="tree-children">
+              <div class="tree-node"><span class="tree-toggle open">▶</span>贝颜事业部</div>
+              <div class="tree-children">
+                <div class="tree-node"><span class="tree-toggle open">▶</span>慧娟大区</div>
+                <div class="tree-children">
+                  <div class="tree-node"><span class="tree-toggle open">▶</span>华东区域</div>
+                  <div class="tree-children">
+                    <div class="tree-node">南京浦口店</div>
+                    <div class="tree-node">昆山玉山店</div>
+                    <div class="tree-node">扬州邗江店</div>
+                    <div class="tree-node">常州天宁店</div>
+                    <div class="tree-node">徐州云龙店</div>
+                  </div>
+                  <div class="tree-node"><span class="tree-toggle open">▶</span>文莉区域</div>
+                  <div class="tree-children">
+                    <div class="tree-node">上海徐汇店</div>
+                    <div class="tree-node">上海静安店</div>
+                    <div class="tree-node">上海松江店</div>
+                    <div class="tree-node">上海宝山店</div>
+                    <div class="tree-node">上海嘉定店</div>
+                    <div class="tree-node">上海浦东二店</div>
+                    <div class="tree-node">上海黄浦店</div>
+                  </div>
+                  <div class="tree-node"><span class="tree-toggle open">▶</span>韩春区域</div>
+                  <div class="tree-children">
+                    <div class="tree-node">宁波海曙店</div>
+                    <div class="tree-node">金华金东店</div>
+                    <div class="tree-node">宁波鄞州店</div>
+                    <div class="tree-node">嘉兴海宁店</div>
+                    <div class="tree-node">湖州吴兴店</div>
+                  </div>
+                  <div class="tree-node"><span class="tree-toggle open">▶</span>云凤区域</div>
+                  <div class="tree-children">
+                    <div class="tree-node">上海浦东店</div>
+                    <div class="tree-node">合肥政务店</div>
+                    <div class="tree-node">合肥瑶海店</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
         <div class="panel-header">
-          <span class="panel-title">员工列表</span>
+          <span class="panel-title" id="employee-list-title">员工列表</span>
           <div class="panel-actions">
             <input class="search-input" placeholder="搜索姓名/手机号…" style="width:200px">
             <select class="search-select"><option>全部门店</option><option>南京浦口店</option><option>昆山玉山店</option><option>上海徐汇店</option><option>中山旗舰店</option></select>
@@ -5836,43 +5999,147 @@
           <table>
             <thead><tr><th>姓名</th><th>手机号</th><th>所在门店</th><th>岗位</th><th>在职状态</th><th>备注</th><th>操作</th></tr></thead>
             <tbody>
-              <tr><td><strong>张芳</strong></td><td>138****8821</td><td>南京浦口店</td><td>高级发型师</td><td><span class="status-dot dot-green"></span>在职</td><td>钉钉同步，门店可调整</td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-view-employee')">查看</button> <button class="btn btn-default btn-sm" onclick="openModal('modal-edit-employee')">调整门店/岗位</button> <button class="btn btn-default btn-sm" onclick="openModal('modal-ability-detail')">能力画像</button></td></tr>
-              <tr><td><strong>黄丽</strong></td><td>139****4412</td><td>昆山玉山店</td><td>美容师</td><td><span class="status-dot dot-green"></span>在职</td><td>企微账号已同步</td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-view-employee')">查看</button> <button class="btn btn-default btn-sm" onclick="openModal('modal-edit-employee')">调整门店/岗位</button> <button class="btn btn-default btn-sm" onclick="openModal('modal-ability-detail')">能力画像</button></td></tr>
-              <tr><td><strong>林晓静</strong></td><td>186****7730</td><td>上海徐汇店</td><td>店长</td><td><span class="status-dot dot-green"></span>在职</td><td>门店负责人</td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-view-employee')">查看</button> <button class="btn btn-default btn-sm" onclick="openModal('modal-edit-employee')">调整门店/岗位</button> <button class="btn btn-default btn-sm" onclick="openModal('modal-ability-detail')">能力画像</button></td></tr>
-              <tr><td><strong>王小燕</strong></td><td>135****2298</td><td>中山旗舰店</td><td>发型师</td><td><span class="status-dot dot-orange"></span>试用期</td><td>新员工，待同步正式岗位</td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-view-employee')">查看</button> <button class="btn btn-default btn-sm" onclick="openModal('modal-edit-employee')">调整门店/岗位</button> <button class="btn btn-default btn-sm" onclick="openModal('modal-ability-detail')">能力画像</button></td></tr>
+              <tr><td><strong>张芳</strong></td><td>138****8821</td><td>南京浦口店</td><td>高级发型师</td><td><span class="status-dot dot-green"></span>在职</td><td>钉钉同步，门店可调整</td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-employee')">调整门店/岗位</button></td></tr>
+              <tr><td><strong>黄丽</strong></td><td>139****4412</td><td>昆山玉山店</td><td>美容师</td><td><span class="status-dot dot-green"></span>在职</td><td>企微账号已同步</td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-employee')">调整门店/岗位</button></td></tr>
+              <tr><td><strong>林晓静</strong></td><td>186****7730</td><td>上海徐汇店</td><td>店长</td><td><span class="status-dot dot-green"></span>在职</td><td>门店负责人</td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-employee')">调整门店/岗位</button></td></tr>
+              <tr><td><strong>王小燕</strong></td><td>135****2298</td><td>中山旗舰店</td><td>发型师</td><td><span class="status-dot dot-orange"></span>试用期</td><td>新员工，待同步正式岗位</td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-edit-employee')">调整门店/岗位</button></td></tr>
             </tbody>
           </table>
         </div>
         <div class="pagination"><span>共 1,284 条</span><button class="page-btn">‹</button><button class="page-btn active">1</button><button class="page-btn">2</button><button class="page-btn">3</button><button class="page-btn">›</button></div>
+        </div>
       </div>
     </div>
 
-    <!-- ==================== 员工能力画像 ==================== -->
+    <!-- ==================== 门店老师 ==================== -->
     <div class="page" id="page-employee-ability">
-      <div class="page-header"><h2>员工能力画像</h2><p>汇总 AI 销冠、AI 考陪练等外部系统同步的员工能力画像、能力短板、培训考试记录和综合评分。</p></div>
-      <div class="panel">
-        <div class="panel-header">
-          <span class="panel-title">能力画像列表</span>
-          <div class="panel-actions">
-            <input class="search-input" placeholder="搜索员工姓名/手机号" style="width:220px">
-            <select class="search-select"><option>全部门店</option><option>南京浦口店</option><option>昆山玉山店</option><option>上海徐汇店</option></select>
-            <select class="search-select"><option>全部岗位</option><option>高级发型师</option><option>美容师</option><option>店长</option><option>发型师</option></select>
-            <select class="search-select"><option>全部培训状态</option><option>待训练</option><option>训练中</option><option>已完成</option></select>
-            <button class="btn btn-default" onclick="triggerSync('员工能力画像')">同步AI数据</button>
+      <div class="page-header"><h2>门店老师</h2><p>管理可参与客户接待的门店老师，并绑定对应客服号。</p></div>
+      <div class="teacher-query-card">
+        <div class="tabs teacher-page-tabs">
+          <div class="tab active" onclick="switchTeacherPageTab(this,'teacher-list-tab','teacher-list-query')">门店老师</div>
+          <div class="tab" onclick="switchTeacherPageTab(this,'teacher-qr-tab','teacher-qr-query')">老师二维码</div>
+        </div>
+        <div class="teacher-query-body">
+          <div class="teacher-query-row active" id="teacher-list-query">
+            <input class="search-input" id="teacher-list-keyword" placeholder="搜索员工姓名/手机号">
+            <select class="search-select" id="teacher-list-store-filter"><option>全部门店</option><option>张琪战队</option><option>小丽战队B</option><option>泉州石狮店</option><option>湘潭岳塘店</option></select>
+            <select class="search-select" id="teacher-list-role-filter"><option>全部岗位</option><option>店长</option><option>主任</option><option>未设置</option></select>
+            <select class="search-select" id="teacher-list-status-filter"><option>全部在职状态</option><option>在职</option><option>离职</option></select>
+            <button class="btn btn-default btn-sm" type="button" onclick="filterTeacherRows()">查询</button>
+            <button class="btn btn-default btn-sm" type="button" onclick="resetTeacherFilters()">重置</button>
           </div>
+          <div class="teacher-query-row" id="teacher-qr-query">
+            <select class="search-select" id="teacher-qr-subject-filter"><option>全部企微主体</option><option>曦丽美</option><option>贝颜</option></select>
+            <select class="search-select" id="teacher-qr-status-filter"><option>全部状态</option><option>正常</option><option>配置异常</option></select>
+            <input class="search-input" id="teacher-qr-keyword" placeholder="搜索二维码/老师/客服账号">
+            <button class="btn btn-default btn-sm" type="button" onclick="filterTeacherQrRows()">查询</button>
+            <button class="btn btn-default btn-sm" type="button" onclick="resetTeacherQrFilters()">重置</button>
+          </div>
+        </div>
+      </div>
+      <div class="tab-panel active" id="teacher-list-tab">
+        <div class="panel">
+        <div class="panel-header teacher-content-toolbar">
+          <span class="panel-title">门店老师列表</span>
+          <button class="btn btn-default btn-sm" type="button" onclick="triggerSync('门店老师')">同步员工数据</button>
         </div>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>员工</th><th>所在门店</th><th>岗位</th><th>综合评分</th><th>能力画像</th><th>短板能力</th><th>最近考试</th><th>培训状态</th><th>数据来源</th><th>操作</th></tr></thead>
+            <thead><tr><th>姓名</th><th>所在门店</th><th>岗位</th><th>在职状态</th><th>备注</th><th>操作</th></tr></thead>
             <tbody>
-              <tr><td><strong>张芳</strong><div class="text-muted">138****8821</div></td><td>南京浦口店</td><td>高级发型师</td><td><span class="ability-score">92</span></td><td><div class="ability-mini-list"><span class="tag tag-green">销售转化强</span><span class="tag tag-green">客户维护强</span><span class="tag tag-blue">专业表达中</span></div></td><td><span class="tag tag-orange">活动邀约</span><span class="tag tag-orange">异议处理</span></td><td>术后回访话术考试<div class="text-muted">88分 · 已通过</div></td><td><span class="tag tag-orange">待训练</span></td><td>AI销冠 / AI考陪练</td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-ability-detail')">查看画像</button> <button class="btn btn-default btn-sm" onclick="openModal('modal-training-config')">配置培训</button></td></tr>
-              <tr><td><strong>黄丽</strong><div class="text-muted">139****4412</div></td><td>昆山玉山店</td><td>美容师</td><td><span class="ability-score">86</span></td><td><div class="ability-mini-list"><span class="tag tag-green">服务复购强</span><span class="tag tag-blue">专业表达中</span></div></td><td><span class="tag tag-orange">成交推进</span></td><td>敏感肌护理考试<div class="text-muted">91分 · 已通过</div></td><td><span class="tag tag-blue">训练中</span></td><td>AI销冠 / AI考陪练</td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-ability-detail')">查看画像</button> <button class="btn btn-default btn-sm" onclick="openModal('modal-training-config')">配置培训</button></td></tr>
-              <tr><td><strong>林晓静</strong><div class="text-muted">186****7730</div></td><td>上海徐汇店</td><td>店长</td><td><span class="ability-score">89</span></td><td><div class="ability-mini-list"><span class="tag tag-green">团队管理强</span><span class="tag tag-blue">复盘能力中</span></div></td><td><span class="tag tag-orange">员工辅导</span></td><td>门店经营复盘考试<div class="text-muted">85分 · 已通过</div></td><td><span class="tag tag-green">已完成</span></td><td>AI考陪练</td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-ability-detail')">查看画像</button> <button class="btn btn-default btn-sm" onclick="openModal('modal-training-config')">配置培训</button></td></tr>
-              <tr><td><strong>王小燕</strong><div class="text-muted">135****2298</div></td><td>中山旗舰店</td><td>发型师</td><td><span class="ability-score">74</span></td><td><div class="ability-mini-list"><span class="tag tag-blue">服务执行中</span><span class="tag tag-gray">销售转化弱</span></div></td><td><span class="tag tag-red">异议处理</span><span class="tag tag-red">客户维护</span></td><td>新人基础话术考试<div class="text-muted">72分 · 待补考</div></td><td><span class="tag tag-orange">待训练</span></td><td>AI销冠 / AI考陪练</td><td><button class="btn btn-default btn-sm" onclick="openModal('modal-ability-detail')">查看画像</button> <button class="btn btn-default btn-sm" onclick="openModal('modal-training-config')">配置培训</button></td></tr>
+              <tr data-store="张琪战队" data-role="未设置" data-status="在职"><td><strong>张克涛</strong></td><td>张琪战队</td><td>—</td><td><span class="teacher-employment-status active">在职</span></td><td class="text-muted">—</td><td><button class="btn-link" type="button" onclick="openTeacherServiceBinding('张克涛')">绑定客服</button></td></tr>
+              <tr data-store="小丽战队B" data-role="店长" data-status="离职"><td><strong>陈彩玉</strong></td><td>小丽战队B</td><td>店长</td><td><span class="teacher-employment-status left">离职</span></td><td class="text-muted">—</td><td><button class="btn-link" type="button" onclick="openTeacherServiceBinding('陈彩玉')">绑定客服</button></td></tr>
+              <tr data-store="泉州石狮店" data-role="主任" data-status="在职"><td><strong>朱婷婷</strong></td><td>泉州石狮店</td><td>主任</td><td><span class="teacher-employment-status active">在职</span></td><td class="text-muted">—</td><td><button class="btn-link" type="button" onclick="openTeacherServiceBinding('朱婷婷')">绑定客服</button></td></tr>
+              <tr data-store="湘潭岳塘店" data-role="主任" data-status="在职"><td><strong>廖慧</strong></td><td>湘潭岳塘店</td><td>主任</td><td><span class="teacher-employment-status active">在职</span></td><td class="text-muted">—</td><td><button class="btn-link" type="button" onclick="openTeacherServiceBinding('廖慧')">绑定客服</button></td></tr>
+              <tr data-store="小丽战队B" data-role="主任" data-status="在职"><td><strong>陈彩玉</strong></td><td>小丽战队B</td><td>主任</td><td><span class="teacher-employment-status active">在职</span></td><td class="text-muted">—</td><td><button class="btn-link" type="button" onclick="openTeacherServiceBinding('陈彩玉')">绑定客服</button></td></tr>
+              <tr data-store="柳劲战队1" data-role="主任" data-status="在职"><td><strong>陈月云</strong></td><td>柳劲战队1</td><td>主任</td><td><span class="teacher-employment-status active">在职</span></td><td class="text-muted">—</td><td><button class="btn-link" type="button" onclick="openTeacherServiceBinding('陈月云')">绑定客服</button></td></tr>
+              <tr data-store="婷婉区域" data-role="主任" data-status="在职"><td><strong>张贤梅</strong></td><td>婷婉区域</td><td>主任</td><td><span class="teacher-employment-status active">在职</span></td><td class="text-muted">—</td><td><button class="btn-link" type="button" onclick="openTeacherServiceBinding('张贤梅')">绑定客服</button></td></tr>
+              <tr data-store="邹忍战队" data-role="主任" data-status="在职"><td><strong>张鹏</strong></td><td>邹忍战队</td><td>主任</td><td><span class="teacher-employment-status active">在职</span></td><td class="text-muted">—</td><td><button class="btn-link" type="button" onclick="openTeacherServiceBinding('张鹏')">绑定客服</button></td></tr>
+              <tr data-store="美及佛山南海店" data-role="主任" data-status="在职"><td><strong>谭晶晶</strong></td><td>美及佛山南海店</td><td>主任</td><td><span class="teacher-employment-status active">在职</span></td><td class="text-muted">—</td><td><button class="btn-link" type="button" onclick="openTeacherServiceBinding('谭晶晶')">绑定客服</button></td></tr>
+              <tr data-store="内江东兴店" data-role="主任" data-status="在职"><td><strong>杨佳琪</strong></td><td>内江东兴店</td><td>主任</td><td><span class="teacher-employment-status active">在职</span></td><td class="text-muted">—</td><td><button class="btn-link" type="button" onclick="openTeacherServiceBinding('杨佳琪')">绑定客服</button></td></tr>
             </tbody>
           </table>
         </div>
-        <div class="pagination"><span>共 1,284 条</span><button class="page-btn">‹</button><button class="page-btn active">1</button><button class="page-btn">2</button><button class="page-btn">3</button><button class="page-btn">›</button></div>
+        <div class="pagination"><span id="teacher-list-total">共 27,127 条</span><button class="page-btn">‹</button><button class="page-btn active">1</button><button class="page-btn">2</button><button class="page-btn">3</button><button class="page-btn">›</button></div>
+        </div>
+      </div>
+
+      <div class="tab-panel" id="teacher-qr-tab">
+        <div class="panel">
+          <div class="panel-header teacher-content-toolbar">
+            <span class="panel-title">二维码列表</span>
+            <button class="btn btn-primary btn-sm" type="button" onclick="openTeacherQrDrawer()"><i class="fas fa-plus"></i> 新增二维码</button>
+          </div>
+          <div class="table-wrap">
+            <table class="teacher-qr-table">
+              <thead><tr><th>二维码 / 编号</th><th>企微主体 / 企微号</th><th>门店老师</th><th>客服账号</th><th>状态</th><th>创建时间</th><th>操作</th></tr></thead>
+              <tbody id="teacher-qr-tbody">
+                <tr data-subject="曦丽美" data-status="正常" data-employment="在职">
+                  <td><div class="teacher-qr-code-cell"><span class="teacher-qr-code"><i class="fas fa-qrcode"></i></span><strong>WQR260908C2A785B2</strong></div></td>
+                  <td><div class="teacher-qr-name"><strong>曦丽美</strong><span>林俊辉 · SL0069</span></div></td>
+                  <td><div class="teacher-qr-name"><strong>林俊辉</strong><span>主任</span></div></td>
+                  <td><strong>贝颜客服01</strong></td><td><span class="tag tag-green">正常</span></td><td>2026-09-08 11:35:16</td>
+                  <td><div class="teacher-qr-actions"><button type="button" onclick="showToast('已打开二维码详情','info')">详情</button><button type="button" onclick="downloadTeacherQr('WQR260908C2A785B2')">下载</button><button type="button" onclick="openTeacherQrDrawer('林俊辉')">更换</button><button class="danger" type="button" onclick="destroyTeacherQr(this)">销毁</button></div></td>
+                </tr>
+                <tr data-subject="曦丽美" data-status="配置异常" data-employment="在职">
+                  <td><div class="teacher-qr-code-cell"><span class="teacher-qr-code"><i class="fas fa-qrcode"></i></span><strong>WQR26090796BECAAC</strong></div></td>
+                  <td><div class="teacher-qr-name"><strong>曦丽美</strong><span>林俊辉 · SL0069</span></div></td>
+                  <td><div class="teacher-qr-name"><strong>林俊辉</strong><span>主任</span></div></td>
+                  <td><strong>贝颜客服01</strong></td><td><span class="tag tag-orange">配置异常</span></td><td>2026-09-07 18:14:52</td>
+                  <td><div class="teacher-qr-actions"><button type="button" onclick="showToast('已打开二维码详情','info')">详情</button></div></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="pagination"><span id="teacher-qr-total">共 2 条</span><span style="margin-left:auto">每页</span><select class="search-select"><option>10</option><option>20</option><option>50</option></select><span>条</span><button class="page-btn" type="button" disabled>上一页</button><button class="page-btn active" type="button">1</button><button class="page-btn" type="button" disabled>下一页</button></div>
+        </div>
+      </div>
+
+      <div class="teacher-qr-drawer" id="teacher-qr-drawer" aria-hidden="true" onclick="if(event.target===this) closeTeacherQrDrawer()">
+        <aside class="teacher-qr-drawer-panel" role="dialog" aria-modal="true" aria-labelledby="teacher-qr-drawer-title">
+          <div class="teacher-qr-drawer-header">
+            <div><h3 id="teacher-qr-drawer-title">新增二维码</h3><p>先选择门店企微号，再选择已绑定门店老师的聚合平台客服。</p></div>
+            <button class="teacher-qr-drawer-close" type="button" aria-label="关闭" onclick="closeTeacherQrDrawer()">×</button>
+          </div>
+          <div class="teacher-qr-drawer-body">
+            <div class="teacher-qr-field">
+              <div class="teacher-qr-field-label">承接企微号 <b>*</b></div>
+              <div class="teacher-qr-field-help">仅显示已绑定门店的企微号</div>
+              <select class="form-control" id="teacher-qr-account" onchange="handleTeacherQrAccountChange()">
+                <option value="">请选择企微号</option>
+                <option value="SL0069" data-subject="曦丽美" data-account="林俊辉 · SL0069" data-store="贝颜">曦丽美 / 林俊辉 · SL0069</option>
+                <option value="SL0072" data-subject="曦丽美" data-account="周悦 · SL0072" data-store="贝颜">曦丽美 / 周悦 · SL0072</option>
+                <option value="SL0082" data-subject="曦丽美" data-account="白思静 · SL0082" data-store="志伟战队">曦丽美 / 白思静 · SL0082</option>
+                <option value="SL0106" data-subject="贝颜" data-account="吴明杰 · SL0106" data-store="思杰战队">贝颜 / 吴明杰 · SL0106</option>
+              </select>
+              <div class="teacher-qr-employee-summary" id="teacher-qr-account-summary"><strong>请先选择企微号</strong><span>选择后将显示该企微号所属门店的聚合平台客服。</span></div>
+            </div>
+            <div class="teacher-qr-field">
+              <div class="teacher-qr-field-label">选择聚合平台客服 <b>*</b></div>
+              <div class="teacher-qr-field-help">用于关联二维码客户来源与门店老师</div>
+              <div class="teacher-qr-service-picker" id="teacher-qr-service-picker">
+                <button class="teacher-qr-choose" id="teacher-qr-employee-choose" type="button" onclick="toggleTeacherQrEmployeeOptions()" disabled>请先选择企微号</button>
+                <div class="teacher-qr-employee-options" id="teacher-qr-employee-options">
+                  <div class="teacher-qr-service-search"><input id="teacher-qr-service-search" placeholder="搜索客服名称或绑定老师" oninput="filterTeacherQrServiceOptions()"></div>
+                  <div class="teacher-qr-service-option-head"><span>聚合平台客服</span><span>绑定老师</span></div>
+                  <div class="teacher-qr-service-options-scroll">
+                    <label class="teacher-qr-employee-option"><input type="radio" name="teacher-qr-employee" value="贝颜客服01" data-teacher="林俊辉" data-role="主任" data-userid="BE260814151723310" data-org="贝颜" data-employment="在职" onchange="selectTeacherQrEmployee(this)"><span class="teacher-qr-service-option-main"><span class="teacher-qr-service-name">贝颜客服01</span><span class="teacher-qr-bound-teacher">林俊辉</span></span></label>
+                    <label class="teacher-qr-employee-option"><input type="radio" name="teacher-qr-employee" value="贝颜客服02" data-teacher="张若曦" data-role="店长" data-userid="BE260816271405221" data-org="贝颜" data-employment="试用期" onchange="selectTeacherQrEmployee(this)"><span class="teacher-qr-service-option-main"><span class="teacher-qr-service-name">贝颜客服02</span><span class="teacher-qr-bound-teacher">张若曦</span></span></label>
+                    <label class="teacher-qr-employee-option"><input type="radio" name="teacher-qr-employee" value="志伟客服01" data-teacher="白思静" data-role="主任" data-userid="BE260815108620114" data-org="志伟战队" data-employment="在职" onchange="selectTeacherQrEmployee(this)"><span class="teacher-qr-service-option-main"><span class="teacher-qr-service-name">志伟客服01</span><span class="teacher-qr-bound-teacher">白思静</span></span></label>
+                    <label class="teacher-qr-employee-option"><input type="radio" name="teacher-qr-employee" value="志伟客服02" data-teacher="陈悦" data-role="美容师" data-userid="BE260817610284317" data-org="志伟战队" data-employment="在职" onchange="selectTeacherQrEmployee(this)"><span class="teacher-qr-service-option-main"><span class="teacher-qr-service-name">志伟客服02</span><span class="teacher-qr-bound-teacher">陈悦</span></span></label>
+                    <label class="teacher-qr-employee-option"><input type="radio" name="teacher-qr-employee" value="思杰客服01" data-teacher="吴明杰" data-role="高级发型师" data-userid="BE260819304251126" data-org="思杰战队" data-employment="试用期" onchange="selectTeacherQrEmployee(this)"><span class="teacher-qr-service-option-main"><span class="teacher-qr-service-name">思杰客服01</span><span class="teacher-qr-bound-teacher">吴明杰</span></span></label>
+                    <div class="teacher-qr-service-empty" id="teacher-qr-service-empty">暂无匹配的聚合平台客服</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="teacher-qr-field">
+              <div class="teacher-qr-field-label">二维码配置备注</div>
+              <textarea id="teacher-qr-note" maxlength="30" placeholder="请输入二维码配置备注（选填，最多30个字符）"></textarea>
+            </div>
+          </div>
+          <div class="teacher-qr-drawer-footer"><button class="btn btn-default" type="button" onclick="closeTeacherQrDrawer()">取消</button><button class="btn btn-primary" id="teacher-qr-submit" type="button" onclick="saveTeacherQr()" disabled>生成二维码</button></div>
+        </aside>
       </div>
     </div>
 
@@ -7288,9 +7555,8 @@
         <h2>加微规则</h2>
         <p>统一维护咨询人员排班、加微包、安全包底包与客户分配结果。</p>
       </div>
-      <div class="ops-tabs seven">
-        <button class="ops-tab active" type="button" onclick="switchWechatRuleTab(this,'wechat-pane-service')"><span class="ops-tab-icon"><svg viewBox="0 0 24 24" width="18" height="18"><path d="M4 12a8 8 0 0116 0v4a3 3 0 01-3 3h-2" stroke="currentColor" fill="none" stroke-width="1.8"/><path d="M4 12v3a2 2 0 002 2h1v-6H6a2 2 0 00-2 2zM20 12v3a2 2 0 01-2 2h-1v-6h1a2 2 0 012 2zM9 19h6" stroke="currentColor" fill="none" stroke-width="1.8"/></svg></span><span><span class="ops-tab-title">客服列表</span><span class="ops-tab-desc">客服号管理</span></span></button>
-        <button class="ops-tab" type="button" onclick="switchWechatRuleTab(this,'wechat-pane-level')"><span class="ops-tab-icon"><svg viewBox="0 0 24 24" width="18" height="18"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2" stroke="currentColor" fill="none" stroke-width="1.8"/><circle cx="9" cy="7" r="4" stroke="currentColor" fill="none" stroke-width="1.8"/></svg></span><span><span class="ops-tab-title">人员等级</span><span class="ops-tab-desc">等级与加微上限</span></span></button>
+      <div class="ops-tabs">
+        <button class="ops-tab active" type="button" onclick="switchWechatRuleTab(this,'wechat-pane-level')"><span class="ops-tab-icon"><svg viewBox="0 0 24 24" width="18" height="18"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2" stroke="currentColor" fill="none" stroke-width="1.8"/><circle cx="9" cy="7" r="4" stroke="currentColor" fill="none" stroke-width="1.8"/></svg></span><span><span class="ops-tab-title">人员等级</span><span class="ops-tab-desc">等级与加微上限</span></span></button>
         <button class="ops-tab" type="button" onclick="switchWechatRuleTab(this,'wechat-pane-shift')"><span class="ops-tab-icon"><svg viewBox="0 0 24 24" width="18" height="18"><circle cx="12" cy="12" r="8" stroke="currentColor" fill="none" stroke-width="1.8"/><path d="M12 8v5l3 2" stroke="currentColor" fill="none" stroke-width="1.8"/></svg></span><span><span class="ops-tab-title">上班时间</span><span class="ops-tab-desc">班次与工作时段</span></span></button>
         <button class="ops-tab" type="button" onclick="switchWechatRuleTab(this,'wechat-pane-record')"><span class="ops-tab-icon"><svg viewBox="0 0 24 24" width="18" height="18"><path d="M7 3h10v4H7zM6 7h12v14H6zM9 12h6M9 16h4" stroke="currentColor" fill="none" stroke-width="1.8"/></svg></span><span><span class="ops-tab-title">加微记录</span><span class="ops-tab-desc">计划与分配进度</span></span></button>
         <button class="ops-tab" type="button" onclick="switchWechatRuleTab(this,'wechat-pane-schedule')"><span class="ops-tab-icon"><i class="fas fa-calendar-days"></i></span><span><span class="ops-tab-title">排班计划</span><span class="ops-tab-desc">咨询加微排班</span></span></button>
@@ -7299,9 +7565,7 @@
         <button class="ops-tab" type="button" onclick="switchWechatRuleTab(this,'wechat-pane-result')"><span class="ops-tab-icon"><svg viewBox="0 0 24 24" width="18" height="18"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" stroke="currentColor" fill="none" stroke-width="1.8"/></svg></span><span><span class="ops-tab-title">分配结果</span><span class="ops-tab-desc">客户归属与命中规则</span></span></button>
       </div>
 
-      <section class="ops-rule-pane active" id="wechat-pane-service"></section>
-
-      <section class="ops-rule-pane" id="wechat-pane-level">
+      <section class="ops-rule-pane active" id="wechat-pane-level">
         <div class="wechat-level-page">
           <div class="wechat-level-head">
             <div>
@@ -8626,21 +8890,18 @@
     <!-- ==================== 线上销售：转接规则 ==================== -->
     <div class="page transfer-rules-page" id="page-transfer-rules">
       <div class="page-header online-page-header">
-        <div><h2 data-page-title="AI协同接待">AI协同接待</h2></div>
-        <div class="online-policy-actions"><button class="ai-route-entry-btn" type="button" onclick="showPage('ai-reception-route')"><i class="fas fa-route"></i>AI接待路由</button></div>
+        <div><h2 data-page-title="AI协作策略">AI协作策略</h2></div>
       </div>
-      <div class="reception-strategy-tabs" role="tablist" aria-label="AI协同接待">
-        <button class="reception-strategy-tab active" type="button" data-reception-strategy-tab="rules" onclick="switchReceptionStrategyTab('rules')">协同策略</button>
-        <button class="reception-strategy-tab" type="button" data-reception-strategy-tab="ownership" onclick="switchReceptionStrategyTab('ownership')">客户转移</button>
-        <button class="reception-strategy-tab" type="button" data-reception-strategy-tab="tasks" onclick="switchReceptionStrategyTab('tasks')">定时任务</button>
-        <button class="reception-strategy-tab" type="button" data-reception-strategy-tab="logs" onclick="switchReceptionStrategyTab('logs')">操作日志</button>
+      <div class="reception-strategy-tabs" role="tablist" aria-label="AI协作策略">
+        <button class="reception-strategy-tab active" type="button" data-ai-collaboration-tab="rules" onclick="switchAiCollaborationTab('rules')">协作策略</button>
+        <button class="reception-strategy-tab" type="button" data-ai-collaboration-tab="route" onclick="switchAiCollaborationTab('route')">AI接待路由</button>
       </div>
       <!-- ======================== 页面一：规则列表 ======================== -->
       <div id="transfer-rule-list-view" class="transfer-rule-list-view reception-strategy-panel active">
         <header class="transfer-list-view-header">
           <div class="flex items-center justify-between">
             <div>
-              <h1 class="text-lg font-bold text-gray-900">协同策略列表</h1>
+              <h1 class="text-lg font-bold text-gray-900">协作策略列表</h1>
             </div>
             <button onclick="openTransferRuleDrawer('create')" class="bg-primary-600 hover:bg-primary-700 text-white px-5 py-2.5 rounded-lg text-sm font-medium flex items-center gap-2 transition">
               <i class="fas fa-plus text-xs"></i>新建策略
@@ -8959,7 +9220,7 @@
             <div class="drawer-title">
               <button onclick="closeTransferRuleDrawer()" class="drawer-close" aria-label="关闭"><i class="fas fa-xmark"></i></button>
               <div>
-                <h1 id="transfer-rule-edit-title">新建协同策略</h1>
+                <h1 id="transfer-rule-edit-title">新建协作策略</h1>
               </div>
             </div>
             <div class="drawer-actions">
@@ -9163,7 +9424,7 @@
             <h3 class="chain-heading">3. 人工介入</h3>
             <div id="transfer-common-chain">
               <section class="rule-node">
-                <div class="node-card">
+                <div class="node-card manual-intervention-card">
                   <div class="node-header">
                     <div class="node-title"><h4>需要人工介入时</h4></div>
                     <div class="node-switch"><span>启用</span><div class="toggle-track on" onclick="toggleTransferNode(this)"><div class="toggle-thumb"></div></div></div>
@@ -9290,11 +9551,9 @@
       <div id="transfer-rule-toast" class="transfer-toast">
         <i class="fas fa-check-circle"></i><span class="text-sm font-medium" id="transfer-rule-toast-msg">保存成功</span>
       </div>
-    </div>
 
-    <!-- ==================== AI大脑：AI接待路由 ==================== -->
-    <div class="page" id="page-ai-reception-route">
-      <div class="page-header"><h2>AI接待路由</h2><p>按客户当前状态及新老客配置生效的AI策略。</p></div>
+      <!-- ==================== AI协作策略：AI接待路由 ==================== -->
+      <section class="reception-strategy-panel" id="page-ai-reception-route" hidden>
       <section class="ai-route-panel">
         <div class="ai-route-panel-head">
           <h3>客户状态路由</h3>
@@ -9332,6 +9591,7 @@
           <div class="modal-footer"><button class="btn btn-default" type="button" onclick="closeAiReceptionRouteDrawer()">取消</button><button class="btn btn-primary" type="button" onclick="saveAiReceptionRoute()">保存</button></div>
         </div>
       </div>
+      </section>
     </div>
 
     <!-- ==================== AI大脑：AI决策 ==================== -->
@@ -9613,8 +9873,13 @@
       </div>
     </div>
 
-    <!-- ==================== 线上销售：客户转移 ==================== -->
-    <div class="reception-strategy-panel" id="page-customer-allocation" hidden>
+    <!-- ==================== 线上销售：客户交接 ==================== -->
+    <div class="page" id="page-customer-allocation">
+      <div class="page-header"><h2 data-page-title="客户交接">客户交接</h2></div>
+      <div class="reception-strategy-tabs" role="tablist" aria-label="客户交接">
+        <button class="reception-strategy-tab active" type="button" data-customer-handover-tab="ownership" onclick="switchCustomerHandoverTab('ownership')">客户转移</button>
+        <button class="reception-strategy-tab" type="button" data-customer-handover-tab="records" onclick="switchCustomerHandoverTab('records')">转移记录</button>
+      </div>
 
       <section class="ops-rule-pane active" id="allocation-pane-overview">
         <div class="panel unified-list-card">
@@ -9631,27 +9896,27 @@
           </div>
           <div class="table-wrap allocation-table">
             <table>
-              <thead><tr><th>客服信息</th><th>岗位</th><th>当前客户数</th><th>待分配</th><th>最近同步</th><th>状态</th><th>操作</th></tr></thead>
+              <thead><tr><th>客服信息</th><th>岗位</th><th>当前客户数</th><th>待分配</th><th>最近同步</th><th>操作</th></tr></thead>
               <tbody>
                 <tr>
                   <td><div class="allocation-name-cell"><div><strong>刘婷婷</strong><span>南京浦口店</span></div></div></td>
-                  <td>顾问</td><td><div class="allocation-metric"><strong>198</strong><span>位客户</span></div></td><td><span class="allocation-status orange">需处理 32</span></td><td>2026-09-10 09:20</td><td><span class="allocation-status red">即将离职</span></td>
-                  <td><div class="allocation-row-actions"><button type="button" onclick="openAllocationTransferDrawer('刘婷婷','198')">转移客户</button><button type="button" onclick="openAllocationLogDrawer('刘婷婷')">日志</button></div></td>
+                  <td>顾问</td><td><div class="allocation-metric"><strong>198</strong><span>位客户</span></div></td><td><span class="allocation-status orange">需处理 32</span></td><td>2026-09-10 09:20</td>
+                  <td><div class="allocation-row-actions"><button type="button" onclick="openAllocationTransferDrawer('刘婷婷','198')">转移客户</button></div></td>
                 </tr>
                 <tr>
                   <td><div class="allocation-name-cell"><div><strong>张文静</strong><span>线上销售中心</span></div></div></td>
-                  <td>顾问</td><td><div class="allocation-metric"><strong>326</strong><span>位客户</span></div></td><td><span class="allocation-status green">已分配</span></td><td>2026-09-10 09:12</td><td><span class="allocation-status green">在职</span></td>
-                  <td><div class="allocation-row-actions"><button type="button" onclick="openAllocationTransferDrawer('张文静','326')">转移客户</button><button type="button" onclick="openAllocationLogDrawer('张文静')">日志</button></div></td>
+                  <td>顾问</td><td><div class="allocation-metric"><strong>326</strong><span>位客户</span></div></td><td><span class="allocation-status green">已分配</span></td><td>2026-09-10 09:12</td>
+                  <td><div class="allocation-row-actions"><button type="button" onclick="openAllocationTransferDrawer('张文静','326')">转移客户</button></div></td>
                 </tr>
                 <tr>
                   <td><div class="allocation-name-cell"><div><strong>李思思</strong><span>华东客服组</span></div></div></td>
-                  <td>咨询师</td><td><div class="allocation-metric"><strong>156</strong><span>位客户</span></div></td><td><span class="allocation-status blue">自动分配中</span></td><td>2026-09-10 08:48</td><td><span class="allocation-status green">在职</span></td>
-                  <td><div class="allocation-row-actions"><button type="button" onclick="openAllocationTransferDrawer('李思思','156')">转移客户</button><button type="button" onclick="openAllocationLogDrawer('李思思')">日志</button></div></td>
+                  <td>咨询师</td><td><div class="allocation-metric"><strong>156</strong><span>位客户</span></div></td><td><span class="allocation-status blue">自动分配中</span></td><td>2026-09-10 08:48</td>
+                  <td><div class="allocation-row-actions"><button type="button" onclick="openAllocationTransferDrawer('李思思','156')">转移客户</button></div></td>
                 </tr>
                 <tr>
                   <td><div class="allocation-name-cell"><div><strong>周佳佳</strong><span>售前咨询组</span></div></div></td>
-                  <td>顾问</td><td><div class="allocation-metric"><strong>284</strong><span>位客户</span></div></td><td><span class="allocation-status orange">需处理 12</span></td><td>2026-09-09 18:32</td><td><span class="allocation-status red">即将离职</span></td>
-                  <td><div class="allocation-row-actions"><button type="button" onclick="openAllocationTransferDrawer('周佳佳','284')">转移客户</button><button type="button" onclick="openAllocationLogDrawer('周佳佳')">日志</button></div></td>
+                  <td>顾问</td><td><div class="allocation-metric"><strong>284</strong><span>位客户</span></div></td><td><span class="allocation-status orange">需处理 12</span></td><td>2026-09-09 18:32</td>
+                  <td><div class="allocation-row-actions"><button type="button" onclick="openAllocationTransferDrawer('周佳佳','284')">转移客户</button></div></td>
                 </tr>
               </tbody>
             </table>
@@ -9660,30 +9925,34 @@
         </div>
       </section>
 
-      <section class="ops-rule-pane" id="allocation-pane-tasks">
+      <section class="ops-rule-pane" id="allocation-pane-records">
         <div class="panel unified-list-card">
           <div class="ops-table-toolbar unified-list-toolbar">
-            <span class="panel-title">定时任务列表</span>
+            <span class="panel-title">客户转移任务</span>
             <div class="ops-filter-row">
-              <label class="unified-filter-field is-wide"><span class="unified-filter-label">任务名称</span><input class="search-input" placeholder="搜索离职员工 / 任务"></label>
-              <label class="unified-filter-field"><span class="unified-filter-label">执行状态</span><select class="search-select"><option>全部状态</option><option>待执行</option><option>执行中</option><option>已完成</option><option>已取消</option></select></label>
-              <label class="unified-filter-field"><span class="unified-filter-label">分配方式</span><select class="search-select"><option>全部方式</option><option>指定员工</option><option>轮流分配</option></select></label>
-              <label class="unified-filter-field"><span class="unified-filter-label">创建人</span><select class="search-select"><option>全部创建人</option><option>张文静</option><option>店长</option></select></label>
+              <label class="unified-filter-field is-wide"><span class="unified-filter-label">关键词</span><input class="search-input" placeholder="搜索任务 / 员工 / 接收方"></label>
+              <label class="unified-filter-field"><span class="unified-filter-label">任务类型</span><select class="search-select"><option>全部类型</option><option>立即转移</option><option>定时转移</option><option>离职继承</option></select></label>
+              <label class="unified-filter-field"><span class="unified-filter-label">执行状态</span><select class="search-select"><option>全部状态</option><option>待执行</option><option>执行中</option><option>已完成</option><option>部分成功</option><option>失败</option><option>已取消</option></select></label>
+              <label class="unified-filter-field is-xl"><span class="unified-filter-label">计划/执行时间</span><div class="unified-field-row"><input class="search-input" type="date"><input class="search-input" type="date"></div></label>
               <button class="btn btn-default btn-sm" type="button">重置</button>
               <button class="btn btn-primary btn-sm" type="button">查询</button>
+              <button class="btn btn-default btn-sm" type="button" onclick="showToast('转移记录已导出', 'success')">导出</button>
             </div>
           </div>
           <div class="table-wrap allocation-wide-table">
             <table>
-              <thead><tr><th>任务信息</th><th>转出客服</th><th>转移客户</th><th>分配方式</th><th>接收方</th><th>定时执行时间</th><th>执行状态</th><th>操作</th></tr></thead>
+              <thead><tr><th>任务信息</th><th>任务类型</th><th>转出客服</th><th>客户数量</th><th>接收方</th><th>计划/执行时间</th><th>执行状态</th><th>操作人</th><th>操作</th></tr></thead>
               <tbody>
-                <tr><td><div class="allocation-task-title"><strong>刘婷婷离职客户转移</strong><span>创建于 2026-09-10 09:30</span></div></td><td>刘婷婷</td><td>198 位</td><td>指定员工</td><td>李思思</td><td>2026-09-15 10:00</td><td><span class="allocation-status orange">待执行</span></td><td><div class="allocation-row-actions"><button type="button" onclick="openAllocationTransferDrawer('刘婷婷','198','scheduled')">编辑</button><button type="button" onclick="openAllocationConfirmModal('task')">立即执行</button><button class="danger" type="button" onclick="showToast('任务已取消', 'success')">取消</button></div></td></tr>
-                <tr><td><div class="allocation-task-title"><strong>周佳佳客户批量分配</strong><span>创建于 2026-09-09 16:20</span></div></td><td>周佳佳</td><td>284 位</td><td>轮流分配</td><td>顾问岗位池</td><td>2026-09-11 09:00</td><td><span class="allocation-status blue">执行中</span></td><td><div class="allocation-row-actions"><button type="button" onclick="openAllocationTaskDetailDrawer()">查看详情</button></div></td></tr>
-                <tr><td><div class="allocation-task-title"><strong>孙媛客户交接</strong><span>创建于 2026-09-08 11:12</span></div></td><td>孙媛</td><td>86 位</td><td>指定员工</td><td>张文静</td><td>2026-09-09 10:00</td><td><span class="allocation-status green">已完成</span></td><td><div class="allocation-row-actions"><button type="button" onclick="openAllocationTaskDetailDrawer()">查看详情</button></div></td></tr>
+                <tr><td><div class="allocation-task-title"><strong>刘婷婷离职客户转移</strong><span>创建于 2026-09-10 09:30</span></div></td><td>定时转移</td><td>刘婷婷</td><td>198 位</td><td>李思思</td><td>计划 2026-09-15 10:00</td><td><span class="allocation-status orange">待执行</span></td><td>张文静</td><td><div class="allocation-row-actions"><button type="button" onclick="openAllocationTransferDrawer('刘婷婷','198','scheduled')">编辑</button><button type="button" onclick="showToast('任务已立即执行', 'success')">立即执行</button><button class="danger" type="button" onclick="showToast('任务已取消', 'success')">取消</button></div></td></tr>
+                <tr><td><div class="allocation-task-title"><strong>周佳佳客户批量转移</strong><span>创建于 2026-09-09 16:20</span></div></td><td>定时转移</td><td>周佳佳</td><td>284 位</td><td>顾问岗位池</td><td>计划 2026-09-11 09:00</td><td><span class="allocation-status blue">执行中</span></td><td>张文静</td><td><div class="allocation-row-actions"><button type="button" onclick="openAllocationTaskDetailDrawer()">查看详情</button></div></td></tr>
+                <tr><td><div class="allocation-task-title"><strong>孙媛客户交接</strong><span>创建于 2026-09-08 11:12</span></div></td><td>定时转移</td><td>孙媛</td><td>86 位</td><td>张文静</td><td>执行 2026-09-09 10:00</td><td><span class="allocation-status green">已完成</span></td><td>系统</td><td><div class="allocation-row-actions"><button type="button" onclick="openAllocationTaskDetailDrawer()">查看详情</button></div></td></tr>
+                <tr><td><div class="allocation-task-title"><strong>刘婷婷客户手动转移</strong><span>创建于 2026-09-10 10:12</span></div></td><td>立即转移</td><td>刘婷婷</td><td>12 位</td><td>李思思</td><td>执行 2026-09-10 10:12</td><td><span class="allocation-status green">已完成</span></td><td>张文静</td><td><div class="allocation-row-actions"><button type="button" onclick="openAllocationLogDrawer()">查看详情</button></div></td></tr>
+                <tr><td><div class="allocation-task-title"><strong>周佳佳离职客户继承</strong><span>创建于 2026-09-10 09:45</span></div></td><td>离职继承</td><td>周佳佳</td><td>8 位</td><td>顾问岗位池</td><td>执行 2026-09-10 09:45</td><td><span class="allocation-status orange">部分成功</span></td><td>系统</td><td><div class="allocation-row-actions"><button type="button" onclick="openAllocationLogDrawer()">查看详情</button><button type="button" onclick="showToast('失败客户已重新提交', 'success')">重试</button></div></td></tr>
+                <tr><td><div class="allocation-task-title"><strong>黄丽丽客户转移</strong><span>创建于 2026-09-01 09:30</span></div></td><td>定时转移</td><td>黄丽丽</td><td>45 位</td><td>顾问岗位池</td><td>执行 2026-09-01 10:00</td><td><span class="allocation-status red">失败</span></td><td>系统</td><td><div class="allocation-row-actions"><button type="button" onclick="openAllocationLogDrawer()">查看详情</button><button type="button" onclick="showToast('任务已重新提交', 'success')">重试</button></div></td></tr>
               </tbody>
             </table>
           </div>
-          <div class="ops-pagination"><strong>共 12 条</strong><div class="ops-pagination-right"><span>每页</span><select class="search-select"><option>10</option><option>20</option></select><span>条</span><button class="page-btn" type="button">上一页</button><button class="page-btn active" type="button">1</button><button class="page-btn" type="button">2</button><button class="page-btn" type="button">下一页</button></div></div>
+          <div class="ops-pagination"><strong>共 32 条</strong><div class="ops-pagination-right"><span>每页</span><select class="search-select"><option>10</option><option>20</option><option>50</option></select><span>条</span><button class="page-btn" type="button">上一页</button><button class="page-btn active" type="button">1</button><button class="page-btn" type="button">2</button><button class="page-btn" type="button">3</button><button class="page-btn" type="button">4</button><button class="page-btn" type="button">下一页</button></div></div>
         </div>
       </section>
 
@@ -9741,34 +10010,6 @@
         </aside>
       </div>
 
-      <section class="ops-rule-pane" id="allocation-pane-logs">
-        <div class="panel unified-list-card">
-          <div class="ops-table-toolbar unified-list-toolbar">
-            <span class="panel-title">操作日志列表</span>
-            <div class="ops-filter-row">
-              <label class="unified-filter-field is-xl"><span class="unified-filter-label">操作时间</span><div class="unified-field-row"><input class="search-input" type="date" value="2026-09-10"><input class="search-input" type="date" value="2026-09-10"></div></label>
-              <label class="unified-filter-field is-wide"><span class="unified-filter-label">关键词</span><input class="search-input" placeholder="搜索客户 / 员工 / 操作人"></label>
-              <label class="unified-filter-field"><span class="unified-filter-label">操作类型</span><select class="search-select"><option>全部类型</option><option>手动分配</option><option>定时任务</option><option>兜底分配</option></select></label>
-              <button class="btn btn-default btn-sm" type="button">重置</button>
-              <button class="btn btn-primary btn-sm" type="button">查询</button>
-              <button class="btn btn-default btn-sm" type="button" onclick="showToast('操作日志已导出', 'success')">导出</button>
-            </div>
-          </div>
-          <div class="table-wrap allocation-wide-table">
-            <table>
-              <thead><tr><th>操作类型</th><th>客户</th><th>转出客服</th><th>接收方</th><th>操作时间</th><th>操作人</th><th>结果</th><th>操作</th></tr></thead>
-              <tbody>
-                <tr><td>手动分配</td><td>小鹿、蜜蜜等 12 位</td><td>刘婷婷</td><td>李思思</td><td>2026-09-10 10:12:30</td><td>张文静</td><td><span class="allocation-status green">成功</span></td><td><div class="allocation-row-actions"><button type="button" onclick="openAllocationLogDrawer()">详情</button></div></td></tr>
-                <tr><td>兜底分配</td><td>Coco、甜甜等 8 位</td><td>周佳佳</td><td>顾问岗位池</td><td>2026-09-10 09:45:08</td><td>系统</td><td><span class="allocation-status orange">部分成功</span></td><td><div class="allocation-row-actions"><button type="button" onclick="openAllocationLogDrawer()">详情</button></div></td></tr>
-                <tr><td>定时任务</td><td>孙媛客户 86 位</td><td>孙媛</td><td>张文静</td><td>2026-09-09 10:00:00</td><td>系统</td><td><span class="allocation-status green">成功</span></td><td><div class="allocation-row-actions"><button type="button" onclick="openAllocationLogDrawer()">详情</button></div></td></tr>
-                <tr><td>定时任务</td><td>黄丽丽客户 45 位</td><td>黄丽丽</td><td>顾问岗位池</td><td>2026-09-01 10:00:00</td><td>系统</td><td><span class="allocation-status red">失败</span></td><td><div class="allocation-row-actions"><button type="button" onclick="openAllocationLogDrawer()">详情</button><button class="danger" type="button" onclick="showToast('已重新提交任务', 'success')">重试</button></div></td></tr>
-              </tbody>
-            </table>
-          </div>
-          <div class="ops-pagination"><strong>共 32 条</strong><div class="ops-pagination-right"><span>每页</span><select class="search-select"><option>20</option><option>50</option></select><span>条</span><button class="page-btn" type="button">上一页</button><button class="page-btn active" type="button">1</button><button class="page-btn" type="button">2</button><button class="page-btn" type="button">下一页</button></div></div>
-        </div>
-      </section>
-
       <div class="allocation-drawer" id="allocation-transfer-drawer" aria-hidden="true" onclick="if(event.target===this) closeAllocationDrawer('allocation-transfer-drawer')">
         <aside class="allocation-drawer-panel" role="dialog" aria-modal="true" aria-labelledby="allocation-transfer-title">
           <div class="allocation-drawer-header">
@@ -9783,53 +10024,43 @@
           <div class="allocation-drawer-body">
             <section class="allocation-drawer-section">
               <h3>分配方式</h3>
-              <div class="allocation-radio-group" id="allocation-transfer-method-group">
-                <div class="allocation-radio-item selected" onclick="selectAllocationDrawerRadio(this)">
-                  <input class="allocation-radio-input" type="radio" name="allocation-transfer-method" checked>
-                  <div class="allocation-radio-content">
-                    <div class="allocation-radio-title">指定员工</div>
-                    <div class="allocation-radio-desc">手动选择接收员工。</div>
-                    <div class="allocation-radio-sub">
-                      <div class="allocation-field">
-                        <span>接收员工</span>
-                        <div class="multi-select allocation-transfer-multi" id="allocation-transfer-staff-picker" data-placeholder="请选择接收员工">
-                          <div class="multi-select-control" onclick="toggleMultiSelect(event,this)">
-                            <div class="multi-select-selected"></div>
-                            <span class="selector-arrow"></span>
-                          </div>
-                          <div class="multi-select-dropdown">
-                            <label class="multi-select-option"><input type="checkbox" data-label="张文静" onchange="syncMultiSelect(this)">张文静 <small>当前 386 位</small></label>
-                            <label class="multi-select-option"><input type="checkbox" data-label="李思思" checked onchange="syncMultiSelect(this)">李思思 <small>当前 312 位</small></label>
-                            <label class="multi-select-option"><input type="checkbox" data-label="王小婷" checked onchange="syncMultiSelect(this)">王小婷 <small>当前 275 位</small></label>
-                            <label class="multi-select-option"><input type="checkbox" data-label="赵雅雅" onchange="syncMultiSelect(this)">赵雅雅 <small>当前 243 位</small></label>
-                            <label class="multi-select-option"><input type="checkbox" data-label="陈佳佳" onchange="syncMultiSelect(this)">陈佳佳 <small>当前 287 位</small></label>
-                          </div>
-                        </div>
-                      </div>
-                      <label class="allocation-check-row"><input type="checkbox" checked>选择多人时平均分配</label>
+              <label class="allocation-field">
+                <select id="allocation-transfer-method" onchange="changeAllocationTransferMethod(this.value)">
+                  <option value="staff" selected>指定员工</option>
+                  <option value="package">加微包分配</option>
+                </select>
+              </label>
+              <div class="allocation-transfer-target" id="allocation-transfer-staff-fields">
+                <div class="allocation-field">
+                  <span>接收员工</span>
+                  <div class="multi-select allocation-transfer-multi" id="allocation-transfer-staff-picker" data-placeholder="请选择接收员工">
+                    <div class="multi-select-control" onclick="toggleMultiSelect(event,this)">
+                      <div class="multi-select-selected"></div>
+                      <span class="selector-arrow"></span>
+                    </div>
+                    <div class="multi-select-dropdown">
+                      <label class="multi-select-option"><input type="checkbox" data-label="张文静" onchange="syncMultiSelect(this)">张文静 <small>当前 386 位</small></label>
+                      <label class="multi-select-option"><input type="checkbox" data-label="李思思" checked onchange="syncMultiSelect(this)">李思思 <small>当前 312 位</small></label>
+                      <label class="multi-select-option"><input type="checkbox" data-label="王小婷" checked onchange="syncMultiSelect(this)">王小婷 <small>当前 275 位</small></label>
+                      <label class="multi-select-option"><input type="checkbox" data-label="赵雅雅" onchange="syncMultiSelect(this)">赵雅雅 <small>当前 243 位</small></label>
+                      <label class="multi-select-option"><input type="checkbox" data-label="陈佳佳" onchange="syncMultiSelect(this)">陈佳佳 <small>当前 287 位</small></label>
                     </div>
                   </div>
                 </div>
-                <div class="allocation-radio-item" onclick="selectAllocationDrawerRadio(this)">
-                  <input class="allocation-radio-input" type="radio" name="allocation-transfer-method">
-                  <div class="allocation-radio-content">
-                    <div class="allocation-radio-title">加微包分配</div>
-                    <div class="allocation-radio-desc">由系统按加微包算法自动分配。</div>
-                    <div class="allocation-radio-sub">
-                      <div class="allocation-field">
-                        <span>加微包</span>
-                        <div class="multi-select allocation-transfer-multi" id="allocation-transfer-package-picker" data-placeholder="请选择加微包">
-                          <div class="multi-select-control" onclick="toggleMultiSelect(event,this)">
-                            <div class="multi-select-selected"></div>
-                            <span class="selector-arrow"></span>
-                          </div>
-                          <div class="multi-select-dropdown">
-                            <label class="multi-select-option"><input type="checkbox" data-label="高意向客户分配包" checked onchange="syncMultiSelect(this)">高意向客户分配包</label>
-                            <label class="multi-select-option"><input type="checkbox" data-label="新客户均匀分配包" checked onchange="syncMultiSelect(this)">新客户均匀分配包</label>
-                            <label class="multi-select-option"><input type="checkbox" data-label="VIP客户专属分配包" onchange="syncMultiSelect(this)">VIP客户专属分配包</label>
-                          </div>
-                        </div>
-                      </div>
+                <label class="allocation-check-row"><input type="checkbox" checked>选择多人时平均分配</label>
+              </div>
+              <div class="allocation-transfer-target" id="allocation-transfer-package-fields" hidden>
+                <div class="allocation-field">
+                  <span>加微包</span>
+                  <div class="multi-select allocation-transfer-multi" id="allocation-transfer-package-picker" data-placeholder="请选择加微包">
+                    <div class="multi-select-control" onclick="toggleMultiSelect(event,this)">
+                      <div class="multi-select-selected"></div>
+                      <span class="selector-arrow"></span>
+                    </div>
+                    <div class="multi-select-dropdown">
+                      <label class="multi-select-option"><input type="checkbox" data-label="高意向客户分配包" checked onchange="syncMultiSelect(this)">高意向客户分配包</label>
+                      <label class="multi-select-option"><input type="checkbox" data-label="新客户均匀分配包" checked onchange="syncMultiSelect(this)">新客户均匀分配包</label>
+                      <label class="multi-select-option"><input type="checkbox" data-label="VIP客户专属分配包" onchange="syncMultiSelect(this)">VIP客户专属分配包</label>
                     </div>
                   </div>
                 </div>
@@ -9847,7 +10078,7 @@
           </div>
           <div class="allocation-drawer-footer">
             <button class="btn btn-default" type="button" onclick="closeAllocationDrawer('allocation-transfer-drawer')">取消</button>
-            <button class="btn btn-primary" id="allocation-transfer-confirm-btn" type="button" onclick="openAllocationConfirmModal()">立即执行转移</button>
+            <button class="btn btn-primary" id="allocation-transfer-confirm-btn" type="button" onclick="confirmAllocationTransfer()">确定</button>
           </div>
         </aside>
       </div>
@@ -9900,22 +10131,6 @@
         </aside>
       </div>
 
-      <div class="modal-overlay" id="allocation-confirm-modal" onclick="closeAllocationConfirmModal()">
-        <div class="modal" onclick="event.stopPropagation()">
-          <div class="modal-header">
-            <h3 class="modal-title">确认执行</h3>
-            <button class="modal-close" type="button" onclick="closeAllocationConfirmModal()">×</button>
-          </div>
-          <div class="modal-body">
-            <div style="font-size:16px;font-weight:700;margin-bottom:8px" id="allocation-confirm-title">确定执行客户转移？</div>
-            <div style="font-size:14px;color:#64748b;line-height:1.6" id="allocation-confirm-msg">此操作不可撤销，请确认信息无误。</div>
-          </div>
-          <div class="modal-footer">
-            <button class="btn btn-default" type="button" onclick="closeAllocationConfirmModal()">取消</button>
-            <button class="btn btn-primary" type="button" onclick="executeAllocationConfirm()">确认执行</button>
-          </div>
-        </div>
-      </div>
     </div>
 
     <!-- ==================== 客户分配与流转规则 ==================== -->
@@ -10448,6 +10663,41 @@
     </div>
     <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('modal-store-detail')">关闭</button></div>
   </div>
+</div>
+
+<!-- 门店绑定企微 -->
+<div class="store-wecom-drawer-overlay" id="store-wecom-bind-drawer" onclick="handleStoreWecomDrawerBackdrop(event)">
+  <aside class="store-wecom-drawer-panel" onclick="event.stopPropagation()">
+    <header class="store-wecom-drawer-header">
+      <h3>绑定企微</h3>
+      <button class="store-wecom-drawer-close" type="button" aria-label="关闭" onclick="closeStoreWecomBinding()">×</button>
+    </header>
+    <div class="store-wecom-drawer-body">
+      <div class="alert alert-info">当前门店：<strong id="store-wecom-bind-target">南京浦口店</strong></div>
+      <section class="store-wecom-section">
+        <div class="store-wecom-section-title">1. 选择企微主体</div>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label required">企微主体</label>
+          <select class="form-control" id="store-wecom-subject" onchange="renderStoreWecomAccounts()">
+            <option value="贝颜美业" selected>贝颜美业</option>
+            <option value="贝颜轻医美">贝颜轻医美</option>
+          </select>
+        </div>
+      </section>
+      <section class="store-wecom-section">
+        <div class="store-wecom-section-title">2. 选择企微号</div>
+        <div class="store-wecom-account-toolbar">
+          <input class="search-input" id="store-wecom-account-search" placeholder="搜索员工姓名或企微账号" oninput="renderStoreWecomAccounts()">
+          <span class="store-wecom-account-count" id="store-wecom-account-count">已选择 0 个</span>
+        </div>
+        <div class="store-wecom-account-list" id="store-wecom-account-list"></div>
+      </section>
+    </div>
+    <footer class="store-wecom-drawer-footer">
+      <button class="btn btn-default" type="button" onclick="closeStoreWecomBinding()">取消</button>
+      <button class="btn btn-primary" type="button" onclick="saveStoreWecomBinding()">确定</button>
+    </footer>
+  </aside>
 </div>
 
 <!-- 同步设置-门店档案 -->
@@ -11038,6 +11288,18 @@
       </div>
     </div>
     <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('modal-view-employee')">关闭</button><button class="btn btn-primary" onclick="openModal('modal-edit-employee')">调整门店/岗位</button></div>
+  </div>
+</div>
+
+<!-- 绑定门店老师客服 -->
+<div class="modal-overlay" id="modal-teacher-service-binding">
+  <div class="modal modal-sm">
+    <div class="modal-header"><span class="modal-title">绑定客服</span><button class="modal-close" type="button" onclick="closeModal('modal-teacher-service-binding')">×</button></div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">门店老师</label><div class="form-control" id="teacher-service-binding-name" style="background:#f8fafc">—</div></div>
+      <div class="form-group"><label class="form-label required">客服</label><select class="form-control" id="teacher-service-binding-select"><option value="">请选择客服</option><option>测试客户加微跟进</option><option>吴明杰</option><option>白思静</option><option>超级客服</option><option>林俊辉</option><option>田忠涛</option></select></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-default" type="button" onclick="closeModal('modal-teacher-service-binding')">取消</button><button class="btn btn-primary" type="button" onclick="saveTeacherServiceBinding()">确定</button></div>
   </div>
 </div>
 
@@ -12393,7 +12655,7 @@ Z6a7b8c9d0e1f2g3h4i5j6k7l8m9n0o1p2q3r4s5t6u7v8w9x0y1z2AQAB
           <div class="form-group"><label class="form-label">意向项目分类</label><select class="form-control" id="online-schedule-category"><option selected>不限分类</option><option>S10N</option><option>皮肤管理</option><option>身体管理</option><option>抗衰项目</option></select></div>
           <div class="form-group"><label class="form-label">是否兜底</label><select class="form-control" id="online-schedule-fallback"><option>是</option><option selected>否</option></select></div>
           <div class="form-group"><label class="form-label">终止条件</label><div class="schedule-condition-picker" id="online-schedule-stop-picker"><div class="schedule-condition-trigger" onclick="toggleScheduleConditionPicker(event,this)"><span id="online-schedule-stop-label">请选择终止条件</span><span class="schedule-condition-arrow">⌄</span></div><div class="schedule-condition-menu"><label><input type="checkbox" value="加微" onchange="syncScheduleConditionLabel()">加微</label><label><input type="checkbox" value="下单" onchange="syncScheduleConditionLabel()">下单</label><label><input type="checkbox" value="预约" onchange="syncScheduleConditionLabel()">预约</label><label><input type="checkbox" value="排客" onchange="syncScheduleConditionLabel()">排客</label><label><input type="checkbox" value="改约" onchange="syncScheduleConditionLabel()">改约</label><label><input type="checkbox" value="取消排客" onchange="syncScheduleConditionLabel()">取消排客</label><label><input type="checkbox" value="预约超时" onchange="syncScheduleConditionLabel()">预约超时</label><label><input type="checkbox" value="到店" onchange="syncScheduleConditionLabel()">到店</label><label><input type="checkbox" value="流退" onchange="syncScheduleConditionLabel()">流退</label><label><input type="checkbox" value="结算" onchange="syncScheduleConditionLabel()">结算</label></div></div></div>
-          <div class="form-group"><label class="form-label">内容选择模式</label><select class="form-control" id="online-schedule-content-mode" onchange="toggleOnlineScheduleContentMode(this.value)"><option value="fixed" selected>指定固定内容</option><option value="knowledge">从知识库中选择</option></select></div>
+          <div class="form-group"><label class="form-label">内容选择模式</label><div class="radio-inline-group" role="radiogroup" aria-label="内容选择模式"><label><input type="radio" name="online-schedule-content-mode-option" value="fixed" checked onchange="toggleOnlineScheduleContentMode(this.value)">指定固定内容</label><label><input type="radio" name="online-schedule-content-mode-option" value="knowledge" onchange="toggleOnlineScheduleContentMode(this.value)">从知识库中选择</label></div><input type="hidden" id="online-schedule-content-mode" value="fixed"></div>
         </div>
       </div>
 
@@ -13567,7 +13829,7 @@ function unlockTransferRuleBodyIfIdle(){
 }
 
 function openTransferRuleDrawer(mode='create'){
-  document.getElementById('transfer-rule-edit-title').textContent=mode==='edit'?'编辑协同策略':'新建协同策略';
+  document.getElementById('transfer-rule-edit-title').textContent=mode==='edit'?'编辑协作策略':'新建协作策略';
   document.getElementById('transfer-rule-drawer').classList.add('show');
   document.querySelectorAll('#page-transfer-rules .dropdown-menu').forEach(m=>m.classList.add('hidden'));
   lockTransferRuleBody();
@@ -14285,8 +14547,8 @@ var pageTitleMap = {
   'no-permission': '无权限首页',
   'org': '组织架构', 'store': '门店档案', 'account': '账号管理',
   'role': '角色管理', 'customer-data': '客户列表',
-  'customer-allocation': 'AI协同接待',
-  'employee-data': '员工档案', 'employee-ability': '能力画像',
+  'customer-allocation': '客户交接',
+  'employee-data': '员工档案', 'employee-ability': '门店老师',
   'consume-record': '订单列表',
   'dict-post': '岗位管理', 'dict-service': '品项管理',
   'dict-category': '分类管理', 'dict-goods': '卡项列表',
@@ -14297,12 +14559,12 @@ var pageTitleMap = {
   'recall-strategy': '业务场景', 'knowledge-base': '知识库',
   'recall-trigger': '门店回访',
   'ai-engine': '智能引擎',
+  'service-list': '客服管理',
   'wechat-rules': '加微规则',
   'wecom-remark-rules': '企微备注规则',
   'online-trigger': '开口策略',
   'conversion-push': '成交策略',
-  'transfer-rules': 'AI协同接待',
-  'ai-reception-route': 'AI接待路由',
+  'transfer-rules': 'AI协作策略',
   'follow-strategy': '卡点跟进',
   'ai-decision': 'AI决策',
   'ai-decision-rules': '决策路由',
@@ -14399,12 +14661,12 @@ function switchWechatRuleTab(btn, paneId) {
   syncUnifiedQueryCards();
 }
 
-function switchReceptionStrategyTab(tabKey) {
-  var key = ['rules', 'ownership', 'tasks', 'logs'].indexOf(tabKey) > -1 ? tabKey : 'rules';
+function switchAiCollaborationTab(tabKey) {
+  var key = tabKey === 'route' ? 'route' : 'rules';
   var rulePanel = document.getElementById('transfer-rule-list-view');
-  var allocationPanel = document.getElementById('page-customer-allocation');
-  document.querySelectorAll('#page-transfer-rules .reception-strategy-tab').forEach(function(tab) {
-    var active = tab.getAttribute('data-reception-strategy-tab') === key;
+  var routePanel = document.getElementById('page-ai-reception-route');
+  document.querySelectorAll('#page-transfer-rules [data-ai-collaboration-tab]').forEach(function(tab) {
+    var active = tab.getAttribute('data-ai-collaboration-tab') === key;
     tab.classList.toggle('active', active);
     tab.setAttribute('aria-selected', active ? 'true' : 'false');
   });
@@ -14412,12 +14674,9 @@ function switchReceptionStrategyTab(tabKey) {
     rulePanel.hidden = key !== 'rules';
     rulePanel.classList.toggle('active', key === 'rules');
   }
-  if (allocationPanel) {
-    allocationPanel.hidden = key === 'rules';
-    allocationPanel.querySelectorAll('.ops-rule-pane').forEach(function(pane) {
-      var paneKey = pane.id === 'allocation-pane-overview' ? 'ownership' : (pane.id === 'allocation-pane-tasks' ? 'tasks' : 'logs');
-      pane.classList.toggle('active', key !== 'rules' && paneKey === key);
-    });
+  if (routePanel) {
+    routePanel.hidden = key !== 'route';
+    routePanel.classList.toggle('active', key === 'route');
   }
   syncUnifiedQueryCards();
 }
@@ -14426,18 +14685,22 @@ function initReceptionStrategyPage() {
   var page = document.getElementById('page-transfer-rules');
   var allocationPanel = document.getElementById('page-customer-allocation');
   if (!page || !allocationPanel) return;
-  if (allocationPanel.parentElement !== page) page.appendChild(allocationPanel);
-  switchReceptionStrategyTab('rules');
+  switchAiCollaborationTab('rules');
+  switchCustomerHandoverTab('ownership');
 }
 
-function switchCustomerAllocationTab(btn, paneId) {
+function switchCustomerHandoverTab(tabKey) {
+  var key = tabKey === 'records' ? 'records' : 'ownership';
   var page = document.getElementById('page-customer-allocation');
-  if (!page || !paneId) return;
-  page.querySelectorAll('.ops-tab').forEach(function(tab) {
-    tab.classList.toggle('active', tab === btn);
+  if (!page) return;
+  page.querySelectorAll('[data-customer-handover-tab]').forEach(function(tab) {
+    var active = tab.getAttribute('data-customer-handover-tab') === key;
+    tab.classList.toggle('active', active);
+    tab.setAttribute('aria-selected', active ? 'true' : 'false');
   });
   page.querySelectorAll('.ops-rule-pane').forEach(function(pane) {
-    pane.classList.toggle('active', pane.id === paneId);
+    var paneKey = pane.id === 'allocation-pane-overview' ? 'ownership' : 'records';
+    pane.classList.toggle('active', paneKey === key);
   });
   syncUnifiedQueryCards();
 }
@@ -14465,7 +14728,6 @@ var allocationCustomerRows = [
   { name: '萱萱', staff: '刘婷婷', storeDate: '2026-08-20', chatDate: '2026-08-29', tag: 'VIP', tagClass: 'purple' }
 ];
 var allocationTransferTaskMode = 'manual';
-var allocationPendingConfirmType = 'manual';
 var allocationCurrentCustomerCount = '0';
 
 function renderAllocationCustomers() {
@@ -14515,6 +14777,8 @@ function openAllocationTransferDrawer(staffName, customerCount, mode) {
     return card.querySelector('input') && (targetMode === 'scheduled' ? (card.textContent || '').indexOf('定时执行') > -1 : (card.textContent || '').indexOf('立即执行') > -1);
   });
   if (executionCard) selectAllocationExecutionMode(executionCard, targetMode);
+  var methodSelect = document.getElementById('allocation-transfer-method');
+  if (methodSelect) changeAllocationTransferMethod(methodSelect.value);
   openAllocationDrawer('allocation-transfer-drawer');
 }
 
@@ -14537,36 +14801,34 @@ function selectAllocationExecutionMode(card, mode) {
 function updateAllocationTransferFooter() {
   var btn = document.getElementById('allocation-transfer-confirm-btn');
   if (!btn) return;
-  btn.textContent = allocationTransferTaskMode === 'scheduled' ? '保存定时任务' : '立即执行转移';
+  btn.textContent = '确定';
 }
 
-function selectAllocationDrawerRadio(item) {
-  if (!item) return;
-  var group = item.closest('.allocation-radio-group');
-  if (!group) return;
-  group.querySelectorAll('.allocation-radio-item').forEach(function(radio) {
-    var active = radio === item;
-    radio.classList.toggle('selected', active);
-    var input = radio.querySelector('.allocation-radio-input');
-    if (input) input.checked = active;
+function changeAllocationTransferMethod(method) {
+  method = method === 'package' ? 'package' : 'staff';
+  var staffFields = document.getElementById('allocation-transfer-staff-fields');
+  var packageFields = document.getElementById('allocation-transfer-package-fields');
+  if (staffFields) staffFields.hidden = method !== 'staff';
+  if (packageFields) packageFields.hidden = method !== 'package';
+  document.querySelectorAll('#allocation-transfer-drawer .allocation-transfer-multi.open').forEach(function(picker) {
+    picker.classList.remove('open');
   });
   updateAllocationManualPreview();
 }
 
 function updateAllocationManualPreview() {
-  var selected = document.querySelector('#allocation-transfer-method-group .allocation-radio-item.selected .allocation-radio-title');
-  var method = selected ? selected.textContent.trim() : '指定员工';
+  var methodSelect = document.getElementById('allocation-transfer-method');
+  var isPackage = methodSelect && methodSelect.value === 'package';
+  var method = isPackage ? '加微包分配' : '指定员工';
   var methodEl = document.getElementById('allocation-manual-summary-method');
   var targetEl = document.getElementById('allocation-manual-summary-target');
   if (methodEl) methodEl.textContent = method;
   if (!targetEl) return;
-  if (method === '加微包分配') {
-    var pkg = document.querySelector('#allocation-transfer-method-group .allocation-radio-item.selected select');
-    targetEl.textContent = pkg ? pkg.value : '高意向客户分配包';
-  } else {
-    var staff = document.querySelector('#allocation-transfer-method-group .allocation-radio-item.selected select');
-    targetEl.textContent = staff ? staff.value.replace(/ · .*/, '') : '李思思';
-  }
+  var pickerId = isPackage ? 'allocation-transfer-package-picker' : 'allocation-transfer-staff-picker';
+  var selectedTargets = Array.prototype.slice.call(document.querySelectorAll('#' + pickerId + ' input[type="checkbox"]:checked')).map(function(input) {
+    return input.getAttribute('data-label') || input.parentElement.textContent.trim();
+  });
+  targetEl.textContent = selectedTargets.join('、') || (isPackage ? '请选择加微包' : '请选择接收员工');
 }
 
 function selectCustomerAllocationRule(card) {
@@ -14618,45 +14880,13 @@ function openAllocationTaskDetailDrawer() {
   openAllocationLogDrawer();
 }
 
-function openAllocationConfirmModal(type) {
-  allocationPendingConfirmType = type || allocationTransferTaskMode;
-  var modal = document.getElementById('allocation-confirm-modal');
-  var title = document.getElementById('allocation-confirm-title');
-  var msg = document.getElementById('allocation-confirm-msg');
-  if (allocationPendingConfirmType === 'scheduled') {
-    if (title) title.textContent = '确定保存定时任务？';
-    if (msg) msg.textContent = '任务将按设定时间自动执行客户转移。';
-  } else if (allocationPendingConfirmType === 'task') {
-    if (title) title.textContent = '确定立即执行该定时任务？';
-    if (msg) msg.textContent = '任务会跳过原计划时间立即开始执行，执行后可在操作日志查看结果。';
-  } else {
-    if (title) title.textContent = '确定执行客户转移？';
-    if (msg) msg.textContent = '此操作不可撤销，客户将立即被转移给接收方。';
-  }
-  if (modal) modal.classList.add('show');
-}
-
-function closeAllocationConfirmModal() {
-  var modal = document.getElementById('allocation-confirm-modal');
-  if (modal) modal.classList.remove('show');
-}
-
-function executeAllocationConfirm() {
-  if (allocationPendingConfirmType === 'manual') {
-    closeAllocationDrawer('allocation-transfer-drawer');
-    showToast('已提交 ' + allocationCurrentCustomerCount + ' 位客户分配', 'success');
-  } else if (allocationPendingConfirmType === 'scheduled') {
-    closeAllocationDrawer('allocation-transfer-drawer');
-    showToast('定时任务创建成功', 'success');
-  } else {
-    showToast('任务已立即执行', 'success');
-  }
-  closeAllocationConfirmModal();
-}
-
 function confirmAllocationTransfer() {
   closeAllocationDrawer('allocation-transfer-drawer');
-  showToast('已提交 ' + allocationCurrentCustomerCount + ' 位客户分配', 'success');
+  if (allocationTransferTaskMode === 'scheduled') {
+    showToast('客户转移已提交', 'success');
+  } else {
+    showToast('已提交 ' + allocationCurrentCustomerCount + ' 位客户分配', 'success');
+  }
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -15259,13 +15489,13 @@ document.addEventListener('keydown', function(event) {
 });
 
 var unifiedListPageIds = [
+  'page-service-list',
   'page-wechat-rules',
   'page-wecom-remark-rules',
   'page-customer-allocation',
   'page-online-trigger',
   'page-conversion-push',
   'page-transfer-rules',
-  'page-ai-reception-route',
   'page-script-library',
   'page-ai-decision'
 ];
@@ -15597,17 +15827,6 @@ function buildUnifiedToolbar(panel, titleText, filters, actions) {
   return toolbar;
 }
 
-function moveServiceListIntoWechatRules() {
-  var source = document.getElementById('page-service-list');
-  var target = document.getElementById('wechat-pane-service');
-  if (!source || !target || target.getAttribute('data-service-mounted')) return;
-  var header = unifiedDirect(source, '.page-header');
-  if (header) header.remove();
-  while (source.firstChild) target.appendChild(source.firstChild);
-  target.setAttribute('data-service-mounted', '1');
-  source.remove();
-}
-
 function normalizeServiceListLayout() {
   var page = document.getElementById('page-service-list');
   if (!page) return;
@@ -15749,7 +15968,7 @@ function normalizeTransferRulesLayout() {
     var desc = oldHeader.querySelector('p');
     var pageHeader = document.createElement('div');
     pageHeader.className = 'page-header online-page-header';
-    pageHeader.innerHTML = '<div><h2>' + (title ? title.textContent : 'AI协同接待') + '</h2><p>' + (desc ? desc.textContent : '') + '</p></div>';
+    pageHeader.innerHTML = '<div><h2>' + (title ? title.textContent : 'AI协作策略') + '</h2><p>' + (desc ? desc.textContent : '') + '</p></div>';
     page.insertBefore(pageHeader, listView);
   }
   listView.classList.add('transfer-list-card', 'unified-list-card');
@@ -15760,7 +15979,7 @@ function normalizeTransferRulesLayout() {
     toolbar.className = 'transfer-list-card-head unified-list-toolbar';
     var titleNode = document.createElement('span');
     titleNode.className = 'unified-list-title';
-    titleNode.textContent = '协同策略列表';
+    titleNode.textContent = '协作策略列表';
     toolbar.appendChild(titleNode);
     var filter = content ? content.querySelector('.transfer-filter-bar') : null;
     if (filter) {
@@ -15851,7 +16070,6 @@ function normalizeAiDecisionLayout() {
 
 function initUnifiedListLayout() {
   mountOpeningSopPane();
-  moveServiceListIntoWechatRules();
   unifiedListPageIds.forEach(function(id) {
     var page = document.getElementById(id);
     if (!page) return;
@@ -15859,6 +16077,7 @@ function initUnifiedListLayout() {
     var hasTabs = page.querySelector('.ops-tabs, .opening-speech-tabs, .script-lib-tabs, .ai-decision-tabs, .aic-tabs, .reception-strategy-tabs');
     page.classList.toggle('has-tabs', !!hasTabs);
   });
+  normalizeServiceListLayout();
   normalizeWechatRulesLayout();
   normalizeOpeningSpeechLayout();
   normalizeConversionLayout();
@@ -16235,6 +16454,321 @@ function showPage(pageId, options) {
 }
 
 var pendingDeleteRow = null;
+var teacherServiceBindingName = '';
+var teacherQrEditingRow = null;
+
+function switchTeacherPageTab(tab, paneId, queryId) {
+  var page = document.getElementById('page-employee-ability');
+  if (!page) return;
+  page.querySelectorAll('.teacher-page-tabs .tab').forEach(function(item) {
+    item.classList.toggle('active', item === tab);
+  });
+  page.querySelectorAll(':scope > .tab-panel').forEach(function(pane) {
+    pane.classList.toggle('active', pane.id === paneId);
+  });
+  page.querySelectorAll('.teacher-query-row').forEach(function(row) {
+    row.classList.toggle('active', row.id === queryId);
+  });
+}
+
+function filterTeacherRows() {
+  var keyword = document.getElementById('teacher-list-keyword').value.trim().toLowerCase();
+  var store = document.getElementById('teacher-list-store-filter').value;
+  var role = document.getElementById('teacher-list-role-filter').value;
+  var status = document.getElementById('teacher-list-status-filter').value;
+  var visible = 0;
+  document.querySelectorAll('#teacher-list-tab tbody tr').forEach(function(row) {
+    var matched = (!keyword || row.textContent.toLowerCase().indexOf(keyword) > -1) &&
+      (store === '全部门店' || row.dataset.store === store) &&
+      (role === '全部岗位' || row.dataset.role === role) &&
+      (status === '全部在职状态' || row.dataset.status === status);
+    row.hidden = !matched;
+    if (matched) visible += 1;
+  });
+  var total = document.getElementById('teacher-list-total');
+  if (total) total.textContent = '共 ' + visible + ' 条';
+}
+
+function resetTeacherFilters() {
+  document.getElementById('teacher-list-keyword').value = '';
+  document.getElementById('teacher-list-store-filter').selectedIndex = 0;
+  document.getElementById('teacher-list-role-filter').selectedIndex = 0;
+  document.getElementById('teacher-list-status-filter').selectedIndex = 0;
+  document.querySelectorAll('#teacher-list-tab tbody tr').forEach(function(row) { row.hidden = false; });
+  var total = document.getElementById('teacher-list-total');
+  if (total) total.textContent = '共 27,127 条';
+}
+
+function getSelectedTeacherQrEmployee() {
+  return document.querySelector('#teacher-qr-drawer input[name="teacher-qr-employee"]:checked');
+}
+
+function getSelectedTeacherQrAccount() {
+  var select = document.getElementById('teacher-qr-account');
+  if (!select || !select.value) return null;
+  return select.options[select.selectedIndex];
+}
+
+function openTeacherQrDrawer(employeeName) {
+  var drawer = document.getElementById('teacher-qr-drawer');
+  if (!drawer) return;
+  var trigger = window.event && window.event.currentTarget ? window.event.currentTarget : null;
+  teacherQrEditingRow = employeeName && trigger ? trigger.closest('tr') : null;
+  var accountSelect = document.getElementById('teacher-qr-account');
+  drawer.querySelectorAll('input[name="teacher-qr-employee"]').forEach(function(input) {
+    input.checked = false;
+  });
+  var title = document.getElementById('teacher-qr-drawer-title');
+  var submit = document.getElementById('teacher-qr-submit');
+  var note = document.getElementById('teacher-qr-note');
+  var options = document.getElementById('teacher-qr-employee-options');
+  var picker = document.getElementById('teacher-qr-service-picker');
+  var serviceSearch = document.getElementById('teacher-qr-service-search');
+  if (title) title.textContent = teacherQrEditingRow ? '更换聚合平台客服' : '新增二维码';
+  if (submit) submit.textContent = teacherQrEditingRow ? '确定' : '生成二维码';
+  if (note) note.value = '';
+  if (options) options.classList.remove('show');
+  if (picker) picker.classList.remove('open');
+  if (serviceSearch) serviceSearch.value = '';
+  var selected = employeeName ? Array.prototype.find.call(drawer.querySelectorAll('input[name="teacher-qr-employee"]'), function(input) {
+    return input.dataset.teacher === employeeName;
+  }) : null;
+  if (accountSelect) {
+    accountSelect.disabled = !!teacherQrEditingRow;
+    accountSelect.value = '';
+    if (teacherQrEditingRow) {
+      var accountText = teacherQrEditingRow.querySelector('td:nth-child(2) .teacher-qr-name span');
+      var matchedOption = Array.prototype.find.call(accountSelect.options, function(option) {
+        return option.dataset.account === (accountText ? accountText.textContent.trim() : '');
+      });
+      if (!matchedOption && selected) {
+        matchedOption = Array.prototype.find.call(accountSelect.options, function(option) {
+          return option.dataset.store === selected.dataset.org;
+        });
+      }
+      accountSelect.value = matchedOption ? matchedOption.value : '';
+    }
+  }
+  handleTeacherQrAccountChange();
+  if (selected) {
+    selected.checked = true;
+    selectTeacherQrEmployee(selected);
+  }
+  drawer.classList.add('show');
+  drawer.setAttribute('aria-hidden', 'false');
+  document.body.classList.add('modal-open');
+}
+
+function closeTeacherQrDrawer() {
+  var drawer = document.getElementById('teacher-qr-drawer');
+  var picker = document.getElementById('teacher-qr-service-picker');
+  if (drawer) {
+    drawer.classList.remove('show');
+    drawer.setAttribute('aria-hidden', 'true');
+  }
+  if (picker) picker.classList.remove('open');
+  teacherQrEditingRow = null;
+  document.body.classList.remove('modal-open');
+}
+
+function toggleTeacherQrEmployeeOptions() {
+  var options = document.getElementById('teacher-qr-employee-options');
+  var picker = document.getElementById('teacher-qr-service-picker');
+  var search = document.getElementById('teacher-qr-service-search');
+  if (!options || !picker) return;
+  var willOpen = !options.classList.contains('show');
+  options.classList.toggle('show', willOpen);
+  picker.classList.toggle('open', willOpen);
+  if (willOpen) {
+    filterTeacherQrServiceOptions();
+    setTimeout(function() { if (search) search.focus(); }, 0);
+  }
+}
+
+function handleTeacherQrAccountChange() {
+  var account = getSelectedTeacherQrAccount();
+  var choose = document.getElementById('teacher-qr-employee-choose');
+  var accountSummary = document.getElementById('teacher-qr-account-summary');
+  var options = document.getElementById('teacher-qr-employee-options');
+  var picker = document.getElementById('teacher-qr-service-picker');
+  var search = document.getElementById('teacher-qr-service-search');
+  document.querySelectorAll('#teacher-qr-drawer .teacher-qr-employee-option').forEach(function(label) {
+    var input = label.querySelector('input');
+    if (input) input.checked = false;
+  });
+  if (options) options.classList.remove('show');
+  if (picker) picker.classList.remove('open');
+  if (search) search.value = '';
+  if (account) {
+    if (accountSummary) accountSummary.innerHTML = '<strong>' + escapeHtml(account.dataset.account || account.textContent) + '</strong><span>企微主体：' + escapeHtml(account.dataset.subject || '—') + '　所属门店：' + escapeHtml(account.dataset.store || '—') + '</span>';
+    if (choose) {
+      choose.disabled = false;
+      choose.textContent = '选择聚合平台客服';
+    }
+  } else {
+    if (accountSummary) accountSummary.innerHTML = '<strong>请先选择企微号</strong><span>选择后将显示该企微号所属门店的聚合平台客服。</span>';
+    if (choose) {
+      choose.disabled = true;
+      choose.textContent = '请先选择企微号';
+    }
+  }
+  filterTeacherQrServiceOptions();
+  resetTeacherQrEmployeeSummary(!!account);
+}
+
+function filterTeacherQrServiceOptions() {
+  var account = getSelectedTeacherQrAccount();
+  var search = document.getElementById('teacher-qr-service-search');
+  var keyword = search ? search.value.trim().toLowerCase() : '';
+  var visible = 0;
+  document.querySelectorAll('#teacher-qr-drawer .teacher-qr-employee-option').forEach(function(label) {
+    var input = label.querySelector('input');
+    var matchedStore = !!account && input && input.dataset.org === account.dataset.store;
+    var searchable = input ? (input.value + ' ' + (input.dataset.teacher || '')).toLowerCase() : '';
+    var matched = matchedStore && (!keyword || searchable.indexOf(keyword) !== -1);
+    label.style.display = matched ? 'flex' : 'none';
+    if (matched) visible += 1;
+  });
+  var head = document.querySelector('#teacher-qr-employee-options .teacher-qr-service-option-head');
+  var empty = document.getElementById('teacher-qr-service-empty');
+  if (head) head.style.display = visible ? 'grid' : 'none';
+  if (empty) empty.style.display = account && !visible ? 'block' : 'none';
+}
+
+function resetTeacherQrEmployeeSummary(hasAccount) {
+  var choose = document.getElementById('teacher-qr-employee-choose');
+  var submit = document.getElementById('teacher-qr-submit');
+  if (choose && hasAccount) choose.textContent = '选择聚合平台客服';
+  if (submit) submit.disabled = true;
+}
+
+function selectTeacherQrEmployee(input) {
+  if (!input) return;
+  var account = getSelectedTeacherQrAccount();
+  if (!account) return;
+  var choose = document.getElementById('teacher-qr-employee-choose');
+  var submit = document.getElementById('teacher-qr-submit');
+  var options = document.getElementById('teacher-qr-employee-options');
+  if (choose) choose.textContent = input.value;
+  if (submit) submit.disabled = false;
+  if (options) options.classList.remove('show');
+  var picker = document.getElementById('teacher-qr-service-picker');
+  if (picker) picker.classList.remove('open');
+}
+
+document.addEventListener('click', function(event) {
+  if (event.target.closest('#teacher-qr-service-picker')) return;
+  var options = document.getElementById('teacher-qr-employee-options');
+  var picker = document.getElementById('teacher-qr-service-picker');
+  if (options) options.classList.remove('show');
+  if (picker) picker.classList.remove('open');
+});
+
+function formatTeacherQrTime(date) {
+  function pad(value) { return String(value).padStart(2, '0'); }
+  return date.getFullYear() + '-' + pad(date.getMonth() + 1) + '-' + pad(date.getDate()) + ' ' + pad(date.getHours()) + ':' + pad(date.getMinutes()) + ':' + pad(date.getSeconds());
+}
+
+function updateTeacherQrTotal() {
+  var rows = document.querySelectorAll('#teacher-qr-tbody tr');
+  var visible = Array.prototype.filter.call(rows, function(row) { return !row.hidden; }).length;
+  var total = document.getElementById('teacher-qr-total');
+  if (total) total.textContent = '共 ' + visible + ' 条';
+}
+
+function saveTeacherQr() {
+  var accountOption = getSelectedTeacherQrAccount();
+  if (!accountOption) {
+    showToast('请选择企微号', 'info');
+    return;
+  }
+  var employee = getSelectedTeacherQrEmployee();
+  if (!employee) {
+    showToast('请选择聚合平台客服', 'info');
+    return;
+  }
+  var subject = accountOption.dataset.subject || '—';
+  var account = accountOption.dataset.account || accountOption.textContent || '—';
+  var teacher = employee.dataset.teacher || '—';
+  var role = employee.dataset.role || '未设置';
+  var employment = employee.dataset.employment || '在职';
+  if (teacherQrEditingRow) {
+    teacherQrEditingRow.dataset.subject = subject;
+    teacherQrEditingRow.dataset.employment = employment;
+    teacherQrEditingRow.cells[1].innerHTML = '<div class="teacher-qr-name"><strong>' + escapeHtml(subject) + '</strong><span>' + escapeHtml(account) + '</span></div>';
+    teacherQrEditingRow.cells[2].innerHTML = '<div class="teacher-qr-name"><strong>' + escapeHtml(teacher) + '</strong><span>' + escapeHtml(role) + '</span></div>';
+    teacherQrEditingRow.cells[3].innerHTML = '<strong>' + escapeHtml(employee.value) + '</strong>';
+    closeTeacherQrDrawer();
+    showToast('聚合平台客服已更换', 'success');
+    return;
+  }
+  var code = 'WQR' + String(Date.now()).slice(-14).toUpperCase();
+  var row = document.createElement('tr');
+  row.dataset.subject = subject;
+  row.dataset.status = '正常';
+  row.dataset.employment = employment;
+  row.innerHTML = '<td><div class="teacher-qr-code-cell"><span class="teacher-qr-code"><i class="fas fa-qrcode"></i></span><strong>' + code + '</strong></div></td>' +
+    '<td><div class="teacher-qr-name"><strong>' + escapeHtml(subject) + '</strong><span>' + escapeHtml(account) + '</span></div></td>' +
+    '<td><div class="teacher-qr-name"><strong>' + escapeHtml(teacher) + '</strong><span>' + escapeHtml(role) + '</span></div></td>' +
+    '<td><strong>' + escapeHtml(employee.value) + '</strong></td><td><span class="tag tag-green">正常</span></td><td>' + formatTeacherQrTime(new Date()) + '</td>' +
+    '<td><div class="teacher-qr-actions"><button type="button" onclick="showToast(\'已打开二维码详情\',\'info\')">详情</button><button type="button" onclick="downloadTeacherQr(\'' + code + '\')">下载</button><button type="button" onclick="openTeacherQrDrawer(\'' + escapeAttr(teacher) + '\')">更换</button><button class="danger" type="button" onclick="destroyTeacherQr(this)">销毁</button></div></td>';
+  var tbody = document.getElementById('teacher-qr-tbody');
+  if (tbody) tbody.insertBefore(row, tbody.firstChild);
+  closeTeacherQrDrawer();
+  updateTeacherQrTotal();
+  showToast('二维码已生成', 'success');
+}
+
+function filterTeacherQrRows() {
+  var subject = document.getElementById('teacher-qr-subject-filter').value;
+  var status = document.getElementById('teacher-qr-status-filter').value;
+  var keyword = document.getElementById('teacher-qr-keyword').value.trim().toLowerCase();
+  document.querySelectorAll('#teacher-qr-tbody tr').forEach(function(row) {
+    var matched = (subject === '全部企微主体' || row.dataset.subject === subject) &&
+      (status === '全部状态' || row.dataset.status === status) &&
+      (!keyword || row.textContent.toLowerCase().indexOf(keyword) > -1);
+    row.hidden = !matched;
+  });
+  updateTeacherQrTotal();
+}
+
+function resetTeacherQrFilters() {
+  document.getElementById('teacher-qr-subject-filter').selectedIndex = 0;
+  document.getElementById('teacher-qr-status-filter').selectedIndex = 0;
+  document.getElementById('teacher-qr-keyword').value = '';
+  document.querySelectorAll('#teacher-qr-tbody tr').forEach(function(row) { row.hidden = false; });
+  updateTeacherQrTotal();
+}
+
+function downloadTeacherQr(code) {
+  showToast(code + ' 已下载', 'success');
+}
+
+function destroyTeacherQr(button) {
+  var row = button ? button.closest('tr') : null;
+  if (row) row.remove();
+  updateTeacherQrTotal();
+  showToast('二维码已销毁', 'success');
+}
+
+function openTeacherServiceBinding(name) {
+  teacherServiceBindingName = name || '';
+  var nameField = document.getElementById('teacher-service-binding-name');
+  var serviceSelect = document.getElementById('teacher-service-binding-select');
+  if (nameField) nameField.textContent = teacherServiceBindingName || '—';
+  if (serviceSelect) serviceSelect.value = '';
+  openModal('modal-teacher-service-binding');
+}
+
+function saveTeacherServiceBinding() {
+  var serviceSelect = document.getElementById('teacher-service-binding-select');
+  if (!serviceSelect || !serviceSelect.value) {
+    showToast('请选择客服', 'info');
+    return;
+  }
+  closeModal('modal-teacher-service-binding');
+  showToast(teacherServiceBindingName + '已绑定客服“' + serviceSelect.value + '”', 'success');
+}
 
 function openModal(id) {
   if (id === 'modal-del-confirm') {
@@ -17433,6 +17967,11 @@ function switchOnlineScheduleTab(btn, panelId) {
 
 function toggleOnlineScheduleContentMode(mode) {
   mode = mode === 'knowledge' ? 'knowledge' : 'fixed';
+  var modeInput = document.getElementById('online-schedule-content-mode');
+  if (modeInput) modeInput.value = mode;
+  document.querySelectorAll('input[name="online-schedule-content-mode-option"]').forEach(function(input) {
+    input.checked = input.value === mode;
+  });
   var fixed = document.getElementById('online-schedule-fixed-content');
   var knowledge = document.getElementById('online-schedule-knowledge-content');
   if (fixed) fixed.hidden = mode !== 'fixed';
@@ -20022,6 +20561,152 @@ function openOrgEdit(event, name) {
   openModal('modal-edit-org');
 }
 
+var activeStoreWecomName = '';
+var storeWecomDraftSelection = [];
+var storeWecomDraftSubject = '';
+var storeWecomSubjects = {
+  '南京浦口店': '贝颜美业',
+  '昆山玉山店': '贝颜美业',
+  '上海静安店': '贝颜轻医美',
+  '合肥政务店': '贝颜美业'
+};
+var storeWecomAccounts = {
+  '贝颜美业': [
+    { id: 'zhangfang', name: '张芳', role: '咨询师', account: 'wxwork_zhangfang', store: '南京浦口店' },
+    { id: 'limei', name: '李梅', role: '美容师', account: 'wxwork_limei', store: '南京浦口店' },
+    { id: 'wangmin', name: '王敏', role: '店长', account: 'wxwork_wangmin', store: '昆山玉山店' },
+    { id: 'chenjing', name: '陈静', role: '前台', account: 'wxwork_chenjing', store: '' },
+    { id: 'zhouyan', name: '周妍', role: '咨询师', account: 'wxwork_zhouyan', store: '苏州园区店' }
+  ],
+  '贝颜轻医美': [
+    { id: 'liuqian', name: '刘倩', role: '咨询师', account: 'wxwork_liuqian', store: '上海静安店' },
+    { id: 'sunwen', name: '孙雯', role: '美容师', account: 'wxwork_sunwen', store: '' },
+    { id: 'zhaolin', name: '赵琳', role: '店长', account: 'wxwork_zhaolin', store: '上海浦东店' }
+  ]
+};
+
+function openStoreWecomBinding(event, name) {
+  if (event) event.stopPropagation();
+  activeStoreWecomName = name || '';
+  var target = document.getElementById('store-wecom-bind-target');
+  var subject = document.getElementById('store-wecom-subject');
+  var search = document.getElementById('store-wecom-account-search');
+  var drawer = document.getElementById('store-wecom-bind-drawer');
+  if (target) target.textContent = activeStoreWecomName || '—';
+  if (subject) subject.value = storeWecomSubjects[activeStoreWecomName] || '贝颜美业';
+  if (search) search.value = '';
+  syncStoreWecomDraftSelection();
+  renderStoreWecomAccounts();
+  if (drawer) drawer.classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeStoreWecomBinding() {
+  var drawer = document.getElementById('store-wecom-bind-drawer');
+  if (drawer) drawer.classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+function handleStoreWecomDrawerBackdrop(event) {
+  if (event.target && event.target.id === 'store-wecom-bind-drawer') closeStoreWecomBinding();
+}
+
+function syncStoreWecomDraftSelection() {
+  var subject = document.getElementById('store-wecom-subject');
+  storeWecomDraftSubject = subject ? subject.value : '';
+  var accounts = storeWecomAccounts[storeWecomDraftSubject] || [];
+  storeWecomDraftSelection = accounts.filter(function(account) {
+    return account.store === activeStoreWecomName;
+  }).map(function(account) {
+    return account.id;
+  });
+}
+
+function renderStoreWecomAccounts() {
+  var subject = document.getElementById('store-wecom-subject');
+  var list = document.getElementById('store-wecom-account-list');
+  var search = document.getElementById('store-wecom-account-search');
+  if (!subject || !list) return;
+  if (storeWecomDraftSubject !== subject.value) syncStoreWecomDraftSelection();
+  var keyword = search ? search.value.trim().toLowerCase() : '';
+  var accounts = (storeWecomAccounts[subject.value] || []).filter(function(account) {
+    return !keyword || (account.name + ' ' + account.account).toLowerCase().indexOf(keyword) !== -1;
+  });
+  list.innerHTML = accounts.map(function(account) {
+    var boundOther = !!account.store && account.store !== activeStoreWecomName;
+    var selected = !boundOther && storeWecomDraftSelection.indexOf(account.id) !== -1;
+    var statusClass = boundOther ? 'bound' : (selected ? 'current' : '');
+    var statusText = boundOther ? '已绑定：' + account.store : (selected ? '当前门店' : '未绑定');
+    return '<label class="store-wecom-account-row' + (selected ? ' selected' : '') + (boundOther ? ' bound-other' : '') + '">' +
+      '<input type="checkbox" value="' + escapeAttr(account.id) + '"' + (selected ? ' checked' : '') + (boundOther ? ' disabled' : '') + ' onchange="updateStoreWecomSelection(this)">' +
+      '<span class="store-wecom-account-main"><span class="store-wecom-account-name">' + escapeHtml(account.name) + '</span><span class="store-wecom-account-meta">' + escapeHtml(account.role + ' · ' + account.account) + '</span></span>' +
+      '<span class="store-wecom-account-status ' + statusClass + '">' + escapeHtml(statusText) + '</span>' +
+    '</label>';
+  }).join('') || '<div class="empty">暂无匹配的企微号</div>';
+  updateStoreWecomAccountCount();
+}
+
+function updateStoreWecomSelection(input) {
+  var id = input.value;
+  if (input.checked && storeWecomDraftSelection.indexOf(id) === -1) storeWecomDraftSelection.push(id);
+  if (!input.checked) storeWecomDraftSelection = storeWecomDraftSelection.filter(function(item) { return item !== id; });
+  renderStoreWecomAccounts();
+}
+
+function updateStoreWecomAccountCount() {
+  var count = document.getElementById('store-wecom-account-count');
+  if (count) count.textContent = '已选择 ' + storeWecomDraftSelection.length + ' 个';
+}
+
+function saveStoreWecomBinding() {
+  var subject = document.getElementById('store-wecom-subject');
+  if (!subject || !storeWecomDraftSelection.length) {
+    showToast('请至少选择一个企微号', 'info');
+    return;
+  }
+  Object.keys(storeWecomAccounts).forEach(function(subjectName) {
+    storeWecomAccounts[subjectName].forEach(function(account) {
+      if (account.store === activeStoreWecomName) account.store = '';
+    });
+  });
+  storeWecomAccounts[subject.value].forEach(function(account) {
+    if (storeWecomDraftSelection.indexOf(account.id) !== -1) account.store = activeStoreWecomName;
+  });
+  storeWecomSubjects[activeStoreWecomName] = subject.value;
+  var selectedCount = storeWecomDraftSelection.length;
+  closeStoreWecomBinding();
+  showToast(activeStoreWecomName + '已绑定 ' + selectedCount + ' 个企微号', 'success');
+}
+
+function toggleStoreMoreMenu(event, btn) {
+  event.stopPropagation();
+  var menu = btn.parentElement.querySelector('.org-more-menu');
+  document.querySelectorAll('.org-more-menu.show').forEach(function(item) {
+    if (item !== menu) item.classList.remove('show');
+  });
+  if (menu) menu.classList.toggle('show');
+}
+
+function openStoreMoreAction(event, action) {
+  event.stopPropagation();
+  var row = event.target.closest('tr');
+  var name = row && row.querySelector('td strong') ? row.querySelector('td strong').textContent.trim() : '门店';
+  var menu = event.target.closest('.org-more-menu');
+  if (menu) menu.classList.remove('show');
+  if (action === 'detail') {
+    var title = document.querySelector('#modal-store-detail .modal-title');
+    var nameValue = document.querySelector('#modal-store-detail .info-item span');
+    if (title) title.textContent = '门店详情 — ' + name;
+    if (nameValue) nameValue.textContent = name;
+    openModal('modal-store-detail');
+    return;
+  }
+  if (action === 'delete') {
+    openModal('modal-del-confirm');
+    pendingDeleteRow = row;
+  }
+}
+
 function toggleOrgMoreMenu(event, btn) {
   event.stopPropagation();
   var row = btn.closest('[data-org-row]');
@@ -20853,6 +21538,28 @@ function selectAccountOrgNode(node) {
     item.classList.toggle('selected', item === node);
   });
   renderAccountTable();
+}
+
+function selectEmployeeOrgNode(node) {
+  if (!node) return;
+  var label = getAccountTreeNodeLabel(node) || '贝颜';
+  var isStore = !node.querySelector('.tree-toggle');
+  var page = document.getElementById('page-employee-data');
+  if (!page) return;
+  page.querySelectorAll('.tree-node').forEach(function(item) {
+    item.classList.toggle('selected', item === node);
+  });
+  var visibleCount = 0;
+  page.querySelectorAll('.panel tbody tr').forEach(function(row) {
+    var storeCell = row.cells[2];
+    var visible = !isStore || (storeCell && storeCell.textContent.trim() === label);
+    row.hidden = !visible;
+    if (visible) visibleCount += 1;
+  });
+  var title = document.getElementById('employee-list-title');
+  if (title) title.textContent = isStore ? label + '员工列表' : '员工列表';
+  var total = page.querySelector('.pagination > span');
+  if (total) total.textContent = isStore ? '共 ' + visibleCount + ' 条' : '共 1,284 条';
 }
 
 function getAccountFilters() {
@@ -23339,20 +24046,25 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!e.target.closest('.sop-more-wrap')) {
       closeSopMoreMenus();
     }
-    var accountToggle = e.target.closest('#page-account .tree-toggle');
-    if (accountToggle) {
+    var orgTreeToggle = e.target.closest('#page-account .tree-toggle, #page-employee-data .tree-toggle');
+    if (orgTreeToggle) {
       e.stopPropagation();
-      var accountNode = accountToggle.closest('.tree-node');
-      var accountChildren = accountNode ? accountNode.nextElementSibling : null;
-      if (accountChildren && accountChildren.classList.contains('tree-children')) {
-        accountChildren.classList.toggle('is-hidden');
-        accountToggle.classList.toggle('open', !accountChildren.classList.contains('is-hidden'));
+      var orgTreeNode = orgTreeToggle.closest('.tree-node');
+      var orgTreeChildren = orgTreeNode ? orgTreeNode.nextElementSibling : null;
+      if (orgTreeChildren && orgTreeChildren.classList.contains('tree-children')) {
+        orgTreeChildren.classList.toggle('is-hidden');
+        orgTreeToggle.classList.toggle('open', !orgTreeChildren.classList.contains('is-hidden'));
       }
       return;
     }
     var accountTreeNode = e.target.closest('#page-account .tree-node');
     if (accountTreeNode) {
       selectAccountOrgNode(accountTreeNode);
+      return;
+    }
+    var employeeTreeNode = e.target.closest('#page-employee-data .tree-node');
+    if (employeeTreeNode) {
+      selectEmployeeOrgNode(employeeTreeNode);
       return;
     }
     var customerTagModalCategory = e.target.closest('#modal-edit-customer-tags .customer-tag-category-item');
