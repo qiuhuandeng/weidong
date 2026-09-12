@@ -1560,6 +1560,49 @@
   .item-picker-pagination { justify-content: flex-end; gap: 10px; margin-top: 18px; }
   .guardrail-row { display: grid; grid-template-columns: 220px 1fr; gap: 16px; align-items: center; padding: 14px 0; border-bottom: 1px solid #f0f2f5; }
   .guardrail-row:last-child { border-bottom: none; }
+  #modal-recall-guardrails .modal-xl { width: min(980px, 100vw); max-width: min(980px, 100vw); }
+  #modal-recall-guardrails .modal-body { padding: 0; background: #f6f8fb; }
+  .recall-control-tabs { display: flex; align-items: flex-end; gap: 28px; height: 52px; padding: 0 24px; border-bottom: 1px solid #e5eaf1; background: #fff; overflow-x: auto; }
+  .recall-control-tab { position: relative; height: 52px; padding: 0 2px; border: 0; background: transparent; color: #64748b; font-size: 14px; font-weight: 600; white-space: nowrap; cursor: pointer; }
+  .recall-control-tab::after { content: ''; position: absolute; right: 0; bottom: 0; left: 0; height: 2px; border-radius: 2px 2px 0 0; background: transparent; }
+  .recall-control-tab.active { color: #1677ff; }
+  .recall-control-tab.active::after { background: #1677ff; }
+  .recall-control-pane { display: none; padding: 20px 24px 28px; }
+  .recall-control-pane.active { display: block; }
+  .recall-control-intro { margin-bottom: 14px; color: #64748b; font-size: 13px; line-height: 1.7; }
+  .recall-setting-section { margin-bottom: 14px; border: 1px solid #e5eaf1; border-radius: 8px; background: #fff; overflow: hidden; }
+  .recall-setting-section:last-child { margin-bottom: 0; }
+  .recall-setting-section.recall-blocked-section { position: relative; z-index: 6; overflow: visible; }
+  .recall-setting-section.recall-blocked-section .recall-setting-head { border-radius: 8px 8px 0 0; }
+  .recall-setting-section.recall-blocked-section .recall-setting-body { border-radius: 0 0 8px 8px; background: #fff; }
+  .recall-setting-head { min-height: 48px; padding: 12px 18px; border-bottom: 1px solid #eef2f6; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .recall-setting-head strong { color: #1a2332; font-size: 14px; }
+  .recall-setting-head span { color: #8c9bab; font-size: 12px; }
+  .recall-setting-body { padding: 0 18px; }
+  .recall-setting-row { min-height: 68px; padding: 12px 0; border-bottom: 1px solid #f0f2f5; display: grid; grid-template-columns: minmax(210px, .8fr) minmax(360px, 1.2fr); gap: 20px; align-items: center; }
+  .recall-setting-row:last-child { border-bottom: 0; }
+  .recall-setting-label { color: #1a2332; font-size: 13px; font-weight: 600; }
+  .recall-setting-label small { display: block; margin-top: 4px; color: #8c9bab; font-size: 12px; font-weight: 400; line-height: 1.5; }
+  .recall-setting-control { display: flex; align-items: center; justify-content: flex-end; gap: 8px; color: #555; font-size: 13px; flex-wrap: wrap; }
+  .recall-setting-control .form-control { width: auto; min-width: 76px; }
+  .recall-setting-control .recall-blocked-events { width: min(520px, 100%); text-align: left; }
+  .recall-blocked-events .multi-select-dropdown { z-index: 120; }
+  .recall-inline-switch { display: inline-flex; align-items: center; gap: 8px; color: #555; white-space: nowrap; }
+  .automation-strategy-summary { display: inline-flex; align-items: center; min-height: 24px; padding: 3px 8px; border-radius: 4px; background: #f3f6fa; color: #475569; font-size: 12px; white-space: nowrap; }
+  #modal-add-trigger .modal-xl { width: min(960px, 100vw); max-width: min(960px, 100vw); }
+  .recall-human-send-setting { min-height: 58px; margin-top: 2px; padding: 12px 14px; border: 1px solid #e5eaf1; border-radius: 8px; background: #fff; display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+  .recall-human-send-setting strong { display: block; color: #1a2332; font-size: 13px; }
+  .recall-human-send-setting small { display: block; margin-top: 4px; color: #8c9bab; font-size: 12px; line-height: 1.5; }
+  .recall-human-send-setting.is-locked { background: #fafbfc; }
+  .recall-human-send-setting.is-locked .switch { opacity: .55; }
+  .recall-human-send-setting.is-locked small { color: #d48806; }
+  @media (max-width: 760px) {
+    .recall-control-tabs { gap: 20px; padding: 0 16px; }
+    .recall-control-pane { padding: 16px; }
+    .recall-setting-row { grid-template-columns: 1fr; gap: 8px; }
+    .recall-setting-control { justify-content: flex-start; }
+    .recall-human-send-setting { align-items: flex-start; }
+  }
   .merge-option { border: 1px solid #e8edf2; border-radius: 8px; padding: 14px; background: #fff; display: flex; gap: 10px; align-items: flex-start; }
   .merge-option.active { border-color: #1677ff; background: #f0f7ff; }
   .json-preview { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; line-height: 1.65; background: #0f172a; color: #dbeafe; border-radius: 8px; padding: 14px; overflow: auto; }
@@ -4966,6 +5009,10 @@
   .transfer-rules-page { --tr-primary-50:#eff6ff; --tr-primary-100:#dbeafe; --tr-primary-200:#bfdbfe; --tr-primary-300:#93c5fd; --tr-primary-500:#3b82f6; --tr-primary-600:#2563eb; --tr-primary-700:#1d4ed8; --tr-gray-50:#f8fafc; --tr-gray-100:#f1f5f9; --tr-gray-200:#e5e7eb; --tr-gray-300:#d1d5db; --tr-gray-400:#94a3b8; --tr-gray-500:#64748b; --tr-gray-600:#475569; --tr-gray-700:#374151; --tr-gray-800:#1f2937; --tr-gray-900:#111827; }
   #page-transfer-rules .reception-strategy-tabs{height:50px;margin:0;padding:0 24px;border:0;border-bottom:1px solid #e4eaf2;border-radius:0;background:transparent;display:flex;align-items:flex-end;gap:32px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none}
   #page-transfer-rules .reception-strategy-tabs::-webkit-scrollbar{display:none}
+  #page-transfer-rules.unified-list-page > .page-header{display:flex!important;align-items:center;justify-content:space-between;gap:16px}
+  #page-transfer-rules.unified-list-page > .page-header .online-policy-actions{display:flex!important}
+  #page-transfer-rules .ai-route-entry-btn{height:34px;padding:0 14px;border:1px solid #1677ff;border-radius:6px;background:#fff;color:#1677ff;display:inline-flex;align-items:center;justify-content:center;gap:7px;font-size:13px;font-weight:600;line-height:20px;white-space:nowrap;cursor:pointer}
+  #page-transfer-rules .ai-route-entry-btn:hover{border-color:#0958d9;background:#f5f9ff;color:#0958d9}
   #page-transfer-rules .reception-strategy-tab{position:relative;min-width:max-content;height:49px;padding:0 2px;border:0;background:transparent;color:#64748b;display:inline-flex;align-items:center;font-size:14px;line-height:22px;font-weight:600;cursor:pointer}
   #page-transfer-rules .reception-strategy-tab::after{content:'';position:absolute;right:0;bottom:-1px;left:0;height:3px;border-radius:3px 3px 0 0;background:transparent}
   #page-transfer-rules .reception-strategy-tab:hover,#page-transfer-rules .reception-strategy-tab.active{color:#1677ff}
@@ -4984,6 +5031,11 @@
   #page-transfer-rules .transfer-list-content { padding:22px 0 0; }
   #page-transfer-rules .transfer-filter-bar { flex-wrap:wrap; }
   #page-transfer-rules .transfer-filter-bar .transfer-search-wrap { width:224px; }
+  #page-transfer-rules #transfer-rule-list > .rule-card > .flex > .flex-1 { padding:16px 20px; }
+  #page-transfer-rules #transfer-rule-list .rule-card .flex.items-start.justify-between.mb-3 { margin-bottom:8px; }
+  #page-transfer-rules #transfer-rule-list .rule-card .flex.items-center.gap-6.text-sm.mb-3 { margin-bottom:10px; }
+  #page-transfer-rules #transfer-rule-list .rule-card .rule-chain-summary { padding-top:10px; padding-bottom:10px; }
+  #page-transfer-rules #transfer-rule-list .rule-card .flex.items-center.gap-6.mt-3 { margin-top:10px; }
   #page-transfer-rules .rule-chain-summary { flex-wrap:wrap; line-height:1.65; }
   #page-transfer-rules .toggle-track{width:44px;height:24px;border-radius:12px;transition:background .2s;cursor:pointer;position:relative;flex-shrink:0}
   #page-transfer-rules .toggle-track.on{background:#3b82f6} #page-transfer-rules .toggle-track.off{background:#d1d5db}
@@ -5172,24 +5224,23 @@
   #page-ai-reception-route .ai-route-panel-head{min-height:54px;padding:12px 20px;border-bottom:1px solid #eef2f7;display:flex;align-items:center;justify-content:space-between;gap:16px}
   #page-ai-reception-route .ai-route-panel-head h3{margin:0;color:#1a2332;font-size:14px;line-height:22px;font-weight:600}
   #page-ai-reception-route .ai-route-sync-note{color:#8c9bab;font-size:12px}
-  #page-ai-reception-route .ai-route-table table{min-width:720px;table-layout:fixed}
-  #page-ai-reception-route .ai-route-table th:nth-child(1),#page-ai-reception-route .ai-route-table td:nth-child(1){width:34%}
-  #page-ai-reception-route .ai-route-table th:nth-child(2),#page-ai-reception-route .ai-route-table td:nth-child(2){width:40%}
-  #page-ai-reception-route .ai-route-table th:nth-child(3),#page-ai-reception-route .ai-route-table td:nth-child(3){width:14%}
-  #page-ai-reception-route .ai-route-table th:nth-child(4),#page-ai-reception-route .ai-route-table td:nth-child(4){width:12%}
-  #page-ai-reception-route .ai-route-name{display:block;color:#1a2332;font-weight:600}
-  #page-ai-reception-route .ai-route-source{display:block;margin-top:2px;color:#8c9bab;font-size:12px}
-  #page-ai-reception-route .ai-route-stages{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-  #page-ai-reception-route .ai-route-stage-tag{display:inline-flex;align-items:center;min-height:24px;padding:2px 8px;border-radius:4px;background:#eef6ff;color:#1677ff;font-size:12px;line-height:20px}
-  #page-ai-reception-route .ai-route-empty{color:#8c9bab;font-size:12px}
+  #page-ai-reception-route .ai-route-table table{min-width:820px;table-layout:fixed}
+  #page-ai-reception-route .ai-route-table th:nth-child(1),#page-ai-reception-route .ai-route-table td:nth-child(1){width:18%}
+  #page-ai-reception-route .ai-route-table th:nth-child(2),#page-ai-reception-route .ai-route-table td:nth-child(2){width:27%}
+  #page-ai-reception-route .ai-route-table th:nth-child(3),#page-ai-reception-route .ai-route-table td:nth-child(3){width:27%}
+  #page-ai-reception-route .ai-route-table th:nth-child(4),#page-ai-reception-route .ai-route-table td:nth-child(4){width:18%}
+  #page-ai-reception-route .ai-route-table th:nth-child(5),#page-ai-reception-route .ai-route-table td:nth-child(5){width:10%}
+  #page-ai-reception-route .ai-route-status-name{display:block;color:#1a2332;font-weight:600}
+  #page-ai-reception-route .ai-route-strategy{display:flex;align-items:center;gap:8px;min-height:24px;color:#273244;font-weight:500}
+  #page-ai-reception-route .ai-route-strategy.is-disabled{color:#8c9bab}
+  #page-ai-reception-route .ai-route-empty{color:#8c9bab;font-size:13px}
+  #page-ai-reception-route .ai-route-updated{color:#64748b;font-size:12px;line-height:1.6}
   #page-ai-reception-route .ai-route-edit{padding:0;border:0;background:transparent;color:#1677ff;font-size:13px;cursor:pointer}
   #page-ai-reception-route .ai-route-edit:hover{color:#0958d9}
+  #modal-ai-reception-route .modal{width:min(520px,100vw);max-width:min(520px,100vw)}
   #modal-ai-reception-route .ai-route-readonly{min-height:34px;padding:7px 11px;border:1px solid #e8edf2;border-radius:6px;background:#f8fafc;color:#334155;font-size:13px;line-height:20px}
-  #modal-ai-reception-route .ai-route-stage-options{border:1px solid #e5e7eb;border-radius:6px;overflow:hidden}
-  #modal-ai-reception-route .ai-route-stage-option{min-height:42px;padding:9px 12px;border-bottom:1px solid #f0f2f5;display:flex;align-items:center;gap:10px;color:#273244;font-size:13px;cursor:pointer}
-  #modal-ai-reception-route .ai-route-stage-option:last-child{border-bottom:0}
-  #modal-ai-reception-route .ai-route-stage-option:hover{background:#fafcff}
-  #modal-ai-reception-route .ai-route-stage-option input{width:16px;height:16px;margin:0;accent-color:#1677ff}
+  #modal-ai-reception-route .ai-route-drawer-note{margin-bottom:18px;padding:10px 12px;border:1px solid #d6e8ff;border-radius:6px;background:#f5f9ff;color:#52657a;font-size:12px;line-height:1.65}
+  #modal-ai-reception-route .ai-route-customer-definition{margin-top:14px;padding-top:14px;border-top:1px solid #eef2f6;color:#8c9bab;font-size:12px;line-height:1.7}
 
 </style>
 </head>
@@ -5242,10 +5293,6 @@
     <div class="nav-item" onclick="showPage('script-library')">
       <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h10"/><path d="M8 8h.01M8 15h.01"/></svg></span>
       知识库
-    </div>
-    <div class="nav-item" onclick="showPage('ai-reception-route')">
-      <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M4 5h6v5H4zM14 14h6v5h-6z"/><path d="M10 7.5h3a4 4 0 014 4V14M7 10v7a2 2 0 002 2h5"/></svg></span>
-      AI接待路由
     </div>
     <div class="nav-item" onclick="showPage('ai-decision-rules')">
       <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M5 4h14v5H5zM5 15h14v5H5z"/><path d="M8 9v6M16 9v6M12 9v3M12 12h4"/></svg></span>
@@ -6955,7 +7002,7 @@
         <div><h2>门店回访</h2><p>配置门店回访自动化的事件触发、周期关怀和活动触达规则。</p></div>
         <button class="btn btn-default" onclick="openModal('modal-recall-guardrails')">
           <span class="nav-icon" style="width:14px;height:14px"><svg viewBox="0 0 24 24"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10C7.5 20.5 4 17 4 12V6z"/><path d="M9 12l2 2 4-5"/></svg></span>
-          风控策略
+          触达控制
         </button>
       </div>
       <div class="panel">
@@ -6967,12 +7014,13 @@
             <button class="btn btn-primary" onclick="openModal('modal-add-trigger')">+ 新建规则</button>
           </div>
         </div>
-        <div class="table-wrap automation-rule-table"><table><thead><tr><th>规则名称</th><th>业务场景</th><th>触发事件</th><th>任务节点</th><th>发布范围</th><th>启用</th><th>操作</th></tr></thead><tbody>
+        <div class="table-wrap automation-rule-table"><table><thead><tr><th>规则名称</th><th>业务场景</th><th>触发事件</th><th>任务节点</th><th>触达策略</th><th>发布范围</th><th>启用</th><th>操作</th></tr></thead><tbody>
           <tr>
             <td><strong>服务完成后标准关怀</strong></td>
             <td>术后回访</td>
             <td><span class="tag tag-blue">结算</span></td>
             <td><span class="automation-task-summary">D+1 10:00、D+3 15:00 +1</span></td>
+            <td><span class="automation-strategy-summary">服务必达 · AI审核</span></td>
             <td><div class="automation-publish-state"><span class="tag tag-green">已发布</span><button class="publish-range-link" type="button" onclick="openModal('modal-published-range')">12店</button></div></td>
             <td><label class="switch"><input type="checkbox" checked><span class="switch-slider"></span></label></td>
             <td><div class="automation-rule-actions"><button class="btn btn-default btn-sm" onclick="openModal('modal-add-trigger')">编辑</button></div></td>
@@ -6982,6 +7030,7 @@
             <td>疗程回访</td>
             <td><span class="tag tag-blue">下单</span></td>
             <td><span class="automation-task-summary">T-30、T-7 +1</span></td>
+            <td><span class="automation-strategy-summary">经营跟进 · 人工保护</span></td>
             <td><span class="tag tag-orange">草稿</span></td>
             <td><label class="switch"><input type="checkbox"><span class="switch-slider"></span></label></td>
             <td><div class="automation-rule-actions"><button class="btn btn-default btn-sm recall-action-publish" onclick="openPublishRuleModal('线下门店域')">发布</button><button class="btn btn-default btn-sm" onclick="openModal('modal-add-trigger')">编辑</button></div></td>
@@ -6991,6 +7040,7 @@
             <td>客户关怀</td>
             <td><span class="tag tag-blue">定期关怀</span></td>
             <td><span class="automation-task-summary">T-7 10:00、当天 09:30</span></td>
+            <td><span class="automation-strategy-summary">客户关怀 · 可合并</span></td>
             <td><div class="automation-publish-state"><span class="tag tag-green">已发布</span><button class="publish-range-link" type="button" onclick="openModal('modal-published-range')">12店</button></div></td>
             <td><label class="switch"><input type="checkbox"><span class="switch-slider"></span></label></td>
             <td><div class="automation-rule-actions"><button class="btn btn-default btn-sm" onclick="openModal('modal-add-trigger')">编辑</button></div></td>
@@ -7000,6 +7050,7 @@
             <td>营销活动</td>
             <td><span class="tag tag-blue">单次触达</span></td>
             <td><span class="automation-task-summary">2026-06-18 10:00</span></td>
+            <td><span class="automation-strategy-summary">营销触达 · 严格频控</span></td>
             <td><span class="tag tag-orange">草稿</span></td>
             <td><label class="switch"><input type="checkbox"><span class="switch-slider"></span></label></td>
             <td><div class="automation-rule-actions"><button class="btn btn-default btn-sm recall-action-publish" onclick="openPublishRuleModal('线下门店域')">发布</button><button class="btn btn-default btn-sm" onclick="openModal('modal-add-trigger')">编辑</button></div></td>
@@ -7008,58 +7059,82 @@
       </div>
     </div>
 
-    <!-- ==================== 智能回访：风控与合并策略弹窗 ==================== -->
+    <!-- ==================== 门店回访：全局触达策略 ==================== -->
     <div class="modal-overlay" id="modal-recall-guardrails">
       <div class="modal modal-xl">
-        <div class="modal-header"><span class="modal-title">风控与合并策略</span><button class="modal-close" onclick="closeModal('modal-recall-guardrails')">×</button></div>
+        <div class="modal-header"><span class="modal-title">全局触达策略</span><button class="modal-close" onclick="closeModal('modal-recall-guardrails')">×</button></div>
         <div class="modal-body">
-          <div class="alert alert-info" style="margin-bottom:16px">控制客户触达频次、多任务冲突处理，以及风险事件触发后的客户权限动作</div>
-      <div class="panel">
-        <div class="panel-header"><span class="panel-title">防疲劳与流控</span></div>
-        <div class="panel-body">
-          <div class="guardrail-row"><div><strong>单客户24小时频次</strong><div class="text-muted">硬过滤，命中即不进入智能队列</div></div><div>单个客户 <input class="form-control" style="width:70px;display:inline-block" value="24"> 小时内最多触发 <input class="form-control" style="width:70px;display:inline-block" value="1"> 次系统回访</div></div>
-          <div class="guardrail-row"><div><strong>单客户7天频次</strong><div class="text-muted">避免多任务长期叠加打扰</div></div><div>单个客户 <input class="form-control" style="width:70px;display:inline-block" value="7"> 天内最多触发 <input class="form-control" style="width:70px;display:inline-block" value="3"> 次系统回访</div></div>
-          <div class="guardrail-row"><div><strong>渠道免打扰时间</strong><div class="text-muted">待执行任务顺延至次日早上</div></div><div>每日 <input class="form-control" style="width:90px;display:inline-block" value="21:30"> 至次日 <input class="form-control" style="width:90px;display:inline-block" value="09:30"> 停止发送任务</div></div>
-          <div class="guardrail-row"><div><strong>同一客户短时间内多条任务合并</strong><div class="text-muted">用于判断是否启用智能自动合并</div></div><div>当 <input class="form-control" style="width:70px;display:inline-block" value="4"> 小时内同一个客户有多个触达任务到期，启用智能能力进行任务的自动合并</div></div>
-        </div>
-      </div>
-      <div class="panel">
-        <div class="panel-header"><span class="panel-title">风险事件字典与客户权限动作</span><button class="btn btn-default">新增风险项</button></div>
-        <div class="panel-body">
-          <div class="tag-card-grid">
-            <div class="rule-card">
-              <strong>拒绝继续触达</strong>
-              <textarea class="form-control" rows="2">别再发、不要联系、取消通知、停止触达</textarea>
-              <div style="display:flex;align-items:center;gap:8px;margin-top:8px">客户权限动作
-                <select class="form-control" style="width:190px"><option>暂停自动触达</option><option>仅暂停营销触达</option><option>保持可触达</option></select>
+          <div class="recall-control-tabs" role="tablist" aria-label="全局触达策略">
+            <button class="recall-control-tab active" type="button" onclick="switchRecallControlTab(this,'recall-boundary-pane')">发送边界</button>
+            <button class="recall-control-tab" type="button" onclick="switchRecallControlTab(this,'recall-human-pane')">人工协作</button>
+            <button class="recall-control-tab" type="button" onclick="switchRecallControlTab(this,'recall-merge-pane')">任务合并</button>
+          </div>
+
+          <div class="recall-control-pane active" id="recall-boundary-pane">
+            <div class="recall-control-intro">先由系统依据业务事实和硬规则判断是否可发送。被拦截的任务不会进入 AI 审核。</div>
+            <div class="recall-setting-section">
+              <div class="recall-setting-head"><strong>频次与时段</strong><span>适用于全部门店回访规则</span></div>
+              <div class="recall-setting-body">
+                <div class="recall-setting-row"><div class="recall-setting-label">短期触达上限<small>避免同一客户在短时间内收到多条自动消息</small></div><div class="recall-setting-control">单个客户 <input class="form-control" value="24"> 小时内最多发送 <input class="form-control" value="1"> 次</div></div>
+                <div class="recall-setting-row"><div class="recall-setting-label">周期触达上限<small>控制跨场景累计触达频次</small></div><div class="recall-setting-control">单个客户 <input class="form-control" value="7"> 天内最多发送 <input class="form-control" value="3"> 次</div></div>
+                <div class="recall-setting-row"><div class="recall-setting-label">跨场景最小间隔<small>服务类任务可按单条规则覆盖</small></div><div class="recall-setting-control">两次自动触达至少间隔 <input class="form-control" value="4"> 小时</div></div>
+                <div class="recall-setting-row"><div class="recall-setting-label">渠道免打扰时间<small>命中后顺延到下一个允许发送时段</small></div><div class="recall-setting-control">每日 <input class="form-control" value="21:30"> 至次日 <input class="form-control" value="09:30"> 暂停发送</div></div>
               </div>
             </div>
-            <div class="rule-card">
-              <strong>投诉/负向反馈</strong>
-              <textarea class="form-control" rows="2">投诉、不满意、人工联系、服务体验差</textarea>
-              <div style="display:flex;align-items:center;gap:8px;margin-top:8px">客户权限动作
-                <select class="form-control" style="width:190px"><option>转人工确认</option><option>暂停自动触达</option><option>保持可触达</option></select>
+          </div>
+
+          <div class="recall-control-pane" id="recall-human-pane">
+            <div class="recall-control-intro">先锁定人工接待时禁止自动发送的业务事件，再对其他回访任务应用会话保护。</div>
+            <div class="recall-setting-section recall-blocked-section">
+              <div class="recall-setting-head"><strong>人工接待发送限制</strong><span>全局限制，单条规则不可覆盖</span></div>
+              <div class="recall-setting-body">
+                <div class="recall-setting-row">
+                  <div class="recall-setting-label">禁止发送的触发事件<small>客户处于人工接待状态时，选中事件所触发的SOP不会发送</small></div>
+                  <div class="recall-setting-control">
+                    <div class="multi-select recall-blocked-events" id="recall-human-blocked-events" data-placeholder="请选择触发事件">
+                      <div class="multi-select-control" onclick="toggleMultiSelect(event,this)"><div class="multi-select-selected"></div><span class="selector-arrow"></span></div>
+                      <div class="multi-select-dropdown">
+                        <label class="multi-select-option"><input type="checkbox" value="加微" checked onchange="syncRecallBlockedEvents(this)">加微</label>
+                        <label class="multi-select-option"><input type="checkbox" value="下单" onchange="syncRecallBlockedEvents(this)">下单</label>
+                        <label class="multi-select-option"><input type="checkbox" value="预约" checked onchange="syncRecallBlockedEvents(this)">预约</label>
+                        <label class="multi-select-option"><input type="checkbox" value="排客" checked onchange="syncRecallBlockedEvents(this)">排客</label>
+                        <label class="multi-select-option"><input type="checkbox" value="改约" checked onchange="syncRecallBlockedEvents(this)">改约</label>
+                        <label class="multi-select-option"><input type="checkbox" value="取消排客" onchange="syncRecallBlockedEvents(this)">取消排客</label>
+                        <label class="multi-select-option"><input type="checkbox" value="预约超时" onchange="syncRecallBlockedEvents(this)">预约超时</label>
+                        <label class="multi-select-option"><input type="checkbox" value="到店" onchange="syncRecallBlockedEvents(this)">到店</label>
+                        <label class="multi-select-option"><input type="checkbox" value="流退" onchange="syncRecallBlockedEvents(this)">流退</label>
+                        <label class="multi-select-option"><input type="checkbox" value="结算" onchange="syncRecallBlockedEvents(this)">结算</label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-            <div class="rule-card">
-              <strong>效果质疑/安全风险</strong>
-              <textarea class="form-control" rows="2">没效果、疼痛、红肿、不适、异常反应</textarea>
-              <div style="display:flex;align-items:center;gap:8px;margin-top:8px">客户权限动作
-                <select class="form-control" style="width:190px"><option>暂停营销触达</option><option>暂停自动触达</option><option>保持可触达</option></select>
+            <div class="recall-setting-section">
+              <div class="recall-setting-head"><strong>会话保护</strong><span>结构化状态优先于 AI 语义判断</span></div>
+              <div class="recall-setting-body">
+                <div class="recall-setting-row"><div class="recall-setting-label">客户待回复保护<small>客户最后一条消息尚未得到客服或 AI 有效回复</small></div><div class="recall-setting-control">暂停 SOP，客服回复后再等待 <input class="form-control" value="30"> 分钟复核</div></div>
+                <div class="recall-setting-row"><div class="recall-setting-label">客服刚沟通过保护<small>避免 SOP 紧跟在人工消息后发出，打断当前沟通</small></div><div class="recall-setting-control">客服发送消息后 <input class="form-control" value="4"> 小时内暂停 SOP</div></div>
+                <div class="recall-setting-row"><div class="recall-setting-label">连续会话保护<small>最近一段时间内客户与客服持续往来视为会话进行中</small></div><div class="recall-setting-control">最近 <input class="form-control" value="30"> 分钟有双向消息则延后</div></div>
+                <div class="recall-setting-row"><div class="recall-setting-label">客服计划跟进保护<small>客服已设置下次跟进时间时，由人工计划优先</small></div><div class="recall-setting-control">超过计划时间 <input class="form-control" value="2"> 小时仍未跟进时恢复 SOP</div></div>
+                <div class="recall-setting-row"><div class="recall-setting-label">AI 临时接待期间<small>避免临时接待与主动回访同时发送</small></div><div class="recall-setting-control"><select class="form-control"><option>暂停其他 SOP</option><option>仅允许服务必达类 SOP</option><option>不限制</option></select></div></div>
               </div>
             </div>
-            <div class="rule-card">
-              <strong>恢复触达口径</strong>
-              <textarea class="form-control" rows="2">可以联系、继续提醒、恢复通知、正常发送</textarea>
-              <div style="display:flex;align-items:center;gap:8px;margin-top:8px">客户权限动作
-                <select class="form-control" style="width:190px"><option>恢复可触达</option><option>转人工确认</option></select>
+          </div>
+
+          <div class="recall-control-pane" id="recall-merge-pane">
+            <div class="recall-control-intro">规则引擎先决定哪些任务可以合并，AI只负责生成一条自然且完整的合并话术。</div>
+            <div class="recall-setting-section">
+              <div class="recall-setting-head"><strong>合并规则</strong><span>不满足兼容条件的任务按优先级错开发送</span></div>
+              <div class="recall-setting-body">
+                <div class="recall-setting-row"><div class="recall-setting-label">合并时间窗口<small>同一客户在窗口内到期的兼容任务进入同一批次</small></div><div class="recall-setting-control"><input class="form-control" value="4"> 小时内，单次最多合并 <input class="form-control" value="2"> 个任务</div></div>
+                <div class="recall-setting-row"><div class="recall-setting-label">AI 生成合并内容<small>保留每个任务的必达信息，不改变优惠和业务事实</small></div><div class="recall-setting-control"><span class="recall-inline-switch">启用 <label class="switch"><input type="checkbox" checked><span class="switch-slider"></span></label></span></div></div>
+                <div class="recall-setting-row"><div class="recall-setting-label">不可合并场景<small>安全风险、投诉处理不与营销消息合并；术后服务不与促销合并</small></div><div class="recall-setting-control"><select class="form-control"><option>按默认兼容矩阵执行</option><option>自定义兼容矩阵</option></select></div></div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-        </div>
-        <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('modal-recall-guardrails')">关闭</button><button class="btn btn-primary" onclick="closeModal('modal-recall-guardrails')">保存策略</button></div>
+        <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('modal-recall-guardrails')">取消</button><button class="btn btn-primary" onclick="closeModal('modal-recall-guardrails')">保存设置</button></div>
       </div>
     </div>
 
@@ -8550,10 +8625,13 @@
 
     <!-- ==================== 线上销售：转接规则 ==================== -->
     <div class="page transfer-rules-page" id="page-transfer-rules">
-      <div class="page-header"><h2 data-page-title="AI与人工协同接待">AI与人工协同接待</h2></div>
-      <div class="reception-strategy-tabs" role="tablist" aria-label="AI与人工协同接待">
+      <div class="page-header online-page-header">
+        <div><h2 data-page-title="AI协同接待">AI协同接待</h2></div>
+        <div class="online-policy-actions"><button class="ai-route-entry-btn" type="button" onclick="showPage('ai-reception-route')"><i class="fas fa-route"></i>AI接待路由</button></div>
+      </div>
+      <div class="reception-strategy-tabs" role="tablist" aria-label="AI协同接待">
         <button class="reception-strategy-tab active" type="button" data-reception-strategy-tab="rules" onclick="switchReceptionStrategyTab('rules')">协同策略</button>
-        <button class="reception-strategy-tab" type="button" data-reception-strategy-tab="ownership" onclick="switchReceptionStrategyTab('ownership')">客户归属</button>
+        <button class="reception-strategy-tab" type="button" data-reception-strategy-tab="ownership" onclick="switchReceptionStrategyTab('ownership')">客户转移</button>
         <button class="reception-strategy-tab" type="button" data-reception-strategy-tab="tasks" onclick="switchReceptionStrategyTab('tasks')">定时任务</button>
         <button class="reception-strategy-tab" type="button" data-reception-strategy-tab="logs" onclick="switchReceptionStrategyTab('logs')">操作日志</button>
       </div>
@@ -8599,9 +8677,7 @@
                       <div class="flex items-center gap-2.5 mb-1">
                         <h3 class="font-bold text-gray-900 text-[15px]">抖音高意向 - 客户开口后转人工</h3>
                         <span class="tag tag-open">客户开口后转人工</span>
-                        <span class="flex items-center gap-1.5 text-xs"><span class="w-2 h-2 rounded-full bg-green-500 inline-block"></span><span class="text-green-600 font-medium">启用中</span></span>
                       </div>
-                      <p class="text-sm text-gray-500">抖音渠道高意向客户，客户开口后转人工</p>
                     </div>
                     <div class="flex items-center gap-2 flex-shrink-0">
                       <div class="toggle-track on" onclick="toggleTransferRule(this)"><div class="toggle-thumb"></div></div>
@@ -8651,6 +8727,7 @@
                   <!-- 数据 -->
                   <div class="flex items-center gap-6 mt-3 text-xs text-gray-400">
                     <span><i class="fas fa-clock mr-1"></i>创建于 2026-08-20</span>
+                    <span><i class="fas fa-user mr-1"></i>创建人：王星</span>
                   </div>
                 </div>
               </div>
@@ -8665,9 +8742,7 @@
                       <div class="flex items-center gap-2.5 mb-1">
                         <h3 class="font-bold text-gray-900 text-[15px]">百度信息流 - 客户开口后转人工</h3>
                         <span class="tag tag-open">客户开口后转人工</span>
-                        <span class="flex items-center gap-1.5 text-xs"><span class="w-2 h-2 rounded-full bg-green-500 inline-block"></span><span class="text-green-600 font-medium">启用中</span></span>
                       </div>
-                      <p class="text-sm text-gray-500">百度信息流渠道，客户开口后转人工</p>
                     </div>
                     <div class="flex items-center gap-2 flex-shrink-0">
                       <div class="toggle-track on" onclick="toggleTransferRule(this)"><div class="toggle-thumb"></div></div>
@@ -8702,6 +8777,7 @@
                   </div>
                   <div class="flex items-center gap-6 mt-3 text-xs text-gray-400">
                     <span><i class="fas fa-clock mr-1"></i>创建于 2026-08-22</span>
+                    <span><i class="fas fa-user mr-1"></i>创建人：张文静</span>
                   </div>
                 </div>
               </div>
@@ -8716,9 +8792,7 @@
                       <div class="flex items-center gap-2.5 mb-1">
                         <h3 class="font-bold text-gray-900 text-[15px]">快手渠道 - 客户开口后转人工</h3>
                         <span class="tag tag-open">客户开口后转人工</span>
-                        <span class="flex items-center gap-1.5 text-xs"><span class="w-2 h-2 rounded-full bg-gray-300 inline-block"></span><span class="text-gray-400 font-medium">已停用</span></span>
                       </div>
-                      <p class="text-sm text-gray-500">快手渠道测试用，暂时停用</p>
                     </div>
                     <div class="flex items-center gap-2 flex-shrink-0">
                       <div class="toggle-track off" onclick="toggleTransferRule(this)"><div class="toggle-thumb"></div></div>
@@ -8735,7 +8809,7 @@
                   <div class="flex items-center gap-6 text-sm mb-3">
                     <div class="flex items-center gap-2 text-gray-500">
                       <i class="fab fa-weixin text-green-500 text-xs"></i><span>适用企微号：</span>
-                      <span class="text-xs text-gray-400 italic">暂无绑定</span>
+                      <span class="transfer-wecom-unbound text-xs text-gray-400 italic">暂无绑定</span>
                     </div>
                   </div>
                   <div class="bg-gray-50 rounded-lg px-4 py-3 flex items-center gap-3 text-xs opacity-50 rule-chain-summary">
@@ -8745,6 +8819,7 @@
                   </div>
                   <div class="flex items-center gap-6 mt-3 text-xs text-gray-400">
                     <span><i class="fas fa-clock mr-1"></i>创建于 2026-08-28</span>
+                    <span><i class="fas fa-user mr-1"></i>创建人：张文静</span>
                   </div>
                 </div>
               </div>
@@ -8759,9 +8834,7 @@
                       <div class="flex items-center gap-2.5 mb-1">
                         <h3 class="font-bold text-gray-900 text-[15px]">低意向长培育 - 预约金支付后转人工</h3>
                         <span class="tag tag-pay">预约金支付后转人工</span>
-                        <span class="flex items-center gap-1.5 text-xs"><span class="w-2 h-2 rounded-full bg-green-500 inline-block"></span><span class="text-green-600 font-medium">启用中</span></span>
                       </div>
-                      <p class="text-sm text-gray-500">低意向客户全程AI培育，预约金支付后转人工</p>
                     </div>
                     <div class="flex items-center gap-2 flex-shrink-0">
                       <div class="toggle-track on" onclick="toggleTransferRule(this)"><div class="toggle-thumb"></div></div>
@@ -8789,6 +8862,7 @@
                   </div>
                   <div class="flex items-center gap-6 mt-3 text-xs text-gray-400">
                     <span><i class="fas fa-clock mr-1"></i>创建于 2026-08-15</span>
+                    <span><i class="fas fa-user mr-1"></i>创建人：王星</span>
                   </div>
                 </div>
               </div>
@@ -8803,9 +8877,7 @@
                       <div class="flex items-center gap-2.5 mb-1">
                         <h3 class="font-bold text-gray-900 text-[15px]">门店扫码客户 - 门店扫码加微后分配</h3>
                         <span class="tag tag-wechat">门店扫码加微后分配</span>
-                        <span class="flex items-center gap-1.5 text-xs"><span class="w-2 h-2 rounded-full bg-green-500 inline-block"></span><span class="text-green-600 font-medium">启用中</span></span>
                       </div>
-                      <p class="text-sm text-gray-500">门店扫码加微后，分配给二维码所属员工</p>
                     </div>
                     <div class="flex items-center gap-2 flex-shrink-0">
                       <div class="toggle-track on" onclick="toggleTransferRule(this)"><div class="toggle-thumb"></div></div>
@@ -8829,7 +8901,7 @@
                     <span class="text-gray-300 mx-1">|</span>
                     <span class="text-gray-600">客服超时未回复后重新分配</span>
                   </div>
-                  <div class="flex items-center gap-6 mt-3 text-xs text-gray-400"><span><i class="fas fa-clock mr-1"></i>创建于 2026-09-11</span></div>
+                  <div class="flex items-center gap-6 mt-3 text-xs text-gray-400"><span><i class="fas fa-clock mr-1"></i>创建于 2026-09-11</span><span><i class="fas fa-user mr-1"></i>创建人：运营管理员</span></div>
                 </div>
               </div>
             </div>
@@ -8843,9 +8915,7 @@
                       <div class="flex items-center gap-2.5 mb-1">
                         <h3 class="font-bold text-gray-900 text-[15px]">小红书种草 - 预约金支付后转人工</h3>
                         <span class="tag tag-pay">预约金支付后转人工</span>
-                        <span class="flex items-center gap-1.5 text-xs"><span class="w-2 h-2 rounded-full bg-gray-300 inline-block"></span><span class="text-gray-400 font-medium">已停用</span></span>
                       </div>
-                      <p class="text-sm text-gray-500">小红书种草流量，尝试纯AI成交，暂时停用观察</p>
                     </div>
                     <div class="flex items-center gap-2 flex-shrink-0">
                       <div class="toggle-track off" onclick="toggleTransferRule(this)"><div class="toggle-thumb"></div></div>
@@ -8862,7 +8932,7 @@
                   <div class="flex items-center gap-6 text-sm mb-3">
                     <div class="flex items-center gap-2 text-gray-500">
                       <i class="fab fa-weixin text-green-500 text-xs"></i><span>适用企微号：</span>
-                      <span class="text-xs text-gray-400 italic">暂无绑定</span>
+                      <span class="transfer-wecom-unbound text-xs text-gray-400 italic">暂无绑定</span>
                     </div>
                   </div>
                   <div class="bg-gray-50 rounded-lg px-4 py-3 flex items-center gap-3 text-xs opacity-50 rule-chain-summary">
@@ -8872,6 +8942,7 @@
                   </div>
                   <div class="flex items-center gap-6 mt-3 text-xs text-gray-400">
                     <span><i class="fas fa-clock mr-1"></i>创建于 2026-08-29</span>
+                    <span><i class="fas fa-user mr-1"></i>创建人：李思思</span>
                   </div>
                 </div>
               </div>
@@ -9223,32 +9294,40 @@
 
     <!-- ==================== AI大脑：AI接待路由 ==================== -->
     <div class="page" id="page-ai-reception-route">
-      <div class="page-header"><h2>AI接待路由</h2><p>配置同步AI策略适用的客户阶段。</p></div>
+      <div class="page-header"><h2>AI接待路由</h2><p>按客户当前状态及新老客配置生效的AI策略。</p></div>
       <section class="ai-route-panel">
         <div class="ai-route-panel-head">
-          <h3>AI策略列表</h3>
+          <h3>客户状态路由</h3>
           <span class="ai-route-sync-note">策略由外部平台同步</span>
         </div>
         <div class="table-wrap ai-route-table">
           <table>
-            <thead><tr><th>AI策略名称</th><th>客户阶段</th><th>状态</th><th>操作</th></tr></thead>
+            <thead><tr><th>客户状态</th><th>新客AI策略</th><th>老客AI策略</th><th>更新时间</th><th>操作</th></tr></thead>
             <tbody id="ai-reception-route-table-body"></tbody>
           </table>
         </div>
       </section>
 
       <div class="modal-overlay" id="modal-ai-reception-route" onclick="if(event.target===this) closeAiReceptionRouteDrawer()">
-        <div class="modal modal-sm" role="dialog" aria-modal="true" aria-labelledby="ai-reception-route-drawer-title">
-          <div class="modal-header"><span class="modal-title" id="ai-reception-route-drawer-title">编辑AI接待路由</span><button class="modal-close" type="button" onclick="closeAiReceptionRouteDrawer()" aria-label="关闭">×</button></div>
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="ai-reception-route-drawer-title">
+          <div class="modal-header"><span class="modal-title" id="ai-reception-route-drawer-title">配置AI接待路由</span><button class="modal-close" type="button" onclick="closeAiReceptionRouteDrawer()" aria-label="关闭">×</button></div>
           <div class="modal-body">
+            <div class="ai-route-drawer-note">一个客户状态下，新客和老客分别只能配置一个AI策略；同一AI策略可用于多个客户状态。</div>
             <div class="form-group">
-              <label class="form-label">AI策略名称</label>
-              <div class="ai-route-readonly" id="ai-reception-route-name"></div>
+              <label class="form-label">客户状态</label>
+              <div class="ai-route-readonly" id="ai-reception-route-status"></div>
             </div>
             <div class="form-group">
-              <label class="form-label required">适用客户阶段</label>
-              <div class="ai-route-stage-options" id="ai-reception-route-stage-options"></div>
+              <label class="form-label">新客AI策略</label>
+              <select class="form-control" id="ai-reception-route-new-strategy"></select>
+              <span class="field-tip">选择“不启用AI”时，该状态下的新客不匹配AI策略</span>
             </div>
+            <div class="form-group">
+              <label class="form-label">老客AI策略</label>
+              <select class="form-control" id="ai-reception-route-old-strategy"></select>
+              <span class="field-tip">选择“不启用AI”时，该状态下的老客不匹配AI策略</span>
+            </div>
+            <div class="ai-route-customer-definition">新客：历史无已结算订单；老客：历史存在至少一笔已结算订单。客户成为老客后不再变回新客。</div>
           </div>
           <div class="modal-footer"><button class="btn btn-default" type="button" onclick="closeAiReceptionRouteDrawer()">取消</button><button class="btn btn-primary" type="button" onclick="saveAiReceptionRoute()">保存</button></div>
         </div>
@@ -9540,15 +9619,14 @@
       <section class="ops-rule-pane active" id="allocation-pane-overview">
         <div class="panel unified-list-card">
           <div class="ops-table-toolbar unified-list-toolbar">
-            <span class="panel-title">客户归属列表</span>
+            <span class="panel-title">客户转移列表</span>
             <div class="ops-filter-row">
               <input class="search-input" placeholder="搜索员工姓名">
-              <select class="search-select"><option>全部岗位</option><option>顾问</option><option>咨询师</option><option>店长</option></select>
               <select class="search-select"><option>全部状态</option><option>在职</option><option>即将离职</option><option>已离职</option></select>
               <button class="btn btn-default btn-sm" type="button">重置</button>
               <button class="btn btn-primary btn-sm" type="button">查询</button>
-              <button class="btn btn-default btn-sm" type="button" onclick="openAllocationDrawer('allocation-fallback-drawer')"><i class="fas fa-shield-halved"></i> 兜底规则</button>
-              <button class="btn btn-default btn-sm" type="button" onclick="showToast('客户归属数据已导出', 'success')">导出</button>
+              <button class="btn btn-default btn-sm" type="button" onclick="openAllocationDrawer('allocation-fallback-drawer')"><i class="fas fa-shield-halved"></i> 离职继承</button>
+              <button class="btn btn-default btn-sm" type="button" onclick="showToast('客户转移数据已导出', 'success')">导出</button>
             </div>
           </div>
           <div class="table-wrap allocation-table">
@@ -9614,15 +9692,15 @@
           <div class="allocation-drawer-header">
             <div class="allocation-drawer-title">
               <button class="allocation-drawer-close" type="button" onclick="closeAllocationDrawer('allocation-fallback-drawer')" aria-label="关闭">×</button>
-              <div><h1 id="allocation-fallback-title">兜底规则</h1></div>
+              <div><h1 id="allocation-fallback-title">离职继承</h1></div>
             </div>
           </div>
           <div class="allocation-drawer-body">
             <div class="allocation-rule-body">
               <div class="allocation-rule-section">
                 <div class="allocation-switch-row">
-                  <div><strong>启用离职客户兜底规则</strong><span>当客户无法按原归属或任务规则分配时，进入兜底策略承接。</span></div>
-                  <label class="switch" aria-label="启用离职客户兜底规则"><input type="checkbox" checked onchange="toggleAllocationFallback(this)"><span class="switch-slider"></span></label>
+                  <div><strong>启用离职继承</strong><span>员工离职后，其名下客户将按所选规则自动分配。</span></div>
+                  <label class="switch" aria-label="启用离职继承"><input type="checkbox" checked onchange="toggleAllocationFallback(this)"><span class="switch-slider"></span></label>
                 </div>
                 <div class="allocation-fallback-form">
                   <div class="allocation-fallback-field">
@@ -12092,30 +12170,34 @@ Z6a7b8c9d0e1f2g3h4i5j6k7l8m9n0o1p2q3r4s5t6u7v8w9x0y1z2AQAB
 
 <div class="modal-overlay" id="modal-add-trigger">
   <div class="modal modal-xl">
-    <div class="modal-header"><span class="modal-title">触发规则</span><button class="modal-close" onclick="closeModal('modal-add-trigger')">×</button></div>
+    <div class="modal-header"><span class="modal-title">新建回访规则</span><button class="modal-close" onclick="closeModal('modal-add-trigger')">×</button></div>
     <div class="modal-body">
       <div class="modal-section-title">1. 场景配置</div>
       <div class="form-row">
-        <div class="form-group"><label class="form-label required">选择业务场景</label><select class="form-control" id="trigger-scenario-select" onchange="updateTriggerScenarioFields()"><option data-rule-type="event" selected>术后回访</option><option data-rule-type="event">疗程回访</option><option data-rule-type="recurring">客户关怀</option><option data-rule-type="single">营销活动</option></select></div>
-        <div class="form-group"><label class="form-label required">场景名称</label><input class="form-control" placeholder="例：周年庆"></div>
+        <div class="form-group"><label class="form-label required">业务场景</label><select class="form-control" id="trigger-scenario-select" onchange="updateTriggerScenarioFields()"><option data-rule-type="event" selected>术后回访</option><option data-rule-type="event">疗程回访</option><option data-rule-type="recurring">客户关怀</option><option data-rule-type="single">营销活动</option></select></div>
+        <div class="form-group"><label class="form-label required">规则名称</label><input class="form-control" placeholder="例：黄金微针术后标准回访"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label required">SOP 类型</label><select class="form-control"><option selected>服务必达</option><option>业务跟进</option><option>客户关怀</option><option>营销触达</option></select><span class="field-tip">决定默认频控和人工保护规则</span></div>
+        <div class="form-group"><label class="form-label required">任务目标</label><input class="form-control" placeholder="例：确认术后恢复情况并完成注意事项告知"><span class="field-tip">供 AI 判断人工是否已完成同一目标</span></div>
       </div>
       <div class="trigger-dynamic-section" data-trigger-section="single">
         <div class="form-row">
           <div class="form-group"><label class="form-label required">触发时间</label><div class="field-line"><input class="form-control" type="date"><input class="form-control" type="time" value="10:00"></div></div>
-          <div class="form-group"><label class="form-label">终止条件</label><div class="multi-select" data-placeholder="请选择终止条件"><div class="multi-select-control" onclick="toggleMultiSelect(event,this)"><div class="multi-select-selected"></div><span class="selector-arrow"></span></div><div class="multi-select-dropdown"><label class="multi-select-option"><input type="checkbox" checked onchange="syncMultiSelect(this)">下单</label><label class="multi-select-option"><input type="checkbox" checked onchange="syncMultiSelect(this)">预约</label><label class="multi-select-option"><input type="checkbox" onchange="syncMultiSelect(this)">排客</label><label class="multi-select-option"><input type="checkbox" onchange="syncMultiSelect(this)">到店</label><label class="multi-select-option"><input type="checkbox" onchange="syncMultiSelect(this)">结算</label></div></div></div>
+          <div class="form-group"><label class="form-label">业务终止条件</label><div class="multi-select" data-placeholder="请选择业务终止条件"><div class="multi-select-control" onclick="toggleMultiSelect(event,this)"><div class="multi-select-selected"></div><span class="selector-arrow"></span></div><div class="multi-select-dropdown"><label class="multi-select-option"><input type="checkbox" checked onchange="syncMultiSelect(this)">下单</label><label class="multi-select-option"><input type="checkbox" checked onchange="syncMultiSelect(this)">预约</label><label class="multi-select-option"><input type="checkbox" onchange="syncMultiSelect(this)">排客</label><label class="multi-select-option"><input type="checkbox" onchange="syncMultiSelect(this)">到店</label><label class="multi-select-option"><input type="checkbox" onchange="syncMultiSelect(this)">结算</label></div></div></div>
         </div>
       </div>
       <div class="trigger-dynamic-section" data-trigger-section="event">
         <div class="form-row">
-          <div class="form-group"><label class="form-label required">触发事件类型</label><select class="form-control" id="offline-trigger-event-type-select" onchange="updateTaskNodeActionLabels('trigger-time-node-list', this.value)"><option>加微</option><option>下单</option><option>预约</option><option>排客</option><option>改约</option><option>取消排客</option><option>预约超时</option><option>到店</option><option>流退</option><option selected>结算</option></select></div>
-          <div class="form-group"><label class="form-label">终止条件</label><div class="multi-select" data-placeholder="请选择终止条件"><div class="multi-select-control" onclick="toggleMultiSelect(event,this)"><div class="multi-select-selected"></div><span class="selector-arrow"></span></div><div class="multi-select-dropdown"><label class="multi-select-option"><input type="checkbox" checked onchange="syncMultiSelect(this)">下单</label><label class="multi-select-option"><input type="checkbox" checked onchange="syncMultiSelect(this)">预约</label><label class="multi-select-option"><input type="checkbox" onchange="syncMultiSelect(this)">排客</label><label class="multi-select-option"><input type="checkbox" onchange="syncMultiSelect(this)">到店</label><label class="multi-select-option"><input type="checkbox" onchange="syncMultiSelect(this)">结算</label></div></div></div>
+          <div class="form-group"><label class="form-label required">触发事件类型</label><select class="form-control" id="offline-trigger-event-type-select" onchange="updateTaskNodeActionLabels('trigger-time-node-list', this.value);syncRecallHumanSendGuard()"><option>加微</option><option>下单</option><option>预约</option><option>排客</option><option>改约</option><option>取消排客</option><option>预约超时</option><option>到店</option><option>流退</option><option selected>结算</option></select></div>
+          <div class="form-group"><label class="form-label">业务终止条件</label><div class="multi-select" data-placeholder="请选择业务终止条件"><div class="multi-select-control" onclick="toggleMultiSelect(event,this)"><div class="multi-select-selected"></div><span class="selector-arrow"></span></div><div class="multi-select-dropdown"><label class="multi-select-option"><input type="checkbox" checked onchange="syncMultiSelect(this)">下单</label><label class="multi-select-option"><input type="checkbox" checked onchange="syncMultiSelect(this)">预约</label><label class="multi-select-option"><input type="checkbox" onchange="syncMultiSelect(this)">排客</label><label class="multi-select-option"><input type="checkbox" onchange="syncMultiSelect(this)">到店</label><label class="multi-select-option"><input type="checkbox" onchange="syncMultiSelect(this)">结算</label></div></div></div>
         </div>
         <div class="form-group"><label class="form-label required">项目/品项选择</label><div class="selector-box"><div class="selector-main" id="trigger-project-selected"><span class="chip">黄金微针 <button class="chip-remove" type="button" onclick="removeAudienceChip(this)">×</button></span><span class="chip">AOPT超光子 <button class="chip-remove" type="button" onclick="removeAudienceChip(this)">×</button></span><span class="chip">光电抗衰类 <button class="chip-remove" type="button" onclick="removeAudienceChip(this)">×</button></span></div><button class="btn btn-default btn-sm" onclick="openModal('modal-project-picker')">选择项目</button></div></div>
       </div>
       <div class="trigger-dynamic-section" data-trigger-section="recurring">
         <div class="form-row">
           <div class="form-group"><label class="form-label required">重复时间</label><div class="field-line"><select class="form-control"><option>每天</option><option>每周</option><option>每月</option></select><input class="form-control" type="time" value="00:00"></div></div>
-          <div class="form-group"><label class="form-label">终止条件</label><div class="multi-select" data-placeholder="请选择终止条件"><div class="multi-select-control" onclick="toggleMultiSelect(event,this)"><div class="multi-select-selected"></div><span class="selector-arrow"></span></div><div class="multi-select-dropdown"><label class="multi-select-option"><input type="checkbox" checked onchange="syncMultiSelect(this)">下单</label><label class="multi-select-option"><input type="checkbox" checked onchange="syncMultiSelect(this)">预约</label><label class="multi-select-option"><input type="checkbox" onchange="syncMultiSelect(this)">排客</label><label class="multi-select-option"><input type="checkbox" onchange="syncMultiSelect(this)">到店</label><label class="multi-select-option"><input type="checkbox" onchange="syncMultiSelect(this)">结算</label></div></div></div>
+          <div class="form-group"><label class="form-label">业务终止条件</label><div class="multi-select" data-placeholder="请选择业务终止条件"><div class="multi-select-control" onclick="toggleMultiSelect(event,this)"><div class="multi-select-selected"></div><span class="selector-arrow"></span></div><div class="multi-select-dropdown"><label class="multi-select-option"><input type="checkbox" checked onchange="syncMultiSelect(this)">下单</label><label class="multi-select-option"><input type="checkbox" checked onchange="syncMultiSelect(this)">预约</label><label class="multi-select-option"><input type="checkbox" onchange="syncMultiSelect(this)">排客</label><label class="multi-select-option"><input type="checkbox" onchange="syncMultiSelect(this)">到店</label><label class="multi-select-option"><input type="checkbox" onchange="syncMultiSelect(this)">结算</label></div></div></div>
         </div>
         <div class="trigger-plan-row"><label class="form-label required">执行时间</label><div class="field-line"><label class="radio-inline"><input type="radio" name="trigger-date-range" checked>长期有效</label><label class="radio-inline"><input type="radio" name="trigger-date-range">指定日期</label><input class="form-control" type="date"><span class="field-line-label">至</span><input class="form-control" type="date"></div></div>
       </div>
@@ -12139,7 +12221,7 @@ Z6a7b8c9d0e1f2g3h4i5j6k7l8m9n0o1p2q3r4s5t6u7v8w9x0y1z2AQAB
               <div class="task-time-mode-block" data-time-mode-block="relative"><span>之后</span><input class="form-control" value="1" style="width:72px"><select class="form-control"><option>分钟</option><option>小时</option><option selected>天</option></select><span>触发</span></div>
               <div class="task-time-mode-block active" data-time-mode-block="fixed"><span>第</span><select class="form-control" style="width:82px"><option selected>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select><span>天</span><select class="form-control"><option selected>10:00</option><option>11:00</option><option>15:00</option></select><span>触发</span></div>
             </div>
-            <div class="task-node-ai-switch"><span data-copy-mode-label>AI 话术</span><label class="switch"><input type="checkbox" checked onchange="toggleTaskCopyPanel(this)"><span class="switch-slider"></span></label></div>
+            <div class="task-node-ai-switch"><span data-copy-mode-label>AI生成内容</span><label class="switch"><input type="checkbox" checked onchange="toggleTaskCopyPanel(this)"><span class="switch-slider"></span></label></div>
             <button class="btn btn-default btn-sm" type="button" onclick="removeTimeLifecycleNode(this)">×</button>
           </div>
           <div class="task-node-copy-panel">
@@ -12163,7 +12245,7 @@ Z6a7b8c9d0e1f2g3h4i5j6k7l8m9n0o1p2q3r4s5t6u7v8w9x0y1z2AQAB
               <div class="task-time-mode-block" data-time-mode-block="relative"><span>之后</span><input class="form-control" value="3" style="width:72px"><select class="form-control"><option>分钟</option><option>小时</option><option selected>天</option></select><span>触发</span></div>
               <div class="task-time-mode-block active" data-time-mode-block="fixed"><span>第</span><select class="form-control" style="width:82px"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select><span>天</span><select class="form-control"><option>10:00</option><option selected>15:00</option><option>18:00</option></select><span>触发</span></div>
             </div>
-            <div class="task-node-ai-switch"><span data-copy-mode-label>AI 话术</span><label class="switch"><input type="checkbox" checked onchange="toggleTaskCopyPanel(this)"><span class="switch-slider"></span></label></div>
+            <div class="task-node-ai-switch"><span data-copy-mode-label>AI生成内容</span><label class="switch"><input type="checkbox" checked onchange="toggleTaskCopyPanel(this)"><span class="switch-slider"></span></label></div>
             <button class="btn btn-default btn-sm" type="button" onclick="removeTimeLifecycleNode(this)">×</button>
           </div>
           <div class="task-node-copy-panel">
@@ -12181,10 +12263,14 @@ Z6a7b8c9d0e1f2g3h4i5j6k7l8m9n0o1p2q3r4s5t6u7v8w9x0y1z2AQAB
         </div>
       </div>
       <div class="trigger-send-section">
-        <div class="modal-section-title">3. 下发方式与发送人</div>
+        <div class="modal-section-title">3. 发送与审核</div>
         <div class="form-row">
-          <div class="form-group"><label class="form-label required">下发方式</label><select class="form-control"><option selected>AI客服处理</option><option>直接下发</option></select></div>
+          <div class="form-group"><label class="form-label required">发送流程</label><select class="form-control"><option selected>进入智能发送队列</option><option>仅规则校验后直接发送</option></select><span class="field-tip">智能发送队列会执行 AI 语义审核，硬规则始终生效</span></div>
           <div class="form-group"><label class="form-label required">发送人</label><select class="form-control" id="offline-wecom-route-select"><option selected>触发该订单的接待老师</option><option>触发该项目的结算老师</option><option>触发该项目的维护老师</option><option>最后一次订单的接待老师</option><option>门店所有加微账号随机</option></select></div>
+        </div>
+        <div class="recall-human-send-setting" id="recall-human-send-setting">
+          <div><strong>人工接待时允许发送</strong><small id="recall-human-send-note">开启后，客户处于人工接待状态时，该规则仍可发送SOP消息</small></div>
+          <label class="switch" title="人工接待时允许发送"><input type="checkbox" id="recall-human-send-toggle"><span class="switch-slider"></span></label>
         </div>
       </div>
     </div>
@@ -13790,7 +13876,16 @@ document.addEventListener('click',e=>{
 initTransferTargetControls();
 
 // 开关
-function toggleTransferRule(el){const on=el.classList.contains('on');el.classList.toggle('on',!on);el.classList.toggle('off',on);}
+function toggleTransferRule(el){
+  const on=el.classList.contains('on');
+  const card=el.closest('.rule-card');
+  if(!on&&card&&card.querySelector('.transfer-wecom-unbound')){
+    showTransferRuleToast('请先绑定企微号');
+    return;
+  }
+  el.classList.toggle('on',!on);
+  el.classList.toggle('off',on);
+}
 
 function toggleTransferNode(el){
   const on=el.classList.contains('on');
@@ -14098,38 +14193,69 @@ document.addEventListener('keydown',function(event){
 });
 
 
-var aiReceptionStageOptions = ['新加微','未付预约金','已付预约金','已预约','已到店','预约取消','流退'];
+var aiReceptionStrategies = [
+  {id:'open-ai',name:'开口AI',enabled:true},
+  {id:'high-intent-ai',name:'高意向开口AI',enabled:true},
+  {id:'feed-ai',name:'信息流开口AI',enabled:true},
+  {id:'deposit-arrival-ai',name:'预约金后到店AI',enabled:true},
+  {id:'arrival-reminder-ai',name:'到店提醒AI',enabled:true},
+  {id:'old-repurchase-ai',name:'老客复购AI',enabled:true},
+  {id:'old-recall-ai',name:'老客召回AI',enabled:true},
+  {id:'low-intent-ai',name:'低意向唤醒AI',enabled:false}
+];
 var aiReceptionRoutes = [
-  {id:'open-ai',name:'开口AI',stages:['新加微'],enabled:true},
-  {id:'high-intent-ai',name:'高意向开口AI',stages:['新加微','未付预约金'],enabled:true},
-  {id:'feed-ai',name:'信息流开口AI',stages:['未付预约金'],enabled:true},
-  {id:'low-intent-ai',name:'低意向唤醒AI',stages:['预约取消','流退'],enabled:false}
+  {id:'added-wechat',status:'加微',newStrategyId:'open-ai',oldStrategyId:'',updatedAt:'2026-09-12 10:30'},
+  {id:'unpaid-deposit',status:'未付预约金',newStrategyId:'high-intent-ai',oldStrategyId:'old-repurchase-ai',updatedAt:'2026-09-12 10:30'},
+  {id:'paid-deposit',status:'已付预约金',newStrategyId:'deposit-arrival-ai',oldStrategyId:'',updatedAt:'2026-09-11 16:20'},
+  {id:'reserved',status:'已预约',newStrategyId:'arrival-reminder-ai',oldStrategyId:'arrival-reminder-ai',updatedAt:'2026-09-11 16:20'},
+  {id:'arrived',status:'已到店',newStrategyId:'',oldStrategyId:'',updatedAt:'2026-09-10 14:00'},
+  {id:'reservation-cancelled',status:'预约取消',newStrategyId:'',oldStrategyId:'old-recall-ai',updatedAt:'2026-09-10 14:00'},
+  {id:'refund',status:'流退',newStrategyId:'',oldStrategyId:'',updatedAt:'2026-09-10 14:00'}
 ];
 var editingAiReceptionRouteId = null;
+
+function getAiReceptionStrategy(id){
+  return aiReceptionStrategies.find(function(strategy){return strategy.id===id;});
+}
+
+function renderAiReceptionStrategy(id){
+  if(!id)return '<span class="ai-route-empty">不启用AI</span>';
+  var strategy=getAiReceptionStrategy(id);
+  if(!strategy)return '<span class="ai-route-empty">策略不存在</span>';
+  var disabledClass=strategy.enabled?'':' is-disabled';
+  var status=strategy.enabled?'':'<span class="tag tag-gray">已停用</span>';
+  return '<div class="ai-route-strategy'+disabledClass+'"><span>'+escapeHtml(strategy.name)+'</span>'+status+'</div>';
+}
 
 function renderAiReceptionRoutes(){
   var body=document.getElementById('ai-reception-route-table-body');
   if(!body)return;
   body.innerHTML=aiReceptionRoutes.map(function(item){
-    var stages=item.stages.length?'<div class="ai-route-stages">'+item.stages.map(function(stage){return '<span class="ai-route-stage-tag">'+escapeHtml(stage)+'</span>';}).join('')+'</div>':'<span class="ai-route-empty">未配置</span>';
-    var status=item.enabled?'<span class="tag tag-green">启用</span>':'<span class="tag tag-gray">停用</span>';
-    return '<tr><td><span class="ai-route-name">'+escapeHtml(item.name)+'</span></td><td>'+stages+'</td><td>'+status+'</td><td><button class="ai-route-edit" type="button" onclick="openAiReceptionRouteDrawer(\''+item.id+'\')">编辑</button></td></tr>';
+    return '<tr><td><span class="ai-route-status-name">'+escapeHtml(item.status)+'</span></td><td>'+renderAiReceptionStrategy(item.newStrategyId)+'</td><td>'+renderAiReceptionStrategy(item.oldStrategyId)+'</td><td><div class="ai-route-updated">'+escapeHtml(item.updatedAt)+'</div></td><td><button class="ai-route-edit" type="button" onclick="openAiReceptionRouteDrawer(\''+item.id+'\')">配置</button></td></tr>';
   }).join('');
+}
+
+function buildAiReceptionStrategyOptions(selectedId){
+  var options='<option value="">不启用AI</option>';
+  options+=aiReceptionStrategies.map(function(strategy){
+    var selected=strategy.id===selectedId?' selected':'';
+    var disabled=!strategy.enabled?' disabled':'';
+    var suffix=strategy.enabled?'':'（已停用）';
+    return '<option value="'+escapeHtml(strategy.id)+'"'+selected+disabled+'>'+escapeHtml(strategy.name+suffix)+'</option>';
+  }).join('');
+  return options;
 }
 
 function openAiReceptionRouteDrawer(id){
   var item=aiReceptionRoutes.find(function(route){return route.id===id;});
   if(!item)return;
   editingAiReceptionRouteId=id;
-  var name=document.getElementById('ai-reception-route-name');
-  var options=document.getElementById('ai-reception-route-stage-options');
-  if(name)name.textContent=item.name;
-  if(options){
-    options.innerHTML=aiReceptionStageOptions.map(function(stage){
-      var checked=item.stages.indexOf(stage)>-1?' checked':'';
-      return '<label class="ai-route-stage-option"><input type="checkbox" value="'+escapeHtml(stage)+'"'+checked+'><span>'+escapeHtml(stage)+'</span></label>';
-    }).join('');
-  }
+  var status=document.getElementById('ai-reception-route-status');
+  var newStrategy=document.getElementById('ai-reception-route-new-strategy');
+  var oldStrategy=document.getElementById('ai-reception-route-old-strategy');
+  if(status)status.textContent=item.status;
+  if(newStrategy)newStrategy.innerHTML=buildAiReceptionStrategyOptions(item.newStrategyId);
+  if(oldStrategy)oldStrategy.innerHTML=buildAiReceptionStrategyOptions(item.oldStrategyId);
   openModal('modal-ai-reception-route');
 }
 
@@ -14141,12 +14267,13 @@ function closeAiReceptionRouteDrawer(){
 function saveAiReceptionRoute(){
   var item=aiReceptionRoutes.find(function(route){return route.id===editingAiReceptionRouteId;});
   if(!item)return;
-  var stages=Array.from(document.querySelectorAll('#ai-reception-route-stage-options input:checked')).map(function(input){return input.value;});
-  if(!stages.length){
-    showToast('请至少选择一个客户阶段','info');
-    return;
-  }
-  item.stages=stages;
+  var newStrategy=document.getElementById('ai-reception-route-new-strategy');
+  var oldStrategy=document.getElementById('ai-reception-route-old-strategy');
+  item.newStrategyId=newStrategy?newStrategy.value:'';
+  item.oldStrategyId=oldStrategy?oldStrategy.value:'';
+  var now=new Date();
+  var pad=function(value){return String(value).padStart(2,'0');};
+  item.updatedAt=now.getFullYear()+'-'+pad(now.getMonth()+1)+'-'+pad(now.getDate())+' '+pad(now.getHours())+':'+pad(now.getMinutes());
   renderAiReceptionRoutes();
   closeAiReceptionRouteDrawer();
   showToast('AI接待路由已保存','success');
@@ -14455,12 +14582,12 @@ function selectCustomerAllocationRule(card) {
 }
 
 function toggleAllocationFallback(input) {
-  showToast(input.checked ? '兜底规则已启用' : '兜底规则已停用', 'success');
+  showToast(input.checked ? '离职继承已启用' : '离职继承已停用', 'success');
 }
 
 function saveAllocationFallback() {
   closeAllocationDrawer('allocation-fallback-drawer');
-  showToast('兜底规则已保存', 'success');
+  showToast('离职继承已保存', 'success');
 }
 
 function openAllocationDrawer(id) {
@@ -15622,7 +15749,7 @@ function normalizeTransferRulesLayout() {
     var desc = oldHeader.querySelector('p');
     var pageHeader = document.createElement('div');
     pageHeader.className = 'page-header online-page-header';
-    pageHeader.innerHTML = '<div><h2>' + (title ? title.textContent : 'AI与人工协同接待') + '</h2><p>' + (desc ? desc.textContent : '') + '</p></div>';
+    pageHeader.innerHTML = '<div><h2>' + (title ? title.textContent : 'AI协同接待') + '</h2><p>' + (desc ? desc.textContent : '') + '</p></div>';
     page.insertBefore(pageHeader, listView);
   }
   listView.classList.add('transfer-list-card', 'unified-list-card');
@@ -18388,6 +18515,52 @@ function syncSharedScenarioOptions() {
   syncScenarioSelectOptions('online-trigger-scenario-select', 'online');
 }
 
+function switchRecallControlTab(btn, paneId) {
+  var modal = btn ? btn.closest('#modal-recall-guardrails') : null;
+  if (!modal) return;
+  modal.querySelectorAll('.recall-control-tab').forEach(function(tab) {
+    tab.classList.toggle('active', tab === btn);
+  });
+  modal.querySelectorAll('.recall-control-pane').forEach(function(pane) {
+    pane.classList.toggle('active', pane.id === paneId);
+  });
+}
+
+function getRecallBlockedEvents() {
+  return Array.prototype.slice.call(document.querySelectorAll('#recall-human-blocked-events input:checked')).map(function(input) {
+    return input.value;
+  });
+}
+
+function syncRecallBlockedEvents(input) {
+  syncMultiSelect(input);
+  syncRecallHumanSendGuard();
+}
+
+function syncRecallHumanSendGuard() {
+  var setting = document.getElementById('recall-human-send-setting');
+  var toggle = document.getElementById('recall-human-send-toggle');
+  var note = document.getElementById('recall-human-send-note');
+  var scenario = document.getElementById('trigger-scenario-select');
+  var eventSelect = document.getElementById('offline-trigger-event-type-select');
+  if (!setting || !toggle || !note || !scenario) return;
+  var selectedOption = scenario.options[scenario.selectedIndex];
+  var ruleType = selectedOption ? selectedOption.getAttribute('data-rule-type') || 'event' : 'event';
+  var eventName = eventSelect ? eventSelect.value : '';
+  var isBlocked = ruleType === 'event' && getRecallBlockedEvents().indexOf(eventName) !== -1;
+  setting.classList.toggle('is-locked', isBlocked);
+  toggle.disabled = isBlocked;
+  toggle.setAttribute('aria-disabled', isBlocked ? 'true' : 'false');
+  if (isBlocked) {
+    toggle.checked = false;
+    toggle.parentElement.title = '该触发事件已被全局设置为人工接待时禁止发送';
+    note.textContent = '“' + eventName + '”已被全局设置为人工接待时禁止发送';
+  } else {
+    toggle.parentElement.title = '人工接待时允许发送';
+    note.textContent = '开启后，客户处于人工接待状态时，该规则仍可发送SOP消息';
+  }
+}
+
 function filterScenarioCards(domain) {
   getSharedScenarioCards().forEach(function(card) {
     card.style.display = domain === 'all' || card.getAttribute('data-domain') === domain ? '' : 'none';
@@ -18416,6 +18589,7 @@ function updateTriggerScenarioFields() {
     section.style.display = type === 'single' && commonType === 'lifecycle' ? 'none' : '';
   });
   refreshTimeLifecycleNodes();
+  syncRecallHumanSendGuard();
 }
 
 function renderPublishRangeItem(item, level) {
@@ -18815,7 +18989,10 @@ function toggleTaskCopyPanel(checkbox) {
   var isAiCopy = checkbox.checked;
   var label = card.querySelector('[data-copy-mode-label]');
   card.classList.toggle('fixed-copy', !isAiCopy);
-  if (label) label.textContent = isAiCopy ? 'AI 话术' : '固定话术';
+  if (label) {
+    var isRecallRule = !!card.closest('#modal-add-trigger');
+    label.textContent = isRecallRule ? (isAiCopy ? 'AI生成内容' : '固定内容') : (isAiCopy ? 'AI 话术' : '固定话术');
+  }
 }
 
 function syncTaskCopyMessageType(select) {
@@ -18912,7 +19089,7 @@ function addTimeLifecycleNode() {
           '<div class="' + getTaskTimeBlockClass('relative', mode) + '" data-time-mode-block="relative"><span>之后</span><input class="form-control" value="' + nextDay + '" style="width:72px"><select class="form-control">' + buildUnitOptions('天') + '</select><span>触发</span></div>' +
           '<div class="' + getTaskTimeBlockClass('fixed', mode) + '" data-time-mode-block="fixed"><span>第</span><select class="form-control" style="width:82px">' + buildLifecycleDayOptions(nextDay) + '</select><span>天</span><select class="form-control">' + buildTimeOptions('10:00') + '</select><span>触发</span></div>' +
         '</div>' +
-        '<div class="task-node-ai-switch"><span data-copy-mode-label>AI 话术</span><label class="switch"><input type="checkbox" checked onchange="toggleTaskCopyPanel(this)"><span class="switch-slider"></span></label></div>' +
+        '<div class="task-node-ai-switch"><span data-copy-mode-label>AI生成内容</span><label class="switch"><input type="checkbox" checked onchange="toggleTaskCopyPanel(this)"><span class="switch-slider"></span></label></div>' +
         '<button class="btn btn-default btn-sm" type="button" onclick="removeTimeLifecycleNode(this)">×</button>' +
       '</div>' +
       buildTaskCopyPanel() +
