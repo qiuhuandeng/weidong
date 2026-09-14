@@ -6098,7 +6098,7 @@
       <div class="teacher-qr-drawer" id="teacher-qr-drawer" aria-hidden="true" onclick="if(event.target===this) closeTeacherQrDrawer()">
         <aside class="teacher-qr-drawer-panel" role="dialog" aria-modal="true" aria-labelledby="teacher-qr-drawer-title">
           <div class="teacher-qr-drawer-header">
-            <div><h3 id="teacher-qr-drawer-title">新增二维码</h3><p>先选择门店企微号，再选择已绑定门店老师的聚合平台客服。</p></div>
+            <div><h3 id="teacher-qr-drawer-title">新增二维码</h3><p>先选择门店企微号，再选择该门店下已绑定客服账号的门店老师。</p></div>
             <button class="teacher-qr-drawer-close" type="button" aria-label="关闭" onclick="closeTeacherQrDrawer()">×</button>
           </div>
           <div class="teacher-qr-drawer-body">
@@ -6112,23 +6112,23 @@
                 <option value="SL0082" data-subject="曦丽美" data-account="白思静 · SL0082" data-store="志伟战队">曦丽美 / 白思静 · SL0082</option>
                 <option value="SL0106" data-subject="贝颜" data-account="吴明杰 · SL0106" data-store="思杰战队">贝颜 / 吴明杰 · SL0106</option>
               </select>
-              <div class="teacher-qr-employee-summary" id="teacher-qr-account-summary"><strong>请先选择企微号</strong><span>选择后将显示该企微号所属门店的聚合平台客服。</span></div>
+              <div class="teacher-qr-employee-summary" id="teacher-qr-account-summary"><strong>请先选择企微号</strong><span>选择后将显示该企微号所属门店的老师。</span></div>
             </div>
             <div class="teacher-qr-field">
-              <div class="teacher-qr-field-label">选择聚合平台客服 <b>*</b></div>
-              <div class="teacher-qr-field-help">用于关联二维码客户来源与门店老师</div>
+              <div class="teacher-qr-field-label">选择门店老师 <b>*</b></div>
+              <div class="teacher-qr-field-help">仅显示已绑定聚合平台客服账号的门店老师</div>
               <div class="teacher-qr-service-picker" id="teacher-qr-service-picker">
                 <button class="teacher-qr-choose" id="teacher-qr-employee-choose" type="button" onclick="toggleTeacherQrEmployeeOptions()" disabled>请先选择企微号</button>
                 <div class="teacher-qr-employee-options" id="teacher-qr-employee-options">
-                  <div class="teacher-qr-service-search"><input id="teacher-qr-service-search" placeholder="搜索客服名称或绑定老师" oninput="filterTeacherQrServiceOptions()"></div>
-                  <div class="teacher-qr-service-option-head"><span>聚合平台客服</span><span>绑定老师</span></div>
+                  <div class="teacher-qr-service-search"><input id="teacher-qr-service-search" placeholder="搜索老师姓名或客服账号" oninput="filterTeacherQrServiceOptions()"></div>
+                  <div class="teacher-qr-service-option-head"><span>门店老师</span><span>客服账号</span></div>
                   <div class="teacher-qr-service-options-scroll">
-                    <label class="teacher-qr-employee-option"><input type="radio" name="teacher-qr-employee" value="贝颜客服01" data-teacher="林俊辉" data-role="主任" data-userid="BE260814151723310" data-org="贝颜" data-employment="在职" onchange="selectTeacherQrEmployee(this)"><span class="teacher-qr-service-option-main"><span class="teacher-qr-service-name">贝颜客服01</span><span class="teacher-qr-bound-teacher">林俊辉</span></span></label>
-                    <label class="teacher-qr-employee-option"><input type="radio" name="teacher-qr-employee" value="贝颜客服02" data-teacher="张若曦" data-role="店长" data-userid="BE260816271405221" data-org="贝颜" data-employment="试用期" onchange="selectTeacherQrEmployee(this)"><span class="teacher-qr-service-option-main"><span class="teacher-qr-service-name">贝颜客服02</span><span class="teacher-qr-bound-teacher">张若曦</span></span></label>
-                    <label class="teacher-qr-employee-option"><input type="radio" name="teacher-qr-employee" value="志伟客服01" data-teacher="白思静" data-role="主任" data-userid="BE260815108620114" data-org="志伟战队" data-employment="在职" onchange="selectTeacherQrEmployee(this)"><span class="teacher-qr-service-option-main"><span class="teacher-qr-service-name">志伟客服01</span><span class="teacher-qr-bound-teacher">白思静</span></span></label>
-                    <label class="teacher-qr-employee-option"><input type="radio" name="teacher-qr-employee" value="志伟客服02" data-teacher="陈悦" data-role="美容师" data-userid="BE260817610284317" data-org="志伟战队" data-employment="在职" onchange="selectTeacherQrEmployee(this)"><span class="teacher-qr-service-option-main"><span class="teacher-qr-service-name">志伟客服02</span><span class="teacher-qr-bound-teacher">陈悦</span></span></label>
-                    <label class="teacher-qr-employee-option"><input type="radio" name="teacher-qr-employee" value="思杰客服01" data-teacher="吴明杰" data-role="高级发型师" data-userid="BE260819304251126" data-org="思杰战队" data-employment="试用期" onchange="selectTeacherQrEmployee(this)"><span class="teacher-qr-service-option-main"><span class="teacher-qr-service-name">思杰客服01</span><span class="teacher-qr-bound-teacher">吴明杰</span></span></label>
-                    <div class="teacher-qr-service-empty" id="teacher-qr-service-empty">暂无匹配的聚合平台客服</div>
+                    <label class="teacher-qr-employee-option"><input type="radio" name="teacher-qr-employee" value="贝颜客服01" data-teacher="林俊辉" data-role="主任" data-userid="BE260814151723310" data-org="贝颜" data-employment="在职" onchange="selectTeacherQrEmployee(this)"><span class="teacher-qr-service-option-main"><span class="teacher-qr-service-name">林俊辉</span><span class="teacher-qr-bound-teacher">贝颜客服01</span></span></label>
+                    <label class="teacher-qr-employee-option"><input type="radio" name="teacher-qr-employee" value="贝颜客服02" data-teacher="张若曦" data-role="店长" data-userid="BE260816271405221" data-org="贝颜" data-employment="试用期" onchange="selectTeacherQrEmployee(this)"><span class="teacher-qr-service-option-main"><span class="teacher-qr-service-name">张若曦</span><span class="teacher-qr-bound-teacher">贝颜客服02</span></span></label>
+                    <label class="teacher-qr-employee-option"><input type="radio" name="teacher-qr-employee" value="志伟客服01" data-teacher="白思静" data-role="主任" data-userid="BE260815108620114" data-org="志伟战队" data-employment="在职" onchange="selectTeacherQrEmployee(this)"><span class="teacher-qr-service-option-main"><span class="teacher-qr-service-name">白思静</span><span class="teacher-qr-bound-teacher">志伟客服01</span></span></label>
+                    <label class="teacher-qr-employee-option"><input type="radio" name="teacher-qr-employee" value="志伟客服02" data-teacher="陈悦" data-role="美容师" data-userid="BE260817610284317" data-org="志伟战队" data-employment="在职" onchange="selectTeacherQrEmployee(this)"><span class="teacher-qr-service-option-main"><span class="teacher-qr-service-name">陈悦</span><span class="teacher-qr-bound-teacher">志伟客服02</span></span></label>
+                    <label class="teacher-qr-employee-option"><input type="radio" name="teacher-qr-employee" value="思杰客服01" data-teacher="吴明杰" data-role="高级发型师" data-userid="BE260819304251126" data-org="思杰战队" data-employment="试用期" onchange="selectTeacherQrEmployee(this)"><span class="teacher-qr-service-option-main"><span class="teacher-qr-service-name">吴明杰</span><span class="teacher-qr-bound-teacher">思杰客服01</span></span></label>
+                    <div class="teacher-qr-service-empty" id="teacher-qr-service-empty">暂无匹配的门店老师</div>
                   </div>
                 </div>
               </div>
@@ -16524,7 +16524,7 @@ function openTeacherQrDrawer(employeeName) {
   var options = document.getElementById('teacher-qr-employee-options');
   var picker = document.getElementById('teacher-qr-service-picker');
   var serviceSearch = document.getElementById('teacher-qr-service-search');
-  if (title) title.textContent = teacherQrEditingRow ? '更换聚合平台客服' : '新增二维码';
+  if (title) title.textContent = teacherQrEditingRow ? '更换门店老师' : '新增二维码';
   if (submit) submit.textContent = teacherQrEditingRow ? '确定' : '生成二维码';
   if (note) note.value = '';
   if (options) options.classList.remove('show');
@@ -16603,10 +16603,10 @@ function handleTeacherQrAccountChange() {
     if (accountSummary) accountSummary.innerHTML = '<strong>' + escapeHtml(account.dataset.account || account.textContent) + '</strong><span>企微主体：' + escapeHtml(account.dataset.subject || '—') + '　所属门店：' + escapeHtml(account.dataset.store || '—') + '</span>';
     if (choose) {
       choose.disabled = false;
-      choose.textContent = '选择聚合平台客服';
+      choose.textContent = '选择门店老师';
     }
   } else {
-    if (accountSummary) accountSummary.innerHTML = '<strong>请先选择企微号</strong><span>选择后将显示该企微号所属门店的聚合平台客服。</span>';
+    if (accountSummary) accountSummary.innerHTML = '<strong>请先选择企微号</strong><span>选择后将显示该企微号所属门店的老师。</span>';
     if (choose) {
       choose.disabled = true;
       choose.textContent = '请先选择企微号';
@@ -16638,7 +16638,7 @@ function filterTeacherQrServiceOptions() {
 function resetTeacherQrEmployeeSummary(hasAccount) {
   var choose = document.getElementById('teacher-qr-employee-choose');
   var submit = document.getElementById('teacher-qr-submit');
-  if (choose && hasAccount) choose.textContent = '选择聚合平台客服';
+  if (choose && hasAccount) choose.textContent = '选择门店老师';
   if (submit) submit.disabled = true;
 }
 
@@ -16649,7 +16649,7 @@ function selectTeacherQrEmployee(input) {
   var choose = document.getElementById('teacher-qr-employee-choose');
   var submit = document.getElementById('teacher-qr-submit');
   var options = document.getElementById('teacher-qr-employee-options');
-  if (choose) choose.textContent = input.value;
+  if (choose) choose.textContent = input.dataset.teacher || input.value;
   if (submit) submit.disabled = false;
   if (options) options.classList.remove('show');
   var picker = document.getElementById('teacher-qr-service-picker');
@@ -16684,7 +16684,7 @@ function saveTeacherQr() {
   }
   var employee = getSelectedTeacherQrEmployee();
   if (!employee) {
-    showToast('请选择聚合平台客服', 'info');
+    showToast('请选择门店老师', 'info');
     return;
   }
   var subject = accountOption.dataset.subject || '—';
@@ -16699,7 +16699,7 @@ function saveTeacherQr() {
     teacherQrEditingRow.cells[2].innerHTML = '<div class="teacher-qr-name"><strong>' + escapeHtml(teacher) + '</strong><span>' + escapeHtml(role) + '</span></div>';
     teacherQrEditingRow.cells[3].innerHTML = '<strong>' + escapeHtml(employee.value) + '</strong>';
     closeTeacherQrDrawer();
-    showToast('聚合平台客服已更换', 'success');
+    showToast('门店老师已更换', 'success');
     return;
   }
   var code = 'WQR' + String(Date.now()).slice(-14).toUpperCase();
