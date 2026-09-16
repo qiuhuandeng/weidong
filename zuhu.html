@@ -5216,8 +5216,8 @@
   #page-transfer-rules #transfer-rule-drawer .target-select-row.has-ai-state{grid-template-columns:160px minmax(0,1fr) 138px}
   #page-transfer-rules #transfer-rule-drawer .inline-ai-assignment{display:grid;grid-template-columns:minmax(0,1fr) 138px;gap:10px;min-width:0;align-items:start}
   #page-transfer-rules #transfer-rule-drawer .transfer-assignment-ai{width:100%;min-width:0}
-  #page-transfer-rules #transfer-rule-drawer .target-select-row.has-ai-state.target-original-employee{grid-template-columns:minmax(0,1fr) 138px}
-  #page-transfer-rules #transfer-rule-drawer .target-select-row.has-ai-state.target-original-employee>.target-type-select{grid-column:auto}
+  #page-transfer-rules #transfer-rule-drawer .target-select-row.has-ai-state.target-direct-assignment{grid-template-columns:minmax(0,1fr) 138px}
+  #page-transfer-rules #transfer-rule-drawer .target-select-row.has-ai-state.target-direct-assignment>.target-type-select{grid-column:auto}
   #page-transfer-rules #transfer-rule-drawer .target-type-select{width:100%;font-weight:600}
   #page-transfer-rules #transfer-rule-drawer .target-multi-select{position:relative;min-width:0}
   #page-transfer-rules #transfer-rule-drawer .rule-node.target-layer{z-index:40}
@@ -5240,10 +5240,13 @@
   #page-transfer-rules #transfer-rule-drawer .target-multi-option-meta{display:block;margin-top:2px;color:#8c9bab;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   #page-transfer-rules #transfer-rule-drawer .target-multi-option-extra{color:#1677ff;font-size:12px;font-weight:700;white-space:nowrap}
   #page-transfer-rules #transfer-rule-drawer .chain-heading{display:block;padding:16px 24px 0;font-size:14px;font-weight:700;color:#1a2332;margin:0}
+  #page-transfer-rules #transfer-rule-drawer .transfer-node-note{padding:4px 24px 0;margin:0;color:#64748b;font-size:12px}
+  #page-transfer-rules #transfer-rule-drawer .transfer-node-delete{border:0;background:none;color:#dc2626;font-size:12px;cursor:pointer;padding:4px 0 4px 8px}
+  #page-transfer-rules #transfer-rule-drawer .transfer-node-empty{margin:0;padding:24px;border:1px dashed #cbd5e1;border-radius:7px;text-align:center;color:#64748b;font-size:13px}
+  #page-transfer-rules #transfer-rule-list .rule-chain-summary{flex-wrap:wrap;line-height:1.7}
   #page-transfer-rules #transfer-rule-drawer .section-heading{font-size:14px;font-weight:700;color:#1a2332;margin-bottom:14px}
   #page-transfer-rules #transfer-rule-drawer .inline-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
   #page-transfer-rules #transfer-rule-drawer #transfer-common-chain,#page-transfer-rules #transfer-rule-drawer #transfer-rule-chains{padding:16px 24px;display:grid;gap:16px}
-  #page-transfer-rules #transfer-rule-drawer #transfer-ai-takeover-chain{padding:16px 24px 24px;display:grid;gap:16px}
   #page-transfer-rules #transfer-rule-drawer #transfer-rule-chains>div:not(.hidden){display:grid;gap:10px}
   #page-transfer-rules #transfer-rule-drawer .rule-node{position:relative;padding-left:0;margin:0}
   #page-transfer-rules #transfer-rule-drawer .rule-node::before,#page-transfer-rules #transfer-rule-drawer .rule-node::after{display:none}
@@ -5252,7 +5255,6 @@
   #page-transfer-rules #transfer-rule-drawer .node-card .form-item{display:grid;grid-template-columns:92px minmax(0,1fr);gap:12px;align-items:start;margin:0}
   #page-transfer-rules #transfer-rule-drawer .node-card .form-label{margin-top:5px;color:#64748b;text-align:right;font-size:12px}
   #page-transfer-rules #transfer-rule-drawer .node-card .target-form{grid-column:1/-1;grid-template-columns:92px minmax(0,1fr)}
-  #page-transfer-rules #transfer-rule-drawer .node-index{display:inline-flex;align-items:center;padding:3px 9px;border-radius:4px;background:#e6f4ff;color:#1677ff;font-size:12px;font-weight:700;white-space:nowrap}
   #page-transfer-rules #transfer-rule-drawer .node-readonly-text{min-height:34px;padding:7px 10px;border:1px solid #e8edf2;border-radius:6px;background:#f8fafc;color:#334155;font-size:13px;line-height:20px}
   #page-transfer-rules #transfer-rule-drawer .radio-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
   #page-transfer-rules #transfer-rule-drawer .radio-list.two-cols{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -5333,9 +5335,7 @@
   #page-transfer-rules #transfer-scope-drawer .transfer-scope-tag button{margin-left:auto;border:0;background:transparent;color:#a8b3c2;cursor:pointer;font-size:16px;line-height:1}
   #page-transfer-rules #transfer-scope-drawer .transfer-scope-tag button:hover{color:#cf1322}
   #page-transfer-rules #transfer-scope-drawer .transfer-scope-empty{padding:26px 10px;color:#8c9bab;font-size:13px;text-align:center}
-  #page-transfer-rules #transfer-rule-drawer .temporary-takeover-delay{min-height:34px;display:grid;grid-template-columns:auto 88px auto;align-items:center;gap:8px;color:#334155;font-size:13px}
-  #page-transfer-rules #transfer-rule-drawer .temporary-takeover-delay .form-input{width:88px;text-align:center}
-  @media(max-width:700px){#page-transfer-rules .transfer-list-view-header{margin-left:-16px;margin-right:-16px;padding-left:16px;padding-right:16px}#page-transfer-rules .transfer-filter-bar{align-items:flex-start;flex-direction:column}#page-transfer-rules .transfer-filter-bar .transfer-search-wrap,#page-transfer-rules .transfer-filter-bar .transfer-search-wrap .form-input{width:100%}#page-transfer-rules #transfer-rule-drawer .drawer-panel,#page-transfer-rules .drawer-panel-sm{width:100%}#page-transfer-rules #transfer-rule-drawer .drawer-header{align-items:center;padding:0 16px}#page-transfer-rules #transfer-rule-drawer .form-section,#page-transfer-rules #transfer-rule-drawer #transfer-common-chain,#page-transfer-rules #transfer-rule-drawer #transfer-rule-chains,#page-transfer-rules #transfer-rule-drawer #transfer-ai-takeover-chain{padding-left:16px;padding-right:16px}#page-transfer-rules #transfer-rule-drawer .form-grid,#page-transfer-rules #transfer-rule-drawer .node-card .form-item,#page-transfer-rules #transfer-rule-drawer .node-card .target-form,#page-transfer-rules #transfer-rule-drawer .target-select-row{grid-template-columns:1fr;gap:8px}#page-transfer-rules #transfer-rule-drawer .node-card .form-label{text-align:left;margin-top:0}#page-transfer-rules #transfer-rule-drawer .node-ai-select{width:150px}#page-transfer-rules #transfer-rule-drawer .radio-list,#page-transfer-rules #transfer-rule-drawer .choice-grid,#page-transfer-rules #transfer-rule-drawer .inline-grid{grid-template-columns:1fr}#page-transfer-rules #transfer-rule-drawer .temporary-takeover-delay{grid-template-columns:auto 72px auto}#page-transfer-rules #transfer-rule-drawer .temporary-takeover-delay .form-input{width:72px}}
+  @media(max-width:700px){#page-transfer-rules .transfer-list-view-header{margin-left:-16px;margin-right:-16px;padding-left:16px;padding-right:16px}#page-transfer-rules .transfer-filter-bar{align-items:flex-start;flex-direction:column}#page-transfer-rules .transfer-filter-bar .transfer-search-wrap,#page-transfer-rules .transfer-filter-bar .transfer-search-wrap .form-input{width:100%}#page-transfer-rules #transfer-rule-drawer .drawer-panel,#page-transfer-rules .drawer-panel-sm{width:100%}#page-transfer-rules #transfer-rule-drawer .drawer-header{align-items:center;padding:0 16px}#page-transfer-rules #transfer-rule-drawer .form-section,#page-transfer-rules #transfer-rule-drawer #transfer-common-chain,#page-transfer-rules #transfer-rule-drawer #transfer-rule-chains{padding-left:16px;padding-right:16px}#page-transfer-rules #transfer-rule-drawer .form-grid,#page-transfer-rules #transfer-rule-drawer .node-card .form-item,#page-transfer-rules #transfer-rule-drawer .node-card .target-form,#page-transfer-rules #transfer-rule-drawer .target-select-row{grid-template-columns:1fr;gap:8px}#page-transfer-rules #transfer-rule-drawer .node-card .form-label{text-align:left;margin-top:0}#page-transfer-rules #transfer-rule-drawer .node-ai-select{width:150px}#page-transfer-rules #transfer-rule-drawer .radio-list,#page-transfer-rules #transfer-rule-drawer .choice-grid,#page-transfer-rules #transfer-rule-drawer .inline-grid{grid-template-columns:1fr}}
   @media(max-width:700px){#page-transfer-rules #transfer-rule-drawer .target-select-row.has-ai-state{grid-template-columns:minmax(0,1fr) 138px}#page-transfer-rules #transfer-rule-drawer .target-select-row.has-ai-state>.target-type-select{grid-column:1/-1}}
 
   #page-ai-reception-route .ai-route-panel{background:#fff;border:1px solid #e8edf2;border-radius:8px;overflow:hidden}
@@ -5388,6 +5388,57 @@
   #modal-ai-strategy textarea{min-height:90px;resize:vertical}
   #modal-ai-strategy .ai-strategy-error{margin-top:12px;color:#cf1322;font-size:13px;line-height:1.6}
 
+
+  /* AI协作策略抽屉：与新建sop统一布局 */
+  #page-transfer-rules #transfer-rule-drawer .drawer-panel{width:min(960px,100vw);height:100%;max-height:100dvh;min-height:0;display:grid;grid-template-rows:auto minmax(0,1fr) auto;overflow:hidden;box-shadow:-8px 0 32px rgba(0,21,41,.18)}
+  #page-transfer-rules #transfer-rule-drawer .drawer-panel>.drawer-body{min-height:0;overflow-y:auto;overscroll-behavior:contain}
+  #page-transfer-rules #transfer-rule-drawer .drawer-header{min-height:0;padding:18px 24px 14px;border-bottom-color:#f0f2f5}
+  #page-transfer-rules #transfer-rule-drawer .drawer-header h1{font-size:16px;font-weight:600;line-height:24px}
+  #page-transfer-rules #transfer-rule-drawer .drawer-close{width:28px;height:28px;font-size:18px;color:#8c9bab}
+  #page-transfer-rules #transfer-rule-drawer .transfer-builder{padding:16px 24px;gap:16px}
+  #page-transfer-rules #transfer-rule-drawer .schedule-section{overflow:visible}
+  #page-transfer-rules #transfer-rule-drawer .schedule-section-title{margin:0;line-height:20px}
+  #page-transfer-rules #transfer-rule-drawer #transfer-rule-chains{padding:0;gap:10px}
+  #page-transfer-rules #transfer-rule-drawer #transfer-rule-chains .node-card{background:#fafbfc;border-radius:7px}
+  #page-transfer-rules #transfer-rule-drawer #transfer-rule-chains .node-header{border-radius:7px 7px 0 0}
+  #page-transfer-rules #transfer-rule-drawer .transfer-node-delete{display:flex;align-items:center;justify-content:center;width:28px;height:28px;padding:0;border-radius:4px;font-size:18px;color:#a8b3c2}
+  #page-transfer-rules #transfer-rule-drawer .transfer-node-delete:hover{color:#ff4d4f;background:#fff1f0}
+  #page-transfer-rules #transfer-rule-drawer #transfer-common-chain{padding:0;gap:0}
+  #page-transfer-rules #transfer-rule-drawer #transfer-common-chain .node-card{border-radius:8px}
+  #page-transfer-rules #transfer-rule-drawer #transfer-common-chain .node-header{padding:14px 16px;border-radius:8px 8px 0 0}
+  #page-transfer-rules #transfer-rule-drawer #transfer-common-chain h4{font-size:14px}
+  #page-transfer-rules #transfer-rule-drawer .drawer-footer{position:relative;z-index:1;min-height:65px;padding:14px 24px 18px;padding-bottom:max(18px,env(safe-area-inset-bottom));border-top-color:#f0f2f5;background:#fff}
+  #page-transfer-rules #transfer-rule-drawer .drawer-footer .btn{font-size:13px;min-width:72px;min-height:32px}
+  @media(max-width:700px){
+    #page-transfer-rules #transfer-rule-drawer .drawer-header,#page-transfer-rules #transfer-rule-drawer .drawer-footer{padding-left:16px;padding-right:16px}
+    #page-transfer-rules #transfer-rule-drawer .transfer-builder{padding:16px}
+  }
+
+  #page-transfer-rules #transfer-rule-drawer .transfer-events-head{align-items:center}
+  #page-transfer-rules #transfer-rule-drawer .transfer-events-heading{display:flex;align-items:center;gap:10px}
+  #page-transfer-rules #transfer-rule-drawer .transfer-event-picker{position:relative;flex:none}
+  #page-transfer-rules #transfer-rule-drawer #transfer-add-node-button{color:#1677ff;border-color:#bae0ff;background:#fff;gap:4px;min-height:30px}
+  #page-transfer-rules #transfer-rule-drawer #transfer-add-node-button:hover{background:#f0f7ff;border-color:#91caff}
+  #page-transfer-rules #transfer-rule-drawer #transfer-add-node-button:disabled{color:#94a3b8;border-color:#e8edf2;background:#fafbfc;cursor:default}
+  #page-transfer-rules #transfer-rule-drawer .transfer-events-section.is-picking{position:relative;z-index:100}
+  #page-transfer-rules #transfer-rule-drawer .transfer-event-menu{position:absolute;right:0;top:calc(100% + 8px);z-index:110;width:min(340px,calc(100vw - 80px));padding:8px;display:grid;grid-template-columns:1fr 1fr;gap:4px;border:1px solid #e8edf2;border-radius:10px;background:#fff;box-shadow:0 8px 28px rgba(15,35,70,.14)}
+  #page-transfer-rules #transfer-rule-drawer .transfer-event-menu[hidden]{display:none}
+  #page-transfer-rules #transfer-rule-drawer .transfer-event-option{min-height:40px;padding:9px 10px;border:0;border-radius:6px;background:#fff;display:flex;align-items:center;justify-content:space-between;gap:8px;color:#334155;font:inherit;font-size:13px;text-align:left;cursor:pointer}
+  #page-transfer-rules #transfer-rule-drawer .transfer-event-option:hover,#page-transfer-rules #transfer-rule-drawer .transfer-event-option:focus-visible{background:#f0f7ff;color:#1677ff;outline:0}
+  #page-transfer-rules #transfer-rule-drawer .transfer-event-option:disabled{background:#f8fafc;color:#a8b3c2;cursor:default}
+  #page-transfer-rules #transfer-rule-drawer .transfer-event-option-state{font-size:11px;color:#1677ff;white-space:nowrap}
+  #page-transfer-rules #transfer-rule-drawer .transfer-event-option:disabled .transfer-event-option-state{color:#a8b3c2}
+  #page-transfer-rules #transfer-rule-drawer .transfer-scene-choice{display:inline-flex;gap:2px;padding:3px;background:#f1f4f8;border-radius:7px;max-width:100%}
+  #page-transfer-rules #transfer-rule-drawer .transfer-scene-choice label{position:relative;cursor:pointer}
+  #page-transfer-rules #transfer-rule-drawer .transfer-scene-choice input{position:absolute;width:1px;height:1px;opacity:0}
+  #page-transfer-rules #transfer-rule-drawer .transfer-scene-choice span{display:block;padding:5px 16px;border-radius:5px;color:#64748b;font-size:13px;line-height:20px;white-space:nowrap}
+  #page-transfer-rules #transfer-rule-drawer .transfer-scene-choice input:checked+span{background:#fff;color:#1677ff;box-shadow:0 1px 4px rgba(15,35,70,.1)}
+  #page-transfer-rules #transfer-rule-drawer .transfer-scene-choice input:focus-visible+span{outline:2px solid #91caff;outline-offset:1px}
+
+  #page-transfer-rules #transfer-rule-drawer .target-multi-select.open .target-multi-menu.transfer-floating-menu,
+  #page-transfer-rules #transfer-rule-drawer .transfer-event-menu.transfer-floating-menu{position:fixed;inset:auto;margin:0;box-sizing:border-box;z-index:3000;overscroll-behavior:contain}
+  #page-transfer-rules #transfer-rule-drawer [popover]:not(:popover-open){display:none!important}
+  #page-transfer-rules #transfer-rule-drawer .transfer-floating-menu::backdrop{background:transparent;pointer-events:none}
 </style>
 </head>
 <body>
@@ -8948,22 +8999,16 @@
           <div class="flex items-center gap-3 mb-5 transfer-filter-bar">
             <div class="relative transfer-search-wrap">
               <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
-              <input type="text" class="form-input pl-8 py-2 text-sm w-56" placeholder="搜索规则名称…">
+              <input type="text" class="form-input pl-8 py-2 text-sm w-56" id="transfer-rule-search" placeholder="搜索规则名称…" oninput="filterTransferList()">
             </div>
-            <select id="transfer-type-filter" class="form-input form-select">
-              <option value="all">全部规则（6）</option>
-              <option value="open">客户开口后分配客服（3）</option>
-              <option value="pay">预约金支付后分配客服（2）</option>
-              <option value="wechat">加微后分配客服（1）</option>
-            </select>
-            <button onclick="filterTransferList(document.getElementById('transfer-type-filter').value)" class="ant-btn" type="button">查询</button>
+            <button onclick="filterTransferList()" class="ant-btn" type="button">查询</button>
           </div>
 
           <!-- 规则卡片列表 -->
           <div class="space-y-4" id="transfer-rule-list">
 
             <!-- 规则1 -->
-            <div class="rule-card" data-type="open">
+            <div class="rule-card" data-node-types="opened,unopened,unpaid,timeout,paid">
               <div class="flex items-stretch">
                 <div class="flex-1 p-5">
                   <div class="flex items-start justify-between mb-3">
@@ -8978,7 +9023,7 @@
                       <div class="relative transfer-search-wrap">
                         <button onclick="toggleTransferDropdown(this)" class="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-400"><i class="fas fa-ellipsis-v text-sm"></i></button>
                         <div class="dropdown-menu hidden absolute right-0 top-9 bg-white border border-gray-200 rounded-lg shadow-lg py-1 w-32 z-30">
-                          <button onclick="openTransferRuleDrawer('edit')" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"><i class="fas fa-edit text-xs text-gray-400 mr-2"></i>编辑</button>
+                          <button onclick="openTransferRuleDrawer('edit',this)" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"><i class="fas fa-edit text-xs text-gray-400 mr-2"></i>编辑</button>
                           <button class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"><i class="fas fa-copy text-xs text-gray-400 mr-2"></i>复制</button>
                           <button class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"><i class="fas fa-trash text-xs mr-2"></i>删除</button>
                         </div>
@@ -9028,7 +9073,7 @@
             </div>
 
             <!-- 规则2 -->
-            <div class="rule-card" data-type="open">
+            <div class="rule-card" data-node-types="opened,unopened,unpaid,timeout,paid">
               <div class="flex items-stretch">
                 <div class="flex-1 p-5">
                   <div class="flex items-start justify-between mb-3">
@@ -9043,7 +9088,7 @@
                       <div class="relative transfer-search-wrap">
                         <button onclick="toggleTransferDropdown(this)" class="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-400"><i class="fas fa-ellipsis-v text-sm"></i></button>
                         <div class="dropdown-menu hidden absolute right-0 top-9 bg-white border border-gray-200 rounded-lg shadow-lg py-1 w-32 z-30">
-                          <button onclick="openTransferRuleDrawer('edit')" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"><i class="fas fa-edit text-xs text-gray-400 mr-2"></i>编辑</button>
+                          <button onclick="openTransferRuleDrawer('edit',this)" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"><i class="fas fa-edit text-xs text-gray-400 mr-2"></i>编辑</button>
                           <button class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"><i class="fas fa-copy text-xs text-gray-400 mr-2"></i>复制</button>
                           <button class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"><i class="fas fa-trash text-xs mr-2"></i>删除</button>
                         </div>
@@ -9078,7 +9123,7 @@
             </div>
 
             <!-- 规则3 -->
-            <div class="rule-card" data-type="open">
+            <div class="rule-card" data-node-types="opened,unopened,unpaid,timeout,paid">
               <div class="flex items-stretch">
                 <div class="flex-1 p-5">
                   <div class="flex items-start justify-between mb-3">
@@ -9093,7 +9138,7 @@
                       <div class="relative transfer-search-wrap">
                         <button onclick="toggleTransferDropdown(this)" class="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-400"><i class="fas fa-ellipsis-v text-sm"></i></button>
                         <div class="dropdown-menu hidden absolute right-0 top-9 bg-white border border-gray-200 rounded-lg shadow-lg py-1 w-32 z-30">
-                          <button onclick="openTransferRuleDrawer('edit')" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"><i class="fas fa-edit text-xs text-gray-400 mr-2"></i>编辑</button>
+                          <button onclick="openTransferRuleDrawer('edit',this)" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"><i class="fas fa-edit text-xs text-gray-400 mr-2"></i>编辑</button>
                           <button class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"><i class="fas fa-copy text-xs text-gray-400 mr-2"></i>复制</button>
                           <button class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"><i class="fas fa-trash text-xs mr-2"></i>删除</button>
                         </div>
@@ -9120,7 +9165,7 @@
             </div>
 
             <!-- 规则4 -->
-            <div class="rule-card" data-type="pay">
+            <div class="rule-card" data-node-types="paid">
               <div class="flex items-stretch">
                 <div class="flex-1 p-5">
                   <div class="flex items-start justify-between mb-3">
@@ -9135,7 +9180,7 @@
                       <div class="relative transfer-search-wrap">
                         <button onclick="toggleTransferDropdown(this)" class="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-400"><i class="fas fa-ellipsis-v text-sm"></i></button>
                         <div class="dropdown-menu hidden absolute right-0 top-9 bg-white border border-gray-200 rounded-lg shadow-lg py-1 w-32 z-30">
-                          <button onclick="openTransferRuleDrawer('edit')" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"><i class="fas fa-edit text-xs text-gray-400 mr-2"></i>编辑</button>
+                          <button onclick="openTransferRuleDrawer('edit',this)" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"><i class="fas fa-edit text-xs text-gray-400 mr-2"></i>编辑</button>
                           <button class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"><i class="fas fa-copy text-xs text-gray-400 mr-2"></i>复制</button>
                           <button class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"><i class="fas fa-trash text-xs mr-2"></i>删除</button>
                         </div>
@@ -9163,7 +9208,7 @@
             </div>
 
             <!-- 加微后分配客服 -->
-            <div class="rule-card" data-type="wechat">
+            <div class="rule-card" data-scene="offline" data-node-types="added,unopened,timeout">
               <div class="flex items-stretch">
                 <div class="flex-1 p-5">
                   <div class="flex items-start justify-between mb-3">
@@ -9178,7 +9223,7 @@
                       <div class="relative transfer-search-wrap">
                         <button onclick="toggleTransferDropdown(this)" class="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-400"><i class="fas fa-ellipsis-v text-sm"></i></button>
                         <div class="dropdown-menu hidden absolute right-0 top-9 bg-white border border-gray-200 rounded-lg shadow-lg py-1 w-32 z-30">
-                          <button onclick="openTransferRuleDrawer('edit')" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"><i class="fas fa-edit text-xs text-gray-400 mr-2"></i>编辑</button>
+                          <button onclick="openTransferRuleDrawer('edit',this)" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"><i class="fas fa-edit text-xs text-gray-400 mr-2"></i>编辑</button>
                           <button class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"><i class="fas fa-copy text-xs text-gray-400 mr-2"></i>复制</button>
                           <button class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"><i class="fas fa-trash text-xs mr-2"></i>删除</button>
                         </div>
@@ -9201,7 +9246,7 @@
             </div>
 
             <!-- 规则7 -->
-            <div class="rule-card" data-type="pay">
+            <div class="rule-card" data-node-types="paid">
               <div class="flex items-stretch">
                 <div class="flex-1 p-5">
                   <div class="flex items-start justify-between mb-3">
@@ -9216,7 +9261,7 @@
                       <div class="relative transfer-search-wrap">
                         <button onclick="toggleTransferDropdown(this)" class="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-400"><i class="fas fa-ellipsis-v text-sm"></i></button>
                         <div class="dropdown-menu hidden absolute right-0 top-9 bg-white border border-gray-200 rounded-lg shadow-lg py-1 w-32 z-30">
-                          <button onclick="openTransferRuleDrawer('edit')" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"><i class="fas fa-edit text-xs text-gray-400 mr-2"></i>编辑</button>
+                          <button onclick="openTransferRuleDrawer('edit',this)" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"><i class="fas fa-edit text-xs text-gray-400 mr-2"></i>编辑</button>
                           <button class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"><i class="fas fa-copy text-xs text-gray-400 mr-2"></i>复制</button>
                           <button class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"><i class="fas fa-trash text-xs mr-2"></i>删除</button>
                         </div>
@@ -9248,38 +9293,29 @@
 
       <!-- ======================== 右抽屉：新建 / 编辑规则 ======================== -->
       <div id="transfer-rule-drawer" class="drawer-overlay" onclick="handleTransferDrawerBackdrop(event)">
-        <aside class="drawer-panel" onclick="event.stopPropagation()">
-          <header class="drawer-header">
-            <div class="drawer-title">
-              <button onclick="closeTransferRuleDrawer()" class="drawer-close" aria-label="关闭"><i class="fas fa-xmark"></i></button>
-              <div>
-                <h1 id="transfer-rule-edit-title">新建协作策略</h1>
-              </div>
-            </div>
-            <div class="drawer-actions">
-              <button onclick="closeTransferRuleDrawer()" class="ant-btn">取消</button>
-              <button onclick="saveTransferRule()" class="ant-btn ant-btn-primary">保存规则</button>
-            </div>
+        <aside class="drawer-panel" role="dialog" aria-modal="true" aria-labelledby="transfer-rule-edit-title" onclick="event.stopPropagation()">
+          <header class="drawer-header modal-header">
+            <h1 class="modal-title" id="transfer-rule-edit-title">新建协作策略</h1>
+            <button type="button" onclick="closeTransferRuleDrawer()" class="drawer-close modal-close" aria-label="关闭">×</button>
           </header>
 
           <div class="drawer-body">
-            <section class="form-section" id="ruleBasics">
-              <h3 class="section-heading">1. 基础设置</h3>
+            <section class="form-section schedule-modal-intro" id="ruleBasics">
+              <h3 class="section-heading schedule-basic-title">1. 基础信息</h3>
               <div class="form-grid">
                 <div class="form-item">
                   <label class="form-label">规则名称 <span class="text-red-500">*</span></label>
                   <input type="text" class="form-input" placeholder="请输入规则名称" id="transfer-rule-name">
                 </div>
                 <div class="form-item">
-                  <label class="form-label">分配场景 <span class="text-red-500">*</span></label>
-                  <select class="form-input form-select" id="transfer-rule-type" onchange="selectTransferType(this.value)">
-                    <option value="open" selected>客户开口后分配客服</option>
-                    <option value="pay">预约金支付后分配客服</option>
-                    <option value="wechat">加微后分配客服</option>
+                  <label class="form-label">生效范围 <span class="text-red-500">*</span></label>
+                  <select class="form-input form-select" id="transfer-effective-scope">
+                    <option value="new-session" selected>仅新会话生效</option>
+                    <option value="include-history">含历史存量客户</option>
                   </select>
                 </div>
                 <div class="form-item">
-                  <label class="form-label">启用AI策略 <span class="text-red-500">*</span></label>
+                  <label class="form-label">AI 聊天使用的策略 <span class="text-red-500">*</span></label>
                   <select class="form-input form-select" id="transfer-ai-employee">
                     <option value="open-ai">开口AI</option>
                     <option value="high-intent-ai" selected>高意向开口AI</option>
@@ -9297,237 +9333,34 @@
                   </select>
                 </div>
                 <div class="form-item wide">
-                  <label class="form-label">生效范围 <span class="text-red-500">*</span></label>
-                  <select class="form-input form-select" id="transfer-effective-scope">
-                    <option value="new-session" selected>仅新会话生效</option>
-                    <option value="include-history">含历史存量客户</option>
-                  </select>
+                  <label class="form-label">业务场景 <span class="text-red-500">*</span></label>
+                  <div class="transfer-scene-choice" role="radiogroup" aria-label="业务场景">
+                    <label><input type="radio" name="transfer-scene" value="online" checked onchange="switchTransferScene(this.value)"><span>线上场景</span></label>
+                    <label><input type="radio" name="transfer-scene" value="offline" onchange="switchTransferScene(this.value)"><span>线下场景</span></label>
+                  </div>
                 </div>
               </div>
             </section>
 
-            <h3 class="chain-heading">2. 场景流程</h3>
-            <div id="transfer-rule-chains">
-              <div id="transfer-chain-open">
+            <div class="transfer-builder schedule-panel-stack">
+              <section class="schedule-section transfer-events-section">
+                <div class="schedule-section-head transfer-events-head">
+                  <div class="transfer-events-heading"><h3 class="schedule-section-title">2. 事件配置</h3></div>
+                  <div class="transfer-event-picker" id="transfer-event-picker">
+                    <button id="transfer-add-node-button" class="btn btn-default btn-sm" type="button" aria-expanded="false" aria-controls="transfer-event-menu" onclick="toggleTransferEventPicker(event)">+ 添加事件</button>
+                    <div id="transfer-event-menu" class="transfer-event-menu" role="group" aria-label="选择添加的事件" hidden></div>
+                  </div>
+                </div>
+                <div class="schedule-section-body">
+                  <div id="transfer-rule-chains"></div>
+                </div>
+              </section>
+            <template id="transfer-node-template-added">
                 <section class="rule-node">
                   <div class="node-card">
                     <div class="node-header">
-                      <div class="node-title"><span class="node-index">节点 1 · 触发</span><h4>客户开口后分配客服</h4></div>
-                    </div>
-                    <div class="form-item target-form">
-                      <label class="form-label">分配给</label>
-                      <div class="target-control">
-                        <div class="target-select-row has-ai-state" data-target-config="n1" data-default-target="package">
-                          <select class="form-input form-select target-type-select" onchange="changeTransferTargetType('n1',this.value)">
-                            <option value="all">全部规则包</option>
-                            <option value="person">指定客服</option>
-                            <option value="package" selected>指定规则包</option>
-                            <option value="original-employee">初始加微员工</option>
-                          </select>
-                          <div class="target-multi-select" id="transfer-n1-target-picker">
-                            <button class="target-multi-trigger" type="button" onclick="toggleTransferTargetMulti(event,this)"><span class="target-multi-label target-multi-placeholder">请选择</span><span class="target-multi-arrow"></span></button>
-                            <div class="target-multi-menu"></div>
-                          </div>
-                          <select class="form-input form-select transfer-assignment-ai" id="transfer-n1-ai-state" name="transfer-n1-ai-state" data-transfer-ai-state="n1" aria-label="分配后 AI 聊天状态" required>
-                            <option value="off" selected>关闭 AI</option>
-                            <option value="on">开启 AI</option>
-                            <option value="keep">保持原状态</option>
-                          </select>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </section>
-
-                <section class="rule-node">
-                  <div class="node-card">
-                    <div class="node-header">
-                      <div class="node-title"><span class="node-index">节点 2</span><h4>加微后未开口客户重新分配</h4></div>
-                      <div class="node-switch"><span>启用</span><div class="toggle-track on" onclick="toggleTransferNode(this)"><div class="toggle-thumb"></div></div></div>
-                    </div>
-                    <div class="form-grid">
-                      <div class="form-item wide">
-                        <label class="form-label" for="transfer-unopened-delay">加微后</label>
-                        <div class="number-row assignment-delay">
-                          <input id="transfer-unopened-delay" name="transfer-unopened-delay" data-transfer-reassignment-delay type="number" class="form-input number" value="5" min="1" step="1" required aria-label="加微后未开口时长（分钟）">
-                          <span class="unit">分钟客户仍未开口</span>
-                        </div>
-                      </div>
-                      <div class="form-item target-form">
-                        <label class="form-label">分配给</label>
-                        <div class="target-control">
-                          <div class="target-select-row has-ai-state" data-target-config="unopened" data-default-target="package">
-                            <select class="form-input form-select target-type-select" onchange="changeTransferTargetType('unopened',this.value)">
-                              <option value="all">全部规则包</option>
-                              <option value="person">指定客服</option>
-                              <option value="package" selected>指定规则包</option>
-                              <option value="original-employee">初始加微员工</option>
-                            </select>
-                            <div class="target-multi-select" id="transfer-unopened-target-picker">
-                              <button class="target-multi-trigger" type="button" onclick="toggleTransferTargetMulti(event,this)"><span class="target-multi-label target-multi-placeholder">请选择</span><span class="target-multi-arrow"></span></button>
-                              <div class="target-multi-menu"></div>
-                            </div>
-                            <select class="form-input form-select transfer-assignment-ai" id="transfer-unopened-ai-state" name="transfer-unopened-ai-state" data-transfer-ai-state="unopened" aria-label="分配后 AI 聊天状态" required>
-                              <option value="off" selected>关闭 AI</option>
-                              <option value="on">开启 AI</option>
-                              <option value="keep">保持原状态</option>
-                            </select>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </section>
-
-                <section class="rule-node">
-                  <div class="node-card">
-                    <div class="node-header">
-                      <div class="node-title"><span class="node-index">节点 3</span><h4>加微后未付预约金客户重新分配</h4></div>
-                      <div class="node-switch"><span>启用</span><div class="toggle-track on" onclick="toggleTransferNode(this)"><div class="toggle-thumb"></div></div></div>
-                    </div>
-                    <div class="form-grid">
-                      <div class="form-item wide">
-                        <label class="form-label" for="transfer-unpaid-delay">加微后</label>
-                        <div class="number-row assignment-delay">
-                          <input id="transfer-unpaid-delay" name="transfer-unpaid-delay" data-transfer-reassignment-delay type="number" class="form-input number" value="5" min="1" step="1" required aria-label="加微后未付预约金时长（分钟）">
-                          <span class="unit">分钟客户仍未付预约金</span>
-                        </div>
-                      </div>
-                      <div class="form-item target-form">
-                        <label class="form-label">分配给</label>
-                        <div class="target-control">
-                          <div class="target-select-row has-ai-state" data-target-config="unpaid" data-default-target="package">
-                            <select class="form-input form-select target-type-select" onchange="changeTransferTargetType('unpaid',this.value)">
-                              <option value="all">全部规则包</option>
-                              <option value="person">指定客服</option>
-                              <option value="package" selected>指定规则包</option>
-                              <option value="original-employee">初始加微员工</option>
-                            </select>
-                            <div class="target-multi-select" id="transfer-unpaid-target-picker">
-                              <button class="target-multi-trigger" type="button" onclick="toggleTransferTargetMulti(event,this)"><span class="target-multi-label target-multi-placeholder">请选择</span><span class="target-multi-arrow"></span></button>
-                              <div class="target-multi-menu"></div>
-                            </div>
-                            <select class="form-input form-select transfer-assignment-ai" id="transfer-unpaid-ai-state" name="transfer-unpaid-ai-state" data-transfer-ai-state="unpaid" aria-label="分配后 AI 聊天状态" required>
-                              <option value="off" selected>关闭 AI</option>
-                              <option value="on">开启 AI</option>
-                              <option value="keep">保持原状态</option>
-                            </select>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </section>
-
-                <section class="rule-node">
-                  <div class="node-card">
-                    <div class="node-header">
-                      <div class="node-title"><span class="node-index">节点 4</span><h4>客服超时未回复后重新分配</h4></div>
-                      <div class="node-switch"><span>启用</span><div class="toggle-track on" onclick="toggleTransferNode(this)"><div class="toggle-thumb"></div></div></div>
-                    </div>
-                    <div class="form-grid">
-                      <div class="form-item"><label class="form-label">首次未回复时长</label><div class="number-row"><input type="number" class="form-input number" value="5" min="1"><span class="unit">分钟</span></div></div>
-                      <div class="form-item target-form">
-                        <label class="form-label">分配给</label>
-                        <div class="target-control">
-                          <div class="target-select-row has-ai-state" data-target-config="n2" data-default-target="package">
-                            <select class="form-input form-select target-type-select" onchange="changeTransferTargetType('n2',this.value)">
-                              <option value="all">全部规则包</option>
-                              <option value="person">指定客服</option>
-                              <option value="package" selected>指定规则包</option>
-                              <option value="original-employee">初始加微员工</option>
-                            </select>
-                            <div class="target-multi-select" id="transfer-n2-target-picker">
-                              <button class="target-multi-trigger" type="button" onclick="toggleTransferTargetMulti(event,this)"><span class="target-multi-label target-multi-placeholder">请选择</span><span class="target-multi-arrow"></span></button>
-                              <div class="target-multi-menu"></div>
-                            </div>
-                            <select class="form-input form-select transfer-assignment-ai" id="transfer-n2-ai-state" name="transfer-n2-ai-state" data-transfer-ai-state="n2" aria-label="分配后 AI 聊天状态" required>
-                              <option value="off" selected>关闭 AI</option>
-                              <option value="on">开启 AI</option>
-                              <option value="keep">保持原状态</option>
-                            </select>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </section>
-
-                <section class="rule-node">
-                  <div class="node-card">
-                    <div class="node-header">
-                      <div class="node-title"><span class="node-index">节点 5</span><h4>预约金支付后分配客服</h4></div>
-                      <div class="node-switch"><span>启用</span><div class="toggle-track on" onclick="toggleTransferNode(this)"><div class="toggle-thumb"></div></div></div>
-                    </div>
-                    <div class="form-item">
-                      <label class="form-label">触发状态</label>
-                      <select class="form-input form-select"><option>加微</option><option>下单</option><option selected>预约金已支付</option><option>预约</option><option>排客</option><option>改约</option><option>取消排客</option><option>预约超时</option><option>到店</option><option>流退</option><option>结算</option></select>
-                    </div>
-                    <div class="form-item target-form">
-                      <label class="form-label">分配给</label>
-                      <div class="target-control">
-                        <div class="target-select-row has-ai-state" data-target-config="n3" data-default-target="person">
-                          <select class="form-input form-select target-type-select" onchange="changeTransferTargetType('n3',this.value)">
-                            <option value="all">全部规则包</option>
-                            <option value="person" selected>指定客服</option>
-                            <option value="package">指定规则包</option>
-                            <option value="original-employee">初始加微员工</option>
-                          </select>
-                          <div class="target-multi-select" id="transfer-n3-target-picker">
-                            <button class="target-multi-trigger" type="button" onclick="toggleTransferTargetMulti(event,this)"><span class="target-multi-label target-multi-placeholder">请选择</span><span class="target-multi-arrow"></span></button>
-                            <div class="target-multi-menu"></div>
-                          </div>
-                          <select class="form-input form-select transfer-assignment-ai" id="transfer-n3-ai-state" name="transfer-n3-ai-state" data-transfer-ai-state="n3" aria-label="分配后 AI 聊天状态" required>
-                            <option value="off" selected>关闭 AI</option>
-                            <option value="on">开启 AI</option>
-                            <option value="keep">保持原状态</option>
-                          </select>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </section>
-              </div>
-
-              <div id="transfer-chain-pay" class="hidden">
-                <section class="rule-node">
-                  <div class="node-card">
-                    <div class="node-header"><div class="node-title"><span class="node-index">节点 1</span><h4>预约金支付后分配客服</h4></div></div>
-                    <div class="form-item">
-                      <label class="form-label">触发状态</label>
-                      <select class="form-input form-select"><option>加微</option><option>下单</option><option selected>预约金已支付</option><option>预约</option><option>排客</option><option>改约</option><option>取消排客</option><option>预约超时</option><option>到店</option><option>流退</option><option>结算</option></select>
-                    </div>
-                    <div class="form-item target-form">
-                      <label class="form-label">分配给</label>
-                      <div class="target-control">
-                        <div class="target-select-row has-ai-state" data-target-config="p1" data-default-target="person">
-                          <select class="form-input form-select target-type-select" onchange="changeTransferTargetType('p1',this.value)">
-                            <option value="all">全部规则包</option>
-                            <option value="person" selected>指定客服</option>
-                            <option value="package">指定规则包</option>
-                            <option value="original-employee">初始加微员工</option>
-                          </select>
-                          <div class="target-multi-select" id="transfer-p1-target-picker">
-                            <button class="target-multi-trigger" type="button" onclick="toggleTransferTargetMulti(event,this)"><span class="target-multi-label target-multi-placeholder">请选择</span><span class="target-multi-arrow"></span></button>
-                            <div class="target-multi-menu"></div>
-                          </div>
-                          <select class="form-input form-select transfer-assignment-ai" id="transfer-p1-ai-state" name="transfer-p1-ai-state" data-transfer-ai-state="p1" aria-label="分配后 AI 聊天状态" required>
-                            <option value="off" selected>关闭 AI</option>
-                            <option value="on">开启 AI</option>
-                            <option value="keep">保持原状态</option>
-                          </select>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </section>
-              </div>
-
-              <div id="transfer-chain-wechat" class="hidden">
-                <section class="rule-node">
-                  <div class="node-card">
-                    <div class="node-header">
-                      <div class="node-title"><span class="node-index">节点 1 · 触发</span><h4>加微后分配客服</h4></div>
+                      <div class="node-title"><h4>客户加微</h4></div>
+                      <div class="transfer-node-actions"></div>
                     </div>
                     <div class="form-item">
                       <label class="form-label">触发方式</label>
@@ -9536,18 +9369,17 @@
                     <div class="form-item target-form">
                       <label class="form-label">分配给</label>
                       <div class="target-control">
-                        <div class="target-select-row has-ai-state" data-target-config="w1" data-default-target="package">
-                          <select class="form-input form-select target-type-select" onchange="changeTransferTargetType('w1',this.value)">
+                        <div class="target-select-row has-ai-state" data-target-config="__node__" data-default-target="package">
+                          <select class="form-input form-select target-type-select" onchange="changeTransferTargetType('__node__',this.value)">
                             <option value="all">全部规则包</option>
                             <option value="person">指定客服</option>
                             <option value="package" selected>指定规则包</option>
-                            <option value="original-employee">初始加微员工</option>
                           </select>
-                          <div class="target-multi-select" id="transfer-w1-target-picker">
+                          <div class="target-multi-select" id="transfer-__node__-target-picker">
                             <button class="target-multi-trigger" type="button" onclick="toggleTransferTargetMulti(event,this)"><span class="target-multi-label target-multi-placeholder">请选择</span><span class="target-multi-arrow"></span></button>
                             <div class="target-multi-menu"></div>
                           </div>
-                          <select class="form-input form-select transfer-assignment-ai" id="transfer-w1-ai-state" name="transfer-w1-ai-state" data-transfer-ai-state="w1" aria-label="分配后 AI 聊天状态" required>
+                          <select class="form-input form-select transfer-assignment-ai" id="transfer-__node__-ai-state" name="transfer-__node__-ai-state" data-transfer-ai-state="__node__" aria-label="分配后 AI 聊天状态" required>
                             <option value="off" selected>关闭 AI</option>
                             <option value="on">开启 AI</option>
                             <option value="keep">保持原状态</option>
@@ -9557,36 +9389,67 @@
                     </div>
                   </div>
                 </section>
-
+            </template>
+            <template id="transfer-node-template-opened">
                 <section class="rule-node">
                   <div class="node-card">
                     <div class="node-header">
-                      <div class="node-title"><span class="node-index">节点 2</span><h4>加微后未开口客户重新分配</h4></div>
-                      <div class="node-switch"><span>启用</span><div class="toggle-track on" onclick="toggleTransferNode(this)"><div class="toggle-thumb"></div></div></div>
+                      <div class="node-title"><h4>客户开口</h4></div>
+                      <div class="transfer-node-actions"></div>
+                    </div>
+                    <div class="form-item target-form">
+                      <label class="form-label">分配给</label>
+                      <div class="target-control">
+                        <div class="target-select-row has-ai-state" data-target-config="__node__" data-default-target="package">
+                          <select class="form-input form-select target-type-select" onchange="changeTransferTargetType('__node__',this.value)">
+                            <option value="all">全部规则包</option>
+                            <option value="person">指定客服</option>
+                            <option value="package" selected>指定规则包</option>
+                          </select>
+                          <div class="target-multi-select" id="transfer-__node__-target-picker">
+                            <button class="target-multi-trigger" type="button" onclick="toggleTransferTargetMulti(event,this)"><span class="target-multi-label target-multi-placeholder">请选择</span><span class="target-multi-arrow"></span></button>
+                            <div class="target-multi-menu"></div>
+                          </div>
+                          <select class="form-input form-select transfer-assignment-ai" id="transfer-__node__-ai-state" name="transfer-__node__-ai-state" data-transfer-ai-state="__node__" aria-label="分配后 AI 聊天状态" required>
+                            <option value="off" selected>关闭 AI</option>
+                            <option value="on">开启 AI</option>
+                            <option value="keep">保持原状态</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+            </template>
+            <template id="transfer-node-template-unopened">
+                <section class="rule-node">
+                  <div class="node-card">
+                    <div class="node-header">
+                      <div class="node-title"><h4>客户未开口</h4></div>
+                      <div class="transfer-node-actions"></div>
                     </div>
                     <div class="form-grid">
                       <div class="form-item wide">
-                        <label class="form-label" for="transfer-wechat-unopened-delay">加微后</label>
+                        <label class="form-label" for="transfer-__node__-delay">加微后</label>
                         <div class="number-row assignment-delay">
-                          <input id="transfer-wechat-unopened-delay" name="transfer-wechat-unopened-delay" data-transfer-reassignment-delay type="number" class="form-input number" value="5" min="1" step="1" required aria-label="加微后未开口时长（分钟）">
+                          <input id="transfer-__node__-delay" name="transfer-__node__-delay" data-transfer-reassignment-delay type="number" class="form-input number" value="5" min="1" step="1" required aria-label="加微后未开口时长（分钟）">
                           <span class="unit">分钟客户仍未开口</span>
                         </div>
                       </div>
                       <div class="form-item target-form">
                         <label class="form-label">分配给</label>
                         <div class="target-control">
-                          <div class="target-select-row has-ai-state" data-target-config="wechat-unopened" data-default-target="package">
-                            <select class="form-input form-select target-type-select" onchange="changeTransferTargetType('wechat-unopened',this.value)">
+                          <div class="target-select-row has-ai-state" data-target-config="__node__" data-default-target="package">
+                            <select class="form-input form-select target-type-select" onchange="changeTransferTargetType('__node__',this.value)">
                               <option value="all">全部规则包</option>
                               <option value="person">指定客服</option>
                               <option value="package" selected>指定规则包</option>
-                              <option value="original-employee">初始加微员工</option>
                             </select>
-                            <div class="target-multi-select" id="transfer-wechat-unopened-target-picker">
+                            <div class="target-multi-select" id="transfer-__node__-target-picker">
                               <button class="target-multi-trigger" type="button" onclick="toggleTransferTargetMulti(event,this)"><span class="target-multi-label target-multi-placeholder">请选择</span><span class="target-multi-arrow"></span></button>
                               <div class="target-multi-menu"></div>
                             </div>
-                            <select class="form-input form-select transfer-assignment-ai" id="transfer-wechat-unopened-ai-state" name="transfer-wechat-unopened-ai-state" data-transfer-ai-state="wechat-unopened" aria-label="分配后 AI 聊天状态" required>
+                            <select class="form-input form-select transfer-assignment-ai" id="transfer-__node__-ai-state" name="transfer-__node__-ai-state" data-transfer-ai-state="__node__" aria-label="分配后 AI 聊天状态" required>
                               <option value="off" selected>关闭 AI</option>
                               <option value="on">开启 AI</option>
                               <option value="keep">保持原状态</option>
@@ -9597,36 +9460,36 @@
                     </div>
                   </div>
                 </section>
-
+            </template>
+            <template id="transfer-node-template-unpaid">
                 <section class="rule-node">
                   <div class="node-card">
                     <div class="node-header">
-                      <div class="node-title"><span class="node-index">节点 3</span><h4>加微后未付预约金客户重新分配</h4></div>
-                      <div class="node-switch"><span>启用</span><div class="toggle-track on" onclick="toggleTransferNode(this)"><div class="toggle-thumb"></div></div></div>
+                      <div class="node-title"><h4>超时未支付</h4></div>
+                      <div class="transfer-node-actions"></div>
                     </div>
                     <div class="form-grid">
                       <div class="form-item wide">
-                        <label class="form-label" for="transfer-wechat-unpaid-delay">加微后</label>
+                        <label class="form-label" for="transfer-__node__-delay">加微后</label>
                         <div class="number-row assignment-delay">
-                          <input id="transfer-wechat-unpaid-delay" name="transfer-wechat-unpaid-delay" data-transfer-reassignment-delay type="number" class="form-input number" value="5" min="1" step="1" required aria-label="加微后未付预约金时长（分钟）">
+                          <input id="transfer-__node__-delay" name="transfer-__node__-delay" data-transfer-reassignment-delay type="number" class="form-input number" value="5" min="1" step="1" required aria-label="加微后未付预约金时长（分钟）">
                           <span class="unit">分钟客户仍未付预约金</span>
                         </div>
                       </div>
                       <div class="form-item target-form">
                         <label class="form-label">分配给</label>
                         <div class="target-control">
-                          <div class="target-select-row has-ai-state" data-target-config="wechat-unpaid" data-default-target="package">
-                            <select class="form-input form-select target-type-select" onchange="changeTransferTargetType('wechat-unpaid',this.value)">
+                          <div class="target-select-row has-ai-state" data-target-config="__node__" data-default-target="package">
+                            <select class="form-input form-select target-type-select" onchange="changeTransferTargetType('__node__',this.value)">
                               <option value="all">全部规则包</option>
                               <option value="person">指定客服</option>
                               <option value="package" selected>指定规则包</option>
-                              <option value="original-employee">初始加微员工</option>
                             </select>
-                            <div class="target-multi-select" id="transfer-wechat-unpaid-target-picker">
+                            <div class="target-multi-select" id="transfer-__node__-target-picker">
                               <button class="target-multi-trigger" type="button" onclick="toggleTransferTargetMulti(event,this)"><span class="target-multi-label target-multi-placeholder">请选择</span><span class="target-multi-arrow"></span></button>
                               <div class="target-multi-menu"></div>
                             </div>
-                            <select class="form-input form-select transfer-assignment-ai" id="transfer-wechat-unpaid-ai-state" name="transfer-wechat-unpaid-ai-state" data-transfer-ai-state="wechat-unpaid" aria-label="分配后 AI 聊天状态" required>
+                            <select class="form-input form-select transfer-assignment-ai" id="transfer-__node__-ai-state" name="transfer-__node__-ai-state" data-transfer-ai-state="__node__" aria-label="分配后 AI 聊天状态" required>
                               <option value="off" selected>关闭 AI</option>
                               <option value="on">开启 AI</option>
                               <option value="keep">保持原状态</option>
@@ -9637,20 +9500,59 @@
                     </div>
                   </div>
                 </section>
-
+            </template>
+            <template id="transfer-node-template-timeout">
                 <section class="rule-node">
                   <div class="node-card">
                     <div class="node-header">
-                      <div class="node-title"><span class="node-index">节点 4</span><h4>客服超时未回复后重新分配</h4></div>
-                      <div class="node-switch"><span>启用</span><div class="toggle-track on" onclick="toggleTransferNode(this)"><div class="toggle-thumb"></div></div></div>
+                      <div class="node-title"><h4>超时未回复</h4></div>
+                      <div class="transfer-node-actions"></div>
                     </div>
                     <div class="form-grid">
-                      <div class="form-item"><label class="form-label">员工未回复时长</label><div class="number-row"><input type="number" class="form-input number" value="5" min="1"><span class="unit">分钟</span></div></div>
+                      <div class="form-item"><label class="form-label">首次未回复时长</label><div class="number-row"><input data-transfer-reassignment-delay type="number" class="form-input number" value="5" min="1" step="1" required aria-label="客服未回复时长（分钟）"><span class="unit">分钟</span></div></div>
                       <div class="form-item target-form">
                         <label class="form-label">分配给</label>
-                        <div class="inline-ai-assignment">
-                          <select class="form-input form-select" id="transfer-w2-target-type" name="transfer-w2-target-type" aria-label="分配给"><option value="random" selected>随机分配给其他可用客服</option><option value="original-employee">初始加微员工</option></select>
-                          <select class="form-input form-select transfer-assignment-ai" id="transfer-w2-ai-state" name="transfer-w2-ai-state" data-transfer-ai-state="w2" aria-label="分配后 AI 聊天状态" required>
+                        <div class="target-control">
+                          <div class="target-select-row has-ai-state" data-target-config="__node__" data-default-target="package">
+                            <select class="form-input form-select target-type-select" onchange="changeTransferTargetType('__node__',this.value)">
+                              <option value="all">全部规则包</option>
+                              <option value="person">指定客服</option>
+                              <option value="package" selected>指定规则包</option>
+                            </select>
+                            <div class="target-multi-select" id="transfer-__node__-target-picker">
+                              <button class="target-multi-trigger" type="button" onclick="toggleTransferTargetMulti(event,this)"><span class="target-multi-label target-multi-placeholder">请选择</span><span class="target-multi-arrow"></span></button>
+                              <div class="target-multi-menu"></div>
+                            </div>
+                            <select class="form-input form-select transfer-assignment-ai" id="transfer-__node__-ai-state" name="transfer-__node__-ai-state" data-transfer-ai-state="__node__" aria-label="分配后 AI 聊天状态" required>
+                              <option value="off" selected>关闭 AI</option>
+                              <option value="on">开启 AI</option>
+                              <option value="keep">保持原状态</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+            </template>
+            <template id="transfer-node-template-paid">
+                <section class="rule-node">
+                  <div class="node-card">
+                    <div class="node-header"><div class="node-title"><h4>已付预约金</h4></div><div class="transfer-node-actions"></div></div>
+                    <div class="form-item target-form">
+                      <label class="form-label">分配给</label>
+                      <div class="target-control">
+                        <div class="target-select-row has-ai-state" data-target-config="__node__" data-default-target="person">
+                          <select class="form-input form-select target-type-select" onchange="changeTransferTargetType('__node__',this.value)">
+                            <option value="all">全部规则包</option>
+                            <option value="person" selected>指定客服</option>
+                            <option value="package">指定规则包</option>
+                          </select>
+                          <div class="target-multi-select" id="transfer-__node__-target-picker">
+                            <button class="target-multi-trigger" type="button" onclick="toggleTransferTargetMulti(event,this)"><span class="target-multi-label target-multi-placeholder">请选择</span><span class="target-multi-arrow"></span></button>
+                            <div class="target-multi-menu"></div>
+                          </div>
+                          <select class="form-input form-select transfer-assignment-ai" id="transfer-__node__-ai-state" name="transfer-__node__-ai-state" data-transfer-ai-state="__node__" aria-label="分配后 AI 聊天状态" required>
                             <option value="off" selected>关闭 AI</option>
                             <option value="on">开启 AI</option>
                             <option value="keep">保持原状态</option>
@@ -9660,23 +9562,17 @@
                     </div>
                   </div>
                 </section>
-              </div>
-            </div>
+            </template>
 
-            <h3 class="chain-heading">3. 人工介入</h3>
             <div id="transfer-common-chain">
               <section class="rule-node">
                 <div class="node-card manual-intervention-card">
                   <div class="node-header">
-                    <div class="node-title"><h4>需要人工介入时</h4></div>
+                    <div class="node-title"><h4>3. 人工介入</h4></div>
                     <div class="node-switch"><span>启用</span><div class="toggle-track on" onclick="toggleTransferNode(this)"><div class="toggle-thumb"></div></div></div>
                   </div>
-                  <div class="form-item" id="transfer-platform-source-field">
-                    <label class="form-label">触发条件</label>
-                    <div class="node-readonly-text">平台判定当前会话需要人工介入</div>
-                  </div>
-                  <div class="form-item hidden" id="transfer-human-condition-field">
-                    <label class="form-label">触发条件</label>
+                  <div class="form-item" id="transfer-human-condition-field">
+                    <label class="form-label">匹配条件</label>
                     <div class="target-multi-select" id="transfer-human-condition-picker">
                       <button class="target-multi-trigger" type="button" onclick="toggleTransferTargetMulti(event,this)"><span class="target-multi-label">客户主动要求人工、AI无法可靠回答</span><span class="target-multi-arrow"></span></button>
                       <div class="target-multi-menu">
@@ -9713,7 +9609,6 @@
                             <option value="all">全部规则包</option>
                             <option value="person">指定客服</option>
                             <option value="package" selected>指定规则包</option>
-                            <option value="original-employee">初始加微员工</option>
                           </select>
                           <div class="target-multi-select" id="transfer-ai0-target-picker">
                             <button class="target-multi-trigger" type="button" onclick="toggleTransferTargetMulti(event,this)"><span class="target-multi-label target-multi-placeholder">请选择</span><span class="target-multi-arrow"></span></button>
@@ -9731,29 +9626,11 @@
                 </div>
               </section>
             </div>
-            <h3 class="chain-heading">4. AI临时接待</h3>
-            <div id="transfer-ai-takeover-chain">
-              <section class="rule-node">
-                <div class="node-card">
-                  <div class="node-header">
-                    <div class="node-title"><h4>人工状态下超时未回复时由AI临时接管</h4></div>
-                    <div class="node-switch"><span>启用</span><div class="toggle-track on" onclick="toggleTransferNode(this)"><div class="toggle-thumb"></div></div></div>
-                  </div>
-                  <div class="form-item">
-                    <label class="form-label">触发条件</label>
-                    <div class="temporary-takeover-delay">
-                      <span>客户发新消息后</span>
-                      <input id="transfer-ai-temporary-takeover-delay" type="number" class="form-input" value="5" min="1">
-                      <span>分钟客服仍未回复</span>
-                    </div>
-                  </div>
-                </div>
-              </section>
             </div>
           </div>
-          <footer class="drawer-footer">
-            <button onclick="closeTransferRuleDrawer()" class="ant-btn">取消</button>
-            <button onclick="saveTransferRule()" class="ant-btn ant-btn-primary">保存规则</button>
+          <footer class="drawer-footer modal-footer">
+            <button type="button" onclick="closeTransferRuleDrawer()" class="btn btn-default">取消</button>
+            <button type="button" onclick="saveTransferRule()" class="btn btn-primary">确认</button>
           </footer>
         </aside>
       </div>
@@ -14087,7 +13964,11 @@ document.addEventListener('DOMContentLoaded', initAiConfigCenter);
 
 
 // ===== 线上销售：转接规则 =====
-let transferSelectedType='open';
+let transferEditingCard=null;
+let transferNodeSequence=0;
+let transferCommonDefaults=null;
+let transferCurrentScene='online';
+let transferSceneDrafts={};
 
 function showTransferRuleToast(msg){
   const t=document.getElementById('transfer-rule-toast');
@@ -14104,21 +13985,32 @@ function unlockTransferRuleBodyIfIdle(){
   if(!document.querySelector('#page-transfer-rules .drawer-overlay.show'))document.body.style.overflow='';
 }
 
-function openTransferRuleDrawer(mode='create'){
-  document.getElementById('transfer-rule-edit-title').textContent=mode==='edit'?'编辑协作策略':'新建协作策略';
+function openTransferRuleDrawer(mode='create',button){
+  transferEditingCard=mode==='edit'?(button?.closest('.rule-card')||null):null;
+  const data=transferEditingCard?transferEditingCard._transferRule:null;
+  document.getElementById('transfer-rule-edit-title').textContent=data?'编辑协作策略':'新建协作策略';
+  document.getElementById('transfer-rule-name').value=data?data.name:'';
+  const basics=[['transfer-ai-employee','aiStrategy'],['transfer-related-service-account','serviceAccount'],['transfer-effective-scope','effectiveScope']];
+  basics.forEach(([id,key])=>{
+    const field=document.getElementById(id);
+    field.value=data?data[key]:Array.from(field.options).find(option=>option.defaultSelected)?.value||field.options[0].value;
+  });
+  closeTransferEventPicker();
+  transferCurrentScene=data?.scene||'online';
+  transferSceneDrafts={};
+  document.querySelectorAll('input[name="transfer-scene"]').forEach(input=>{input.checked=input.value===transferCurrentScene;});
+  loadTransferRuleNodes(data?data.nodes:[]);
+  loadTransferCommonSettings(data?data.common:transferCommonDefaults);
   document.getElementById('transfer-rule-drawer').classList.add('show');
-  document.querySelectorAll('#page-transfer-rules .dropdown-menu').forEach(m=>m.classList.add('hidden'));
+  document.querySelectorAll('#page-transfer-rules .dropdown-menu').forEach(menu=>menu.classList.add('hidden'));
   lockTransferRuleBody();
-  const body=document.querySelector('#page-transfer-rules #transfer-rule-drawer .drawer-body');
+  const body=document.querySelector('#transfer-rule-drawer .drawer-body');
   if(body)body.scrollTop=0;
-  initTransferTargetControls();
-  if(mode==='create')document.querySelectorAll('#transfer-rule-drawer [data-transfer-ai-state]').forEach(select=>{select.value='off';});
-  selectTransferType(transferSelectedType);
-  const interruptMode=document.querySelector('input[name="transfer-interrupt-mode"]:checked');
-  selectTransferInterruptMode(interruptMode?interruptMode.value:'keep');
 }
 
 function closeTransferRuleDrawer(){
+  closeTransferEventPicker();
+  document.querySelectorAll('#transfer-rule-drawer .target-multi-select.open').forEach(closeTransferTargetMulti);
   document.getElementById('transfer-rule-drawer').classList.remove('show');
   unlockTransferRuleBodyIfIdle();
 }
@@ -14224,46 +14116,49 @@ function saveTransferScope(){
 }
 
 function saveTransferRule(){
-  const invalidDelay=Array.from(document.querySelectorAll('#transfer-chain-'+transferSelectedType+' [data-transfer-reassignment-delay]')).find(input=>!input.closest('.node-disabled')&&!input.checkValidity());
-  if(invalidDelay){
-    showTransferRuleToast('请输入加微后重新分配时长，至少为 1 分钟的整数');
-    invalidDelay.focus();
-    return;
-  }
+  const name=document.getElementById('transfer-rule-name');
+  if(!name.value.trim()){showTransferRuleToast('请输入规则名称');name.focus();return;}
+  if(!document.querySelector('#transfer-rule-chains > .rule-node')){showTransferRuleToast('请至少添加一个事件');return;}
+  const eventTypes=Array.from(document.querySelectorAll('#transfer-rule-chains > .rule-node')).map(node=>node.dataset.nodeType);
+  if(new Set(eventTypes).size!==eventTypes.length){showTransferRuleToast('同一策略不能重复添加相同事件');return;}
+  if(eventTypes.some(type=>!transferSceneDefinitions[transferCurrentScene].events.includes(type))){showTransferRuleToast('当前场景不支持所选事件');return;}
+  const invalidDelay=Array.from(document.querySelectorAll('#transfer-rule-chains [data-transfer-reassignment-delay]')).find(input=>!input.closest('.node-disabled')&&!input.checkValidity());
+  if(invalidDelay){showTransferRuleToast('请输入至少为 1 分钟的整数时长');invalidDelay.focus();return;}
   const invalidAiState=Array.from(document.querySelectorAll('#transfer-rule-drawer [data-transfer-ai-state]')).find(select=>!select.closest('.hidden,.node-disabled')&&!['off','on','keep'].includes(select.value));
-  if(invalidAiState){
-    showTransferRuleToast('请选择分配后 AI 聊天状态');
-    invalidAiState.focus();
-    return;
+  if(invalidAiState){showTransferRuleToast('请选择分配后 AI 聊天状态');invalidAiState.focus();return;}
+  const invalidTarget=Array.from(document.querySelectorAll('#transfer-rule-drawer [data-target-config]')).find(row=>{
+    if(row.closest('.hidden,.node-disabled'))return false;
+    const type=readTransferTargetType(row);
+    const fixed=transferCurrentScene==='offline'&&row.closest('[data-node-type="added"]');
+    if(fixed)return type!=='adding-employee';
+    if(!transferSceneDefinitions[transferCurrentScene].targets.some(([value])=>value===type))return true;
+    return type!=='random'&&!(transferTargetSelections[row.dataset.targetConfig]?.[type]?.length);
+  });
+  if(invalidTarget){showTransferRuleToast('请选择分配的客服或规则包');(invalidTarget.querySelector('.target-multi-trigger')||invalidTarget.querySelector('.target-type-select'))?.focus();return;}
+  const common=readTransferCommonSettings();
+  if(common.humanEnabled&&common.conditionMode==='required'&&!common.conditions.length){showTransferRuleToast('请至少选择一个人工介入触发条件');return;}
+  let card=transferEditingCard;
+  if(!card){
+    card=document.querySelector('#transfer-rule-list .rule-card').cloneNode(true);
+    card.removeAttribute('data-node-types');
+    card.querySelectorAll('.scope-entry').forEach(button=>button.remove());
+    const scope=card.querySelector('.flex.items-center.gap-6.text-sm');
+    if(scope)scope.innerHTML='<span class="transfer-wecom-unbound">适用企微号：未绑定</span>';
+    const toggle=card.querySelector('.toggle-track');
+    toggle.classList.remove('on');toggle.classList.add('off');
+    const metadata=card.querySelector('.mt-3');
+    if(metadata)metadata.textContent='创建于 '+new Date().toLocaleDateString('zh-CN');
+    document.getElementById('transfer-rule-list').appendChild(card);
   }
-  if(transferSelectedType==='wechat'){
-    const selectedConditions=document.querySelectorAll('#transfer-human-condition-picker .target-multi-menu input:checked');
-    if(!selectedConditions.length){
-      showTransferRuleToast('请至少选择一个触发条件');
-      return;
-    }
-  }
+  card._transferRule={name:name.value.trim(),scene:transferCurrentScene,nodes:readTransferRuleNodes(),common,
+    aiStrategy:document.getElementById('transfer-ai-employee').value,
+    serviceAccount:document.getElementById('transfer-related-service-account').value,
+    effectiveScope:document.getElementById('transfer-effective-scope').value};
+  updateTransferRuleCard(card);
+  addTransferScopeEntrances();
+  filterTransferList();
   closeTransferRuleDrawer();
   showTransferRuleToast('规则保存成功');
-}
-
-// 类型选择
-function selectTransferType(type){
-  transferSelectedType=['open','pay','wechat'].includes(type)?type:'open';
-  const select=document.getElementById('transfer-rule-type');
-  if(select&&select.value!==transferSelectedType)select.value=transferSelectedType;
-  renderTransferRuleChains();
-}
-
-function renderTransferRuleChains(){
-  ['open','pay','wechat'].forEach(t=>{
-    const el=document.getElementById('transfer-chain-'+t);
-    if(el)el.classList.toggle('hidden',t!==transferSelectedType);
-  });
-  const platformSource=document.getElementById('transfer-platform-source-field');
-  const humanConditions=document.getElementById('transfer-human-condition-field');
-  if(platformSource)platformSource.classList.toggle('hidden',transferSelectedType==='wechat');
-  if(humanConditions)humanConditions.classList.toggle('hidden',transferSelectedType!=='wechat');
 }
 
 function selectTransferInterruptMode(mode){
@@ -14272,6 +14167,12 @@ function selectTransferInterruptMode(mode){
   const fields=document.getElementById('transfer-interrupt-reset-fields');
   if(fields)fields.classList.toggle('hidden',!reset);
   if(!reset)document.querySelectorAll('#transfer-interrupt-reset-fields .target-multi-select.open').forEach(closeTransferTargetMulti);
+}
+
+function applyTransferHumanConditionMode(){
+  const requireConditions=transferCurrentScene==='offline';
+  document.getElementById('transfer-human-condition-field').classList.toggle('hidden',!requireConditions);
+  if(!requireConditions)closeTransferTargetMulti(document.getElementById('transfer-human-condition-picker'));
 }
 
 function toggleTransferHumanCondition(){
@@ -14336,6 +14237,254 @@ const transferTargetDefaults={
 };
 const transferTargetSelections={};
 
+const transferSceneDefinitions={
+  online:{title:'线上场景',events:['added','opened','unopened','timeout','unpaid','paid'],targets:[['all','全部规则包'],['package','指定规则包'],['person','指定客服']]},
+  offline:{title:'线下场景',events:['added','opened','unopened','timeout'],targets:[['person','指定客服'],['random','随机分配']]}
+};
+
+function configureTransferTargetRow(row,preferredType,nodeType){
+  if(transferCurrentScene==='offline'&&nodeType==='added'){
+    row.dataset.fixedTarget='adding-employee';
+    const text=document.createElement('div');
+    text.className='node-readonly-text';text.textContent='加微员工';
+    row.querySelector('.target-type-select').replaceWith(text);
+    row.querySelector('.target-multi-select')?.remove();
+    row.classList.add('target-direct-assignment');
+    return 'adding-employee';
+  }
+  const select=row.querySelector('.target-type-select');
+  const options=transferSceneDefinitions[transferCurrentScene].targets;
+  select.replaceChildren();
+  options.forEach(([value,label])=>{const option=document.createElement('option');option.value=value;option.textContent=label;select.appendChild(option);});
+  const fallback=transferCurrentScene==='offline'?'person':'package';
+  select.value=options.some(([value])=>value===preferredType)?preferredType:fallback;
+  return select.value;
+}
+
+function readTransferTargetType(row){
+  return row.dataset.fixedTarget||row.querySelector('.target-type-select').value;
+}
+
+function switchTransferScene(scene){
+  if(!transferSceneDefinitions[scene]||scene===transferCurrentScene)return;
+  transferSceneDrafts[transferCurrentScene]={nodes:readTransferRuleNodes(),common:readTransferCommonSettings()};
+  closeTransferEventPicker();
+  document.querySelectorAll('#transfer-rule-drawer .target-multi-select.open').forEach(closeTransferTargetMulti);
+  transferCurrentScene=scene;
+  document.querySelectorAll('input[name="transfer-scene"]').forEach(input=>{input.checked=input.value===scene;});
+  const draft=transferSceneDrafts[scene]||{nodes:[],common:JSON.parse(JSON.stringify(transferCommonDefaults))};
+  loadTransferRuleNodes(draft.nodes);
+  loadTransferCommonSettings(draft.common);
+}
+
+const transferNodeTypes={
+  added:{title:'客户加微',defaultKey:'w1',targetType:'package'},
+  opened:{title:'客户开口',defaultKey:'n1',targetType:'package'},
+  unopened:{title:'客户未开口',defaultKey:'unopened',targetType:'package'},
+  unpaid:{title:'超时未支付',defaultKey:'unpaid',targetType:'package'},
+  timeout:{title:'超时未回复',defaultKey:'n2',targetType:'package'},
+  paid:{title:'已付预约金',defaultKey:'p1',targetType:'person'}
+};
+
+function newTransferNodeData(type){
+  const definition=transferNodeTypes[type];
+  return {type,targetType:transferCurrentScene==='offline'?(type==='added'?'adding-employee':'person'):definition.targetType,targets:JSON.parse(JSON.stringify(transferTargetDefaults[definition.defaultKey])),ai:'off',delay:5};
+}
+
+function appendTransferRuleNode(data){
+  if(!transferSceneDefinitions[transferCurrentScene].events.includes(data.type))return;
+  const template=document.getElementById('transfer-node-template-'+data.type);
+  if(!template)return;
+  const list=document.getElementById('transfer-rule-chains');
+  if(list.querySelector('[data-node-type="'+data.type+'"]'))return;
+  const prefix='event-'+(++transferNodeSequence);
+  list.querySelector('.transfer-node-empty')?.remove();
+  list.insertAdjacentHTML('beforeend',template.innerHTML.replaceAll('__node__',prefix));
+  const node=list.lastElementChild;
+  node.dataset.nodeType=data.type;
+  node.dataset.nodeKey=prefix;
+  const remove=document.createElement('button');
+  remove.type='button';
+  remove.className='transfer-node-delete';
+  remove.textContent='×';
+  remove.title='删除事件';
+  remove.setAttribute('aria-label','删除'+transferNodeTypes[data.type].title+'事件');
+  remove.onclick=()=>removeTransferRuleNode(node);
+  node.querySelector('.transfer-node-actions').appendChild(remove);
+  const row=node.querySelector('[data-target-config]');
+  const targetType=configureTransferTargetRow(row,data.targetType,data.type);
+  transferTargetSelections[prefix]=JSON.parse(JSON.stringify(data.targets||{}));
+  renderTransferTargetMulti(prefix,targetType);
+  node.querySelector('[data-transfer-ai-state]').value=data.ai||'off';
+  const delay=node.querySelector('[data-transfer-reassignment-delay]');
+  if(delay)delay.value=data.delay??5;
+  refreshTransferRuleNodeList();
+  return node;
+}
+
+function refreshTransferRuleNodeList(){
+  const list=document.getElementById('transfer-rule-chains');
+  const nodes=list.querySelectorAll('.rule-node');
+  if(!nodes.length&&!list.querySelector('.transfer-node-empty')){
+    list.innerHTML='<p class="transfer-node-empty">暂无事件，点击右上角“添加事件”进行配置。</p>';
+  }
+  refreshTransferEventOptions();
+}
+
+function refreshTransferEventOptions(){
+  const used=new Set(Array.from(document.querySelectorAll('#transfer-rule-chains > .rule-node')).map(node=>node.dataset.nodeType));
+  const menu=document.getElementById('transfer-event-menu');
+  menu.replaceChildren();
+  const availableEvents=transferSceneDefinitions[transferCurrentScene].events;
+  availableEvents.forEach(type=>{
+    const option=document.createElement('button');
+    option.type='button';
+    option.className='transfer-event-option';
+    option.dataset.eventType=type;
+    option.disabled=used.has(type);
+    option.setAttribute('aria-label',transferNodeTypes[type].title+(option.disabled?'，已添加':'，添加事件'));
+    const label=document.createElement('span');label.textContent=transferNodeTypes[type].title;
+    const state=document.createElement('span');state.className='transfer-event-option-state';state.textContent=option.disabled?'✓ 已添加':'＋';
+    option.append(label,state);
+    option.onclick=()=>addTransferRuleNode(type);
+    menu.appendChild(option);
+  });
+  const complete=used.size===availableEvents.length;
+  const button=document.getElementById('transfer-add-node-button');
+  button.disabled=complete;
+  button.textContent=complete?'全部事件已添加':'+ 添加事件';
+  if(complete)closeTransferEventPicker();
+}
+
+function toggleTransferEventPicker(event){
+  event?.stopPropagation();
+  const menu=document.getElementById('transfer-event-menu');
+  if(!menu.hidden){closeTransferEventPicker(true);return;}
+  refreshTransferEventOptions();
+  if(document.getElementById('transfer-add-node-button').disabled)return;
+  menu.hidden=false;
+  document.getElementById('transfer-add-node-button').setAttribute('aria-expanded','true');
+  document.querySelector('.transfer-events-section').classList.add('is-picking');
+  showTransferFloatingMenu(menu,document.getElementById('transfer-add-node-button'));
+  menu.querySelector('button:not(:disabled)')?.focus();
+}
+
+function closeTransferEventPicker(restoreFocus=false){
+  const menu=document.getElementById('transfer-event-menu');
+  hideTransferFloatingMenu(menu);
+  menu.hidden=true;
+  const button=document.getElementById('transfer-add-node-button');
+  button.setAttribute('aria-expanded','false');
+  document.querySelector('.transfer-events-section').classList.remove('is-picking');
+  if(restoreFocus&&!button.disabled)button.focus();
+}
+
+function addTransferRuleNode(type){
+  if(!transferSceneDefinitions[transferCurrentScene].events.includes(type))return;
+  if(document.querySelector('#transfer-rule-chains > [data-node-type="'+type+'"]')){showTransferRuleToast('该事件已添加');return;}
+  const node=appendTransferRuleNode(newTransferNodeData(type));
+  closeTransferEventPicker();
+  node?.scrollIntoView({block:'nearest'});
+  (node?.querySelector('.target-type-select')||node?.querySelector('[data-transfer-ai-state]'))?.focus();
+}
+
+function removeTransferRuleNode(node){
+  delete transferTargetSelections[node.dataset.nodeKey];
+  node.remove();
+  refreshTransferRuleNodeList();
+}
+
+function loadTransferRuleNodes(nodes){
+  const list=document.getElementById('transfer-rule-chains');
+  list.querySelectorAll('[data-node-key]').forEach(node=>{delete transferTargetSelections[node.dataset.nodeKey];});
+  list.replaceChildren();
+  nodes.forEach(appendTransferRuleNode);
+  refreshTransferRuleNodeList();
+}
+
+function readTransferRuleNodes(){
+  return Array.from(document.querySelectorAll('#transfer-rule-chains > .rule-node')).map(node=>({
+    type:node.dataset.nodeType,
+    targetType:readTransferTargetType(node.querySelector('[data-target-config]')),
+    targets:JSON.parse(JSON.stringify(transferTargetSelections[node.dataset.nodeKey]||{})),
+    ai:node.querySelector('[data-transfer-ai-state]').value,
+    delay:node.querySelector('[data-transfer-reassignment-delay]')?.value||5
+  }));
+}
+
+function readTransferCommonSettings(){
+  return {
+    humanEnabled:!document.querySelector('#transfer-common-chain .node-card').classList.contains('node-disabled'),
+    conditionMode:transferCurrentScene==='offline'?'required':'none',
+    conditions:Array.from(document.querySelectorAll('#transfer-human-condition-picker input:checked')).map(input=>input.value),
+    interruptMode:document.querySelector('input[name="transfer-interrupt-mode"]:checked').value,
+    targetType:document.querySelector('[data-target-config="ai0"] .target-type-select').value,
+    targets:JSON.parse(JSON.stringify(transferTargetSelections.ai0||{})),
+    ai:document.getElementById('transfer-ai0-ai-state').value
+  };
+}
+
+function loadTransferCommonSettings(data){
+  const setEnabled=(selector,enabled)=>{
+    const card=document.querySelector(selector+' .node-card');
+    card.classList.toggle('node-disabled',!enabled);
+    const toggle=card.querySelector('.toggle-track');
+    toggle.classList.toggle('on',enabled);
+    toggle.classList.toggle('off',!enabled);
+    toggle.previousElementSibling.textContent=enabled?'启用':'停用';
+  };
+  setEnabled('#transfer-common-chain',data.humanEnabled);
+  document.querySelectorAll('#transfer-human-condition-picker input').forEach(input=>{input.checked=data.conditions.includes(input.value);});
+  toggleTransferHumanCondition();
+  applyTransferHumanConditionMode();
+  selectTransferInterruptMode(data.interruptMode);
+  const targetType=configureTransferTargetRow(document.querySelector('[data-target-config="ai0"]'),data.targetType);
+  transferTargetSelections.ai0=JSON.parse(JSON.stringify(data.targets));
+  renderTransferTargetMulti('ai0',targetType);
+  document.getElementById('transfer-ai0-ai-state').value=data.ai;
+}
+
+function updateTransferRuleCard(card){
+  const data=card._transferRule;
+  card.querySelector('h3').textContent=data.name;
+  const tag=card.querySelector('.tag');
+  if(tag){tag.className='tag tag-open';tag.textContent=transferSceneDefinitions[data.scene||'online'].title+' · '+data.nodes.length+' 个事件';}
+  card.dataset.scene=data.scene||'online';
+  const summary=card.querySelector('.rule-chain-summary');
+  if(summary){
+    summary.replaceChildren();
+    data.nodes.forEach(node=>{
+      const text=document.createElement('span');
+      const definition=transferNodeTypes[node.type];
+      const detail=['unopened','unpaid','timeout'].includes(node.type)?' · '+node.delay+'分钟':'';
+      text.textContent=definition.title+detail;
+      summary.appendChild(text);
+    });
+  }
+}
+
+function initTransferRuleCards(){
+  transferCommonDefaults=readTransferCommonSettings();
+  document.querySelectorAll('#transfer-rule-list .rule-card').forEach(card=>{
+    const scene=card.dataset.scene||'online';
+    const nodes=card.dataset.nodeTypes.split(',').filter(type=>transferSceneDefinitions[scene].events.includes(type)).map(newTransferNodeData);
+    if(scene==='offline')nodes.forEach(node=>{node.targetType=node.type==='added'?'adding-employee':(node.type==='timeout'?'random':'person');});
+    const common=JSON.parse(JSON.stringify(transferCommonDefaults));
+    common.conditionMode=scene==='offline'?'required':'none';
+    if(scene==='offline')common.targetType='person';
+    card._transferRule={
+      name:card.querySelector('h3').textContent.trim(),scene,nodes,
+      aiStrategy:document.getElementById('transfer-ai-employee').value,
+      serviceAccount:document.getElementById('transfer-related-service-account').value,
+      effectiveScope:document.getElementById('transfer-effective-scope').value,
+      common
+    };
+    updateTransferRuleCard(card);
+  });
+  applyTransferHumanConditionMode();
+  refreshTransferRuleNodeList();
+}
+
 function initTransferTargetControls(){
   document.querySelectorAll('#page-transfer-rules #transfer-rule-drawer [data-target-config]').forEach(row=>{
     const prefix=row.dataset.targetConfig;
@@ -14356,24 +14505,65 @@ function changeTransferTargetType(prefix,type){
   renderTransferTargetMulti(prefix,type);
 }
 
+function positionTransferFloatingMenu(menu,anchor){
+  const body=document.querySelector('#transfer-rule-drawer .drawer-body');
+  if(!body||!anchor)return;
+  const rect=anchor.getBoundingClientRect();
+  const bounds=body.getBoundingClientRect();
+  const viewportWidth=window.innerWidth||document.documentElement.clientWidth;
+  const viewportHeight=window.innerHeight||document.documentElement.clientHeight;
+  const topBound=Math.max(bounds.top+8,8);
+  const bottomBound=Math.min(bounds.bottom-8,viewportHeight-8);
+  const isEvent=menu.id==='transfer-event-menu';
+  const width=Math.min(isEvent?340:rect.width,viewportWidth-24);
+  menu.style.width=width+'px';
+  const desired=Math.min(menu.scrollHeight||(isEvent?152:260),260);
+  const below=Math.max(0,bottomBound-rect.bottom-6);
+  const above=Math.max(0,rect.top-topBound-6);
+  const openAbove=below<desired&&above>below;
+  const height=Math.max(1,Math.min(desired,openAbove?above:below));
+  menu.style.maxHeight=height+'px';
+  menu.style.overflowY='auto';
+  if(menu.classList.contains('transfer-floating-menu')){
+    menu.style.left=Math.max(12,Math.min(isEvent?rect.right-width:rect.left,viewportWidth-width-12))+'px';
+    menu.style.top=(openAbove?Math.max(topBound,rect.top-height-6):rect.bottom+6)+'px';
+    menu.style.bottom='auto';
+    menu.style.right='auto';
+  }else{
+    menu.style.top=openAbove?'auto':'calc(100% + 6px)';
+    menu.style.bottom=openAbove?'calc(100% + 6px)':'auto';
+  }
+}
+
+function showTransferFloatingMenu(menu,anchor){
+  if(typeof menu.showPopover==='function'){
+    menu.setAttribute('popover','manual');
+    menu.classList.add('transfer-floating-menu');
+    if(!menu.matches(':popover-open'))menu.showPopover();
+  }
+  positionTransferFloatingMenu(menu,anchor);
+}
+
+function hideTransferFloatingMenu(menu){
+  if(!menu)return;
+  if(typeof menu.hidePopover==='function'&&menu.matches(':popover-open'))menu.hidePopover();
+  menu.classList.remove('transfer-floating-menu');
+  ['left','top','right','bottom','width','max-height','overflow-y'].forEach(property=>menu.style.removeProperty(property));
+}
+
 function closeTransferTargetMulti(picker){
   if(!picker)return;
+  hideTransferFloatingMenu(picker.querySelector('.target-multi-menu'));
   picker.classList.remove('open','drop-up');
+  picker.querySelector('.target-multi-trigger')?.setAttribute('aria-expanded','false');
   const node=picker.closest('.rule-node');
   if(node)node.classList.remove('target-layer');
 }
 
 function placeTransferTargetMulti(picker){
   const menu=picker.querySelector('.target-multi-menu');
-  const drawerBody=document.querySelector('#page-transfer-rules #transfer-rule-drawer .drawer-body');
-  if(!menu||!drawerBody)return;
-  picker.classList.remove('drop-up');
-  const pickerRect=picker.getBoundingClientRect();
-  const bodyRect=drawerBody.getBoundingClientRect();
-  const menuHeight=Math.min(menu.scrollHeight||260,260);
-  const spaceBelow=bodyRect.bottom-pickerRect.bottom-12;
-  const spaceAbove=pickerRect.top-bodyRect.top-12;
-  if(spaceBelow<menuHeight&&spaceAbove>spaceBelow)picker.classList.add('drop-up');
+  const anchor=picker.querySelector('.target-multi-trigger');
+  if(menu&&anchor)positionTransferFloatingMenu(menu,anchor);
 }
 
 function toggleTransferTargetMulti(event,btn){
@@ -14388,7 +14578,8 @@ function toggleTransferTargetMulti(event,btn){
     picker.classList.add('open');
     const node=picker.closest('.rule-node');
     if(node)node.classList.add('target-layer');
-    requestAnimationFrame(()=>placeTransferTargetMulti(picker));
+    btn.setAttribute('aria-expanded','true');
+    showTransferFloatingMenu(picker.querySelector('.target-multi-menu'),btn);
   }else{
     closeTransferTargetMulti(picker);
   }
@@ -14397,14 +14588,14 @@ function toggleTransferTargetMulti(event,btn){
 function renderTransferTargetMulti(prefix,type){
   const row=document.querySelector('#page-transfer-rules #transfer-rule-drawer [data-target-config="'+prefix+'"]');
   if(!row)return;
-  const originalEmployee=type==='original-employee';
+  const directTarget=type==='random'||type==='adding-employee';
   const picker=row.querySelector('.target-multi-select');
-  row.classList.toggle('target-original-employee',originalEmployee);
+  row.classList.toggle('target-direct-assignment',directTarget);
   if(picker){
-    picker.classList.toggle('hidden',originalEmployee);
-    if(originalEmployee)closeTransferTargetMulti(picker);
+    picker.classList.toggle('hidden',directTarget);
+    if(directTarget)closeTransferTargetMulti(picker);
   }
-  if(originalEmployee)return;
+  if(directTarget)return;
   const options=transferTargetTypeOptions[type]||[];
   const defaults=(transferTargetDefaults[prefix]&&transferTargetDefaults[prefix][type])||[];
   transferTargetSelections[prefix]=transferTargetSelections[prefix]||{};
@@ -14464,18 +14655,33 @@ function toggleTransferNode(el){
 // 下拉菜单
 function toggleTransferDropdown(btn){const m=btn.nextElementSibling;document.querySelectorAll('#page-transfer-rules .dropdown-menu').forEach(x=>{if(x!==m)x.classList.add('hidden')});m.classList.toggle('hidden');}
 document.addEventListener('click',e=>{if(!e.target.closest('#page-transfer-rules .relative'))document.querySelectorAll('#page-transfer-rules .dropdown-menu').forEach(m=>m.classList.add('hidden'));});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.getElementById('transfer-rule-drawer').classList.contains('show'))closeTransferRuleDrawer();});
+document.addEventListener('pointerdown',event=>{
+  if(!event.target.closest('#transfer-event-picker'))closeTransferEventPicker();
+  document.querySelectorAll('#transfer-rule-drawer .target-multi-select.open').forEach(picker=>{
+    if(!picker.contains(event.target))closeTransferTargetMulti(picker);
+  });
+},true);
+window.addEventListener('resize',()=>{
+  closeTransferEventPicker();
+  document.querySelectorAll('#transfer-rule-drawer .target-multi-select.open').forEach(closeTransferTargetMulti);
+});
+document.addEventListener('click',event=>{if(!event.target.closest('#transfer-event-picker'))closeTransferEventPicker();},true);
+document.addEventListener('keydown',event=>{
+  if(event.key==='Escape'&&document.getElementById('transfer-rule-drawer').classList.contains('show')){
+    if(!document.getElementById('transfer-event-menu').hidden){event.preventDefault();closeTransferEventPicker(true);}
+    else if(document.querySelector('#transfer-rule-drawer .target-multi-select.open')){
+      event.preventDefault();
+      const picker=document.querySelector('#transfer-rule-drawer .target-multi-select.open');
+      closeTransferTargetMulti(picker);picker.querySelector('.target-multi-trigger')?.focus();
+    }else closeTransferRuleDrawer();
+  }
+});
 
 // 列表筛选
-function filterTransferList(type){
-  const transferTypeSelect=document.getElementById('transfer-type-filter');
-  if(transferTypeSelect&&transferTypeSelect.value!==type)transferTypeSelect.value=type;
-  document.querySelectorAll('#page-transfer-rules .filter-btn').forEach(b=>{
-    const isActive=b.dataset.filter===type;
-    b.className='filter-btn px-4 py-2 rounded-lg text-sm font-medium '+(isActive?'bg-primary-600 text-white':'bg-white text-gray-600 border border-gray-200 hover:border-primary-300');
-  });
-  document.querySelectorAll('#page-transfer-rules #transfer-rule-list .rule-card').forEach(c=>{
-    c.style.display=(type==='all'||c.dataset.type===type)?'':'none';
+function filterTransferList(){
+  const keyword=(document.getElementById('transfer-rule-search')?.value||'').trim().toLowerCase();
+  document.querySelectorAll('#transfer-rule-list .rule-card').forEach(card=>{
+    card.style.display=card.querySelector('h3').textContent.toLowerCase().includes(keyword)?'':'none';
   });
 }
 
@@ -14495,8 +14701,12 @@ function addTransferScopeEntrances(){
 
 document.addEventListener('DOMContentLoaded',()=>{
   initTransferTargetControls();
-  selectTransferType('open');
+  initTransferRuleCards();
   addTransferScopeEntrances();
+  document.querySelector('#transfer-rule-drawer .drawer-body').addEventListener('scroll',()=>{
+    closeTransferEventPicker();
+    document.querySelectorAll('#transfer-rule-drawer .target-multi-select.open').forEach(closeTransferTargetMulti);
+  });
 });
 
 var activeWecomRemarkBindEvent='加微';
