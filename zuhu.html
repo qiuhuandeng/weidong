@@ -5355,6 +5355,31 @@
   #modal-ai-reception-route .ai-route-readonly{min-height:34px;padding:7px 11px;border:1px solid #e8edf2;border-radius:6px;background:#f8fafc;color:#334155;font-size:13px;line-height:20px}
   #modal-ai-reception-route .ai-route-drawer-note{margin-bottom:18px;padding:10px 12px;border:1px solid #d6e8ff;border-radius:6px;background:#f5f9ff;color:#52657a;font-size:12px;line-height:1.65}
   #modal-ai-reception-route .ai-route-customer-definition{margin-top:14px;padding-top:14px;border-top:1px solid #eef2f6;color:#8c9bab;font-size:12px;line-height:1.7}
+  #page-ai-strategies .ai-strategy-panel{background:#fff;border:1px solid #e8edf2;border-radius:8px;overflow:hidden}
+  #page-ai-strategies .ai-strategy-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 20px;border-bottom:1px solid #eef2f7}
+  #page-ai-strategies .ai-strategy-head h3{font-size:14px;color:#1a2332}
+  #page-ai-strategies .ai-strategy-note{margin-top:5px;color:#8c9bab;font-size:12px;line-height:1.6}
+  #page-ai-strategies table{min-width:1080px;table-layout:fixed;width:100%}
+  #page-ai-strategies th:nth-child(1){width:15%}
+  #page-ai-strategies th:nth-child(2){width:19%}
+  #page-ai-strategies th:nth-child(3),#page-ai-strategies th:nth-child(4),#page-ai-strategies th:nth-child(5){width:16%}
+  #page-ai-strategies th:nth-child(6){width:10%}
+  #page-ai-strategies th:nth-child(7){width:8%}
+  #page-ai-strategies td{white-space:normal;overflow-wrap:anywhere;line-height:1.65}
+  #page-ai-strategies .ai-strategy-name{font-weight:600;color:#1a2332}
+  #page-ai-strategies .ai-strategy-fallback-badge{display:inline-block;margin-top:5px;padding:1px 7px;border:1px solid #b7eb8f;border-radius:4px;background:#f6ffed;color:#389e0d;font-size:12px;font-weight:500;white-space:nowrap}
+  #modal-ai-strategy .ai-strategy-fallback-label{display:flex;align-items:center;gap:8px;color:#334155;font-size:13px;cursor:pointer}
+  #page-ai-strategies .ai-strategy-url{font-size:12px;color:#64748b}
+  #page-ai-strategies .ai-strategy-state{display:flex;align-items:center;gap:8px;white-space:nowrap;font-size:12px;color:#64748b}
+  #page-ai-strategies .switch{flex-shrink:0}
+  #page-ai-strategies .switch input:focus-visible + .switch-slider{outline:2px solid #91caff;outline-offset:3px}
+  #page-ai-strategies .ai-strategy-edit{color:#1677ff;font-size:13px;cursor:pointer}
+  #page-ai-strategies .btn{min-width:64px;height:32px;padding:4px 15px;border-radius:6px;font-size:13px;cursor:pointer;white-space:nowrap}
+  #page-ai-strategies .btn-primary{border:1px solid #1677ff;background:#1677ff;color:#fff}
+  #page-ai-strategies .btn-default{border:1px solid #d9d9d9;background:#fff;color:#555}
+  #modal-ai-strategy .modal{width:min(560px,100vw);max-width:min(560px,100vw)}
+  #modal-ai-strategy textarea{min-height:90px;resize:vertical}
+  #modal-ai-strategy .ai-strategy-error{margin-top:12px;color:#cf1322;font-size:13px;line-height:1.6}
 
 </style>
 </head>
@@ -8895,6 +8920,7 @@
       <div class="reception-strategy-tabs" role="tablist" aria-label="AI协作策略">
         <button class="reception-strategy-tab active" type="button" data-ai-collaboration-tab="rules" onclick="switchAiCollaborationTab('rules')">协作策略</button>
         <button class="reception-strategy-tab" type="button" data-ai-collaboration-tab="route" onclick="switchAiCollaborationTab('route')">AI接待路由</button>
+        <button class="reception-strategy-tab" type="button" data-ai-collaboration-tab="strategies" onclick="switchAiCollaborationTab('strategies')">AI策略</button>
       </div>
       <!-- ======================== 页面一：规则列表 ======================== -->
       <div id="transfer-rule-list-view" class="transfer-rule-list-view reception-strategy-panel active">
@@ -9557,7 +9583,7 @@
       <section class="ai-route-panel">
         <div class="ai-route-panel-head">
           <h3>客户状态路由</h3>
-          <span class="ai-route-sync-note">策略由外部平台同步</span>
+          <span class="ai-route-sync-note">未配置的路由自动使用兜底AI策略</span>
         </div>
         <div class="table-wrap ai-route-table">
           <table>
@@ -9579,18 +9605,46 @@
             <div class="form-group">
               <label class="form-label">新客AI策略</label>
               <select class="form-control" id="ai-reception-route-new-strategy"></select>
-              <span class="field-tip">选择“不启用AI”时，该状态下的新客不匹配AI策略</span>
+              <span class="field-tip">未单独配置时，该状态下的新客自动使用兜底AI策略</span>
             </div>
             <div class="form-group">
               <label class="form-label">老客AI策略</label>
               <select class="form-control" id="ai-reception-route-old-strategy"></select>
-              <span class="field-tip">选择“不启用AI”时，该状态下的老客不匹配AI策略</span>
+              <span class="field-tip">未单独配置时，该状态下的老客自动使用兜底AI策略</span>
             </div>
             <div class="ai-route-customer-definition">新客：历史无已结算订单；老客：历史存在至少一笔已结算订单。客户成为老客后不再变回新客。</div>
           </div>
           <div class="modal-footer"><button class="btn btn-default" type="button" onclick="closeAiReceptionRouteDrawer()">取消</button><button class="btn btn-primary" type="button" onclick="saveAiReceptionRoute()">保存</button></div>
         </div>
       </div>
+      </section>
+      <section class="reception-strategy-panel" id="page-ai-strategies" hidden>
+        <div class="ai-strategy-panel">
+          <div class="ai-strategy-head">
+            <h3>AI策略列表</h3>
+            <button class="btn btn-primary" type="button" onclick="openAiStrategyDrawer()">＋ 新增策略</button>
+          </div>
+          <div class="table-wrap">
+            <table><thead><tr><th>策略名称</th><th>适用场景描述</th><th>AI Reply URL</th><th>SOP Forward URL</th><th>Health URL</th><th>启用状态</th><th>操作</th></tr></thead><tbody id="ai-strategy-table-body"></tbody></table>
+          </div>
+        </div>
+        <div class="modal-overlay" id="modal-ai-strategy" onclick="if(event.target===this) closeAiStrategyDrawer()">
+          <form class="modal" role="dialog" aria-modal="true" aria-labelledby="ai-strategy-drawer-title" onsubmit="event.preventDefault();saveAiStrategy()">
+            <div class="modal-header"><span class="modal-title" id="ai-strategy-drawer-title">新增AI策略</span><button class="modal-close" type="button" onclick="closeAiStrategyDrawer()" aria-label="关闭">×</button></div>
+            <div class="modal-body">
+              <div class="form-group"><label class="form-label" for="ai-strategy-name">策略名称 <span style="color:#ff4d4f">*</span></label><input class="form-control" id="ai-strategy-name" required maxlength="50" placeholder="请输入策略名称"></div>
+              <div class="form-group"><label class="form-label" for="ai-strategy-description">适用场景描述 <span style="color:#ff4d4f">*</span></label><textarea class="form-control" id="ai-strategy-description" required maxlength="500" placeholder="描述适用的客户类型、接待阶段或业务场景"></textarea></div>
+              <div class="form-group"><label class="form-label" for="ai-strategy-reply-url">AI Reply URL <span style="color:#ff4d4f">*</span></label><input class="form-control" id="ai-strategy-reply-url" type="url" required placeholder="https://your-domain.com/ai/reply"><span class="field-tip">AI回复服务地址</span></div>
+              <div class="form-group"><label class="form-label" for="ai-strategy-forward-url">SOP Forward URL <span style="color:#ff4d4f">*</span></label><input class="form-control" id="ai-strategy-forward-url" type="url" required placeholder="https://your-domain.com/sop/forward"><span class="field-tip">SOP转发服务地址</span></div>
+              <div class="form-group"><label class="form-label" for="ai-strategy-health-url">Health URL <span style="color:#ff4d4f">*</span></label><input class="form-control" id="ai-strategy-health-url" type="url" required placeholder="https://your-domain.com/health"><span class="field-tip">服务健康检查地址</span></div>
+              <div class="form-group">
+                <label class="ai-strategy-fallback-label"><input id="ai-strategy-fallback" type="checkbox">设为兜底AI策略</label>
+              </div>
+              <div class="ai-strategy-error" id="ai-strategy-error" role="alert" hidden></div>
+            </div>
+            <div class="modal-footer"><button class="btn btn-default" type="button" onclick="closeAiStrategyDrawer()">取消</button><button class="btn btn-primary" type="submit">保存</button></div>
+          </form>
+        </div>
       </section>
     </div>
 
@@ -14456,15 +14510,18 @@ document.addEventListener('keydown',function(event){
 
 
 var aiReceptionStrategies = [
-  {id:'open-ai',name:'开口AI',enabled:true},
-  {id:'high-intent-ai',name:'高意向开口AI',enabled:true},
-  {id:'feed-ai',name:'信息流开口AI',enabled:true},
-  {id:'deposit-arrival-ai',name:'预约金后到店AI',enabled:true},
-  {id:'arrival-reminder-ai',name:'到店提醒AI',enabled:true},
-  {id:'old-repurchase-ai',name:'老客复购AI',enabled:true},
-  {id:'old-recall-ai',name:'老客召回AI',enabled:true},
-  {id:'low-intent-ai',name:'低意向唤醒AI',enabled:false}
-];
+  {id:'open-ai',name:'开口AI',description:'新客加微后的首次接待与需求了解',enabled:true},
+  {id:'high-intent-ai',name:'高意向开口AI',description:'高意向新客咨询，解答疑问并引导支付预约金',enabled:true},
+  {id:'feed-ai',name:'信息流开口AI',description:'信息流渠道客户的首次咨询与项目介绍',enabled:true},
+  {id:'deposit-arrival-ai',name:'预约金后到店AI',description:'已付预约金客户的到店预约与行程确认',enabled:true},
+  {id:'arrival-reminder-ai',name:'到店提醒AI',description:'已预约客户的到店提醒与注意事项说明',enabled:true},
+  {id:'old-repurchase-ai',name:'老客复购AI',description:'老客项目咨询与复购需求跟进',enabled:true},
+  {id:'old-recall-ai',name:'老客召回AI',description:'预约取消或长期未到店老客的回访召回',enabled:true},
+  {id:'low-intent-ai',name:'低意向唤醒AI',description:'低意向客户的需求唤醒与轻量跟进',enabled:false}
+].map(function(strategy){
+  var base='https://example.com/'+strategy.id;
+  return Object.assign(strategy,{replyUrl:base+'/reply',forwardUrl:base+'/sop/forward',healthUrl:base+'/health'});
+});
 var aiReceptionRoutes = [
   {id:'added-wechat',status:'加微',newStrategyId:'open-ai',oldStrategyId:'',updatedAt:'2026-09-12 10:30'},
   {id:'unpaid-deposit',status:'未付预约金',newStrategyId:'high-intent-ai',oldStrategyId:'old-repurchase-ai',updatedAt:'2026-09-12 10:30'},
@@ -14475,17 +14532,112 @@ var aiReceptionRoutes = [
   {id:'refund',status:'流退',newStrategyId:'',oldStrategyId:'',updatedAt:'2026-09-10 14:00'}
 ];
 var editingAiReceptionRouteId = null;
+var editingAiStrategyId = null;
+var aiCollaborationStorageKey = 'zuhu-ai-collaboration-v1';
+
+function persistAiCollaboration(strategies, routes){
+  try {
+    localStorage.setItem(aiCollaborationStorageKey,JSON.stringify({strategies:strategies,routes:routes}));
+    return true;
+  } catch(error) {
+    showToast('保存失败，请检查浏览器本地存储后重试','error');
+    return false;
+  }
+}
+
+function renderAiStrategies(){
+  var body=document.getElementById('ai-strategy-table-body');
+  if(!body)return;
+  body.innerHTML=aiReceptionStrategies.map(function(strategy){
+    return '<tr data-ai-strategy-id="'+escapeAttr(strategy.id)+'"><td class="ai-strategy-name">'+escapeHtml(strategy.name)+(strategy.isFallback?'<br><span class="ai-strategy-fallback-badge">兜底策略</span>':'')+'</td><td>'+escapeHtml(strategy.description)+'</td>'+['replyUrl','forwardUrl','healthUrl'].map(function(key){
+      return '<td class="ai-strategy-url">'+escapeHtml(strategy[key]||'未配置')+'</td>';
+    }).join('')+'<td><div class="ai-strategy-state"><label class="switch"><input type="checkbox" aria-label="'+escapeAttr('启用'+strategy.name)+'"'+(strategy.enabled?' checked':'')+' onchange="toggleAiStrategy(this)"><span class="switch-slider"></span></label><span>'+(strategy.enabled?'已启用':'已停用')+'</span></div></td><td><button class="ai-strategy-edit" type="button" onclick="openAiStrategyDrawer(this.closest(\'[data-ai-strategy-id]\').dataset.aiStrategyId)">配置</button></td></tr>';
+  }).join('') || '<tr><td colspan="7" style="text-align:center;padding:40px;color:#8c9bab">暂无AI策略，点击「新增策略」开始配置</td></tr>';
+}
+
+function toggleAiStrategy(input){
+  var id=input.closest('[data-ai-strategy-id]').dataset.aiStrategyId;
+  if(getAiReceptionStrategy(id).isFallback&&!input.checked){
+    input.checked=true;
+    showToast('请先更换或取消兜底策略，再停用此策略','warning');
+    return;
+  }
+  var strategies=aiReceptionStrategies.map(function(strategy){return strategy.id===id?Object.assign({},strategy,{enabled:input.checked}):strategy;});
+  if(!persistAiCollaboration(strategies,aiReceptionRoutes)){input.checked=!input.checked;return;}
+  aiReceptionStrategies=strategies;
+  renderAiStrategies();
+  renderAiReceptionRoutes();
+  showToast(getAiReceptionStrategy(id).enabled?'AI策略已启用':'AI策略已停用，关联路由已同步标记','success');
+}
+
+function openAiStrategyDrawer(id){
+  var strategy=id?getAiReceptionStrategy(id):null;
+  if(id&&!strategy)return;
+  editingAiStrategyId=strategy?strategy.id:null;
+  document.getElementById('ai-strategy-drawer-title').textContent=strategy?'配置AI策略':'新增AI策略';
+  var fields={'name':'name','description':'description','reply-url':'replyUrl','forward-url':'forwardUrl','health-url':'healthUrl'};
+  Object.keys(fields).forEach(function(key){document.getElementById('ai-strategy-'+key).value=strategy?strategy[fields[key]]||'':'';});
+  document.getElementById('ai-strategy-fallback').checked=!!(strategy&&strategy.isFallback);
+  document.getElementById('ai-strategy-error').hidden=true;
+  openModal('modal-ai-strategy');
+  document.getElementById('ai-strategy-name').focus();
+}
+
+function closeAiStrategyDrawer(){
+  closeModal('modal-ai-strategy');
+  editingAiStrategyId=null;
+}
+
+function saveAiStrategy(){
+  var fields={'name':'name','description':'description','reply-url':'replyUrl','forward-url':'forwardUrl','health-url':'healthUrl'};
+  var data={};
+  Object.keys(fields).forEach(function(key){data[fields[key]]=document.getElementById('ai-strategy-'+key).value.trim();});
+  var error='';
+  if(Object.keys(data).some(function(key){return !data[key];}))error='请完整填写策略名称、适用场景及三个服务地址。';
+  else if(aiReceptionStrategies.some(function(strategy){return strategy.id!==editingAiStrategyId&&strategy.name.toLowerCase()===data.name.toLowerCase();}))error='策略名称已存在，请使用其他名称。';
+  else if(['replyUrl','forwardUrl','healthUrl'].some(function(key){
+    try {var url=new URL(data[key]);return !/^https?:$/.test(url.protocol)||!url.hostname;}catch(e){return true;}
+  }))error='三个服务地址均须为有效的 HTTP 或 HTTPS URL。';
+  var errorBox=document.getElementById('ai-strategy-error');
+  errorBox.textContent=error;
+  errorBox.hidden=!error;
+  if(error)return;
+  var current=getAiReceptionStrategy(editingAiStrategyId);
+  data.id=current?current.id:'ai-strategy-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8);
+  data.isFallback=document.getElementById('ai-strategy-fallback').checked;
+  data.enabled=data.isFallback?true:(current?current.enabled:true);
+  var strategies=current?aiReceptionStrategies.map(function(strategy){return strategy.id===current.id?data:strategy;}):aiReceptionStrategies.concat([data]);
+  if(data.isFallback)strategies=strategies.map(function(strategy){return strategy.id===data.id?strategy:Object.assign({},strategy,{isFallback:false});});
+  if(!persistAiCollaboration(strategies,aiReceptionRoutes))return;
+  aiReceptionStrategies=strategies;
+  renderAiStrategies();
+  renderAiReceptionRoutes();
+  closeAiStrategyDrawer();
+  showToast('AI策略已保存','success');
+}
+
+document.addEventListener('keydown',function(event){
+  if(event.key==='Escape'&&document.getElementById('modal-ai-strategy').classList.contains('show'))closeAiStrategyDrawer();
+});
 
 function getAiReceptionStrategy(id){
   return aiReceptionStrategies.find(function(strategy){return strategy.id===id;});
 }
 
+function getAiFallbackStrategy(){
+  return aiReceptionStrategies.find(function(strategy){return strategy.isFallback&&strategy.enabled;});
+}
+
+function resolveAiReceptionStrategy(id){
+  return getAiReceptionStrategy(id)||getAiFallbackStrategy();
+}
+
 function renderAiReceptionStrategy(id){
-  if(!id)return '<span class="ai-route-empty">不启用AI</span>';
-  var strategy=getAiReceptionStrategy(id);
-  if(!strategy)return '<span class="ai-route-empty">策略不存在</span>';
+  var assignedStrategy=getAiReceptionStrategy(id);
+  var strategy=resolveAiReceptionStrategy(id);
+  if(!strategy)return '<span class="ai-route-empty">未配置兜底策略</span>';
   var disabledClass=strategy.enabled?'':' is-disabled';
-  var status=strategy.enabled?'':'<span class="tag tag-gray">已停用</span>';
+  var status=!assignedStrategy?'<span class="tag tag-green">兜底</span>':(strategy.enabled?'':'<span class="tag tag-gray">已停用</span>');
   return '<div class="ai-route-strategy'+disabledClass+'"><span>'+escapeHtml(strategy.name)+'</span>'+status+'</div>';
 }
 
@@ -14498,11 +14650,12 @@ function renderAiReceptionRoutes(){
 }
 
 function buildAiReceptionStrategyOptions(selectedId){
-  var options='<option value="">不启用AI</option>';
+  var fallback=getAiFallbackStrategy();
+  var options='<option value="">'+escapeHtml(fallback?'使用兜底策略（'+fallback.name+'）':'使用兜底策略（尚未设置）')+'</option>';
   options+=aiReceptionStrategies.map(function(strategy){
     var selected=strategy.id===selectedId?' selected':'';
     var disabled=!strategy.enabled?' disabled':'';
-    var suffix=strategy.enabled?'':'（已停用）';
+    var suffix=strategy.isFallback?'（兜底策略）':(strategy.enabled?'':'（已停用）');
     return '<option value="'+escapeHtml(strategy.id)+'"'+selected+disabled+'>'+escapeHtml(strategy.name+suffix)+'</option>';
   }).join('');
   return options;
@@ -14531,16 +14684,33 @@ function saveAiReceptionRoute(){
   if(!item)return;
   var newStrategy=document.getElementById('ai-reception-route-new-strategy');
   var oldStrategy=document.getElementById('ai-reception-route-old-strategy');
-  item.newStrategyId=newStrategy?newStrategy.value:'';
-  item.oldStrategyId=oldStrategy?oldStrategy.value:'';
+  var next=Object.assign({},item,{newStrategyId:newStrategy?newStrategy.value:'',oldStrategyId:oldStrategy?oldStrategy.value:''});
+  if(['newStrategyId','oldStrategyId'].some(function(key){
+    var strategy=getAiReceptionStrategy(next[key]);
+    return next[key]&&(!strategy||(!strategy.enabled&&next[key]!==item[key]));
+  })){showToast('请选择已启用的AI策略','warning');return;}
   var now=new Date();
   var pad=function(value){return String(value).padStart(2,'0');};
-  item.updatedAt=now.getFullYear()+'-'+pad(now.getMonth()+1)+'-'+pad(now.getDate())+' '+pad(now.getHours())+':'+pad(now.getMinutes());
+  next.updatedAt=now.getFullYear()+'-'+pad(now.getMonth()+1)+'-'+pad(now.getDate())+' '+pad(now.getHours())+':'+pad(now.getMinutes());
+  var routes=aiReceptionRoutes.map(function(route){return route.id===next.id?next:route;});
+  if(!persistAiCollaboration(aiReceptionStrategies,routes))return;
+  aiReceptionRoutes=routes;
   renderAiReceptionRoutes();
   closeAiReceptionRouteDrawer();
   showToast('AI接待路由已保存','success');
 }
 
+try {
+  var savedAiCollaboration=JSON.parse(localStorage.getItem(aiCollaborationStorageKey)||'null');
+  if(savedAiCollaboration&&Array.isArray(savedAiCollaboration.strategies)&&Array.isArray(savedAiCollaboration.routes)){
+    aiReceptionStrategies=savedAiCollaboration.strategies;
+    aiReceptionRoutes=aiReceptionRoutes.map(function(route){
+      var saved=savedAiCollaboration.routes.find(function(item){return item.id===route.id;});
+      return saved?Object.assign({},route,{newStrategyId:saved.newStrategyId,oldStrategyId:saved.oldStrategyId,updatedAt:saved.updatedAt}):route;
+    });
+  }
+} catch(error) {}
+renderAiStrategies();
 renderAiReceptionRoutes();
 
 var pageTitleMap = {
@@ -14662,9 +14832,10 @@ function switchWechatRuleTab(btn, paneId) {
 }
 
 function switchAiCollaborationTab(tabKey) {
-  var key = tabKey === 'route' ? 'route' : 'rules';
+  var key = ['route','strategies'].indexOf(tabKey) !== -1 ? tabKey : 'rules';
   var rulePanel = document.getElementById('transfer-rule-list-view');
   var routePanel = document.getElementById('page-ai-reception-route');
+  var strategyPanel = document.getElementById('page-ai-strategies');
   document.querySelectorAll('#page-transfer-rules [data-ai-collaboration-tab]').forEach(function(tab) {
     var active = tab.getAttribute('data-ai-collaboration-tab') === key;
     tab.classList.toggle('active', active);
@@ -14677,6 +14848,10 @@ function switchAiCollaborationTab(tabKey) {
   if (routePanel) {
     routePanel.hidden = key !== 'route';
     routePanel.classList.toggle('active', key === 'route');
+  }
+  if (strategyPanel) {
+    strategyPanel.hidden = key !== 'strategies';
+    strategyPanel.classList.toggle('active', key === 'strategies');
   }
   syncUnifiedQueryCards();
 }
