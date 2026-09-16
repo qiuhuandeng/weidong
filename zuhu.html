@@ -5213,6 +5213,9 @@
   #page-transfer-rules #transfer-rule-drawer .section-divider{border-top:1px solid #e5e7eb;margin:14px 0}
   #page-transfer-rules #transfer-rule-drawer .target-control{min-width:0}
   #page-transfer-rules #transfer-rule-drawer .target-select-row{display:grid;grid-template-columns:180px minmax(0,1fr);gap:10px;align-items:start}
+  #page-transfer-rules #transfer-rule-drawer .target-select-row.has-ai-state{grid-template-columns:160px minmax(0,1fr) 138px}
+  #page-transfer-rules #transfer-rule-drawer .inline-ai-assignment{display:grid;grid-template-columns:minmax(0,1fr) 138px;gap:10px;min-width:0;align-items:start}
+  #page-transfer-rules #transfer-rule-drawer .transfer-assignment-ai{width:100%;min-width:0}
   #page-transfer-rules #transfer-rule-drawer .target-type-select{width:100%;font-weight:600}
   #page-transfer-rules #transfer-rule-drawer .target-multi-select{position:relative;min-width:0}
   #page-transfer-rules #transfer-rule-drawer .rule-node.target-layer{z-index:40}
@@ -5263,6 +5266,7 @@
   #page-transfer-rules #transfer-rule-drawer #transfer-common-chain .manual-intervention-card>.form-item+.form-item{padding-top:14px;border-top:1px solid #eef2f7}
   #page-transfer-rules #transfer-rule-drawer #transfer-common-chain .manual-intervention-card>.interrupt-reset-fields>.form-item{padding:14px 16px}
   #page-transfer-rules #transfer-rule-drawer .number-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;max-width:240px}
+  #page-transfer-rules #transfer-rule-drawer .number-row.unopened-delay{grid-template-columns:minmax(0,206px) auto;max-width:360px;justify-content:start}
   #page-transfer-rules #transfer-rule-drawer .number-row.with-operator{grid-template-columns:72px minmax(0,1fr) auto;max-width:300px}
   #page-transfer-rules #transfer-rule-drawer .number-row .unit{font-size:13px;color:#64748b;white-space:nowrap}
   #page-transfer-rules #transfer-rule-drawer .number-row .operator{padding-right:28px}
@@ -5330,6 +5334,7 @@
   #page-transfer-rules #transfer-rule-drawer .temporary-takeover-delay{min-height:34px;display:grid;grid-template-columns:auto 88px auto;align-items:center;gap:8px;color:#334155;font-size:13px}
   #page-transfer-rules #transfer-rule-drawer .temporary-takeover-delay .form-input{width:88px;text-align:center}
   @media(max-width:700px){#page-transfer-rules .transfer-list-view-header{margin-left:-16px;margin-right:-16px;padding-left:16px;padding-right:16px}#page-transfer-rules .transfer-filter-bar{align-items:flex-start;flex-direction:column}#page-transfer-rules .transfer-filter-bar .transfer-search-wrap,#page-transfer-rules .transfer-filter-bar .transfer-search-wrap .form-input{width:100%}#page-transfer-rules #transfer-rule-drawer .drawer-panel,#page-transfer-rules .drawer-panel-sm{width:100%}#page-transfer-rules #transfer-rule-drawer .drawer-header{align-items:center;padding:0 16px}#page-transfer-rules #transfer-rule-drawer .form-section,#page-transfer-rules #transfer-rule-drawer #transfer-common-chain,#page-transfer-rules #transfer-rule-drawer #transfer-rule-chains,#page-transfer-rules #transfer-rule-drawer #transfer-ai-takeover-chain{padding-left:16px;padding-right:16px}#page-transfer-rules #transfer-rule-drawer .form-grid,#page-transfer-rules #transfer-rule-drawer .node-card .form-item,#page-transfer-rules #transfer-rule-drawer .node-card .target-form,#page-transfer-rules #transfer-rule-drawer .target-select-row{grid-template-columns:1fr;gap:8px}#page-transfer-rules #transfer-rule-drawer .node-card .form-label{text-align:left;margin-top:0}#page-transfer-rules #transfer-rule-drawer .node-ai-select{width:150px}#page-transfer-rules #transfer-rule-drawer .radio-list,#page-transfer-rules #transfer-rule-drawer .choice-grid,#page-transfer-rules #transfer-rule-drawer .inline-grid{grid-template-columns:1fr}#page-transfer-rules #transfer-rule-drawer .temporary-takeover-delay{grid-template-columns:auto 72px auto}#page-transfer-rules #transfer-rule-drawer .temporary-takeover-delay .form-input{width:72px}}
+  @media(max-width:700px){#page-transfer-rules #transfer-rule-drawer .target-select-row.has-ai-state{grid-template-columns:minmax(0,1fr) 138px}#page-transfer-rules #transfer-rule-drawer .target-select-row.has-ai-state>.target-type-select{grid-column:1/-1}}
 
   #page-ai-reception-route .ai-route-panel{background:#fff;border:1px solid #e8edf2;border-radius:8px;overflow:hidden}
   #page-ai-reception-route .ai-route-panel-head{min-height:54px;padding:12px 20px;border-bottom:1px solid #eef2f7;display:flex;align-items:center;justify-content:space-between;gap:16px}
@@ -9310,7 +9315,7 @@
                     <div class="form-item target-form">
                       <label class="form-label">分配给</label>
                       <div class="target-control">
-                        <div class="target-select-row" data-target-config="n1" data-default-target="package">
+                        <div class="target-select-row has-ai-state" data-target-config="n1" data-default-target="package">
                           <select class="form-input form-select target-type-select" onchange="changeTransferTargetType('n1',this.value)">
                             <option value="all">全部规则包</option>
                             <option value="person">指定客服</option>
@@ -9320,6 +9325,11 @@
                             <button class="target-multi-trigger" type="button" onclick="toggleTransferTargetMulti(event,this)"><span class="target-multi-label target-multi-placeholder">请选择</span><span class="target-multi-arrow"></span></button>
                             <div class="target-multi-menu"></div>
                           </div>
+                          <select class="form-input form-select transfer-assignment-ai" id="transfer-n1-ai-state" name="transfer-n1-ai-state" data-transfer-ai-state="n1" aria-label="分配后 AI 聊天状态" required>
+                            <option value="off" selected>关闭 AI</option>
+                            <option value="on">开启 AI</option>
+                            <option value="keep">保持原状态</option>
+                          </select>
                         </div>
                       </div>
                     </div>
@@ -9329,7 +9339,46 @@
                 <section class="rule-node">
                   <div class="node-card">
                     <div class="node-header">
-                      <div class="node-title"><span class="node-index">节点 2</span><h4>客服超时未回复后重新分配</h4></div>
+                      <div class="node-title"><span class="node-index">节点 2</span><h4>加微后未开口客户重新分配</h4></div>
+                      <div class="node-switch"><span>启用</span><div class="toggle-track on" onclick="toggleTransferNode(this)"><div class="toggle-thumb"></div></div></div>
+                    </div>
+                    <div class="form-grid">
+                      <div class="form-item wide">
+                        <label class="form-label" for="transfer-unopened-delay">加微后</label>
+                        <div class="number-row unopened-delay">
+                          <input id="transfer-unopened-delay" name="transfer-unopened-delay" type="number" class="form-input number" value="5" min="1" step="1" required aria-label="加微后未开口时长（分钟）">
+                          <span class="unit">分钟客户仍未开口</span>
+                        </div>
+                      </div>
+                      <div class="form-item target-form">
+                        <label class="form-label">分配给</label>
+                        <div class="target-control">
+                          <div class="target-select-row has-ai-state" data-target-config="unopened" data-default-target="package">
+                            <select class="form-input form-select target-type-select" onchange="changeTransferTargetType('unopened',this.value)">
+                              <option value="all">全部规则包</option>
+                              <option value="person">指定客服</option>
+                              <option value="package" selected>指定规则包</option>
+                            </select>
+                            <div class="target-multi-select" id="transfer-unopened-target-picker">
+                              <button class="target-multi-trigger" type="button" onclick="toggleTransferTargetMulti(event,this)"><span class="target-multi-label target-multi-placeholder">请选择</span><span class="target-multi-arrow"></span></button>
+                              <div class="target-multi-menu"></div>
+                            </div>
+                            <select class="form-input form-select transfer-assignment-ai" id="transfer-unopened-ai-state" name="transfer-unopened-ai-state" data-transfer-ai-state="unopened" aria-label="分配后 AI 聊天状态" required>
+                              <option value="off" selected>关闭 AI</option>
+                              <option value="on">开启 AI</option>
+                              <option value="keep">保持原状态</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+
+                <section class="rule-node">
+                  <div class="node-card">
+                    <div class="node-header">
+                      <div class="node-title"><span class="node-index">节点 3</span><h4>客服超时未回复后重新分配</h4></div>
                       <div class="node-switch"><span>启用</span><div class="toggle-track on" onclick="toggleTransferNode(this)"><div class="toggle-thumb"></div></div></div>
                     </div>
                     <div class="form-grid">
@@ -9337,7 +9386,7 @@
                       <div class="form-item target-form">
                         <label class="form-label">分配给</label>
                         <div class="target-control">
-                          <div class="target-select-row" data-target-config="n2" data-default-target="package">
+                          <div class="target-select-row has-ai-state" data-target-config="n2" data-default-target="package">
                             <select class="form-input form-select target-type-select" onchange="changeTransferTargetType('n2',this.value)">
                               <option value="all">全部规则包</option>
                               <option value="person">指定客服</option>
@@ -9347,6 +9396,11 @@
                               <button class="target-multi-trigger" type="button" onclick="toggleTransferTargetMulti(event,this)"><span class="target-multi-label target-multi-placeholder">请选择</span><span class="target-multi-arrow"></span></button>
                               <div class="target-multi-menu"></div>
                             </div>
+                            <select class="form-input form-select transfer-assignment-ai" id="transfer-n2-ai-state" name="transfer-n2-ai-state" data-transfer-ai-state="n2" aria-label="分配后 AI 聊天状态" required>
+                              <option value="off" selected>关闭 AI</option>
+                              <option value="on">开启 AI</option>
+                              <option value="keep">保持原状态</option>
+                            </select>
                           </div>
                         </div>
                       </div>
@@ -9357,7 +9411,7 @@
                 <section class="rule-node">
                   <div class="node-card">
                     <div class="node-header">
-                      <div class="node-title"><span class="node-index">节点 3</span><h4>预约金支付后转人工</h4></div>
+                      <div class="node-title"><span class="node-index">节点 4</span><h4>预约金支付后转人工</h4></div>
                       <div class="node-switch"><span>启用</span><div class="toggle-track on" onclick="toggleTransferNode(this)"><div class="toggle-thumb"></div></div></div>
                     </div>
                     <div class="form-item">
@@ -9367,7 +9421,7 @@
                     <div class="form-item target-form">
                       <label class="form-label">分配给</label>
                       <div class="target-control">
-                        <div class="target-select-row" data-target-config="n3" data-default-target="person">
+                        <div class="target-select-row has-ai-state" data-target-config="n3" data-default-target="person">
                           <select class="form-input form-select target-type-select" onchange="changeTransferTargetType('n3',this.value)">
                             <option value="all">全部规则包</option>
                             <option value="person" selected>指定客服</option>
@@ -9377,6 +9431,11 @@
                             <button class="target-multi-trigger" type="button" onclick="toggleTransferTargetMulti(event,this)"><span class="target-multi-label target-multi-placeholder">请选择</span><span class="target-multi-arrow"></span></button>
                             <div class="target-multi-menu"></div>
                           </div>
+                          <select class="form-input form-select transfer-assignment-ai" id="transfer-n3-ai-state" name="transfer-n3-ai-state" data-transfer-ai-state="n3" aria-label="分配后 AI 聊天状态" required>
+                            <option value="off" selected>关闭 AI</option>
+                            <option value="on">开启 AI</option>
+                            <option value="keep">保持原状态</option>
+                          </select>
                         </div>
                       </div>
                     </div>
@@ -9395,7 +9454,7 @@
                     <div class="form-item target-form">
                       <label class="form-label">分配给</label>
                       <div class="target-control">
-                        <div class="target-select-row" data-target-config="p1" data-default-target="person">
+                        <div class="target-select-row has-ai-state" data-target-config="p1" data-default-target="person">
                           <select class="form-input form-select target-type-select" onchange="changeTransferTargetType('p1',this.value)">
                             <option value="all">全部规则包</option>
                             <option value="person" selected>指定客服</option>
@@ -9405,6 +9464,11 @@
                             <button class="target-multi-trigger" type="button" onclick="toggleTransferTargetMulti(event,this)"><span class="target-multi-label target-multi-placeholder">请选择</span><span class="target-multi-arrow"></span></button>
                             <div class="target-multi-menu"></div>
                           </div>
+                          <select class="form-input form-select transfer-assignment-ai" id="transfer-p1-ai-state" name="transfer-p1-ai-state" data-transfer-ai-state="p1" aria-label="分配后 AI 聊天状态" required>
+                            <option value="off" selected>关闭 AI</option>
+                            <option value="on">开启 AI</option>
+                            <option value="keep">保持原状态</option>
+                          </select>
                         </div>
                       </div>
                     </div>
@@ -9424,7 +9488,14 @@
                     </div>
                     <div class="form-item">
                       <label class="form-label">初始归属</label>
-                      <div class="node-readonly-text">分配给二维码所属员工</div>
+                      <div class="inline-ai-assignment">
+                        <div class="node-readonly-text">分配给二维码所属员工</div>
+                        <select class="form-input form-select transfer-assignment-ai" id="transfer-w1-ai-state" name="transfer-w1-ai-state" data-transfer-ai-state="w1" aria-label="分配后 AI 聊天状态" required>
+                          <option value="off" selected>关闭 AI</option>
+                          <option value="on">开启 AI</option>
+                          <option value="keep">保持原状态</option>
+                        </select>
+                      </div>
                     </div>
                   </div>
                 </section>
@@ -9439,7 +9510,14 @@
                       <div class="form-item"><label class="form-label">员工未回复时长</label><div class="number-row"><input type="number" class="form-input number" value="5" min="1"><span class="unit">分钟</span></div></div>
                       <div class="form-item target-form">
                         <label class="form-label">分配给</label>
-                        <select class="form-input form-select"><option value="random" selected>随机分配给其他可用客服</option></select>
+                        <div class="inline-ai-assignment">
+                          <select class="form-input form-select"><option value="random" selected>随机分配给其他可用客服</option></select>
+                          <select class="form-input form-select transfer-assignment-ai" id="transfer-w2-ai-state" name="transfer-w2-ai-state" data-transfer-ai-state="w2" aria-label="分配后 AI 聊天状态" required>
+                            <option value="off" selected>关闭 AI</option>
+                            <option value="on">开启 AI</option>
+                            <option value="keep">保持原状态</option>
+                          </select>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -9492,7 +9570,7 @@
                     <div class="form-item target-form">
                       <label class="form-label">分配给</label>
                       <div class="target-control">
-                        <div class="target-select-row" data-target-config="ai0" data-default-target="package">
+                        <div class="target-select-row has-ai-state" data-target-config="ai0" data-default-target="package">
                           <select class="form-input form-select target-type-select" onchange="changeTransferTargetType('ai0',this.value)">
                             <option value="all">全部规则包</option>
                             <option value="person">指定客服</option>
@@ -9502,6 +9580,11 @@
                             <button class="target-multi-trigger" type="button" onclick="toggleTransferTargetMulti(event,this)"><span class="target-multi-label target-multi-placeholder">请选择</span><span class="target-multi-arrow"></span></button>
                             <div class="target-multi-menu"></div>
                           </div>
+                          <select class="form-input form-select transfer-assignment-ai" id="transfer-ai0-ai-state" name="transfer-ai0-ai-state" data-transfer-ai-state="ai0" aria-label="分配后 AI 聊天状态" required>
+                            <option value="off" selected>关闭 AI</option>
+                            <option value="on">开启 AI</option>
+                            <option value="keep">保持原状态</option>
+                          </select>
                         </div>
                       </div>
                     </div>
@@ -13890,6 +13973,7 @@ function openTransferRuleDrawer(mode='create'){
   const body=document.querySelector('#page-transfer-rules #transfer-rule-drawer .drawer-body');
   if(body)body.scrollTop=0;
   initTransferTargetControls();
+  if(mode==='create')document.querySelectorAll('#transfer-rule-drawer [data-transfer-ai-state]').forEach(select=>{select.value='off';});
   selectTransferType(transferSelectedType);
   const interruptMode=document.querySelector('input[name="transfer-interrupt-mode"]:checked');
   selectTransferInterruptMode(interruptMode?interruptMode.value:'keep');
@@ -14001,6 +14085,18 @@ function saveTransferScope(){
 }
 
 function saveTransferRule(){
+  const unopenedDelay=document.getElementById('transfer-unopened-delay');
+  if(transferSelectedType==='open'&&unopenedDelay&&!unopenedDelay.closest('.node-disabled')&&!unopenedDelay.checkValidity()){
+    showTransferRuleToast('请输入加微后未开口时长，至少为 1 分钟的整数');
+    unopenedDelay.focus();
+    return;
+  }
+  const invalidAiState=Array.from(document.querySelectorAll('#transfer-rule-drawer [data-transfer-ai-state]')).find(select=>!select.closest('.hidden,.node-disabled')&&!['off','on','keep'].includes(select.value));
+  if(invalidAiState){
+    showTransferRuleToast('请选择分配后 AI 聊天状态');
+    invalidAiState.focus();
+    return;
+  }
   if(transferSelectedType==='wechat'){
     const selectedConditions=document.querySelectorAll('#transfer-human-condition-picker .target-multi-menu input:checked');
     if(!selectedConditions.length){
@@ -14090,6 +14186,7 @@ const transferTargetTypeOptions={
 const transferTargetDefaults={
   ai0:{all:['all'],person:['supervisor-ye','ajie1'],package:['nurture','night-package']},
   n1:{all:['all'],package:['intent-a','douyin-package'],person:['xiaomei1','xiaoli1']},
+  unopened:{all:['all'],person:['xiaozhou2','supervisor-ye'],package:['nurture','night-package']},
   n2:{all:['all'],person:['xiaozhou2','supervisor-ye'],package:['nurture','night-package']},
   n3:{all:['all'],person:['paike-wang','paike-li'],package:['paike-package']},
   p1:{all:['all'],person:['paike-wang','paike-li'],package:['paike-package','old-user-package']}
