@@ -5216,6 +5216,8 @@
   #page-transfer-rules #transfer-rule-drawer .target-select-row.has-ai-state{grid-template-columns:160px minmax(0,1fr) 138px}
   #page-transfer-rules #transfer-rule-drawer .inline-ai-assignment{display:grid;grid-template-columns:minmax(0,1fr) 138px;gap:10px;min-width:0;align-items:start}
   #page-transfer-rules #transfer-rule-drawer .transfer-assignment-ai{width:100%;min-width:0}
+  #page-transfer-rules #transfer-rule-drawer .target-select-row.has-ai-state.target-original-employee{grid-template-columns:minmax(0,1fr) 138px}
+  #page-transfer-rules #transfer-rule-drawer .target-select-row.has-ai-state.target-original-employee>.target-type-select{grid-column:auto}
   #page-transfer-rules #transfer-rule-drawer .target-type-select{width:100%;font-weight:600}
   #page-transfer-rules #transfer-rule-drawer .target-multi-select{position:relative;min-width:0}
   #page-transfer-rules #transfer-rule-drawer .rule-node.target-layer{z-index:40}
@@ -5266,7 +5268,7 @@
   #page-transfer-rules #transfer-rule-drawer #transfer-common-chain .manual-intervention-card>.form-item+.form-item{padding-top:14px;border-top:1px solid #eef2f7}
   #page-transfer-rules #transfer-rule-drawer #transfer-common-chain .manual-intervention-card>.interrupt-reset-fields>.form-item{padding:14px 16px}
   #page-transfer-rules #transfer-rule-drawer .number-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;max-width:240px}
-  #page-transfer-rules #transfer-rule-drawer .number-row.unopened-delay{grid-template-columns:minmax(0,206px) auto;max-width:360px;justify-content:start}
+  #page-transfer-rules #transfer-rule-drawer .number-row.assignment-delay{grid-template-columns:minmax(0,206px) auto;max-width:360px;justify-content:start}
   #page-transfer-rules #transfer-rule-drawer .number-row.with-operator{grid-template-columns:72px minmax(0,1fr) auto;max-width:300px}
   #page-transfer-rules #transfer-rule-drawer .number-row .unit{font-size:13px;color:#64748b;white-space:nowrap}
   #page-transfer-rules #transfer-rule-drawer .number-row .operator{padding-right:28px}
@@ -8950,9 +8952,9 @@
             </div>
             <select id="transfer-type-filter" class="form-input form-select">
               <option value="all">全部规则（6）</option>
-              <option value="open">客户开口后转人工（3）</option>
-              <option value="pay">预约金支付后转人工（2）</option>
-              <option value="wechat">门店扫码加微后分配（1）</option>
+              <option value="open">客户开口后分配客服（3）</option>
+              <option value="pay">预约金支付后分配客服（2）</option>
+              <option value="wechat">加微后分配客服（1）</option>
             </select>
             <button onclick="filterTransferList(document.getElementById('transfer-type-filter').value)" class="ant-btn" type="button">查询</button>
           </div>
@@ -8967,8 +8969,8 @@
                   <div class="flex items-start justify-between mb-3">
                     <div>
                       <div class="flex items-center gap-2.5 mb-1">
-                        <h3 class="font-bold text-gray-900 text-[15px]">抖音高意向 - 客户开口后转人工</h3>
-                        <span class="tag tag-open">客户开口后转人工</span>
+                        <h3 class="font-bold text-gray-900 text-[15px]">抖音高意向 - 客户开口后分配客服</h3>
+                        <span class="tag tag-open">客户开口后分配客服</span>
                       </div>
                     </div>
                     <div class="flex items-center gap-2 flex-shrink-0">
@@ -9013,7 +9015,7 @@
                     <span class="text-gray-300 mx-1">|</span>
                     <div class="flex items-center gap-1.5">
                       <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                      <span class="text-gray-600">预约金已支付 → 转人工</span>
+                      <span class="text-gray-600">预约金已支付 → 分配客服</span>
                     </div>
                   </div>
                   <!-- 数据 -->
@@ -9032,8 +9034,8 @@
                   <div class="flex items-start justify-between mb-3">
                     <div>
                       <div class="flex items-center gap-2.5 mb-1">
-                        <h3 class="font-bold text-gray-900 text-[15px]">百度信息流 - 客户开口后转人工</h3>
-                        <span class="tag tag-open">客户开口后转人工</span>
+                        <h3 class="font-bold text-gray-900 text-[15px]">百度信息流 - 客户开口后分配客服</h3>
+                        <span class="tag tag-open">客户开口后分配客服</span>
                       </div>
                     </div>
                     <div class="flex items-center gap-2 flex-shrink-0">
@@ -9065,7 +9067,7 @@
                     <span class="text-gray-300 mx-1">|</span>
                     <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-amber-500"></span><span class="text-gray-600">客服10分钟未回复后重新分配</span></div>
                     <span class="text-gray-300 mx-1">|</span>
-                    <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-500"></span><span class="text-gray-600">预约金已支付 → 转人工</span></div>
+                    <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-500"></span><span class="text-gray-600">预约金已支付 → 分配客服</span></div>
                   </div>
                   <div class="flex items-center gap-6 mt-3 text-xs text-gray-400">
                     <span><i class="fas fa-clock mr-1"></i>创建于 2026-08-22</span>
@@ -9082,8 +9084,8 @@
                   <div class="flex items-start justify-between mb-3">
                     <div>
                       <div class="flex items-center gap-2.5 mb-1">
-                        <h3 class="font-bold text-gray-900 text-[15px]">快手渠道 - 客户开口后转人工</h3>
-                        <span class="tag tag-open">客户开口后转人工</span>
+                        <h3 class="font-bold text-gray-900 text-[15px]">快手渠道 - 客户开口后分配客服</h3>
+                        <span class="tag tag-open">客户开口后分配客服</span>
                       </div>
                     </div>
                     <div class="flex items-center gap-2 flex-shrink-0">
@@ -9124,8 +9126,8 @@
                   <div class="flex items-start justify-between mb-3">
                     <div>
                       <div class="flex items-center gap-2.5 mb-1">
-                        <h3 class="font-bold text-gray-900 text-[15px]">低意向长培育 - 预约金支付后转人工</h3>
-                        <span class="tag tag-pay">预约金支付后转人工</span>
+                        <h3 class="font-bold text-gray-900 text-[15px]">低意向长培育 - 预约金支付后分配客服</h3>
+                        <span class="tag tag-pay">预约金支付后分配客服</span>
                       </div>
                     </div>
                     <div class="flex items-center gap-2 flex-shrink-0">
@@ -9160,15 +9162,15 @@
               </div>
             </div>
 
-            <!-- 门店扫码加微后分配 -->
+            <!-- 加微后分配客服 -->
             <div class="rule-card" data-type="wechat">
               <div class="flex items-stretch">
                 <div class="flex-1 p-5">
                   <div class="flex items-start justify-between mb-3">
                     <div>
                       <div class="flex items-center gap-2.5 mb-1">
-                        <h3 class="font-bold text-gray-900 text-[15px]">门店扫码客户 - 门店扫码加微后分配</h3>
-                        <span class="tag tag-wechat">门店扫码加微后分配</span>
+                        <h3 class="font-bold text-gray-900 text-[15px]">门店扫码客户 - 加微后分配客服</h3>
+                        <span class="tag tag-wechat">加微后分配客服</span>
                       </div>
                     </div>
                     <div class="flex items-center gap-2 flex-shrink-0">
@@ -9187,9 +9189,9 @@
                     <div class="flex items-center gap-2 text-gray-500"><i class="fab fa-weixin text-green-500 text-xs"></i><span>适用企微号：</span><span class="wx-badge text-xs">门店员工活码</span></div>
                   </div>
                   <div class="bg-gray-50 rounded-lg px-4 py-3 flex items-center gap-3 text-xs rule-chain-summary">
-                    <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-blue-500"></span><span class="text-gray-600">客户扫码加微成功</span></div>
+                    <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-blue-500"></span><span class="text-gray-600">客户加微成功</span></div>
                     <i class="fas fa-arrow-right text-gray-300"></i>
-                    <span class="text-gray-700 font-medium">分配给二维码所属员工</span>
+                    <span class="text-gray-700 font-medium">分配给指定规则包：高意向包A、抖音加微包</span>
                     <span class="text-gray-300 mx-1">|</span>
                     <span class="text-gray-600">客服超时未回复后重新分配</span>
                   </div>
@@ -9205,8 +9207,8 @@
                   <div class="flex items-start justify-between mb-3">
                     <div>
                       <div class="flex items-center gap-2.5 mb-1">
-                        <h3 class="font-bold text-gray-900 text-[15px]">小红书种草 - 预约金支付后转人工</h3>
-                        <span class="tag tag-pay">预约金支付后转人工</span>
+                        <h3 class="font-bold text-gray-900 text-[15px]">小红书种草 - 预约金支付后分配客服</h3>
+                        <span class="tag tag-pay">预约金支付后分配客服</span>
                       </div>
                     </div>
                     <div class="flex items-center gap-2 flex-shrink-0">
@@ -9269,11 +9271,11 @@
                   <input type="text" class="form-input" placeholder="请输入规则名称" id="transfer-rule-name">
                 </div>
                 <div class="form-item">
-                  <label class="form-label">接待场景 <span class="text-red-500">*</span></label>
+                  <label class="form-label">分配场景 <span class="text-red-500">*</span></label>
                   <select class="form-input form-select" id="transfer-rule-type" onchange="selectTransferType(this.value)">
-                    <option value="open" selected>客户开口后转人工</option>
-                    <option value="pay">预约金支付后转人工</option>
-                    <option value="wechat">门店扫码加微后分配</option>
+                    <option value="open" selected>客户开口后分配客服</option>
+                    <option value="pay">预约金支付后分配客服</option>
+                    <option value="wechat">加微后分配客服</option>
                   </select>
                 </div>
                 <div class="form-item">
@@ -9310,7 +9312,7 @@
                 <section class="rule-node">
                   <div class="node-card">
                     <div class="node-header">
-                      <div class="node-title"><span class="node-index">节点 1 · 触发</span><h4>客户开口后转人工</h4></div>
+                      <div class="node-title"><span class="node-index">节点 1 · 触发</span><h4>客户开口后分配客服</h4></div>
                     </div>
                     <div class="form-item target-form">
                       <label class="form-label">分配给</label>
@@ -9320,6 +9322,7 @@
                             <option value="all">全部规则包</option>
                             <option value="person">指定客服</option>
                             <option value="package" selected>指定规则包</option>
+                            <option value="original-employee">初始加微员工</option>
                           </select>
                           <div class="target-multi-select" id="transfer-n1-target-picker">
                             <button class="target-multi-trigger" type="button" onclick="toggleTransferTargetMulti(event,this)"><span class="target-multi-label target-multi-placeholder">请选择</span><span class="target-multi-arrow"></span></button>
@@ -9345,8 +9348,8 @@
                     <div class="form-grid">
                       <div class="form-item wide">
                         <label class="form-label" for="transfer-unopened-delay">加微后</label>
-                        <div class="number-row unopened-delay">
-                          <input id="transfer-unopened-delay" name="transfer-unopened-delay" type="number" class="form-input number" value="5" min="1" step="1" required aria-label="加微后未开口时长（分钟）">
+                        <div class="number-row assignment-delay">
+                          <input id="transfer-unopened-delay" name="transfer-unopened-delay" data-transfer-reassignment-delay type="number" class="form-input number" value="5" min="1" step="1" required aria-label="加微后未开口时长（分钟）">
                           <span class="unit">分钟客户仍未开口</span>
                         </div>
                       </div>
@@ -9358,6 +9361,7 @@
                               <option value="all">全部规则包</option>
                               <option value="person">指定客服</option>
                               <option value="package" selected>指定规则包</option>
+                              <option value="original-employee">初始加微员工</option>
                             </select>
                             <div class="target-multi-select" id="transfer-unopened-target-picker">
                               <button class="target-multi-trigger" type="button" onclick="toggleTransferTargetMulti(event,this)"><span class="target-multi-label target-multi-placeholder">请选择</span><span class="target-multi-arrow"></span></button>
@@ -9378,7 +9382,47 @@
                 <section class="rule-node">
                   <div class="node-card">
                     <div class="node-header">
-                      <div class="node-title"><span class="node-index">节点 3</span><h4>客服超时未回复后重新分配</h4></div>
+                      <div class="node-title"><span class="node-index">节点 3</span><h4>加微后未付预约金客户重新分配</h4></div>
+                      <div class="node-switch"><span>启用</span><div class="toggle-track on" onclick="toggleTransferNode(this)"><div class="toggle-thumb"></div></div></div>
+                    </div>
+                    <div class="form-grid">
+                      <div class="form-item wide">
+                        <label class="form-label" for="transfer-unpaid-delay">加微后</label>
+                        <div class="number-row assignment-delay">
+                          <input id="transfer-unpaid-delay" name="transfer-unpaid-delay" data-transfer-reassignment-delay type="number" class="form-input number" value="5" min="1" step="1" required aria-label="加微后未付预约金时长（分钟）">
+                          <span class="unit">分钟客户仍未付预约金</span>
+                        </div>
+                      </div>
+                      <div class="form-item target-form">
+                        <label class="form-label">分配给</label>
+                        <div class="target-control">
+                          <div class="target-select-row has-ai-state" data-target-config="unpaid" data-default-target="package">
+                            <select class="form-input form-select target-type-select" onchange="changeTransferTargetType('unpaid',this.value)">
+                              <option value="all">全部规则包</option>
+                              <option value="person">指定客服</option>
+                              <option value="package" selected>指定规则包</option>
+                              <option value="original-employee">初始加微员工</option>
+                            </select>
+                            <div class="target-multi-select" id="transfer-unpaid-target-picker">
+                              <button class="target-multi-trigger" type="button" onclick="toggleTransferTargetMulti(event,this)"><span class="target-multi-label target-multi-placeholder">请选择</span><span class="target-multi-arrow"></span></button>
+                              <div class="target-multi-menu"></div>
+                            </div>
+                            <select class="form-input form-select transfer-assignment-ai" id="transfer-unpaid-ai-state" name="transfer-unpaid-ai-state" data-transfer-ai-state="unpaid" aria-label="分配后 AI 聊天状态" required>
+                              <option value="off" selected>关闭 AI</option>
+                              <option value="on">开启 AI</option>
+                              <option value="keep">保持原状态</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+
+                <section class="rule-node">
+                  <div class="node-card">
+                    <div class="node-header">
+                      <div class="node-title"><span class="node-index">节点 4</span><h4>客服超时未回复后重新分配</h4></div>
                       <div class="node-switch"><span>启用</span><div class="toggle-track on" onclick="toggleTransferNode(this)"><div class="toggle-thumb"></div></div></div>
                     </div>
                     <div class="form-grid">
@@ -9391,6 +9435,7 @@
                               <option value="all">全部规则包</option>
                               <option value="person">指定客服</option>
                               <option value="package" selected>指定规则包</option>
+                              <option value="original-employee">初始加微员工</option>
                             </select>
                             <div class="target-multi-select" id="transfer-n2-target-picker">
                               <button class="target-multi-trigger" type="button" onclick="toggleTransferTargetMulti(event,this)"><span class="target-multi-label target-multi-placeholder">请选择</span><span class="target-multi-arrow"></span></button>
@@ -9411,7 +9456,7 @@
                 <section class="rule-node">
                   <div class="node-card">
                     <div class="node-header">
-                      <div class="node-title"><span class="node-index">节点 4</span><h4>预约金支付后转人工</h4></div>
+                      <div class="node-title"><span class="node-index">节点 5</span><h4>预约金支付后分配客服</h4></div>
                       <div class="node-switch"><span>启用</span><div class="toggle-track on" onclick="toggleTransferNode(this)"><div class="toggle-thumb"></div></div></div>
                     </div>
                     <div class="form-item">
@@ -9426,6 +9471,7 @@
                             <option value="all">全部规则包</option>
                             <option value="person" selected>指定客服</option>
                             <option value="package">指定规则包</option>
+                            <option value="original-employee">初始加微员工</option>
                           </select>
                           <div class="target-multi-select" id="transfer-n3-target-picker">
                             <button class="target-multi-trigger" type="button" onclick="toggleTransferTargetMulti(event,this)"><span class="target-multi-label target-multi-placeholder">请选择</span><span class="target-multi-arrow"></span></button>
@@ -9446,7 +9492,7 @@
               <div id="transfer-chain-pay" class="hidden">
                 <section class="rule-node">
                   <div class="node-card">
-                    <div class="node-header"><div class="node-title"><span class="node-index">节点 1</span><h4>预约金支付后转人工</h4></div></div>
+                    <div class="node-header"><div class="node-title"><span class="node-index">节点 1</span><h4>预约金支付后分配客服</h4></div></div>
                     <div class="form-item">
                       <label class="form-label">触发状态</label>
                       <select class="form-input form-select"><option>加微</option><option>下单</option><option selected>预约金已支付</option><option>预约</option><option>排客</option><option>改约</option><option>取消排客</option><option>预约超时</option><option>到店</option><option>流退</option><option>结算</option></select>
@@ -9459,6 +9505,7 @@
                             <option value="all">全部规则包</option>
                             <option value="person" selected>指定客服</option>
                             <option value="package">指定规则包</option>
+                            <option value="original-employee">初始加微员工</option>
                           </select>
                           <div class="target-multi-select" id="transfer-p1-target-picker">
                             <button class="target-multi-trigger" type="button" onclick="toggleTransferTargetMulti(event,this)"><span class="target-multi-label target-multi-placeholder">请选择</span><span class="target-multi-arrow"></span></button>
@@ -9480,21 +9527,32 @@
                 <section class="rule-node">
                   <div class="node-card">
                     <div class="node-header">
-                      <div class="node-title"><span class="node-index">节点 1 · 触发</span><h4>门店扫码加微后分配</h4></div>
+                      <div class="node-title"><span class="node-index">节点 1 · 触发</span><h4>加微后分配客服</h4></div>
                     </div>
                     <div class="form-item">
                       <label class="form-label">触发方式</label>
-                      <div class="node-readonly-text">客户扫描员工二维码并成功添加企业微信</div>
+                      <div class="node-readonly-text">客户成功添加企业微信</div>
                     </div>
-                    <div class="form-item">
-                      <label class="form-label">初始归属</label>
-                      <div class="inline-ai-assignment">
-                        <div class="node-readonly-text">分配给二维码所属员工</div>
-                        <select class="form-input form-select transfer-assignment-ai" id="transfer-w1-ai-state" name="transfer-w1-ai-state" data-transfer-ai-state="w1" aria-label="分配后 AI 聊天状态" required>
-                          <option value="off" selected>关闭 AI</option>
-                          <option value="on">开启 AI</option>
-                          <option value="keep">保持原状态</option>
-                        </select>
+                    <div class="form-item target-form">
+                      <label class="form-label">分配给</label>
+                      <div class="target-control">
+                        <div class="target-select-row has-ai-state" data-target-config="w1" data-default-target="package">
+                          <select class="form-input form-select target-type-select" onchange="changeTransferTargetType('w1',this.value)">
+                            <option value="all">全部规则包</option>
+                            <option value="person">指定客服</option>
+                            <option value="package" selected>指定规则包</option>
+                            <option value="original-employee">初始加微员工</option>
+                          </select>
+                          <div class="target-multi-select" id="transfer-w1-target-picker">
+                            <button class="target-multi-trigger" type="button" onclick="toggleTransferTargetMulti(event,this)"><span class="target-multi-label target-multi-placeholder">请选择</span><span class="target-multi-arrow"></span></button>
+                            <div class="target-multi-menu"></div>
+                          </div>
+                          <select class="form-input form-select transfer-assignment-ai" id="transfer-w1-ai-state" name="transfer-w1-ai-state" data-transfer-ai-state="w1" aria-label="分配后 AI 聊天状态" required>
+                            <option value="off" selected>关闭 AI</option>
+                            <option value="on">开启 AI</option>
+                            <option value="keep">保持原状态</option>
+                          </select>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -9503,7 +9561,87 @@
                 <section class="rule-node">
                   <div class="node-card">
                     <div class="node-header">
-                      <div class="node-title"><span class="node-index">节点 2</span><h4>客服超时未回复后重新分配</h4></div>
+                      <div class="node-title"><span class="node-index">节点 2</span><h4>加微后未开口客户重新分配</h4></div>
+                      <div class="node-switch"><span>启用</span><div class="toggle-track on" onclick="toggleTransferNode(this)"><div class="toggle-thumb"></div></div></div>
+                    </div>
+                    <div class="form-grid">
+                      <div class="form-item wide">
+                        <label class="form-label" for="transfer-wechat-unopened-delay">加微后</label>
+                        <div class="number-row assignment-delay">
+                          <input id="transfer-wechat-unopened-delay" name="transfer-wechat-unopened-delay" data-transfer-reassignment-delay type="number" class="form-input number" value="5" min="1" step="1" required aria-label="加微后未开口时长（分钟）">
+                          <span class="unit">分钟客户仍未开口</span>
+                        </div>
+                      </div>
+                      <div class="form-item target-form">
+                        <label class="form-label">分配给</label>
+                        <div class="target-control">
+                          <div class="target-select-row has-ai-state" data-target-config="wechat-unopened" data-default-target="package">
+                            <select class="form-input form-select target-type-select" onchange="changeTransferTargetType('wechat-unopened',this.value)">
+                              <option value="all">全部规则包</option>
+                              <option value="person">指定客服</option>
+                              <option value="package" selected>指定规则包</option>
+                              <option value="original-employee">初始加微员工</option>
+                            </select>
+                            <div class="target-multi-select" id="transfer-wechat-unopened-target-picker">
+                              <button class="target-multi-trigger" type="button" onclick="toggleTransferTargetMulti(event,this)"><span class="target-multi-label target-multi-placeholder">请选择</span><span class="target-multi-arrow"></span></button>
+                              <div class="target-multi-menu"></div>
+                            </div>
+                            <select class="form-input form-select transfer-assignment-ai" id="transfer-wechat-unopened-ai-state" name="transfer-wechat-unopened-ai-state" data-transfer-ai-state="wechat-unopened" aria-label="分配后 AI 聊天状态" required>
+                              <option value="off" selected>关闭 AI</option>
+                              <option value="on">开启 AI</option>
+                              <option value="keep">保持原状态</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+
+                <section class="rule-node">
+                  <div class="node-card">
+                    <div class="node-header">
+                      <div class="node-title"><span class="node-index">节点 3</span><h4>加微后未付预约金客户重新分配</h4></div>
+                      <div class="node-switch"><span>启用</span><div class="toggle-track on" onclick="toggleTransferNode(this)"><div class="toggle-thumb"></div></div></div>
+                    </div>
+                    <div class="form-grid">
+                      <div class="form-item wide">
+                        <label class="form-label" for="transfer-wechat-unpaid-delay">加微后</label>
+                        <div class="number-row assignment-delay">
+                          <input id="transfer-wechat-unpaid-delay" name="transfer-wechat-unpaid-delay" data-transfer-reassignment-delay type="number" class="form-input number" value="5" min="1" step="1" required aria-label="加微后未付预约金时长（分钟）">
+                          <span class="unit">分钟客户仍未付预约金</span>
+                        </div>
+                      </div>
+                      <div class="form-item target-form">
+                        <label class="form-label">分配给</label>
+                        <div class="target-control">
+                          <div class="target-select-row has-ai-state" data-target-config="wechat-unpaid" data-default-target="package">
+                            <select class="form-input form-select target-type-select" onchange="changeTransferTargetType('wechat-unpaid',this.value)">
+                              <option value="all">全部规则包</option>
+                              <option value="person">指定客服</option>
+                              <option value="package" selected>指定规则包</option>
+                              <option value="original-employee">初始加微员工</option>
+                            </select>
+                            <div class="target-multi-select" id="transfer-wechat-unpaid-target-picker">
+                              <button class="target-multi-trigger" type="button" onclick="toggleTransferTargetMulti(event,this)"><span class="target-multi-label target-multi-placeholder">请选择</span><span class="target-multi-arrow"></span></button>
+                              <div class="target-multi-menu"></div>
+                            </div>
+                            <select class="form-input form-select transfer-assignment-ai" id="transfer-wechat-unpaid-ai-state" name="transfer-wechat-unpaid-ai-state" data-transfer-ai-state="wechat-unpaid" aria-label="分配后 AI 聊天状态" required>
+                              <option value="off" selected>关闭 AI</option>
+                              <option value="on">开启 AI</option>
+                              <option value="keep">保持原状态</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+
+                <section class="rule-node">
+                  <div class="node-card">
+                    <div class="node-header">
+                      <div class="node-title"><span class="node-index">节点 4</span><h4>客服超时未回复后重新分配</h4></div>
                       <div class="node-switch"><span>启用</span><div class="toggle-track on" onclick="toggleTransferNode(this)"><div class="toggle-thumb"></div></div></div>
                     </div>
                     <div class="form-grid">
@@ -9511,7 +9649,7 @@
                       <div class="form-item target-form">
                         <label class="form-label">分配给</label>
                         <div class="inline-ai-assignment">
-                          <select class="form-input form-select"><option value="random" selected>随机分配给其他可用客服</option></select>
+                          <select class="form-input form-select" id="transfer-w2-target-type" name="transfer-w2-target-type" aria-label="分配给"><option value="random" selected>随机分配给其他可用客服</option><option value="original-employee">初始加微员工</option></select>
                           <select class="form-input form-select transfer-assignment-ai" id="transfer-w2-ai-state" name="transfer-w2-ai-state" data-transfer-ai-state="w2" aria-label="分配后 AI 聊天状态" required>
                             <option value="off" selected>关闭 AI</option>
                             <option value="on">开启 AI</option>
@@ -9575,6 +9713,7 @@
                             <option value="all">全部规则包</option>
                             <option value="person">指定客服</option>
                             <option value="package" selected>指定规则包</option>
+                            <option value="original-employee">初始加微员工</option>
                           </select>
                           <div class="target-multi-select" id="transfer-ai0-target-picker">
                             <button class="target-multi-trigger" type="button" onclick="toggleTransferTargetMulti(event,this)"><span class="target-multi-label target-multi-placeholder">请选择</span><span class="target-multi-arrow"></span></button>
@@ -13993,8 +14132,8 @@ var transferScopeAccounts=[
   {name:'叶久龙-SL8076',id:'acc-c677ff6b9aed575d94b10da5d65e8d77',status:'current',selected:true},
   {name:'思杰战队-吴明杰-WW0601',id:'auto-128138db746fc41f',status:'current',selected:true},
   {name:'江燕芬-SL0080',id:'virtual-sl0080',status:'free',selected:false},
-  {name:'敬虔战队-9516',id:'auto-4fb5c9f6192d558db866e0c20755a00f',status:'bound',boundText:'已绑定：抖音高意向 - 客户开口后转人工',selected:false,disabled:true},
-  {name:'志伟战队-刘嘉俊-DY3184',id:'acc-1026d0345fa75d1ba587dbe00a3d30a1',status:'bound-green',boundText:'已绑定：低意向长培育 - 预约金支付后转人工',selected:false,disabled:true},
+  {name:'敬虔战队-9516',id:'auto-4fb5c9f6192d558db866e0c20755a00f',status:'bound',boundText:'已绑定：抖音高意向 - 客户开口后分配客服',selected:false,disabled:true},
+  {name:'志伟战队-刘嘉俊-DY3184',id:'acc-1026d0345fa75d1ba587dbe00a3d30a1',status:'bound-green',boundText:'已绑定：低意向长培育 - 预约金支付后分配客服',selected:false,disabled:true},
   {name:'沈晓欣',id:'auto-T1007',status:'warning',selected:false},
   {name:'敏虔战队-李伟-DY3498',id:'acc-88b311c75d4d909ca9ef77a160bc6182',status:'free',selected:false}
 ];
@@ -14085,10 +14224,10 @@ function saveTransferScope(){
 }
 
 function saveTransferRule(){
-  const unopenedDelay=document.getElementById('transfer-unopened-delay');
-  if(transferSelectedType==='open'&&unopenedDelay&&!unopenedDelay.closest('.node-disabled')&&!unopenedDelay.checkValidity()){
-    showTransferRuleToast('请输入加微后未开口时长，至少为 1 分钟的整数');
-    unopenedDelay.focus();
+  const invalidDelay=Array.from(document.querySelectorAll('#transfer-chain-'+transferSelectedType+' [data-transfer-reassignment-delay]')).find(input=>!input.closest('.node-disabled')&&!input.checkValidity());
+  if(invalidDelay){
+    showTransferRuleToast('请输入加微后重新分配时长，至少为 1 分钟的整数');
+    invalidDelay.focus();
     return;
   }
   const invalidAiState=Array.from(document.querySelectorAll('#transfer-rule-drawer [data-transfer-ai-state]')).find(select=>!select.closest('.hidden,.node-disabled')&&!['off','on','keep'].includes(select.value));
@@ -14186,7 +14325,11 @@ const transferTargetTypeOptions={
 const transferTargetDefaults={
   ai0:{all:['all'],person:['supervisor-ye','ajie1'],package:['nurture','night-package']},
   n1:{all:['all'],package:['intent-a','douyin-package'],person:['xiaomei1','xiaoli1']},
+  w1:{all:['all'],package:['intent-a','douyin-package'],person:['xiaomei1','xiaoli1']},
   unopened:{all:['all'],person:['xiaozhou2','supervisor-ye'],package:['nurture','night-package']},
+  'unpaid':{all:['all'],person:['xiaozhou2','supervisor-ye'],package:['nurture','night-package']},
+  'wechat-unopened':{all:['all'],person:['xiaozhou2','supervisor-ye'],package:['nurture','night-package']},
+  'wechat-unpaid':{all:['all'],person:['xiaozhou2','supervisor-ye'],package:['nurture','night-package']},
   n2:{all:['all'],person:['xiaozhou2','supervisor-ye'],package:['nurture','night-package']},
   n3:{all:['all'],person:['paike-wang','paike-li'],package:['paike-package']},
   p1:{all:['all'],person:['paike-wang','paike-li'],package:['paike-package','old-user-package']}
@@ -14254,6 +14397,14 @@ function toggleTransferTargetMulti(event,btn){
 function renderTransferTargetMulti(prefix,type){
   const row=document.querySelector('#page-transfer-rules #transfer-rule-drawer [data-target-config="'+prefix+'"]');
   if(!row)return;
+  const originalEmployee=type==='original-employee';
+  const picker=row.querySelector('.target-multi-select');
+  row.classList.toggle('target-original-employee',originalEmployee);
+  if(picker){
+    picker.classList.toggle('hidden',originalEmployee);
+    if(originalEmployee)closeTransferTargetMulti(picker);
+  }
+  if(originalEmployee)return;
   const options=transferTargetTypeOptions[type]||[];
   const defaults=(transferTargetDefaults[prefix]&&transferTargetDefaults[prefix][type])||[];
   transferTargetSelections[prefix]=transferTargetSelections[prefix]||{};
