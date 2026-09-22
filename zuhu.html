@@ -4895,15 +4895,15 @@
   #page-customer-allocation .allocation-field-grid { padding:16px; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px 16px; }
   #page-customer-allocation .allocation-field-grid.no-pad { padding:0; }
   #page-customer-allocation .allocation-field { display:block; min-width:0; }
-  #page-customer-allocation .allocation-field span { display:block; margin-bottom:6px; color:#555; font-size:13px; line-height:20px; font-weight:700; }
-  #page-customer-allocation .allocation-field input,
-  #page-customer-allocation .allocation-field select,
-  #page-customer-allocation .allocation-field textarea { width:100%; height:40px; padding:7px 12px; border:1px solid #d9e0e8; border-radius:7px; background:#fff; color:#1a2332; font-size:14px; line-height:22px; outline:none; box-shadow:none; }
-  #page-customer-allocation .allocation-field textarea { height:74px; resize:vertical; }
-  #page-customer-allocation .allocation-field input:focus,
-  #page-customer-allocation .allocation-field select:focus,
-  #page-customer-allocation .allocation-field textarea:focus { border-color:#1677ff; box-shadow:0 0 0 2px rgba(22,119,255,.08); }
-  #page-customer-allocation .allocation-field small { display:block; margin-top:6px; color:#8c9bab; font-size:12px; line-height:18px; }
+  #page-customer-allocation .allocation-field > span { display:block; margin-bottom:6px; color:#555; font-size:13px; line-height:20px; font-weight:700; }
+  #page-customer-allocation .allocation-field > input,
+  #page-customer-allocation .allocation-field > select,
+  #page-customer-allocation .allocation-field > textarea { width:100%; height:40px; padding:7px 12px; border:1px solid #d9e0e8; border-radius:7px; background:#fff; color:#1a2332; font-size:14px; line-height:22px; outline:none; box-shadow:none; }
+  #page-customer-allocation .allocation-field > textarea { height:74px; resize:vertical; }
+  #page-customer-allocation .allocation-field > input:focus,
+  #page-customer-allocation .allocation-field > select:focus,
+  #page-customer-allocation .allocation-field > textarea:focus { border-color:#1677ff; box-shadow:0 0 0 2px rgba(22,119,255,.08); }
+  #page-customer-allocation .allocation-field > small { display:block; margin-top:6px; color:#8c9bab; font-size:12px; line-height:18px; }
   #page-customer-allocation .allocation-switch-row { min-height:58px; padding:14px 16px; border-bottom:1px solid #eef2f7; display:flex; align-items:center; justify-content:space-between; gap:16px; }
   #page-customer-allocation .allocation-switch-row strong { display:block; color:#1a2332; font-size:14px; line-height:20px; font-weight:800; }
   #page-customer-allocation .allocation-switch-row span { display:block; margin-top:2px; color:#8c9bab; font-size:12px; line-height:18px; }
@@ -5034,11 +5034,11 @@
   #page-customer-allocation .allocation-drawer-section { margin:0 0 8px; padding:20px 24px 24px; border:0; background:#fff; }
   #page-customer-allocation .allocation-drawer-section:last-child { margin-bottom:0; }
   #page-customer-allocation .allocation-drawer-section h3 { margin-bottom:18px; font-weight:600; }
-  #page-customer-allocation .allocation-field input,
-  #page-customer-allocation .allocation-field select,
-  #page-customer-allocation .allocation-field textarea { height:34px; padding:5px 11px; border-radius:6px; font-size:13px; line-height:22px; }
-  #page-customer-allocation .allocation-field select { appearance:none; padding-right:32px; background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' stroke='%2394a3b8' stroke-width='1.5' fill='none'/%3E%3C/svg%3E") no-repeat right 11px center; }
-  #page-customer-allocation .allocation-field span { color:#555; font-weight:500; }
+  #page-customer-allocation .allocation-field > input,
+  #page-customer-allocation .allocation-field > select,
+  #page-customer-allocation .allocation-field > textarea { height:34px; padding:5px 11px; border-radius:6px; font-size:13px; line-height:22px; }
+  #page-customer-allocation .allocation-field > select { appearance:none; padding-right:32px; background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' stroke='%2394a3b8' stroke-width='1.5' fill='none'/%3E%3C/svg%3E") no-repeat right 11px center; }
+  #page-customer-allocation .allocation-field > span { color:#555; font-weight:500; }
   #page-customer-allocation .allocation-radio-group { gap:18px; }
   #page-customer-allocation .allocation-radio-item { min-height:22px; padding:0; border:0; border-radius:0; background:transparent; display:grid; grid-template-columns:16px minmax(0,1fr); align-items:start; gap:8px; }
   #page-customer-allocation .allocation-radio-item:hover,
@@ -5099,6 +5099,8 @@
   #page-transfer-rules #page-customer-allocation .allocation-drawer-footer .btn-primary { border:1px solid #1677ff; background:#1677ff; color:#fff; }
   #page-customer-allocation #allocation-transfer-drawer .allocation-transfer-multi .multi-select-control { min-height:34px; padding-top:4px; padding-bottom:4px; }
   #page-customer-allocation #allocation-transfer-drawer .allocation-transfer-multi .multi-select-dropdown { z-index:220; box-shadow:none; }
+  #page-customer-allocation #allocation-transfer-drawer .allocation-transfer-multi .multi-select-option { width:100%; box-sizing:border-box; }
+  #page-customer-allocation #allocation-transfer-drawer .allocation-transfer-multi .multi-select-option input { flex:0 0 14px; width:14px; height:14px; margin:0; padding:0; }
   #page-customer-allocation #allocation-transfer-drawer .allocation-transfer-multi .multi-select-option small { margin-left:auto; color:#8c9bab; font-size:12px; line-height:18px; }
   #page-customer-allocation #allocation-transfer-drawer .allocation-transfer-target { margin-top:18px; }
   #page-customer-allocation #allocation-transfer-drawer .allocation-transfer-target[hidden] { display:none; }
@@ -5196,6 +5198,7 @@
   #page-transfer-rules #transfer-rule-drawer .node-header{min-height:42px;padding:9px 12px;border-bottom:1px solid #eef2f7;background:#fff;display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0}
   #page-transfer-rules #transfer-rule-drawer .node-title{display:flex;align-items:center;gap:10px}
   #page-transfer-rules #transfer-rule-drawer .node-title h4{font-size:13px;line-height:20px;font-weight:700;color:#1a2332;margin:0}
+  #page-transfer-rules #transfer-rule-drawer .node-index{display:inline-flex;align-items:center;min-height:24px;padding:2px 8px;border-radius:5px;background:#1677ff;color:#fff;font-size:11px;font-weight:700;white-space:nowrap}
   #page-transfer-rules #transfer-rule-drawer .node-switch{display:flex;align-items:center;gap:8px;color:#555;font-size:12px;white-space:nowrap}
   #page-transfer-rules #transfer-rule-drawer .node-ai-select{width:168px;height:32px;padding-top:4px;padding-bottom:4px;font-size:12px;flex-shrink:0}
   #page-transfer-rules #transfer-rule-drawer .choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
@@ -5398,15 +5401,18 @@
   #page-transfer-rules #transfer-rule-drawer .transfer-builder{padding:16px 24px;gap:16px}
   #page-transfer-rules #transfer-rule-drawer .schedule-section{overflow:visible}
   #page-transfer-rules #transfer-rule-drawer .schedule-section-title{margin:0;line-height:20px}
+  #page-transfer-rules #transfer-rule-drawer #transfer-effective-date-field[hidden]{display:none}
+  #page-transfer-rules #transfer-rule-drawer #transfer-effective-date{max-width:280px}
+  #page-transfer-rules #transfer-rule-drawer #transfer-effective-date-hint{color:#64748b;line-height:1.7}
   #page-transfer-rules #transfer-rule-drawer #transfer-rule-chains{padding:0;gap:10px}
   #page-transfer-rules #transfer-rule-drawer #transfer-rule-chains .node-card{background:#fafbfc;border-radius:7px}
   #page-transfer-rules #transfer-rule-drawer #transfer-rule-chains .node-header{border-radius:7px 7px 0 0}
   #page-transfer-rules #transfer-rule-drawer .transfer-node-delete{display:flex;align-items:center;justify-content:center;width:28px;height:28px;padding:0;border-radius:4px;font-size:18px;color:#a8b3c2}
   #page-transfer-rules #transfer-rule-drawer .transfer-node-delete:hover{color:#ff4d4f;background:#fff1f0}
-  #page-transfer-rules #transfer-rule-drawer #transfer-common-chain{padding:0;gap:0}
-  #page-transfer-rules #transfer-rule-drawer #transfer-common-chain .node-card{border-radius:8px}
-  #page-transfer-rules #transfer-rule-drawer #transfer-common-chain .node-header{padding:14px 16px;border-radius:8px 8px 0 0}
-  #page-transfer-rules #transfer-rule-drawer #transfer-common-chain h4{font-size:14px}
+  #page-transfer-rules #transfer-rule-drawer #transfer-timeout-chain,#page-transfer-rules #transfer-rule-drawer #transfer-common-chain{padding:0;display:grid;gap:0}
+  #page-transfer-rules #transfer-rule-drawer #transfer-timeout-chain .node-card,#page-transfer-rules #transfer-rule-drawer #transfer-common-chain .node-card{border-radius:8px}
+  #page-transfer-rules #transfer-rule-drawer #transfer-timeout-chain .node-header,#page-transfer-rules #transfer-rule-drawer #transfer-common-chain .node-header{padding:14px 16px;border-radius:8px 8px 0 0}
+  #page-transfer-rules #transfer-rule-drawer #transfer-timeout-chain h4,#page-transfer-rules #transfer-rule-drawer #transfer-common-chain h4{font-size:14px}
   #page-transfer-rules #transfer-rule-drawer .drawer-footer{position:relative;z-index:1;min-height:65px;padding:14px 24px 18px;padding-bottom:max(18px,env(safe-area-inset-bottom));border-top-color:#f0f2f5;background:#fff}
   #page-transfer-rules #transfer-rule-drawer .drawer-footer .btn{font-size:13px;min-width:72px;min-height:32px}
   @media(max-width:700px){
@@ -9308,11 +9314,16 @@
                   <input type="text" class="form-input" placeholder="请输入规则名称" id="transfer-rule-name">
                 </div>
                 <div class="form-item">
-                  <label class="form-label">生效范围 <span class="text-red-500">*</span></label>
-                  <select class="form-input form-select" id="transfer-effective-scope">
+                  <label class="form-label" for="transfer-effective-scope">生效范围 <span class="text-red-500">*</span></label>
+                  <select class="form-input form-select" id="transfer-effective-scope" onchange="syncTransferEffectiveDate()">
                     <option value="new-session" selected>仅新会话生效</option>
                     <option value="include-history">含历史存量客户</option>
                   </select>
+                </div>
+                <div class="form-item wide" id="transfer-effective-date-field" hidden>
+                  <label class="form-label" for="transfer-effective-date">生效时间 <span class="text-red-500">*</span></label>
+                  <input type="datetime-local" step="60" class="form-input" id="transfer-effective-date" aria-describedby="transfer-effective-date-hint" disabled>
+                  <p class="form-hint" id="transfer-effective-date-hint">此时间后加微的客户，加微记录中的员工变更为分配后的员工。</p>
                 </div>
                 <div class="form-item">
                   <label class="form-label">AI 聊天使用的策略 <span class="text-red-500">*</span></label>
@@ -9359,7 +9370,7 @@
                 <section class="rule-node">
                   <div class="node-card">
                     <div class="node-header">
-                      <div class="node-title"><h4>客户加微</h4></div>
+                      <div class="node-title"><span class="node-index">节点</span><h4>客户加微</h4></div>
                       <div class="transfer-node-actions"></div>
                     </div>
                     <div class="form-item">
@@ -9394,7 +9405,7 @@
                 <section class="rule-node">
                   <div class="node-card">
                     <div class="node-header">
-                      <div class="node-title"><h4>客户开口</h4></div>
+                      <div class="node-title"><span class="node-index">节点</span><h4>客户开口</h4></div>
                       <div class="transfer-node-actions"></div>
                     </div>
                     <div class="form-item target-form">
@@ -9425,7 +9436,7 @@
                 <section class="rule-node">
                   <div class="node-card">
                     <div class="node-header">
-                      <div class="node-title"><h4>客户未开口</h4></div>
+                      <div class="node-title"><span class="node-index">节点</span><h4>客户未开口</h4></div>
                       <div class="transfer-node-actions"></div>
                     </div>
                     <div class="form-grid">
@@ -9465,7 +9476,7 @@
                 <section class="rule-node">
                   <div class="node-card">
                     <div class="node-header">
-                      <div class="node-title"><h4>超时未支付</h4></div>
+                      <div class="node-title"><span class="node-index">节点</span><h4>未付预约金</h4></div>
                       <div class="transfer-node-actions"></div>
                     </div>
                     <div class="form-grid">
@@ -9501,44 +9512,10 @@
                   </div>
                 </section>
             </template>
-            <template id="transfer-node-template-timeout">
-                <section class="rule-node">
-                  <div class="node-card">
-                    <div class="node-header">
-                      <div class="node-title"><h4>超时未回复</h4></div>
-                      <div class="transfer-node-actions"></div>
-                    </div>
-                    <div class="form-grid">
-                      <div class="form-item"><label class="form-label">首次未回复时长</label><div class="number-row"><input data-transfer-reassignment-delay type="number" class="form-input number" value="5" min="1" step="1" required aria-label="客服未回复时长（分钟）"><span class="unit">分钟</span></div></div>
-                      <div class="form-item target-form">
-                        <label class="form-label">分配给</label>
-                        <div class="target-control">
-                          <div class="target-select-row has-ai-state" data-target-config="__node__" data-default-target="package">
-                            <select class="form-input form-select target-type-select" onchange="changeTransferTargetType('__node__',this.value)">
-                              <option value="all">全部规则包</option>
-                              <option value="person">指定客服</option>
-                              <option value="package" selected>指定规则包</option>
-                            </select>
-                            <div class="target-multi-select" id="transfer-__node__-target-picker">
-                              <button class="target-multi-trigger" type="button" onclick="toggleTransferTargetMulti(event,this)"><span class="target-multi-label target-multi-placeholder">请选择</span><span class="target-multi-arrow"></span></button>
-                              <div class="target-multi-menu"></div>
-                            </div>
-                            <select class="form-input form-select transfer-assignment-ai" id="transfer-__node__-ai-state" name="transfer-__node__-ai-state" data-transfer-ai-state="__node__" aria-label="分配后 AI 聊天状态" required>
-                              <option value="off" selected>关闭 AI</option>
-                              <option value="on">开启 AI</option>
-                              <option value="keep">保持原状态</option>
-                            </select>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </section>
-            </template>
             <template id="transfer-node-template-paid">
                 <section class="rule-node">
                   <div class="node-card">
-                    <div class="node-header"><div class="node-title"><h4>已付预约金</h4></div><div class="transfer-node-actions"></div></div>
+                    <div class="node-header"><div class="node-title"><span class="node-index">节点</span><h4>已付款预约金</h4></div><div class="transfer-node-actions"></div></div>
                     <div class="form-item target-form">
                       <label class="form-label">分配给</label>
                       <div class="target-control">
@@ -9564,11 +9541,49 @@
                 </section>
             </template>
 
+            <div id="transfer-timeout-chain">
+              <section class="rule-node">
+                <div class="node-card">
+                  <div class="node-header">
+                    <div class="node-title"><h4>3. 超时未回复</h4></div>
+                    <div class="node-switch"><span>启用</span><div class="toggle-track on" onclick="toggleTransferNode(this)"><div class="toggle-thumb"></div></div></div>
+                  </div>
+                  <div class="form-grid">
+                    <div class="form-item">
+                      <label class="form-label" for="transfer-timeout-delay">首次分配后</label>
+                      <div class="number-row assignment-delay"><input id="transfer-timeout-delay" data-transfer-reassignment-delay type="number" class="form-input number" value="5" min="1" step="1" required aria-label="首次分配后未回复客户时长（分钟）"><span class="unit">分钟未回复客户</span></div>
+                    </div>
+                    <div class="form-item target-form">
+                      <label class="form-label">分配给</label>
+                      <div class="target-control">
+                        <div class="target-select-row has-ai-state" data-target-config="timeout0" data-default-target="package">
+                          <select class="form-input form-select target-type-select" onchange="changeTransferTargetType('timeout0',this.value)">
+                            <option value="all">全部规则包</option>
+                            <option value="person">指定客服</option>
+                            <option value="package" selected>指定规则包</option>
+                          </select>
+                          <div class="target-multi-select" id="transfer-timeout0-target-picker">
+                            <button class="target-multi-trigger" type="button" onclick="toggleTransferTargetMulti(event,this)"><span class="target-multi-label target-multi-placeholder">请选择</span><span class="target-multi-arrow"></span></button>
+                            <div class="target-multi-menu"></div>
+                          </div>
+                          <select class="form-input form-select transfer-assignment-ai" id="transfer-timeout-ai-state" name="transfer-timeout-ai-state" data-transfer-ai-state="timeout0" aria-label="分配后 AI 聊天状态" required>
+                            <option value="off" selected>关闭 AI</option>
+                            <option value="on">开启 AI</option>
+                            <option value="keep">保持原状态</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            </div>
+
             <div id="transfer-common-chain">
               <section class="rule-node">
                 <div class="node-card manual-intervention-card">
                   <div class="node-header">
-                    <div class="node-title"><h4>3. 人工介入</h4></div>
+                    <div class="node-title"><h4>4. 人工介入</h4></div>
                     <div class="node-switch"><span>启用</span><div class="toggle-track on" onclick="toggleTransferNode(this)"><div class="toggle-thumb"></div></div></div>
                   </div>
                   <div class="form-item" id="transfer-human-condition-field">
@@ -13985,6 +14000,14 @@ function unlockTransferRuleBodyIfIdle(){
   if(!document.querySelector('#page-transfer-rules .drawer-overlay.show'))document.body.style.overflow='';
 }
 
+function syncTransferEffectiveDate(){
+  const includeHistory=document.getElementById('transfer-effective-scope').value==='include-history';
+  const date=document.getElementById('transfer-effective-date');
+  document.getElementById('transfer-effective-date-field').hidden=!includeHistory;
+  date.disabled=!includeHistory;
+  date.required=includeHistory;
+}
+
 function openTransferRuleDrawer(mode='create',button){
   transferEditingCard=mode==='edit'?(button?.closest('.rule-card')||null):null;
   const data=transferEditingCard?transferEditingCard._transferRule:null;
@@ -13995,6 +14018,9 @@ function openTransferRuleDrawer(mode='create',button){
     const field=document.getElementById(id);
     field.value=data?data[key]:Array.from(field.options).find(option=>option.defaultSelected)?.value||field.options[0].value;
   });
+  const effectiveDate=data?.effectiveDate||'';
+  document.getElementById('transfer-effective-date').value=/^\d{4}-\d{2}-\d{2}$/.test(effectiveDate)?effectiveDate+'T00:00':effectiveDate;
+  syncTransferEffectiveDate();
   closeTransferEventPicker();
   transferCurrentScene=data?.scene||'online';
   transferSceneDrafts={};
@@ -14118,19 +14144,26 @@ function saveTransferScope(){
 function saveTransferRule(){
   const name=document.getElementById('transfer-rule-name');
   if(!name.value.trim()){showTransferRuleToast('请输入规则名称');name.focus();return;}
+  const effectiveScope=document.getElementById('transfer-effective-scope').value;
+  const effectiveDate=document.getElementById('transfer-effective-date');
+  if(effectiveScope==='include-history'&&(!effectiveDate.value||!effectiveDate.checkValidity())){
+    showTransferRuleToast('请选择有效的生效时间');effectiveDate.focus();return;
+  }
   if(!document.querySelector('#transfer-rule-chains > .rule-node')){showTransferRuleToast('请至少添加一个事件');return;}
   const eventTypes=Array.from(document.querySelectorAll('#transfer-rule-chains > .rule-node')).map(node=>node.dataset.nodeType);
   if(new Set(eventTypes).size!==eventTypes.length){showTransferRuleToast('同一策略不能重复添加相同事件');return;}
   if(eventTypes.some(type=>!transferSceneDefinitions[transferCurrentScene].events.includes(type))){showTransferRuleToast('当前场景不支持所选事件');return;}
-  const invalidDelay=Array.from(document.querySelectorAll('#transfer-rule-chains [data-transfer-reassignment-delay]')).find(input=>!input.closest('.node-disabled')&&!input.checkValidity());
+  const invalidDelay=Array.from(document.querySelectorAll('#transfer-rule-drawer [data-transfer-reassignment-delay]')).find(input=>!input.closest('.node-disabled')&&!input.checkValidity());
   if(invalidDelay){showTransferRuleToast('请输入至少为 1 分钟的整数时长');invalidDelay.focus();return;}
   const invalidAiState=Array.from(document.querySelectorAll('#transfer-rule-drawer [data-transfer-ai-state]')).find(select=>!select.closest('.hidden,.node-disabled')&&!['off','on','keep'].includes(select.value));
   if(invalidAiState){showTransferRuleToast('请选择分配后 AI 聊天状态');invalidAiState.focus();return;}
   const invalidTarget=Array.from(document.querySelectorAll('#transfer-rule-drawer [data-target-config]')).find(row=>{
     if(row.closest('.hidden,.node-disabled'))return false;
     const type=readTransferTargetType(row);
-    const fixed=transferCurrentScene==='offline'&&row.closest('[data-node-type="added"]');
+    const addedNode=row.closest('[data-node-type="added"]');
+    const fixed=transferCurrentScene==='offline'&&addedNode;
     if(fixed)return type!=='adding-employee';
+    if(transferCurrentScene==='online'&&addedNode&&type==='unassigned')return false;
     if(!transferSceneDefinitions[transferCurrentScene].targets.some(([value])=>value===type))return true;
     return type!=='random'&&!(transferTargetSelections[row.dataset.targetConfig]?.[type]?.length);
   });
@@ -14153,7 +14186,7 @@ function saveTransferRule(){
   card._transferRule={name:name.value.trim(),scene:transferCurrentScene,nodes:readTransferRuleNodes(),common,
     aiStrategy:document.getElementById('transfer-ai-employee').value,
     serviceAccount:document.getElementById('transfer-related-service-account').value,
-    effectiveScope:document.getElementById('transfer-effective-scope').value};
+    effectiveScope,effectiveDate:effectiveScope==='include-history'?effectiveDate.value:''};
   updateTransferRuleCard(card);
   addTransferScopeEntrances();
   filterTransferList();
@@ -14225,6 +14258,7 @@ const transferTargetTypeOptions={
 
 const transferTargetDefaults={
   ai0:{all:['all'],person:['supervisor-ye','ajie1'],package:['nurture','night-package']},
+  timeout0:{all:['all'],person:['xiaozhou2','supervisor-ye'],package:['nurture','night-package']},
   n1:{all:['all'],package:['intent-a','douyin-package'],person:['xiaomei1','xiaoli1']},
   w1:{all:['all'],package:['intent-a','douyin-package'],person:['xiaomei1','xiaoli1']},
   unopened:{all:['all'],person:['xiaozhou2','supervisor-ye'],package:['nurture','night-package']},
@@ -14237,9 +14271,10 @@ const transferTargetDefaults={
 };
 const transferTargetSelections={};
 
+const transferEventOrder=['added','unopened','opened','unpaid','paid'];
 const transferSceneDefinitions={
-  online:{title:'线上场景',events:['added','opened','unopened','timeout','unpaid','paid'],targets:[['all','全部规则包'],['package','指定规则包'],['person','指定客服']]},
-  offline:{title:'线下场景',events:['added','opened','unopened','timeout'],targets:[['person','指定客服'],['random','随机分配']]}
+  online:{title:'线上场景',events:['added','unopened','opened','unpaid','paid'],targets:[['all','全部规则包'],['package','指定规则包'],['person','指定客服']]},
+  offline:{title:'线下场景',events:['added','unopened','opened'],targets:[['person','指定客服'],['random','随机分配']]}
 };
 
 function configureTransferTargetRow(row,preferredType,nodeType){
@@ -14253,7 +14288,11 @@ function configureTransferTargetRow(row,preferredType,nodeType){
     return 'adding-employee';
   }
   const select=row.querySelector('.target-type-select');
-  const options=transferSceneDefinitions[transferCurrentScene].targets;
+  const options=transferSceneDefinitions[transferCurrentScene].targets.slice();
+  if(transferCurrentScene==='online'&&nodeType==='added'){
+    options.push(['unassigned','不分配']);
+    if(preferredType==='adding-employee')preferredType='unassigned';
+  }
   select.replaceChildren();
   options.forEach(([value,label])=>{const option=document.createElement('option');option.value=value;option.textContent=label;select.appendChild(option);});
   const fallback=transferCurrentScene==='offline'?'person':'package';
@@ -14281,9 +14320,8 @@ const transferNodeTypes={
   added:{title:'客户加微',defaultKey:'w1',targetType:'package'},
   opened:{title:'客户开口',defaultKey:'n1',targetType:'package'},
   unopened:{title:'客户未开口',defaultKey:'unopened',targetType:'package'},
-  unpaid:{title:'超时未支付',defaultKey:'unpaid',targetType:'package'},
-  timeout:{title:'超时未回复',defaultKey:'n2',targetType:'package'},
-  paid:{title:'已付预约金',defaultKey:'p1',targetType:'person'}
+  unpaid:{title:'未付预约金',defaultKey:'unpaid',targetType:'package'},
+  paid:{title:'已付款预约金',defaultKey:'p1',targetType:'person'}
 };
 
 function newTransferNodeData(type){
@@ -14324,7 +14362,12 @@ function appendTransferRuleNode(data){
 
 function refreshTransferRuleNodeList(){
   const list=document.getElementById('transfer-rule-chains');
-  const nodes=list.querySelectorAll('.rule-node');
+  const nodes=Array.from(list.querySelectorAll('.rule-node')).sort((a,b)=>transferEventOrder.indexOf(a.dataset.nodeType)-transferEventOrder.indexOf(b.dataset.nodeType));
+  nodes.forEach((node,index)=>{
+    list.appendChild(node);
+    const badge=node.querySelector('.node-index');
+    if(badge)badge.textContent='节点 '+(index+1);
+  });
   if(!nodes.length&&!list.querySelector('.transfer-node-empty')){
     list.innerHTML='<p class="transfer-node-empty">暂无事件，点击右上角“添加事件”进行配置。</p>';
   }
@@ -14413,7 +14456,13 @@ function readTransferRuleNodes(){
 }
 
 function readTransferCommonSettings(){
+  const timeoutRow=document.querySelector('[data-target-config="timeout0"]');
   return {
+    timeoutEnabled:!document.querySelector('#transfer-timeout-chain .node-card').classList.contains('node-disabled'),
+    timeoutDelay:document.getElementById('transfer-timeout-delay').value||5,
+    timeoutTargetType:readTransferTargetType(timeoutRow),
+    timeoutTargets:JSON.parse(JSON.stringify(transferTargetSelections.timeout0||{})),
+    timeoutAi:document.getElementById('transfer-timeout-ai-state').value,
     humanEnabled:!document.querySelector('#transfer-common-chain .node-card').classList.contains('node-disabled'),
     conditionMode:transferCurrentScene==='offline'?'required':'none',
     conditions:Array.from(document.querySelectorAll('#transfer-human-condition-picker input:checked')).map(input=>input.value),
@@ -14433,6 +14482,12 @@ function loadTransferCommonSettings(data){
     toggle.classList.toggle('off',!enabled);
     toggle.previousElementSibling.textContent=enabled?'启用':'停用';
   };
+  setEnabled('#transfer-timeout-chain',data.timeoutEnabled!==false);
+  const timeoutTargetType=configureTransferTargetRow(document.querySelector('[data-target-config="timeout0"]'),data.timeoutTargetType||'package');
+  transferTargetSelections.timeout0=JSON.parse(JSON.stringify(data.timeoutTargets||transferTargetDefaults.timeout0));
+  renderTransferTargetMulti('timeout0',timeoutTargetType);
+  document.getElementById('transfer-timeout-delay').value=data.timeoutDelay||5;
+  document.getElementById('transfer-timeout-ai-state').value=data.timeoutAi||'off';
   setEnabled('#transfer-common-chain',data.humanEnabled);
   document.querySelectorAll('#transfer-human-condition-picker input').forEach(input=>{input.checked=data.conditions.includes(input.value);});
   toggleTransferHumanCondition();
@@ -14446,6 +14501,7 @@ function loadTransferCommonSettings(data){
 
 function updateTransferRuleCard(card){
   const data=card._transferRule;
+  data.nodes.sort((a,b)=>transferEventOrder.indexOf(a.type)-transferEventOrder.indexOf(b.type));
   card.querySelector('h3').textContent=data.name;
   const tag=card.querySelector('.tag');
   if(tag){tag.className='tag tag-open';tag.textContent=transferSceneDefinitions[data.scene||'online'].title+' · '+data.nodes.length+' 个事件';}
@@ -14456,10 +14512,15 @@ function updateTransferRuleCard(card){
     data.nodes.forEach(node=>{
       const text=document.createElement('span');
       const definition=transferNodeTypes[node.type];
-      const detail=['unopened','unpaid','timeout'].includes(node.type)?' · '+node.delay+'分钟':'';
+      const detail=['unopened','unpaid'].includes(node.type)?' · '+node.delay+'分钟':'';
       text.textContent=definition.title+detail;
       summary.appendChild(text);
     });
+    if(data.common?.timeoutEnabled){
+      const timeout=document.createElement('span');
+      timeout.textContent='超时未回复 · '+data.common.timeoutDelay+'分钟';
+      summary.appendChild(timeout);
+    }
   }
 }
 
@@ -14467,9 +14528,12 @@ function initTransferRuleCards(){
   transferCommonDefaults=readTransferCommonSettings();
   document.querySelectorAll('#transfer-rule-list .rule-card').forEach(card=>{
     const scene=card.dataset.scene||'online';
-    const nodes=card.dataset.nodeTypes.split(',').filter(type=>transferSceneDefinitions[scene].events.includes(type)).map(newTransferNodeData);
-    if(scene==='offline')nodes.forEach(node=>{node.targetType=node.type==='added'?'adding-employee':(node.type==='timeout'?'random':'person');});
+    const storedTypes=card.dataset.nodeTypes.split(',');
+    const nodes=storedTypes.filter(type=>transferSceneDefinitions[scene].events.includes(type)).map(newTransferNodeData);
+    if(scene==='offline')nodes.forEach(node=>{node.targetType=node.type==='added'?'adding-employee':'person';});
     const common=JSON.parse(JSON.stringify(transferCommonDefaults));
+    common.timeoutEnabled=storedTypes.includes('timeout');
+    if(scene==='offline')common.timeoutTargetType='random';
     common.conditionMode=scene==='offline'?'required':'none';
     if(scene==='offline')common.targetType='person';
     card._transferRule={
@@ -14477,6 +14541,7 @@ function initTransferRuleCards(){
       aiStrategy:document.getElementById('transfer-ai-employee').value,
       serviceAccount:document.getElementById('transfer-related-service-account').value,
       effectiveScope:document.getElementById('transfer-effective-scope').value,
+      effectiveDate:'',
       common
     };
     updateTransferRuleCard(card);
@@ -14588,7 +14653,7 @@ function toggleTransferTargetMulti(event,btn){
 function renderTransferTargetMulti(prefix,type){
   const row=document.querySelector('#page-transfer-rules #transfer-rule-drawer [data-target-config="'+prefix+'"]');
   if(!row)return;
-  const directTarget=type==='random'||type==='adding-employee';
+  const directTarget=type==='random'||type==='adding-employee'||type==='unassigned';
   const picker=row.querySelector('.target-multi-select');
   row.classList.toggle('target-direct-assignment',directTarget);
   if(picker){
