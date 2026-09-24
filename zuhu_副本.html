@@ -2189,11 +2189,6 @@
   .script-lib-page .form-footer { position: sticky; bottom: 0; background: #fff; border-top: 1px solid #f0f0f0; padding: 12px 24px; display: flex; align-items: center; justify-content: flex-end; gap: 12px; margin: 0 -24px; z-index: 5; }
   #modal-script-library-form .modal-body { background: #f6f8fb; }
   #modal-script-library-form .script-project-category-card { overflow:visible; }
-  #modal-script-library-form .script-project-scope-field { margin-bottom:0; }
-  #modal-script-library-form .script-project-scope-field .ko-radio-row { margin-bottom:0; }
-  #script-form-projects { margin-top:10px; }
-  #script-form-projects[hidden] { display:none!important; }
-
   #script-form-projects .multi-select-dropdown { z-index:120; }
   #script-form-projects .multi-select-dropdown[popover] { position:fixed; inset:auto; margin:0; box-sizing:border-box; overscroll-behavior:contain; }
   #script-form-projects .multi-select-dropdown[popover]:not(:popover-open) { display:none !important; }
@@ -5482,130 +5477,6 @@
   #page-customer-allocation #handover-record-content .table-wrap table { min-width:600px; }
   #page-customer-allocation #handover-record-content dd { overflow-wrap:anywhere; }
 
-  .script-lib-page .matrix-cell.optional { background:#f5f5f5; color:#8c8c8c; }
-
-  /* Knowledge operations: browse, maintain and inspect coverage. */
-  #page-script-library .ko-query-form { margin:0; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
-  #page-script-library .ko-query-form select { width:148px!important; min-width:130px; flex:0 1 148px; }
-  #page-script-library .ko-query-form .search-input { width:260px!important; min-width:200px; flex:0 1 260px; }
-  #page-script-library .ko-panel { border:1px solid #e2e9f1; border-radius:8px; overflow:hidden; background:#fff; }
-  .ko-panel-head { padding:18px 20px; display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; border-bottom:1px solid #edf1f5; }
-  .ko-panel-head h3 { font-size:16px; line-height:24px; color:#182538; margin:0; font-weight:600; }
-  .ko-panel-head p { margin:5px 0 0; font-size:12px; color:#8b98ab; line-height:20px; }
-  .ko-count { display:inline-block; margin-left:6px; padding:0 7px; font-size:12px; color:#64748b; background:#f1f5f9; border-radius:4px; vertical-align:middle; }
-  .ko-actions { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
-  .ko-bulk { margin:12px 20px; padding:10px 12px; border:1px solid #cbe1ff; border-radius:6px; background:#f5f9ff; color:#32639e; font-size:13px; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
-  .ko-bulk[hidden], .ko-actions [hidden], #ko-project-dialog [hidden], #ko-detail [hidden], #page-script-library .ko-query-form [hidden] { display:none!important; }
-  .ko-table-scroll,.ko-matrix-scroll { overflow:auto; }
-  .ko-content-table { width:100%; min-width:1100px; table-layout:fixed; border-collapse:collapse; }
-  .ko-content-table th { text-align:left; background:#f8fafc; color:#6b7d95; font-size:12px; font-weight:600; padding:13px 16px; border-bottom:1px solid #e9eef5; }
-  .ko-content-table td { padding:16px; border-bottom:1px solid #eef2f6; vertical-align:top; font-size:13px; color:#34445a; line-height:22px; }
-  .ko-content-table th:first-child { width:44px; }
-  .ko-content-table th:nth-child(2) { width:34%; }
-  .ko-content-table th:nth-child(3) { width:21%; }
-  .ko-content-table th:nth-child(4) { width:13%; }
-  .ko-content-table th:nth-child(5) { width:110px; }
-  .ko-content-table th:nth-child(6) { width:75px; }
-  .ko-content-table th:last-child { width:150px; }
-  .ko-content-table tr:hover td { background:#fafcff; }
-  .ko-content-table tr.ko-selected td { background:#f0f7ff; }
-  .ko-content-table input,.ko-check-label input,.ko-project-grid input,.ko-radio-row input { accent-color:#1677ff; width:15px; height:15px; vertical-align:middle; }
-  .ko-text-link { border:0; padding:0; background:transparent; color:#1677ff; cursor:pointer; font:inherit; text-align:left; }
-  .ko-title-link { color:#1a2b44; font-size:14px; font-weight:600; line-height:22px; }
-  .ko-title-link:hover { color:#1677ff; }
-  .ko-excerpt { color:#748398; margin:5px 0; font-size:12px; line-height:20px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; overflow-wrap:anywhere; }
-  .ko-row-meta { display:flex; gap:10px; font-size:11px; color:#96a1b1; margin-top:5px; }
-  .ko-project-tags { padding:0; border:0; background:transparent; cursor:pointer; display:flex; align-items:center; gap:5px; flex-wrap:wrap; text-align:left; }
-  .ko-tag { display:inline-block; padding:1px 7px; border:1px solid #e1e8f1; background:#f7f9fc; color:#60758f; border-radius:4px; font-size:12px; line-height:21px; max-width:100%; overflow-wrap:anywhere; }
-  .ko-tag.blue { background:#f0f7ff; border-color:#d6e8ff; color:#246dc5; }
-  .ko-tag.teal { background:#effaf7; border-color:#d1eee4; color:#288b70; }
-  .ko-project-tags:hover .ko-tag { border-color:#91bffd; }
-  .ko-tag-edit { color:#99a6b6; font-size:12px; margin-left:3px; }
-  .ko-status { display:inline-flex; align-items:center; gap:5px; white-space:nowrap; color:#8a98ac; font-size:12px; }
-  .ko-status::before { content:''; width:6px; height:6px; background:currentColor; border-radius:50%; }
-  .ko-status.enabled { color:#32a477; }
-  .ko-empty { text-align:center; color:#8c9bab; padding:48px 20px!important; font-size:13px; }
-  .ko-muted { color:#8b98aa; font-size:12px; line-height:20px; margin:6px 0 0; }
-  .ko-overlay { z-index:1120; }
-  .ko-overlay .ko-drawer { width:min(760px,100vw); max-width:760px; }
-  .ko-overlay .modal-header { align-items:flex-start; }
-  .ko-overlay .modal-body { background:#f7f9fc; padding:20px 24px; }
-  .ko-drawer-footer { padding:14px 24px; border-top:1px solid #e7edf4; display:flex; align-items:center; justify-content:flex-end; gap:10px; flex-wrap:wrap; background:#fff; flex-shrink:0; }
-  #ko-detail-footer:empty { display:none; }
-  .ko-read-card { background:#fff; border:1px solid #e4eaf3; border-radius:8px; padding:20px; margin-bottom:16px; }
-  .ko-read-card h3 { font-size:14px; margin:0 0 14px; color:#23344c; }
-  .ko-read-content { white-space:pre-wrap; overflow-wrap:anywhere; color:#34465f; font-size:14px; line-height:1.85; }
-  .ko-detail-meta { display:grid; grid-template-columns:90px minmax(0,1fr); gap:12px; margin:0; font-size:13px; line-height:22px; }
-  .ko-detail-meta dt { color:#8b98aa; }
-  .ko-detail-meta dd { margin:0; color:#34465f; overflow-wrap:anywhere; }
-  .ko-media-name { padding:10px 12px; border:1px solid #e8edf3; border-radius:5px; margin-top:8px; font-size:13px; color:#60758f; }
-  .ko-preview-media { max-width:100%; max-height:340px; display:block; border-radius:6px; margin-top:12px; }
-  .ko-knowledge-card { border:1px solid #e5eaf1; border-radius:8px; overflow:hidden; background:#fff; }
-  .ko-knowledge-card-head { margin:0 20px; padding:20px 0 16px; background:#fff; border-bottom:1px solid #f0f2f5; }
-  .ko-knowledge-card-head h3 { margin:0 0 10px; color:#1e293b; font-size:16px; font-weight:600; line-height:26px; overflow-wrap:anywhere; }
-  .ko-knowledge-card-meta { display:flex; align-items:center; flex-wrap:wrap; gap:12px; color:#8b98aa; font-size:12px; line-height:20px; }
-  .ko-publish-badge { padding:1px 7px; border-radius:3px; background:#f6ffed; color:#52c41a; }
-  .ko-publish-badge.inactive { background:#f1f3f5; color:#8c98a7; }
-  .ko-knowledge-card-body { padding:18px 20px 20px; }
-  .ko-knowledge-paragraph { margin:0 0 18px; color:#34445d; font-size:14px; line-height:26px; white-space:pre-wrap; overflow-wrap:anywhere; }
-  .ko-knowledge-paragraph:last-child { margin-bottom:0; }
-  .ko-paragraph-label { display:block; margin-bottom:5px; color:#6d88ad; font-size:12px; font-weight:500; line-height:20px; }
-  .ko-knowledge-media { display:flex; align-items:flex-start; flex-wrap:wrap; gap:16px; }
-  .ko-media-card { margin:0; width:128px; max-width:100%; }
-  .ko-media-card.video { width:180px; }
-  .ko-media-card .ko-preview-media { width:128px; height:80px; object-fit:cover; margin:0; border:1px solid #e2e8f0; border-radius:6px; }
-  .ko-media-card .ko-preview-video { width:180px; height:102px; background:#172033; object-fit:contain; }
-  .ko-media-caption { margin-top:7px; color:#8b98aa; font-size:12px; line-height:20px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .ko-media-placeholder { height:80px; border:1px solid #e2e8f0; border-radius:6px; background:#f7f9fc; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#9aa9bb; }
-  .ko-media-placeholder.video { background:#334155; border-color:#334155; color:#fff; }
-  .ko-media-placeholder span { font-size:23px; line-height:25px; }
-  .ko-media-placeholder p { margin:2px 0 0; font-size:10px; }
-  .ko-media-error { font-size:11px; }
-  .ko-tag-overlay { z-index:1160; justify-content:center; align-items:center; }
-  .ko-tag-dialog { width:min(600px,calc(100vw - 32px)); max-height:calc(100vh - 40px); background:#fff; border-radius:10px; display:flex; flex-direction:column; box-shadow:0 16px 60px rgba(15,35,70,.18); }
-  .ko-tag-dialog .modal-header { flex-shrink:0; }
-  .ko-tag-dialog .ko-drawer-footer { border-radius:0 0 10px 10px; }
-  .ko-field { display:flex; flex-direction:column; gap:7px; font-size:13px; color:#34465f; margin-bottom:18px; }
-  .ko-field select { width:100%; }
-  .ko-radio-row { display:flex; gap:24px; align-items:center; margin-bottom:10px; font-size:13px; }
-  .ko-radio-row label,.ko-check-label { display:flex; align-items:center; gap:8px; font-size:13px; color:#52677f; white-space:nowrap; }
-  .ko-project-all { padding:12px 0; margin-top:6px; border-bottom:1px solid #edf1f5; }
-  .ko-project-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; padding:14px 0; }
-  .ko-project-grid label { display:flex; align-items:center; gap:8px; font-size:13px; color:#42556f; }
-  .ko-project-impact { padding:10px 12px; background:#f4f8fd; color:#577492; border-radius:6px; font-size:12px; line-height:21px; margin-top:10px; }
-  .ko-project-impact.error { background:#fff3f0; color:#c45b48; }
-  .ko-project-preview { max-height:180px; overflow:auto; font-size:12px; }
-  .ko-project-preview > div { padding:10px 0; border-bottom:1px solid #edf1f5; line-height:21px; color:#64748b; }
-  .ko-project-preview strong { display:block; color:#34465f; font-weight:500; }
-  .ko-legend { display:flex; gap:16px; font-size:12px; color:#748398; }
-  .ko-dot { display:inline-flex; align-items:center; gap:6px; }
-  .ko-dot::before { content:''; width:7px; height:7px; border-radius:50%; background:#94a3b8; }
-  .ko-dot.blue::before { background:#4b8ee6; }.ko-dot.teal::before { background:#45a98a; }.ko-dot.orange::before { background:#f0a455; }
-  .ko-matrix-summary { display:flex; flex-wrap:wrap; gap:24px; padding:14px 20px; font-size:12px; color:#748398; border-bottom:1px solid #edf1f5; }
-  .ko-matrix-summary strong { font-size:18px; color:#23344c; margin-right:4px; }
-  .ko-matrix-table { border-collapse:separate; border-spacing:0; width:100%; font-size:13px; }
-  .ko-matrix-table th,.ko-matrix-table td { border-right:1px solid #edf1f5; border-bottom:1px solid #edf1f5; padding:10px; min-width:125px; }
-  .ko-matrix-table thead th { background:#f8fafc; color:#718299; font-size:12px; height:48px; font-weight:600; white-space:nowrap; }
-  .ko-matrix-table th:first-child { position:sticky; left:0; background:#fff; z-index:1; text-align:left; padding-left:20px; min-width:160px; color:#34465f; font-weight:500; }
-  .ko-matrix-table thead th:first-child { background:#f8fafc; }
-  .ko-matrix-cell { width:100%; min-height:60px; border:1px solid transparent; border-radius:6px; padding:8px; background:#f4f9ff; color:#3476c9; cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; font-size:12px; }
-  .ko-matrix-cell.shared { background:#f0faf7; color:#288b70; }
-  .ko-matrix-cell.missing { background:#fff8ed; color:#c48b37; }
-  .ko-matrix-cell.optional { background:#f7f8fa; color:#99a4b5; }
-  .ko-matrix-cell:hover { border-color:#91bffd; box-shadow:0 0 0 2px #f1f7ff; }
-  .ko-matrix-cell small { font-size:11px; color:#8292a5; }
-  .ko-matrix-note { padding:14px 20px; color:#8b98aa; font-size:12px; line-height:21px; }
-  .ko-cell-item { padding:14px; border:1px solid #e4ebf4; border-radius:7px; background:#fff; margin-bottom:10px; }
-  .ko-cell-item-head { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
-  .ko-cell-item h4 { margin:0; font-size:14px; color:#34465f; }
-  .ko-cell-item .ko-actions { margin-top:10px; font-size:12px; }
-  .ko-cell-requirement { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px; background:#fff; border:1px solid #e4ebf4; border-radius:7px; margin-bottom:18px; }
-  .ko-cell-requirement strong { color:#34465f; font-size:13px; }
-  .ko-associate-row { display:flex; align-items:flex-start; gap:10px; cursor:pointer; }
-  .ko-associate-row input { margin-top:4px; accent-color:#1677ff; }
-  .ko-overlay button:disabled,.ko-tag-overlay button:disabled,#page-script-library .ko-panel button:disabled { opacity:.4; cursor:not-allowed; }
-  @media(max-width:760px) { .ko-panel-head { padding:14px 16px; }.ko-project-grid { grid-template-columns:1fr; }.ko-overlay .modal-body { padding:16px; } }
-
 </style>
 </head>
 <body>
@@ -7063,7 +6934,7 @@
       <div class="page-header online-page-header">
         <div>
           <h2>知识库</h2>
-          <p>集中维护知识内容与适用项目，按卡点和跟进动作查看知识覆盖。</p>
+          <p>维护话术库与跟进序列使用的卡点类型；每个类型可配置多个识别标签，新增与编辑在同一页完成。</p>
         </div>
       </div>
 
@@ -7109,36 +6980,155 @@
         </div>
 
         <div id="script-lib-tab-matrix" class="script-lib-pane hidden" role="tabpanel" aria-labelledby="script-lib-tab-matrix-btn">
-          <form class="ko-query-form unified-toolbar-filters" onsubmit="event.preventDefault(); koRenderMatrix()">
-            <select class="search-select" id="ko-matrix-project" aria-label="矩阵意向项目" onchange="koRenderMatrix()"></select>
-            <select class="search-select" id="ko-matrix-obstacle" aria-label="矩阵卡点类型" onchange="koRenderMatrix()"></select>
-            <select class="search-select" id="ko-matrix-action" aria-label="矩阵跟进动作" onchange="koRenderMatrix()"></select>
-            <button class="btn btn-default btn-sm" type="button" onclick="koResetMatrix()">重置</button>
-          </form>
           <div class="ant-card">
-            <div class="ant-card-head"><span class="ant-card-head-title">知识矩阵</span><span style="font-size:12px;color:rgba(0,0,0,0.45);">点击格子可查看对应话术</span></div>
+            <div class="ant-card-head">
+              <span class="ant-card-head-title">知识矩阵</span>
+              <span style="font-size:12px;color:rgba(0,0,0,0.45);">点击格子可快速筛选对应话术</span>
+            </div>
             <div class="ant-card-body">
-              <div class="matrix-wrap"><table class="matrix-table" data-unified-actions="true" aria-label="项目知识覆盖矩阵"><thead id="ko-matrix-head"></thead><tbody id="ko-matrix-body"></tbody></table></div>
-              <div style="font-size:12px;color:rgba(0,0,0,0.45);"><span class="matrix-cell good" style="font-size:11px;">≥2条 充足</span><span class="matrix-cell warn" style="font-size:11px;margin-left:12px;">1条 不足</span><span class="matrix-cell empty" style="font-size:11px;margin-left:12px;">0条 缺失</span></div>
+              <div class="matrix-wrap">
+                <table class="matrix-table">
+                  <thead>
+                    <tr>
+                      <th class="corner">卡点 \ 动作</th>
+                      <th>共情承接</th>
+                      <th>专业解答</th>
+                      <th>证据举证</th>
+                      <th>活动权益</th>
+                      <th>低门槛邀请</th>
+                      <th>价值重构</th>
+                      <th>关怀回访</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr data-matrix-parent="distance"><th><span class="matrix-group-name"><button class="matrix-expand-btn" type="button" onclick="toggleScriptMatrixGroup(this,'distance')">+</button>距离/便利</span></th><td><span class="matrix-cell good">3条</span></td><td><span class="matrix-cell good">5条</span></td><td><span class="matrix-cell good">2条</span></td><td><span class="matrix-cell good">3条</span></td><td><span class="matrix-cell good">4条</span></td><td><span class="matrix-cell warn">1条</span></td><td><span class="matrix-cell good">2条</span></td></tr>
+                    <tr class="matrix-child-row hidden" data-matrix-child="distance"><th>门店距离较远</th><td><span class="matrix-cell good">2条</span></td><td><span class="matrix-cell good">3条</span></td><td><span class="matrix-cell warn">1条</span></td><td><span class="matrix-cell good">2条</span></td><td><span class="matrix-cell good">2条</span></td><td><span class="matrix-cell warn">1条</span></td><td><span class="matrix-cell warn">1条</span></td></tr>
+                    <tr class="matrix-child-row hidden" data-matrix-child="distance"><th>交通/停车不方便</th><td><span class="matrix-cell warn">1条</span></td><td><span class="matrix-cell good">2条</span></td><td><span class="matrix-cell warn">1条</span></td><td><span class="matrix-cell warn">1条</span></td><td><span class="matrix-cell good">2条</span></td><td><span class="matrix-cell empty">0条</span></td><td><span class="matrix-cell warn">1条</span></td></tr>
+                    <tr data-matrix-parent="price"><th><span class="matrix-group-name"><button class="matrix-expand-btn" type="button" onclick="toggleScriptMatrixGroup(this,'price')">+</button>价格/费用</span></th><td><span class="matrix-cell good">2条</span></td><td><span class="matrix-cell good">6条</span></td><td><span class="matrix-cell good">3条</span></td><td><span class="matrix-cell good">4条</span></td><td><span class="matrix-cell good">3条</span></td><td><span class="matrix-cell good">3条</span></td><td><span class="matrix-cell warn">1条</span></td></tr>
+                    <tr class="matrix-child-row hidden" data-matrix-child="price"><th>觉得价格高</th><td><span class="matrix-cell warn">1条</span></td><td><span class="matrix-cell good">3条</span></td><td><span class="matrix-cell good">2条</span></td><td><span class="matrix-cell good">2条</span></td><td><span class="matrix-cell warn">1条</span></td><td><span class="matrix-cell good">2条</span></td><td><span class="matrix-cell empty">0条</span></td></tr>
+                    <tr class="matrix-child-row hidden" data-matrix-child="price"><th>预算不足/想等活动</th><td><span class="matrix-cell warn">1条</span></td><td><span class="matrix-cell good">3条</span></td><td><span class="matrix-cell warn">1条</span></td><td><span class="matrix-cell good">2条</span></td><td><span class="matrix-cell good">2条</span></td><td><span class="matrix-cell warn">1条</span></td><td><span class="matrix-cell warn">1条</span></td></tr>
+                    <tr data-matrix-parent="effect"><th><span class="matrix-group-name"><button class="matrix-expand-btn" type="button" onclick="toggleScriptMatrixGroup(this,'effect')">+</button>效果疑虑</span></th><td><span class="matrix-cell good">3条</span></td><td><span class="matrix-cell good">4条</span></td><td><span class="matrix-cell good">5条</span></td><td><span class="matrix-cell warn">1条</span></td><td><span class="matrix-cell good">2条</span></td><td><span class="matrix-cell good">3条</span></td><td><span class="matrix-cell good">2条</span></td></tr>
+                    <tr class="matrix-child-row hidden" data-matrix-child="effect"><th>担心没效果</th><td><span class="matrix-cell good">2条</span></td><td><span class="matrix-cell good">2条</span></td><td><span class="matrix-cell good">3条</span></td><td><span class="matrix-cell warn">1条</span></td><td><span class="matrix-cell warn">1条</span></td><td><span class="matrix-cell good">2条</span></td><td><span class="matrix-cell warn">1条</span></td></tr>
+                    <tr class="matrix-child-row hidden" data-matrix-child="effect"><th>需要看案例</th><td><span class="matrix-cell warn">1条</span></td><td><span class="matrix-cell good">2条</span></td><td><span class="matrix-cell good">2条</span></td><td><span class="matrix-cell empty">0条</span></td><td><span class="matrix-cell warn">1条</span></td><td><span class="matrix-cell warn">1条</span></td><td><span class="matrix-cell warn">1条</span></td></tr>
+                    <tr data-matrix-parent="delay"><th><span class="matrix-group-name"><button class="matrix-expand-btn" type="button" onclick="toggleScriptMatrixGroup(this,'delay')">+</button>犹豫拖延</span></th><td><span class="matrix-cell warn">1条</span></td><td><span class="matrix-cell good">3条</span></td><td><span class="matrix-cell empty">0条</span></td><td><span class="matrix-cell good">2条</span></td><td><span class="matrix-cell warn">1条</span></td><td><span class="matrix-cell empty">0条</span></td><td><span class="matrix-cell good">2条</span></td></tr>
+                    <tr class="matrix-child-row hidden" data-matrix-child="delay"><th>想再看看</th><td><span class="matrix-cell warn">1条</span></td><td><span class="matrix-cell good">2条</span></td><td><span class="matrix-cell empty">0条</span></td><td><span class="matrix-cell warn">1条</span></td><td><span class="matrix-cell warn">1条</span></td><td><span class="matrix-cell empty">0条</span></td><td><span class="matrix-cell warn">1条</span></td></tr>
+                    <tr class="matrix-child-row hidden" data-matrix-child="delay"><th>近期没时间</th><td><span class="matrix-cell empty">0条</span></td><td><span class="matrix-cell warn">1条</span></td><td><span class="matrix-cell empty">0条</span></td><td><span class="matrix-cell warn">1条</span></td><td><span class="matrix-cell empty">0条</span></td><td><span class="matrix-cell empty">0条</span></td><td><span class="matrix-cell warn">1条</span></td></tr>
+                    <tr data-matrix-parent="decision"><th><span class="matrix-group-name"><button class="matrix-expand-btn" type="button" onclick="toggleScriptMatrixGroup(this,'decision')">+</button>决策权</span></th><td><span class="matrix-cell good">2条</span></td><td><span class="matrix-cell good">3条</span></td><td><span class="matrix-cell warn">1条</span></td><td><span class="matrix-cell good">2条</span></td><td><span class="matrix-cell good">2条</span></td><td><span class="matrix-cell empty">0条</span></td><td><span class="matrix-cell warn">1条</span></td></tr>
+                    <tr class="matrix-child-row hidden" data-matrix-child="decision"><th>需要家人同意</th><td><span class="matrix-cell warn">1条</span></td><td><span class="matrix-cell good">2条</span></td><td><span class="matrix-cell warn">1条</span></td><td><span class="matrix-cell warn">1条</span></td><td><span class="matrix-cell warn">1条</span></td><td><span class="matrix-cell empty">0条</span></td><td><span class="matrix-cell warn">1条</span></td></tr>
+                    <tr class="matrix-child-row hidden" data-matrix-child="decision"><th>对项目认知不足</th><td><span class="matrix-cell warn">1条</span></td><td><span class="matrix-cell warn">1条</span></td><td><span class="matrix-cell empty">0条</span></td><td><span class="matrix-cell warn">1条</span></td><td><span class="matrix-cell warn">1条</span></td><td><span class="matrix-cell empty">0条</span></td><td><span class="matrix-cell empty">0条</span></td></tr>
+                    <tr data-matrix-parent="time"><th><span class="matrix-group-name"><button class="matrix-expand-btn" type="button" onclick="toggleScriptMatrixGroup(this,'time')">+</button>时间冲突</span></th><td><span class="matrix-cell good">2条</span></td><td><span class="matrix-cell good">2条</span></td><td><span class="matrix-cell warn">1条</span></td><td><span class="matrix-cell good">3条</span></td><td><span class="matrix-cell good">2条</span></td><td><span class="matrix-cell warn">1条</span></td><td><span class="matrix-cell good">2条</span></td></tr>
+                    <tr class="matrix-child-row hidden" data-matrix-child="time"><th>工作日没空</th><td><span class="matrix-cell warn">1条</span></td><td><span class="matrix-cell warn">1条</span></td><td><span class="matrix-cell empty">0条</span></td><td><span class="matrix-cell good">2条</span></td><td><span class="matrix-cell warn">1条</span></td><td><span class="matrix-cell empty">0条</span></td><td><span class="matrix-cell warn">1条</span></td></tr>
+                    <tr class="matrix-child-row hidden" data-matrix-child="time"><th>预约时间不确定</th><td><span class="matrix-cell warn">1条</span></td><td><span class="matrix-cell warn">1条</span></td><td><span class="matrix-cell warn">1条</span></td><td><span class="matrix-cell warn">1条</span></td><td><span class="matrix-cell warn">1条</span></td><td><span class="matrix-cell warn">1条</span></td><td><span class="matrix-cell warn">1条</span></td></tr>
+                    <tr data-matrix-parent="alternative"><th><span class="matrix-group-name"><button class="matrix-expand-btn" type="button" onclick="toggleScriptMatrixGroup(this,'alternative')">+</button>已有替代</span></th><td><span class="matrix-cell good">2条</span></td><td><span class="matrix-cell good">3条</span></td><td><span class="matrix-cell good">3条</span></td><td><span class="matrix-cell warn">1条</span></td><td><span class="matrix-cell empty">0条</span></td><td><span class="matrix-cell good">4条</span></td><td><span class="matrix-cell warn">1条</span></td></tr>
+                    <tr class="matrix-child-row hidden" data-matrix-child="alternative"><th>已在别家咨询</th><td><span class="matrix-cell warn">1条</span></td><td><span class="matrix-cell good">2条</span></td><td><span class="matrix-cell good">2条</span></td><td><span class="matrix-cell warn">1条</span></td><td><span class="matrix-cell empty">0条</span></td><td><span class="matrix-cell good">2条</span></td><td><span class="matrix-cell empty">0条</span></td></tr>
+                    <tr class="matrix-child-row hidden" data-matrix-child="alternative"><th>已有固定门店</th><td><span class="matrix-cell warn">1条</span></td><td><span class="matrix-cell warn">1条</span></td><td><span class="matrix-cell warn">1条</span></td><td><span class="matrix-cell empty">0条</span></td><td><span class="matrix-cell empty">0条</span></td><td><span class="matrix-cell good">2条</span></td><td><span class="matrix-cell warn">1条</span></td></tr>
+                    <tr data-matrix-parent="consult"><th><span class="matrix-group-name"><button class="matrix-expand-btn" type="button" onclick="toggleScriptMatrixGroup(this,'consult')">+</button>单纯咨询</span></th><td><span class="matrix-cell good">2条</span></td><td><span class="matrix-cell good">2条</span></td><td><span class="matrix-cell good">2条</span></td><td><span class="matrix-cell good">2条</span></td><td><span class="matrix-cell good">3条</span></td><td><span class="matrix-cell good">2条</span></td><td><span class="matrix-cell empty">0条</span></td></tr>
+                    <tr class="matrix-child-row hidden" data-matrix-child="consult"><th>只问项目不表态</th><td><span class="matrix-cell warn">1条</span></td><td><span class="matrix-cell warn">1条</span></td><td><span class="matrix-cell warn">1条</span></td><td><span class="matrix-cell warn">1条</span></td><td><span class="matrix-cell good">2条</span></td><td><span class="matrix-cell warn">1条</span></td><td><span class="matrix-cell empty">0条</span></td></tr>
+                    <tr class="matrix-child-row hidden" data-matrix-child="consult"><th>回复意愿弱</th><td><span class="matrix-cell warn">1条</span></td><td><span class="matrix-cell warn">1条</span></td><td><span class="matrix-cell warn">1条</span></td><td><span class="matrix-cell warn">1条</span></td><td><span class="matrix-cell warn">1条</span></td><td><span class="matrix-cell warn">1条</span></td><td><span class="matrix-cell empty">0条</span></td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div style="font-size:12px;color:rgba(0,0,0,0.45);">
+                <span class="matrix-cell good" style="font-size:11px;">≥2条 充足</span>
+                <span class="matrix-cell warn" style="font-size:11px;margin-left:12px;">1条 不足</span>
+                <span class="matrix-cell empty" style="font-size:11px;margin-left:12px;">0条 缺失（AI将兜底生成）</span>
+              </div>
             </div>
           </div>
         </div>
+
         <div id="script-lib-tab-list" class="script-lib-pane hidden" role="tabpanel" aria-labelledby="script-lib-tab-list-btn">
-          <form class="ko-query-form unified-toolbar-filters" id="ko-filters" onsubmit="event.preventDefault(); koApplyFilters()">
-            <input class="search-input" id="ko-keyword" placeholder="搜索知识标题、正文或编号" aria-label="搜索知识标题正文编号">
-            <select class="search-select" id="script-project-filter" aria-label="意向项目筛选" onchange="koApplyFilters()"></select>
-            <select class="search-select" id="ko-obstacle" aria-label="卡点类型筛选" onchange="koApplyFilters()"></select>
-            <select class="search-select" id="ko-action" aria-label="跟进动作筛选" onchange="koApplyFilters()"></select>
-            <select class="search-select" id="ko-status" aria-label="知识状态" onchange="koApplyFilters()"><option value="">全部状态</option><option>启用</option><option>停用</option></select>
-            <button class="btn btn-default btn-sm" type="button" onclick="resetScriptLibraryFilters()">重置</button><button class="btn btn-primary btn-sm" type="submit">查询</button>
-          </form>
-          <div class="panel ko-panel">
-            <div class="ko-panel-head"><div><h3>知识内容</h3></div><div class="ko-actions"><button class="btn btn-default btn-sm" id="ko-undo" type="button" hidden onclick="koUndoChange()">撤销上次批量修改</button><button class="btn btn-primary" type="button" onclick="koNewKnowledge()">＋ 新增话术</button></div></div>
-            <div class="ko-bulk" id="ko-bulk" hidden><span id="ko-selected-count" role="status"></span><div class="ko-actions"><button class="btn btn-default btn-sm" type="button" onclick="koClearSelection()">清空选择</button><button class="btn btn-default btn-sm" type="button" onclick="koOpenProjectEditor()">设置意向项目</button><button class="btn btn-default btn-sm" type="button" onclick="koSetStatus('启用')">启用</button><button class="btn btn-default btn-sm" type="button" onclick="koSetStatus('停用')">停用</button></div></div>
-            <div class="ko-table-scroll"><table class="ko-content-table" aria-label="知识内容列表"><thead><tr><th><input type="checkbox" id="ko-check-page" aria-label="全选当前页知识" onchange="koSelectPage(this.checked)"></th><th>知识内容</th><th>适用意向项目</th><th>卡点类型</th><th>跟进动作</th><th>状态</th><th>操作</th></tr></thead><tbody id="ko-table-body"></tbody></table></div>
-            <div class="ops-pagination"><span id="script-library-total"></span><div class="ops-pagination-right"><span>每页</span><select class="search-select" aria-label="每页知识条数" onchange="koPageSize=Number(this.value); koPage=1; koRenderList()"><option>10</option><option>20</option><option>50</option></select><button class="page-btn" id="ko-prev" type="button" onclick="koPage--;koRenderList()">上一页</button><span id="ko-page-info"></span><button class="page-btn" id="ko-next" type="button" onclick="koPage++;koRenderList()">下一页</button></div></div>
-          </div>
-          <div id="ko-source-data" hidden><table class="ant-table" id="script-library-table">
+          <div class="script-list-layout">
+            <aside class="ant-card script-obstacle-panel">
+              <div class="script-obstacle-title">卡点类型</div>
+              <div class="script-obstacle-tree">
+                <div class="script-obstacle-group">
+                  <button class="script-obstacle-group-title" type="button" onclick="toggleScriptObstacleGroup(this)">⌄ 距离/便利</button>
+                  <div class="script-obstacle-children">
+                    <button class="script-obstacle-leaf active" type="button" data-script-obstacle-node="距离/便利" data-script-obstacle-scope="group" onclick="selectScriptObstacleNode(this)">全部</button>
+                    <button class="script-obstacle-leaf" type="button" data-script-obstacle-node="门店距离较远" data-script-obstacle-scope="leaf" onclick="selectScriptObstacleNode(this)">门店距离较远</button>
+                    <button class="script-obstacle-leaf" type="button" data-script-obstacle-node="交通/停车不方便" data-script-obstacle-scope="leaf" onclick="selectScriptObstacleNode(this)">交通/停车不方便</button>
+                  </div>
+                </div>
+                <div class="script-obstacle-group">
+                  <button class="script-obstacle-group-title" type="button" onclick="toggleScriptObstacleGroup(this)">⌄ 价格/费用</button>
+                  <div class="script-obstacle-children">
+                    <button class="script-obstacle-leaf" type="button" data-script-obstacle-node="价格/费用" data-script-obstacle-scope="group" onclick="selectScriptObstacleNode(this)">全部</button>
+                    <button class="script-obstacle-leaf" type="button" data-script-obstacle-node="觉得价格高" data-script-obstacle-scope="leaf" onclick="selectScriptObstacleNode(this)">觉得价格高</button>
+                    <button class="script-obstacle-leaf" type="button" data-script-obstacle-node="预算不足/想等活动" data-script-obstacle-scope="leaf" onclick="selectScriptObstacleNode(this)">预算不足/想等活动</button>
+                  </div>
+                </div>
+                <div class="script-obstacle-group">
+                  <button class="script-obstacle-group-title" type="button" onclick="toggleScriptObstacleGroup(this)">⌄ 效果疑虑</button>
+                  <div class="script-obstacle-children">
+                    <button class="script-obstacle-leaf" type="button" data-script-obstacle-node="效果疑虑" data-script-obstacle-scope="group" onclick="selectScriptObstacleNode(this)">全部</button>
+                    <button class="script-obstacle-leaf" type="button" data-script-obstacle-node="担心没效果" data-script-obstacle-scope="leaf" onclick="selectScriptObstacleNode(this)">担心没效果</button>
+                    <button class="script-obstacle-leaf" type="button" data-script-obstacle-node="需要看案例" data-script-obstacle-scope="leaf" onclick="selectScriptObstacleNode(this)">需要看案例</button>
+                  </div>
+                </div>
+                <div class="script-obstacle-group">
+                  <button class="script-obstacle-group-title" type="button" onclick="toggleScriptObstacleGroup(this)">⌄ 犹豫拖延</button>
+                  <div class="script-obstacle-children">
+                    <button class="script-obstacle-leaf" type="button" data-script-obstacle-node="犹豫拖延" data-script-obstacle-scope="group" onclick="selectScriptObstacleNode(this)">全部</button>
+                    <button class="script-obstacle-leaf" type="button" data-script-obstacle-node="想再看看" data-script-obstacle-scope="leaf" onclick="selectScriptObstacleNode(this)">想再看看</button>
+                    <button class="script-obstacle-leaf" type="button" data-script-obstacle-node="近期没时间" data-script-obstacle-scope="leaf" onclick="selectScriptObstacleNode(this)">近期没时间</button>
+                  </div>
+                </div>
+                <div class="script-obstacle-group">
+                  <button class="script-obstacle-group-title" type="button" onclick="toggleScriptObstacleGroup(this)">⌄ 决策权</button>
+                  <div class="script-obstacle-children">
+                    <button class="script-obstacle-leaf" type="button" data-script-obstacle-node="决策权" data-script-obstacle-scope="group" onclick="selectScriptObstacleNode(this)">全部</button>
+                    <button class="script-obstacle-leaf" type="button" data-script-obstacle-node="需要家人同意" data-script-obstacle-scope="leaf" onclick="selectScriptObstacleNode(this)">需要家人同意</button>
+                    <button class="script-obstacle-leaf" type="button" data-script-obstacle-node="对项目认知不足" data-script-obstacle-scope="leaf" onclick="selectScriptObstacleNode(this)">对项目认知不足</button>
+                  </div>
+                </div>
+                <div class="script-obstacle-group">
+                  <button class="script-obstacle-group-title" type="button" onclick="toggleScriptObstacleGroup(this)">⌄ 时间冲突</button>
+                  <div class="script-obstacle-children">
+                    <button class="script-obstacle-leaf" type="button" data-script-obstacle-node="时间冲突" data-script-obstacle-scope="group" onclick="selectScriptObstacleNode(this)">全部</button>
+                    <button class="script-obstacle-leaf" type="button" data-script-obstacle-node="工作日没空" data-script-obstacle-scope="leaf" onclick="selectScriptObstacleNode(this)">工作日没空</button>
+                    <button class="script-obstacle-leaf" type="button" data-script-obstacle-node="预约时间不确定" data-script-obstacle-scope="leaf" onclick="selectScriptObstacleNode(this)">预约时间不确定</button>
+                  </div>
+                </div>
+                <div class="script-obstacle-group">
+                  <button class="script-obstacle-group-title" type="button" onclick="toggleScriptObstacleGroup(this)">⌄ 已有替代</button>
+                  <div class="script-obstacle-children">
+                    <button class="script-obstacle-leaf" type="button" data-script-obstacle-node="已有替代" data-script-obstacle-scope="group" onclick="selectScriptObstacleNode(this)">全部</button>
+                    <button class="script-obstacle-leaf" type="button" data-script-obstacle-node="已在别家咨询" data-script-obstacle-scope="leaf" onclick="selectScriptObstacleNode(this)">已在别家咨询</button>
+                    <button class="script-obstacle-leaf" type="button" data-script-obstacle-node="已有固定门店" data-script-obstacle-scope="leaf" onclick="selectScriptObstacleNode(this)">已有固定门店</button>
+                  </div>
+                </div>
+                <div class="script-obstacle-group">
+                  <button class="script-obstacle-group-title" type="button" onclick="toggleScriptObstacleGroup(this)">⌄ 单纯咨询</button>
+                  <div class="script-obstacle-children">
+                    <button class="script-obstacle-leaf" type="button" data-script-obstacle-node="单纯咨询" data-script-obstacle-scope="group" onclick="selectScriptObstacleNode(this)">全部</button>
+                    <button class="script-obstacle-leaf" type="button" data-script-obstacle-node="只问项目不表态" data-script-obstacle-scope="leaf" onclick="selectScriptObstacleNode(this)">只问项目不表态</button>
+                    <button class="script-obstacle-leaf" type="button" data-script-obstacle-node="回复意愿弱" data-script-obstacle-scope="leaf" onclick="selectScriptObstacleNode(this)">回复意愿弱</button>
+                  </div>
+                </div>
+              </div>
+            </aside>
+            <section class="ant-card script-content-panel">
+              <div class="ant-card-head">
+                <span class="ant-card-head-title" id="script-list-obstacle-title">距离/便利</span>
+                <select class="search-select script-project-filter" id="script-project-filter" aria-label="意向项目筛选" onchange="filterScriptLibraryRows()"><option value="">全部意向项目</option></select>
+                <button class="ant-btn ant-btn-primary" type="button" onclick="openScriptLibraryForm('new')">新增话术</button>
+              </div>
+              <div class="ant-card-body no-pad" style="padding:0 24px 24px;">
+                <div class="script-action-tabs" role="tablist" aria-label="跟进动作">
+                  <button class="script-action-tab active" type="button" data-script-action-tab="共情承接" onclick="selectScriptActionTab(this)">共情承接</button>
+                  <button class="script-action-tab" type="button" data-script-action-tab="澄清追问" onclick="selectScriptActionTab(this)">澄清追问</button>
+                  <button class="script-action-tab" type="button" data-script-action-tab="专业解答" onclick="selectScriptActionTab(this)">专业解答</button>
+                  <button class="script-action-tab" type="button" data-script-action-tab="证据举证" onclick="selectScriptActionTab(this)">证据举证</button>
+                  <button class="script-action-tab" type="button" data-script-action-tab="替代方案" onclick="selectScriptActionTab(this)">替代方案</button>
+                  <button class="script-action-tab" type="button" data-script-action-tab="价值重构" onclick="selectScriptActionTab(this)">价值重构</button>
+                  <button class="script-action-tab" type="button" data-script-action-tab="低门槛邀请" onclick="selectScriptActionTab(this)">低门槛邀请</button>
+                  <button class="script-action-tab" type="button" data-script-action-tab="活动权益" onclick="selectScriptActionTab(this)">活动权益</button>
+                  <button class="script-action-tab" type="button" data-script-action-tab="预约确认" onclick="selectScriptActionTab(this)">预约确认</button>
+                  <button class="script-action-tab" type="button" data-script-action-tab="关怀回访" onclick="selectScriptActionTab(this)">关怀回访</button>
+                </div>
+                <div class="ant-table-wrap script-hidden-data-table">
+                  <table class="ant-table" id="script-library-table">
                     <thead><tr><th style="width:100px;">话术ID</th><th>话术内容</th><th style="width:140px;">素材</th><th style="width:120px;">适用风格</th><th style="width:100px;">状态</th><th style="width:110px;">操作</th></tr></thead>
                     <tbody>
                       <tr data-script-row data-script-parent="距离/便利" data-script-obstacle="门店距离较远" data-script-action="共情引导" data-script-content-type="文本+图片" data-script-material="门店环境图,交通路线图"><td>D01</td><td class="script-table-content"><div class="script-copy-text">姐，理解你觉得路程有点远～其实好多姐妹第一次也这么想，来了之后都觉得值得跑一趟。</div></td><td class="script-media-cell"><div class="script-media-preview"><span class="script-media-type">图片 · 2张</span><div class="script-media-thumbs"><span class="script-media-thumb">图</span><span class="script-media-thumb">图</span></div></div></td><td>闺蜜型</td><td data-script-status><span class="badge-dot badge-success"></span>启用</td><td><span class="script-row-actions"><button class="ant-btn-link" type="button" onclick="editScriptLibraryRow(this)">编辑</button><button class="ant-btn-link" type="button" style="color:#ff4d4f;" onclick="toggleScriptLibraryRowStatus(this)">停用</button></span></td></tr>
@@ -7155,7 +7145,13 @@
                       <tr data-script-row data-script-parent="效果疑虑" data-script-obstacle="需要看案例" data-script-action="关怀回访" data-script-content-type="文本+视频" data-script-material="术后恢复回访视频"><td>E02</td><td class="script-table-content"><div class="script-copy-text">我先把同类型肤质的案例整理给您，您不用着急决定，看完有疑问我再逐条帮您拆。</div></td><td class="script-media-cell"><div class="script-media-preview"><span class="script-media-type">视频 · 1条</span><div class="script-media-thumbs"><span class="script-media-thumb video">▶ 00:24</span></div></div></td><td>服务型</td><td data-script-status><span class="badge-dot badge-success"></span>启用</td><td><span class="script-row-actions"><button class="ant-btn-link" type="button" onclick="editScriptLibraryRow(this)">编辑</button><button class="ant-btn-link" type="button" style="color:#ff4d4f;" onclick="toggleScriptLibraryRowStatus(this)">停用</button></span></td></tr>
                       <tr data-script-row data-script-parent="犹豫拖延" data-script-obstacle="想再看看" data-script-action="共情引导" data-script-content-type="文本+图片" data-script-material="案例对比图,顾客反馈截图"><td>H01</td><td class="script-table-content"><div class="script-copy-text">姐没关系的，不着急～您可以先看看我发的案例对比图，有任何想法随时找我聊就好。</div></td><td class="script-media-cell"><div class="script-media-preview"><span class="script-media-type">图片 · 2张</span><div class="script-media-thumbs"><span class="script-media-thumb">图</span><span class="script-media-thumb">图</span></div></div></td><td>服务型</td><td data-script-status><span class="badge-dot badge-success"></span>启用</td><td><span class="script-row-actions"><button class="ant-btn-link" type="button" onclick="editScriptLibraryRow(this)">编辑</button><button class="ant-btn-link" type="button" style="color:#ff4d4f;" onclick="toggleScriptLibraryRowStatus(this)">停用</button></span></td></tr>
                     </tbody>
-                  </table><div id="script-library-card-list"></div></div>
+                  </table>
+                </div>
+                <div class="script-card-list" id="script-library-card-list"></div>
+                <div class="ant-pagination"><span class="pg-info" id="script-library-total">当前显示 1 条</span><div class="pg-item active">1</div></div>
+              </div>
+            </section>
+          </div>
         </div>
       </div>
 
@@ -7352,30 +7348,9 @@
       </div>
     </div>
 
-    <div class="modal-overlay ko-overlay" id="ko-detail" onclick="if(event.target===this)koCloseDetail()">
-      <aside class="modal ko-drawer" role="dialog" aria-modal="true" aria-labelledby="ko-detail-title">
-        <div class="modal-header"><div><h2 class="modal-title" id="ko-detail-title">知识详情</h2><p id="ko-detail-subtitle" class="ko-muted"></p></div><button class="modal-close" type="button" aria-label="关闭知识详情" onclick="koCloseDetail()">×</button></div>
-        <div class="modal-body" id="ko-detail-body"></div><div class="ko-drawer-footer" id="ko-detail-footer"></div>
-      </aside>
-    </div>
-    <div class="modal-overlay ko-tag-overlay" id="ko-project-dialog" onclick="if(event.target===this)koCloseProjectEditor()">
-      <section class="ko-tag-dialog" role="dialog" aria-modal="true" aria-labelledby="ko-project-title">
-        <div class="modal-header"><div><h2 class="modal-title" id="ko-project-title">设置意向项目</h2><p class="ko-muted" id="ko-project-summary"></p></div><button class="modal-close" type="button" aria-label="关闭项目设置" onclick="koCloseProjectEditor()">×</button></div>
-        <div class="modal-body">
-          <label class="ko-field" id="ko-project-mode-field"><span>操作方式</span><select class="search-select" id="ko-project-mode" onchange="koProjectModeChanged()"><option value="add">添加项目</option><option value="remove">移除项目</option><option value="replace">替换项目</option></select></label>
-          <div id="ko-project-range-field" class="ko-radio-row"><label><input type="radio" name="ko-project-range" value="common" onchange="koPreviewProjectChange()">全部项目通用</label><label><input type="radio" name="ko-project-range" value="specific" checked onchange="koPreviewProjectChange()">指定项目</label></div>
-          <p class="ko-muted" id="ko-project-range-hint">全部项目通用会自动适用于后续新增项目；指定项目仅适用于勾选项。</p>
-          <div id="ko-project-options-wrap"><label class="ko-check-label ko-project-all"><input type="checkbox" id="ko-project-select-all" onchange="koToggleAllProjects(this.checked)">全选现有项目</label><div class="ko-project-grid" id="ko-project-options"></div></div>
-          <div class="ko-project-impact" id="ko-project-impact" role="status"></div>
-          <div id="ko-project-preview" class="ko-project-preview"></div>
-        </div>
-        <div class="ko-drawer-footer"><button class="btn btn-default" type="button" onclick="koCloseProjectEditor()">取消</button><button class="btn btn-primary" id="ko-project-save" type="button" onclick="koSaveProjects()">保存</button></div>
-      </section>
-    </div>
-
     <div class="modal-overlay" id="modal-script-library-form">
       <div class="modal modal-lg script-lib-page">
-        <div class="modal-header"><span class="modal-title" id="script-library-form-title">新增话术</span><button class="modal-close" type="button" onclick="koCancelEditor()">×</button></div>
+        <div class="modal-header"><span class="modal-title" id="script-library-form-title">新增话术</span><button class="modal-close" type="button" onclick="closeModal('modal-script-library-form')">×</button></div>
         <div class="modal-body">
       <div id="script-library-form" class="script-lib-view">
         <div class="ant-alert ant-alert-info"><div><div class="a-title">话术定位说明</div><div class="a-desc">每条话术需绑定一个“卡点类型”和一个“动作类型”。AI 在执行跟进节奏某一步时，会根据当前客户卡点和动作类型，从话术库中检索匹配项。</div></div></div>
@@ -7386,8 +7361,7 @@
               <div class="ant-form-item"><div class="ant-form-label"><span class="req">*</span> 卡点类型</div><select class="ant-form-select" id="script-form-obstacle"><option value="">请选择卡点类型</option><option selected>距离/便利</option><option>门店距离较远</option><option>交通/停车不方便</option><option>价格/费用</option><option>觉得价格高</option><option>预算不足/想等活动</option><option>效果疑虑</option><option>担心没效果</option><option>需要看案例</option><option>犹豫拖延</option><option>想再看看</option><option>近期没时间</option><option>决策权</option><option>需要家人同意</option><option>对项目认知不足</option><option>时间冲突</option><option>工作日没空</option><option>预约时间不确定</option><option>已有替代</option><option>已在别家咨询</option><option>已有固定门店</option><option>单纯咨询</option><option>只问项目不表态</option><option>回复意愿弱</option></select></div>
               <div class="ant-form-item"><div class="ant-form-label"><span class="req">*</span> 动作类型</div><select class="ant-form-select" id="script-form-action"><option value="">请选择动作类型</option><option selected>共情承接</option><option>澄清追问</option><option>专业解答</option><option>证据举证</option><option>替代方案</option><option>价值重构</option><option>低门槛邀请</option><option>活动权益</option><option>预约确认</option><option>关怀回访</option></select></div>
               <div class="ant-form-item"><div class="ant-form-label">适用AI风格</div><select class="ant-form-select" id="script-form-style"><option selected>全部风格</option><option>顾问型</option><option>闺蜜型</option><option>逼单型</option><option>服务型</option></select></div>
-              <div class="ant-form-item script-project-scope-field" style="grid-column:1 / -1"><div class="ant-form-label"><span class="req">*</span> 适用意向项目</div>
-                <div class="ko-radio-row"><label><input type="radio" name="script-project-scope" value="common" checked onchange="renderScriptProjectSelection()">全部项目通用</label><label><input type="radio" name="script-project-scope" value="specific" onchange="renderScriptProjectSelection()">指定项目</label></div>
+              <div class="ant-form-item" style="grid-column:1 / -1"><div class="ant-form-label"><span class="req">*</span> 适用意向项目</div>
                 <div class="multi-select" id="script-form-projects" data-placeholder="请选择适用意向项目">
                   <button class="multi-select-control" type="button" style="width:100%;text-align:left" aria-label="选择适用意向项目" onclick="toggleScriptProjectPicker(event,this)"><span class="multi-select-selected"></span><span class="selector-arrow"></span></button>
                   <div class="multi-select-dropdown"></div>
@@ -7406,12 +7380,12 @@
 
 你平时是开车还是坐地铁呀？我帮你看看最方便的路线～</textarea></div>
             <div class="form-row">
-              <div class="ant-form-item"><div class="ant-form-label">内容类型</div><select class="ant-form-select" id="script-form-content-type"><option selected>纯文本</option><option>文本+图片</option><option>文本+视频</option><option>文本+图片+视频</option><option>图文卡片</option><option>小程序链接</option></select></div>
-              <div class="ant-form-item"><div class="ant-form-label">附带素材</div><input class="ant-form-input" id="script-form-material" placeholder="图片/视频URL或素材库ID，多个用逗号分隔（可选）" /></div>
+              <div class="ant-form-item"><div class="ant-form-label">内容类型</div><select class="ant-form-select" id="script-form-content-type"><option selected>纯文本</option><option>文本+图片</option><option>文本+视频</option><option>图文卡片</option><option>小程序链接</option></select></div>
+              <div class="ant-form-item"><div class="ant-form-label">附带素材</div><input class="ant-form-input" id="script-form-material" placeholder="图片/视频URL或素材库ID（可选）" /></div>
             </div>
           </div>
         </div>
-        <div class="form-footer"><button class="ant-btn" type="button" onclick="koCancelEditor()">取消</button><button class="ant-btn" type="button" onclick="saveScriptLibraryForm(false)">保存为草稿</button><button class="ant-btn ant-btn-primary" type="button" onclick="saveScriptLibraryForm(true)">保存并发布</button></div>
+        <div class="form-footer"><button class="ant-btn" type="button" onclick="closeModal('modal-script-library-form')">取消</button><button class="ant-btn" type="button" onclick="saveScriptLibraryForm(false)">保存为草稿</button><button class="ant-btn ant-btn-primary" type="button" onclick="saveScriptLibraryForm(true)">保存并发布</button></div>
       </div>
         </div>
       </div>
@@ -15582,7 +15556,7 @@ function renderHandoverCustomers() {
   handoverPage=Math.min(handoverPage,pages);
   handoverEl('customer-body').innerHTML=handoverVisibleCustomers().map(function(c){
     var w=handoverWechat.find(function(w){return w.id===c.wechat;}), st=handoverStaff.find(function(s){return s.id===c.staff;});
-    return '<tr class="'+(handoverSelected.has(c.id)?'is-selected':'')+'"><td><input class="allocation-check" type="checkbox" aria-label="选择客户 '+c.name+'" '+(handoverSelected.has(c.id)?'checked':'')+' onchange="toggleHandoverCustomer(\''+c.id+'\',this.checked)"></td><td><div class="allocation-name-cell"><div><strong>'+c.name+'</strong><span>'+c.id+'</span></div></div></td><td><div class="allocation-name-cell"><div><strong>'+w.name+'</strong><span>'+w.id+'</span></div></div></td><td>'+(st?'<div class="allocation-name-cell"><div><strong>'+st.name+'</strong><span>'+st.id+'</span></div></div>':'<span style="color:#8c9bab">—</span>')+'</td><td><span class="allocation-status '+(st?'green':'orange')+'">'+(st?'已分配':'未分配')+'</span></td><td>'+c.added+'</td><td><div class="allocation-row-actions"><button type="button" onclick="openHandoverAssignment(\''+c.id+'\')">'+(st?'转移':'分配')+'</button></div></td></tr>';
+    return '<tr class="'+(handoverSelected.has(c.id)?'is-selected':'')+'"><td><input class="allocation-check" type="checkbox" aria-label="选择客户 '+c.name+'" '+(handoverSelected.has(c.id)?'checked':'')+' onchange="toggleHandoverCustomer(\''+c.id+'\',this.checked)"></td><td><div class="allocation-name-cell"><span class="allocation-customer-icon"><i class="fas fa-user"></i></span><div><strong>'+c.name+'</strong><span>'+c.id+'</span></div></div></td><td><div class="allocation-name-cell"><div><strong>'+w.name+'</strong><span>'+w.id+'</span></div></div></td><td>'+(st?'<div class="allocation-name-cell"><div><strong>'+st.name+'</strong><span>'+st.id+'</span></div></div>':'<span style="color:#8c9bab">—</span>')+'</td><td><span class="allocation-status '+(st?'green':'orange')+'">'+(st?'已分配':'未分配')+'</span></td><td>'+c.added+'</td><td><div class="allocation-row-actions"><button type="button" onclick="openHandoverAssignment(\''+c.id+'\')">'+(st?'转移':'分配')+'</button></div></td></tr>';
   }).join('')||'<tr><td colspan="7"><div class="handover-empty">暂无符合条件的客户，请调整筛选条件或重置。</div></td></tr>';
   handoverEl('total').textContent='共 '+filtered.length+' 位客户'; handoverEl('page-info').textContent=handoverPage+' / '+pages;
   handoverEl('prev').disabled=handoverPage<=1; handoverEl('next').disabled=handoverPage>=pages;
@@ -16775,7 +16749,7 @@ function moveUnifiedTabsToQueryCard(page, card) {
 
 function moveUnifiedFiltersToQueryCard(page, card) {
   var body = getUnifiedQueryBody(card);
-  Array.prototype.slice.call(page.querySelectorAll('.unified-list-toolbar .unified-toolbar-filters, .handover-filters, .ko-query-form')).forEach(function(filters) {
+  Array.prototype.slice.call(page.querySelectorAll('.unified-list-toolbar .unified-toolbar-filters, .handover-filters')).forEach(function(filters) {
     if (filters.closest('.unified-query-card') || !filters.children.length) return;
     var source = filters.closest('.unified-list-card, .wechat-level-page, .transfer-list-card') || getUnifiedQuerySource(filters, page);
     var sourceId = ensureUnifiedElementId(source, 'unified-query-source');
@@ -18322,186 +18296,10 @@ function showScriptLibraryView(view) {
     openScriptLibraryForm('new');
   } else {
     form.removeAttribute('data-edit-row-index');
-  form.removeAttribute('data-edit-knowledge-id');
     closeModal('modal-script-library-form');
     switchScriptLibraryTab('list');
   }
 }
-
-// Knowledge operations use the existing hidden knowledge cards as the single editable store.
-var koSelected=new Set(), koPage=1, koPageSize=10, koFilters={keyword:'',project:'',obstacle:'',action:'',status:''};
-var koTagIds=[], koUndo=null, koPreviewIds=[], koPreviewIndex=0, koCell=null, koDetailMode='', koReturnCell=false, koEditorReturn=null, koOptional=new Set(), koAssociateSelected=new Set(), koCellMap=[], koFocusReturn=null;
-var koObstacleGroups=[{"name": "距离/便利", "children": ["门店距离较远", "交通/停车不方便"]}, {"name": "价格/费用", "children": ["觉得价格高", "预算不足/想等活动"]}, {"name": "效果疑虑", "children": ["担心没效果", "需要看案例"]}, {"name": "犹豫拖延", "children": ["想再看看", "近期没时间"]}, {"name": "决策权", "children": ["需要家人同意", "对项目认知不足"]}, {"name": "时间冲突", "children": ["工作日没空", "预约时间不确定"]}, {"name": "已有替代", "children": ["已在别家咨询", "已有固定门店"]}, {"name": "单纯咨询", "children": ["只问项目不表态", "回复意愿弱"]}];
-function koEl(id){return document.getElementById('ko-'+id);}
-function koEscape(value){return escapeAttr(String(value==null?'':value));}
-function koHandler(name){return koEscape(name+'('+Array.prototype.slice.call(arguments,1).map(function(v){return JSON.stringify(v);}).join(',')+')');}
-function koCards(){return Array.from(document.querySelectorAll('#script-library-card-list [data-script-row]'));}
-function koCard(id){return koCards().find(function(row){return row.dataset.scriptId===id;});}
-function koRead(row){return {id:row.dataset.scriptId,title:row.dataset.scriptTitle||'未命名知识',parent:row.dataset.scriptParent,obstacle:row.dataset.scriptObstacle,action:row.dataset.scriptAction,style:row.dataset.scriptStyle,status:row.dataset.scriptStatusValue||'启用',projects:getScriptRowProjects(row),content:Array.from(row.querySelectorAll('.script-copy-text')).map(function(p){return p.textContent;}).join('\n'),contentType:row.dataset.scriptContentType||'纯文本',material:row.dataset.scriptMaterial||''};}
-function koData(){return koCards().map(koRead);}
-function koProjectLabel(projects){return projects.includes('*')?'全部项目通用':projects.join('、');}
-function koApplies(item,project){return !project||item.projects.includes('*')||item.projects.includes(project);}
-function koIsShared(item){return item.projects.includes('*')||item.projects.length>1;}
-function koObstacleMatches(item,value){return !value||item.parent===value||item.obstacle===value;}
-function koFiltered(){return koData().filter(function(item){var f=koFilters, text=(item.id+' '+item.title+' '+item.content).toLowerCase();return (!f.keyword||text.includes(f.keyword.toLowerCase()))&&koApplies(item,f.project)&&koObstacleMatches(item,f.obstacle)&&(!f.action||item.action===f.action)&&(!f.status||item.status===f.status);});}
-function koVisible(){return koFiltered().slice((koPage-1)*koPageSize,koPage*koPageSize);}
-function koOption(value,label){return '<option value="'+koEscape(value)+'">'+koEscape(label||value)+'</option>';}
-function koObstacleOptions(all){return (all?koOption('','全部卡点类型'):'')+koObstacleGroups.map(function(g){return '<optgroup label="'+koEscape(g.name)+'">'+koOption(g.name,g.name+'（全部）')+g.children.map(function(name){return koOption(name);}).join('')+'</optgroup>';}).join('');}
-function koProjectBadges(projects){if(projects.includes('*'))return '<span class="ko-tag teal">全部项目通用</span>';return projects.slice(0,2).map(function(p){return '<span class="ko-tag blue">'+koEscape(p)+'</span>';}).join('')+(projects.length>2?'<span class="ko-tag">＋'+(projects.length-2)+'</span>':'');}
-function koStatusBadge(status){return '<span class="ko-status '+(status==='启用'?'enabled':'')+'">'+koEscape(status)+'</span>';}
-function koApplyFilters(){koFilters={keyword:koEl('keyword').value.trim(),project:document.getElementById('script-project-filter').value,obstacle:koEl('obstacle').value,action:koEl('action').value,status:koEl('status').value};koSelected.clear();koPage=1;koRenderList();}
-function koRenderList(){
-  if(!koEl('table-body'))return;
-  var filtered=koFiltered(), pages=Math.max(1,Math.ceil(filtered.length/koPageSize)); koPage=Math.max(1,Math.min(koPage,pages));
-  koSelected.forEach(function(id){if(!koCard(id))koSelected.delete(id);});
-  koEl('table-body').innerHTML=koVisible().map(function(item){return '<tr class="'+(koSelected.has(item.id)?'ko-selected':'')+'"><td><input type="checkbox" aria-label="选择知识 '+koEscape(item.id)+'" '+(koSelected.has(item.id)?'checked':'')+' onchange="'+koHandler('koToggleSelection',item.id)+'"></td><td><button class="ko-text-link ko-title-link" type="button" onclick="'+koHandler('koOpenPreview',item.id,false)+'">'+koEscape(item.title)+'</button><p class="ko-excerpt">'+koEscape(item.content)+'</p><div class="ko-row-meta"><span>'+koEscape(item.id)+'</span><span>'+koEscape(item.contentType)+'</span><span>'+koEscape(item.style)+'</span></div></td><td><button class="ko-project-tags" type="button" title="'+koEscape(koProjectLabel(item.projects))+' · 点击编辑" aria-label="设置 '+koEscape(item.id)+' 的意向项目" onclick="'+koHandler('koOpenProjectEditor',item.id)+'">'+koProjectBadges(item.projects)+'<span class="ko-tag-edit">✎</span></button></td><td>'+koEscape(item.obstacle)+'</td><td>'+koEscape(item.action)+'</td><td>'+koStatusBadge(item.status)+'</td><td><div class="ko-actions"><button class="ko-text-link" type="button" onclick="'+koHandler('koOpenPreview',item.id,false)+'">详情</button><button class="ko-text-link" type="button" onclick="'+koHandler('koEditKnowledge',item.id)+'">编辑</button><button class="ko-text-link" type="button" onclick="'+koHandler('koCopyKnowledge',item.id)+'">复制</button></div></td></tr>';}).join('')||'<tr><td colspan="7" class="ko-empty">暂无符合条件的知识。请调整筛选条件，或新增话术。</td></tr>';
-  document.getElementById('script-library-total').textContent='共 '+filtered.length+' 条知识';
-  koEl('page-info').textContent=koPage+' / '+pages;koEl('prev').disabled=koPage<=1;koEl('next').disabled=koPage>=pages;
-  koEl('undo').hidden=!koUndo;
-  koEl('bulk').hidden=!koSelected.size;koEl('selected-count').textContent='已选 '+koSelected.size+' 条知识（含跨页）';
-  var rows=koVisible(), count=rows.filter(function(item){return koSelected.has(item.id);}).length, master=koEl('check-page');master.checked=rows.length>0&&count===rows.length;master.indeterminate=count>0&&count<rows.length;master.disabled=!rows.length;
-}
-function koToggleSelection(id){koSelected.has(id)?koSelected.delete(id):koSelected.add(id);koRenderList();}
-function koSelectPage(checked){koVisible().forEach(function(item){checked?koSelected.add(item.id):koSelected.delete(item.id);});koRenderList();}
-function koClearSelection(){koSelected.clear();koRenderList();}
-function koRefresh(){koRenderList();koRenderMatrix();if(koEl('detail').classList.contains('show')){if(koDetailMode==='preview')koRenderPreview();else if(koDetailMode==='cell')koRenderCell();}}
-function koSnapshot(ids){return ids.map(function(id){var c=koCard(id);return {id:id,projects:getScriptRowProjects(c),status:c.dataset.scriptStatusValue};});}
-function koWriteStatus(card,status){card.dataset.scriptStatusValue=status;var span=card.querySelector('[data-script-status]');if(span)span.textContent=status;}
-function koSetStatus(status,id){var ids=id?[id]:Array.from(koSelected);if(!ids.length)return;koUndo=koSnapshot(ids);ids.forEach(function(key){koWriteStatus(koCard(key),status);});koRefresh();showToast('已'+status+' '+ids.length+' 条知识','success');}
-function koUndoChange(){if(!koUndo)return;koUndo.forEach(function(item){var card=koCard(item.id);if(card){card.dataset.scriptProjects=JSON.stringify(item.projects);koWriteStatus(card,item.status);}});koUndo=null;koRefresh();showToast('已撤销上次批量修改','success');}
-function koOpenProjectEditor(id){
-  koTagIds=id?[id]:Array.from(koSelected);if(!koTagIds.length)return;
-  koEl('project-title').textContent=id?'编辑适用意向项目':'批量设置意向项目';koEl('project-summary').textContent=id?koRead(koCard(id)).title:'已选 '+koTagIds.length+' 条知识';
-  koEl('project-mode-field').hidden=!!id;koEl('project-mode').value=id?'replace':'add';
-  var projects=id?getScriptRowProjects(koCard(id)):[];
-  document.querySelector('input[name="ko-project-range"][value="'+(projects.includes('*')?'common':'specific')+'"]').checked=true;
-  koEl('project-options').innerHTML=getScriptIntentProjects().map(function(p){return '<label><input type="checkbox" value="'+koEscape(p)+'" '+(projects.includes(p)?'checked':'')+' onchange="koPreviewProjectChange()">'+koEscape(p)+'</label>';}).join('');
-  koProjectModeChanged();koEl('project-dialog').classList.add('show');koEl('project-save').focus();
-}
-function koCloseProjectEditor(){koEl('project-dialog').classList.remove('show');}
-function koProjectModeChanged(){var replace=koEl('project-mode').value==='replace';koEl('project-range-field').hidden=!replace;koEl('project-range-hint').hidden=!replace;koPreviewProjectChange();}
-function koToggleAllProjects(checked){koEl('project-options').querySelectorAll('input').forEach(function(input){input.checked=checked;});koPreviewProjectChange();}
-function koProjectChanges(){
-  var selected=Array.from(koEl('project-options').querySelectorAll('input:checked')).map(function(input){return input.value;}), mode=koEl('project-mode').value, common=mode==='replace'&&document.querySelector('input[name="ko-project-range"]:checked').value==='common';
-  return koTagIds.map(function(id){var old=getScriptRowProjects(koCard(id)), next=old.slice();
-    if(mode==='replace')next=common?['*']:selected.slice();
-    else if(mode==='add'&&!old.includes('*'))next=Array.from(new Set(old.concat(selected)));
-    else if(mode==='remove')next=(old.includes('*')?getScriptIntentProjects():old).filter(function(p){return !selected.includes(p);});
-    return {id:id,old:old,next:next,changed:JSON.stringify(old)!==JSON.stringify(next),converted:mode==='remove'&&old.includes('*')&&selected.length>0};
-  });
-}
-function koPreviewProjectChange(){
-  var options=Array.from(koEl('project-options').querySelectorAll('input')), checked=options.filter(function(o){return o.checked;}).length, all=koEl('project-select-all');all.checked=options.length>0&&checked===options.length;all.indeterminate=checked>0&&checked<options.length;
-  var common=koEl('project-mode').value==='replace'&&document.querySelector('input[name="ko-project-range"]:checked').value==='common';koEl('project-options-wrap').hidden=common;
-  var changes=koProjectChanges(), invalid=changes.filter(function(c){return !c.next.length;}), converted=changes.filter(function(c){return c.converted;}), changed=changes.filter(function(c){return c.changed;}).length;
-  var error=(!common&&!checked)?'请选择至少一个项目。':invalid.length?'有 '+invalid.length+' 条知识将没有适用项目，请调整选择。':'';
-  koEl('project-impact').classList.toggle('error',!!error);koEl('project-impact').textContent=error||('将修改 '+changed+' 条，保持不变 '+(changes.length-changed)+' 条。'+(converted.length?'其中 '+converted.length+' 条通用知识将转为剩余现有项目，后续新增项目不再自动适用。':''));
-  koEl('project-save').disabled=!!error||!changed;
-  koEl('project-preview').innerHTML=changes.map(function(c){return '<div><strong>'+koEscape(koRead(koCard(c.id)).title)+'</strong>'+koEscape(koProjectLabel(c.old))+' → '+koEscape(koProjectLabel(c.next)||'无适用项目')+'</div>';}).join('');
-}
-function koSaveProjects(){
-  koPreviewProjectChange();if(koEl('project-save').disabled)return;
-  var changes=koProjectChanges();koUndo=koSnapshot(koTagIds);changes.forEach(function(c){koCard(c.id).dataset.scriptProjects=JSON.stringify(c.next);});koCloseProjectEditor();koRefresh();showToast('适用意向项目已更新','success');
-}
-function koShowDetail(){if(!koEl('detail').classList.contains('show'))koFocusReturn=document.activeElement;koEl('detail').classList.add('show');koEl('detail').querySelector('.modal-close').focus();}
-function koCloseDetail(){koPausePreviewMedia();koEl('detail').classList.remove('show');if(koFocusReturn&&koFocusReturn.isConnected)koFocusReturn.focus();}
-function koOpenPreview(id,fromCell){koReturnCell=!!fromCell;koPreviewIds=(fromCell?koCellItems(false):koFiltered()).map(function(item){return item.id;});if(!koPreviewIds.includes(id))koPreviewIds.push(id);koPreviewIndex=koPreviewIds.indexOf(id);koDetailMode='preview';koRenderPreview();koShowDetail();}
-function koMediaDetail(item){
-  if(!item.material)return '';
-  var counts={image:0,video:0,file:0};
-  return item.material.split(/[，,、;；\n]/).map(function(value){
-    var text=value.trim();if(!text)return '';
-    var safe=/^https?:\/\//i.test(text),image=/\.(png|jpe?g|webp|gif|avif|svg)([?#].*)?$/i.test(text),video=/\.(mp4|webm|mov|m4v|ogv)([?#].*)?$/i.test(text);
-    var type=video?'video':image?'image':!safe&&/视频|短片/.test(text)?'video':!safe&&/图片|截图|海报|图$/.test(text)?'image':item.contentType==='文本+视频'?'video':item.contentType==='文本+图片'?'image':'file';
-    var label=type==='image'?'图片':type==='video'?'视频':'素材',number=++counts[type],media='';
-    if(safe&&type==='image')media='<a href="'+koEscape(text)+'" target="_blank" rel="noopener noreferrer" aria-label="查看图片原图"><img class="ko-preview-media" src="'+koEscape(text)+'" alt="知识图片 '+number+'" loading="lazy" onerror="koMediaUnavailable(this)"></a>';
-    else if(safe&&type==='video')media='<video class="ko-preview-media ko-preview-video" controls playsinline preload="metadata" src="'+koEscape(text)+'" aria-label="知识视频 '+number+'" onerror="koMediaUnavailable(this)"></video>';
-    else if(safe)media='<a class="ko-text-link" href="'+koEscape(text)+'" target="_blank" rel="noopener noreferrer">打开素材</a>';
-    else media='<div class="ko-media-placeholder '+(type==='video'?'video':'')+'"><span aria-hidden="true">'+(type==='video'?'▷':type==='image'?'▧':'◇')+'</span><p>暂无预览</p></div>';
-    return '<figure class="ko-media-card '+(safe&&type==='video'?'video':'')+'" aria-label="'+label+' '+number+'" title="'+koEscape(text)+'">'+media+'<figcaption class="ko-media-caption">'+(safe?label+' '+number:koEscape(text))+'</figcaption></figure>';
-  }).join('');
-}
-function koMediaUnavailable(media){var card=media.closest('.ko-media-card');if(!card||card.querySelector('.ko-media-error'))return;media.hidden=true;var note=document.createElement('p');note.className='ko-muted ko-media-error';note.textContent='素材暂时无法加载，请检查素材地址。';card.insertBefore(note,card.querySelector('.ko-media-caption'));}
-function koPausePreviewMedia(){koEl('detail-body').querySelectorAll('video').forEach(function(video){if(!video.paused)video.pause();});}
-function koRenderPreview(){
-  koPausePreviewMedia();
-  koPreviewIds=koPreviewIds.filter(function(id){return !!koCard(id);});if(!koPreviewIds.length){koCloseDetail();return;}koPreviewIndex=Math.min(koPreviewIndex,koPreviewIds.length-1);
-  var item=koRead(koCard(koPreviewIds[koPreviewIndex]));koEl('detail-title').textContent='知识详情';koEl('detail-subtitle').textContent=(koPreviewIndex+1)+' / '+koPreviewIds.length;
-  var paragraphs=item.content.split(/\n+/).filter(function(text){return text.trim();}),media=koMediaDetail(item);
-  koEl('detail-body').innerHTML='<article class="ko-knowledge-card"><header class="ko-knowledge-card-head"><h3>'+koEscape(item.title)+'</h3><div class="ko-knowledge-card-meta"><span>'+koEscape(item.id)+'</span><span>'+koEscape(item.style==='全部'?'全部风格':item.style)+'</span><span class="ko-publish-badge '+(item.status==='启用'?'':'inactive')+'">'+(item.status==='启用'?'已发布':'未启用')+'</span></div></header><div class="ko-knowledge-card-body">'+paragraphs.map(function(text,index){return '<p class="ko-knowledge-paragraph"><span class="ko-paragraph-label">段落'+(index+1)+'</span>'+koEscape(text)+'</p>';}).join('')+(media?'<div class="ko-knowledge-media">'+media+'</div>':'')+'</div></article>';
-  koEl('detail-footer').innerHTML='';
-}
-function koNavigatePreview(delta){koPreviewIndex+=delta;koRenderPreview();koEl('detail-body').scrollTop=0;}
-function koNewKnowledge(fromCell){
-  koEditorReturn=fromCell?{mode:'cell',cell:Object.assign({},koCell)}:null;
-  if(fromCell)koCloseDetail();openScriptLibraryForm('new');
-  var obstacle=fromCell?koCell.obstacle:koFilters.obstacle,action=fromCell?koCell.action:koFilters.action,project=fromCell?koCell.project:koFilters.project;
-  if(obstacle)document.getElementById('script-form-obstacle').value=obstacle;if(action)document.getElementById('script-form-action').value=action;setScriptProjectSelection(project?[project]:['*']);
-}
-function koEditKnowledge(id){
-  var card=koCard(id);if(!card)return;
-  koEditorReturn=koEl('detail').classList.contains('show')?{mode:koDetailMode,id:id,cell:koCell?Object.assign({},koCell):null}:null;
-  koCloseDetail();editScriptLibraryRow(card.querySelector('button'));
-}
-function koCopyKnowledge(id){var card=koCard(id);if(!card)return;koUndo=null;copyScriptLibraryCard(card.querySelector('button'));showToast('已复制知识，适用项目保持一致','success');}
-function koCancelEditor(){
-  closeModal('modal-script-library-form');
-  var origin=koEditorReturn;koEditorReturn=null;
-  if(!origin)return;
-  koCell=origin.cell;
-  if(origin.mode==='cell')koBackToCell();else koOpenPreview(origin.id,!!koCell&&koReturnCell);
-}
-function koAfterSave(id){
-  koUndo=null;koRefresh();
-  if(koEditorReturn){if(koEditorReturn.mode==='cell'){koCell=koEditorReturn.cell;koBackToCell();}else{koCell=koEditorReturn.cell;koOpenPreview(id,!!koCell&&koReturnCell);}}else switchScriptLibraryTab('list');
-  koEditorReturn=null;showToast('话术已保存','success');
-}
-function koMatrixKey(cell){return JSON.stringify([cell.project,cell.obstacle,cell.action]);}
-function koCoverage(cell){var items=koData().filter(function(item){return item.status==='启用'&&koApplies(item,cell.project)&&koObstacleMatches(item,cell.obstacle)&&item.action===cell.action;});return {exclusive:items.filter(function(item){return !koIsShared(item);}).length,shared:items.filter(koIsShared).length,optional:koOptional.has(koMatrixKey(cell))};}
-function koResetMatrix(){koEl('matrix-project').selectedIndex=0;koEl('matrix-obstacle').value='';koEl('matrix-action').value='';koRenderMatrix();}
-var koExpandedGroups=new Set();
-function koToggleMatrixGroup(name){koExpandedGroups.has(name)?koExpandedGroups.delete(name):koExpandedGroups.add(name);koRenderMatrix();}
-function koRenderMatrix(){
-  if(!koEl('matrix-body')||!koEl('matrix-project').options.length)return;
-  var project=koEl('matrix-project').value,obstacle=koEl('matrix-obstacle').value,action=koEl('matrix-action').value,actions=action?[action]:getUnifiedFollowActions();
-  koCellMap=[];
-  function row(name,parent,children){
-    var cells=actions.map(function(act){var cell={project:project,obstacle:name,action:act};return {cell:cell,stats:koCoverage(cell)};});
-    var expanded=koExpandedGroups.has(name),header=children?'<span class="matrix-group-name"><button class="matrix-expand-btn" type="button" aria-label="'+koEscape((expanded?'收起':'展开')+name)+'" aria-expanded="'+expanded+'" onclick="'+koHandler('koToggleMatrixGroup',name)+'">'+(expanded?'−':'+')+'</button>'+koEscape(name)+'</span>':koEscape(name);
-    return '<tr'+(parent?' class="matrix-child-row'+(koExpandedGroups.has(parent)?'':' hidden')+'" data-matrix-child="'+koEscape(parent)+'"':children?' data-matrix-parent="'+koEscape(name)+'"':'')+'><th scope="row">'+header+'</th>'+cells.map(function(c){var st=c.stats,count=st.exclusive+st.shared,index=koCellMap.push(c.cell)-1,cls=st.optional?'optional':count>=2?'good':count===1?'warn':'empty';return '<td><button type="button" class="matrix-cell '+cls+'" style="border:0;font-family:inherit;font-size:inherit;" title="专属 '+st.exclusive+' 条，共用 '+st.shared+' 条" aria-label="'+koEscape(c.cell.project+' / '+c.cell.obstacle+' / '+c.cell.action)+'" onclick="koOpenCell('+index+')">'+(st.optional?'不要求':count+'条')+'</button></td>';}).join('')+'</tr>';
-  }
-  var body='';
-  if(obstacle){var group=koObstacleGroups.find(function(g){return g.name===obstacle;});body=row(obstacle,null,!!group)+(group?group.children.map(function(c){return row(c,group.name);}).join(''):'');}
-  else body=koObstacleGroups.map(function(g){return row(g.name,null,true)+g.children.map(function(c){return row(c,g.name);}).join('');}).join('');
-  koEl('matrix-head').innerHTML='<tr><th class="corner">卡点 \u005c 动作</th>'+actions.map(function(a){return '<th>'+koEscape(a)+'</th>';}).join('')+'</tr>';
-  koEl('matrix-body').innerHTML=body||'<tr><td colspan="'+(actions.length+1)+'" class="ko-empty">暂无符合条件的知识组合。</td></tr>';
-}
-function koOpenCell(index){koCell=Object.assign({},koCellMap[index]);koDetailMode='cell';koRenderCell();koShowDetail();}
-function koCellItems(enabledOnly){return koData().filter(function(item){return koApplies(item,koCell.project)&&koObstacleMatches(item,koCell.obstacle)&&item.action===koCell.action&&(!enabledOnly||item.status==='启用');});}
-function koCellItemHtml(item){return '<article class="ko-cell-item"><div class="ko-cell-item-head"><button class="ko-text-link ko-title-link" type="button" onclick="'+koHandler('koOpenPreview',item.id,true)+'">'+koEscape(item.title)+'</button>'+koStatusBadge(item.status)+'</div><p class="ko-excerpt">'+koEscape(item.content)+'</p><div class="ko-row-meta"><span>'+koEscape(item.id)+'</span><span>'+koEscape(koProjectLabel(item.projects))+'</span></div><div class="ko-actions"><button class="ko-text-link" type="button" onclick="'+koHandler('koEditKnowledge',item.id)+'">编辑</button><button class="ko-text-link" type="button" onclick="'+koHandler('koOpenProjectEditor',item.id)+'">设置项目</button><button class="ko-text-link" type="button" onclick="'+koHandler('koSetStatus',item.status==='启用'?'停用':'启用',item.id)+'">'+(item.status==='启用'?'停用':'启用')+'</button></div></article>';}
-function koRenderCell(){
-  if(!koCell)return;var items=koCellItems(false),enabled=items.filter(function(i){return i.status==='启用';}),disabled=items.filter(function(i){return i.status!=='启用';});
-  koEl('detail-title').textContent='覆盖明细';koEl('detail-subtitle').textContent=koCell.project+' / '+koCell.obstacle+' / '+koCell.action;
-  koEl('detail-body').innerHTML='<div class="ko-cell-requirement"><div><strong>当前组合是否需要知识</strong><p class="ko-muted">仅作用于当前项目、卡点和动作。</p></div><label class="ko-check-label"><input type="checkbox" '+(koOptional.has(koMatrixKey(koCell))?'checked':'')+' onchange="koToggleRequirement(this.checked)">不要求</label></div><h3 style="font-size:14px;margin-bottom:12px">可用知识 · '+enabled.length+' 条</h3>'+(enabled.map(koCellItemHtml).join('')||'<div class="ko-read-card ko-empty">暂无已启用的适用知识，可关联已有内容或新增。</div>')+(disabled.length?'<h3 style="font-size:14px;margin:18px 0 12px">未启用 · '+disabled.length+' 条</h3>'+disabled.map(koCellItemHtml).join(''):'');
-  koEl('detail-footer').innerHTML='<button class="btn btn-default" type="button" onclick="koShowCellInList()">到知识内容查看</button><button class="btn btn-default" type="button" onclick="koOpenAssociate()">关联已有知识</button><button class="btn btn-primary" type="button" onclick="koNewKnowledge(true)">新增知识</button>';
-}
-function koToggleRequirement(optional){var key=koMatrixKey(koCell);optional?koOptional.add(key):koOptional.delete(key);koRenderMatrix();}
-function koBackToCell(){koDetailMode='cell';koRenderCell();koShowDetail();}
-function koShowCellInList(){var c=koCell;koCloseDetail();document.getElementById('script-project-filter').value=c.project;koEl('obstacle').value=c.obstacle;koEl('action').value=c.action;koEl('status').value='';koEl('keyword').value='';koApplyFilters();switchScriptLibraryTab('list');}
-function koOpenAssociate(){koDetailMode='associate';koAssociateSelected.clear();koEl('detail-title').textContent='关联已有知识';koEl('detail-subtitle').textContent=koCell.project+' / '+koCell.obstacle+' / '+koCell.action;koEl('detail-body').innerHTML='<div class="ko-read-card"><input class="search-input" id="ko-associate-search" style="width:100%" placeholder="搜索同一卡点和动作下的现有知识" aria-label="搜索可关联知识" oninput="koRenderAssociates()"><p class="ko-muted">关联后会给原知识增加当前项目，不会复制内容；停用知识仍需启用才计入覆盖。</p></div><div id="ko-associate-items"></div>';koEl('detail-footer').innerHTML='<button class="btn btn-default" type="button" onclick="koBackToCell()">返回</button><button class="btn btn-primary" id="ko-associate-confirm" type="button" onclick="koConfirmAssociate()" disabled>关联所选知识</button>';koRenderAssociates();}
-function koRenderAssociates(){var q=koEl('associate-search').value.trim().toLowerCase(),items=koData().filter(function(item){return !koApplies(item,koCell.project)&&koObstacleMatches(item,koCell.obstacle)&&item.action===koCell.action&&(!q||(item.title+' '+item.content+' '+item.id).toLowerCase().includes(q));});koEl('associate-items').innerHTML=items.map(function(item){return '<label class="ko-cell-item ko-associate-row"><input type="checkbox" '+(koAssociateSelected.has(item.id)?'checked':'')+' onchange="'+koHandler('koToggleAssociate',item.id)+'"><div><h4>'+koEscape(item.title)+'</h4><p class="ko-excerpt">'+koEscape(item.content)+'</p>'+koStatusBadge(item.status)+' <span class="ko-muted">'+koEscape(koProjectLabel(item.projects))+'</span></div></label>';}).join('')||'<div class="ko-empty">没有可关联的知识。可以返回新增，或检查已有知识的卡点与动作。</div>';}
-function koToggleAssociate(id){koAssociateSelected.has(id)?koAssociateSelected.delete(id):koAssociateSelected.add(id);koEl('associate-confirm').disabled=!koAssociateSelected.size;koEl('associate-confirm').textContent='关联所选知识'+(koAssociateSelected.size?'（'+koAssociateSelected.size+'）':'');}
-function koConfirmAssociate(){if(!koAssociateSelected.size)return;var ids=Array.from(koAssociateSelected);koUndo=koSnapshot(ids);ids.forEach(function(id){var card=koCard(id),projects=getScriptRowProjects(card);if(!projects.includes('*')&&!projects.includes(koCell.project))card.dataset.scriptProjects=JSON.stringify(projects.concat([koCell.project]));});koDetailMode='cell';koRefresh();showToast('已关联 '+ids.length+' 条知识','success');}
-function koInit(){
-  var actions=getUnifiedFollowActions();koEl('obstacle').innerHTML=koObstacleOptions(true);koEl('action').innerHTML=koOption('','全部跟进动作')+actions.map(function(a){return koOption(a);}).join('');koEl('matrix-project').innerHTML=getScriptIntentProjects().map(function(p){return koOption(p);}).join('');koEl('matrix-action').innerHTML=koOption('','全部跟进动作')+actions.map(function(a){return koOption(a);}).join('');koEl('matrix-obstacle').innerHTML=koObstacleOptions(true);
-  koApplyFilters();koRenderMatrix();switchScriptLibraryTab('list');
-}
-document.addEventListener('keydown',function(event){
-  var project=koEl('project-dialog'), detail=koEl('detail'), active=project&&project.classList.contains('show')?project:detail&&detail.classList.contains('show')?detail:null;
-  if(!active)return;
-  if(event.key==='Escape'){event.preventDefault();active===project?koCloseProjectEditor():koCloseDetail();}
-  if(event.key==='Tab'){var items=Array.from(active.querySelectorAll('button,input,select,a[href],textarea')).filter(function(el){return !el.disabled&&el.getClientRects().length>0;});if(!items.length)return;var first=items[0],last=items[items.length-1];if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}}
-});
 
 function getScriptIntentProjects() {
   var names=[];
@@ -18514,7 +18312,7 @@ function getScriptIntentProjects() {
 function initScriptProjectFields() {
   var names=getScriptIntentProjects(), filter=document.getElementById('script-project-filter');
   filter.innerHTML='<option value="">全部意向项目</option>'+names.map(function(name){return '<option value="'+escapeAttr(name)+'">'+escapeAttr(name)+'</option>';}).join('');
-  document.querySelector('#script-form-projects .multi-select-dropdown').innerHTML=names.map(function(name){return '<label class="multi-select-option"><input type="checkbox" value="'+escapeAttr(name)+'" data-project-option onchange="changeScriptProjectSelection(this)">'+escapeAttr(name)+'</label>';}).join('');
+  document.querySelector('#script-form-projects .multi-select-dropdown').innerHTML='<label class="multi-select-option"><input type="checkbox" value="*" data-project-all onchange="changeScriptProjectSelection(this)">全部项目</label>'+names.map(function(name){return '<label class="multi-select-option"><input type="checkbox" value="'+escapeAttr(name)+'" data-project-option onchange="changeScriptProjectSelection(this)">'+escapeAttr(name)+'</label>';}).join('');
   setScriptProjectSelection(['*']);
 }
 function getScriptRowProjects(row) {
@@ -18524,27 +18322,24 @@ function getScriptRowProjects(row) {
 function setScriptProjectSelection(projects) {
   var picker=document.getElementById('script-form-projects'), all=projects.indexOf('*')!==-1;
   closeScriptProjectPicker();
-  document.querySelector('input[name="script-project-scope"][value="'+(all?'common':'specific')+'"]').checked=true;
-  picker.querySelectorAll('[data-project-option]').forEach(function(input){input.checked=!all&&projects.indexOf(input.value)!==-1;});
+  picker.querySelectorAll('[data-project-option]').forEach(function(input){input.checked=all||projects.indexOf(input.value)!==-1;});
   renderScriptProjectSelection();
 }
-
 function changeScriptProjectSelection(input) {
+  if(input.hasAttribute('data-project-all')) document.querySelectorAll('#script-form-projects [data-project-option]').forEach(function(option){option.checked=input.checked;});
   renderScriptProjectSelection();
   positionScriptProjectPicker();
 }
 function getScriptProjectSelection() {
-  if(document.querySelector('input[name="script-project-scope"]:checked').value==='common')return ['*'];
-  return Array.from(document.querySelectorAll('#script-form-projects [data-project-option]:checked')).map(function(input){return input.value;});
+  var inputs=Array.from(document.querySelectorAll('#script-form-projects [data-project-option]')), selected=inputs.filter(function(input){return input.checked;});
+  return inputs.length&&selected.length===inputs.length?['*']:selected.map(function(input){return input.value;});
 }
-
 function renderScriptProjectSelection() {
-  var picker=document.getElementById('script-form-projects'), selected=getScriptProjectSelection(), common=selected.includes('*');
-  picker.hidden=common;if(common)closeScriptProjectPicker();
-  picker.querySelector('.multi-select-selected').innerHTML=!common&&selected.length?selected.map(function(name){return '<span class="multi-select-chip">'+escapeAttr(name)+'</span>';}).join(''):'<span class="multi-select-placeholder">请选择适用意向项目</span>';
+  var picker=document.getElementById('script-form-projects'), selected=getScriptProjectSelection(), all=picker.querySelector('[data-project-all]');
+  all.checked=selected.indexOf('*')!==-1; all.indeterminate=!all.checked&&selected.length>0;
+  picker.querySelector('.multi-select-selected').innerHTML=selected.length?selected.map(function(name){return '<span class="multi-select-chip">'+escapeAttr(name==='*'?'全部项目':name)+'</span>';}).join(''):'<span class="multi-select-placeholder">请选择适用意向项目</span>';
   picker.querySelector('.multi-select-control').style.borderColor='';
 }
-
 function closeScriptProjectPicker() {
   var picker=document.getElementById('script-form-projects');
   if(!picker)return;
@@ -18594,7 +18389,6 @@ function setScriptLibraryFormDefaults() {
   var form = document.getElementById('script-library-form');
   if (!form) return;
   form.removeAttribute('data-edit-row-index');
-  form.removeAttribute('data-edit-knowledge-id');
   var title = document.getElementById('script-library-form-title');
   if (title) title.textContent = '新增话术';
   var obstacle = document.getElementById('script-form-obstacle');
@@ -18976,17 +18770,64 @@ function setScriptActionSelection(value) {
   return true;
 }
 
-function filterScriptLibraryRows() { koRefresh(); }
+function filterScriptLibraryRows() {
+  var page = document.getElementById('page-script-library');
+  var list = document.getElementById('script-library-card-list') || document.querySelector('#script-library-table tbody');
+  if (!page || !list) return;
+  var obstacleInfo = getActiveScriptObstacleInfo();
+  var activeAction = page.querySelector('.script-action-tab.active');
+  var action = activeAction ? activeAction.getAttribute('data-script-action-tab') : '';
+  var empty = list.querySelector('.script-empty-row, .script-card-empty');
+  if (empty) empty.remove();
+  var visibleCount = 0;
+  Array.prototype.slice.call(list.querySelectorAll('[data-script-row]')).forEach(function(row) {
+    var rowParent = row.getAttribute('data-script-parent') || '';
+    var rowObstacle = row.getAttribute('data-script-obstacle') || '';
+    var rowAction = normalizeFollowActionName(row.getAttribute('data-script-action') || '');
+    var matched = true;
+    if (obstacleInfo.scope === 'group' && rowParent !== obstacleInfo.value) matched = false;
+    if (obstacleInfo.scope !== 'group' && rowObstacle !== obstacleInfo.value) matched = false;
+    if (action && rowAction !== action) matched = false;
+    var project=document.getElementById('script-project-filter').value, projects=getScriptRowProjects(row);
+    if (project && projects.indexOf('*')===-1 && projects.indexOf(project)===-1) matched=false;
+    row.style.display = matched ? '' : 'none';
+    if (matched) visibleCount += 1;
+  });
+  if (!visibleCount) {
+    list.insertAdjacentHTML('beforeend', '<div class="script-card-empty">当前筛选条件下暂无话术</div>');
+  }
+  var total = document.getElementById('script-library-total');
+  if (total) total.textContent = '当前显示 ' + visibleCount + ' 条';
+}
 
 function resetScriptLibraryFilters() {
-  document.getElementById('ko-filters').reset(); koApplyFilters();
+  document.getElementById('script-project-filter').value='';
+  setScriptObstacleSelection('距离/便利');
+  setScriptActionSelection('共情承接');
+  filterScriptLibraryRows();
 }
 
 function initScriptLibraryPage() {
-  var page=document.getElementById('page-script-library');
-  if(!page||page.getAttribute('data-script-init'))return;
-  page.setAttribute('data-script-init','1');
-  initScriptProjectFields();initScriptLibraryCardsFromTable();koInit();
+  var page = document.getElementById('page-script-library');
+  if (!page || page.getAttribute('data-script-init')) return;
+  page.setAttribute('data-script-init', '1');
+  initScriptProjectFields();
+  initScriptLibraryCardsFromTable();
+  page.querySelectorAll('#script-lib-tab-matrix .matrix-table .matrix-cell').forEach(function(cell) {
+    cell.addEventListener('click', function() {
+      var dataCell = this.closest('td');
+      var row = this.closest('tr');
+      var matrix = this.closest('.matrix-table');
+      var actionHeader = matrix && dataCell ? matrix.querySelector('thead th:nth-child(' + (dataCell.cellIndex + 1) + ')') : null;
+      var obstacle = row ? row.querySelector('th').textContent.trim().replace(/^[+−-]\s*/, '') : '';
+      var action = actionHeader ? actionHeader.textContent.trim() : '';
+      setScriptObstacleSelection(obstacle);
+      setScriptActionSelection(action);
+      switchScriptLibraryTab('list');
+      filterScriptLibraryRows();
+    });
+  });
+  filterScriptLibraryRows();
 }
 
 function getScriptLibraryTagClass(value) {
@@ -19125,7 +18966,6 @@ function editScriptLibraryRow(btn) {
   openScriptLibraryForm('edit');
   var rows = Array.prototype.slice.call(document.querySelectorAll('#script-library-card-list [data-script-row]'));
   form.setAttribute('data-edit-row-index', rows.indexOf(row));
-  form.setAttribute('data-edit-knowledge-id',row.getAttribute('data-script-id'));
   var rowObstacle = row.getAttribute('data-script-obstacle') || row.getAttribute('data-script-parent') || '距离/便利';
   var rowAction = normalizeFollowActionName(row.getAttribute('data-script-action') || '共情承接');
   var rowStyle = row.getAttribute('data-script-style') || '全部';
@@ -19180,8 +19020,8 @@ function saveScriptLibraryForm(publish) {
   var list = document.getElementById('script-library-card-list');
   if (!form || !list) return;
   var rows = Array.prototype.slice.call(list.querySelectorAll('[data-script-row]'));
-  var editId=form.getAttribute('data-edit-knowledge-id');
-  var targetRow=editId?rows.find(function(row){return row.getAttribute('data-script-id')===editId;}):null;
+  var editIndex = Number(form.getAttribute('data-edit-row-index'));
+  var targetRow = Number.isFinite(editIndex) && editIndex >= 0 ? rows[editIndex] : null;
   var nextId = targetRow ? targetRow.getAttribute('data-script-id') : getNextScriptLibraryId('N');
   var summary = contentInput.value.trim().replace(/\s+/g, ' ');
   if (summary.length > 70) summary = summary.slice(0, 70) + '...';
@@ -19207,10 +19047,14 @@ function saveScriptLibraryForm(publish) {
   } else {
     list.insertAdjacentHTML('afterbegin', html);
   }
+  var projectFilter=document.getElementById('script-project-filter');
+  if(projectFilter.value && projects.indexOf('*')===-1 && projects.indexOf(projectFilter.value)===-1) projectFilter.value=projects[0];
   closeModal('modal-script-library-form');
   form.removeAttribute('data-edit-row-index');
-  form.removeAttribute('data-edit-knowledge-id');
-  koAfterSave(nextId);
+  switchScriptLibraryTab('list');
+  setScriptObstacleSelection(obstacle.value);
+  setScriptActionSelection(normalizeFollowActionName(action.value));
+  filterScriptLibraryRows();
 }
 
 function switchOnlineScheduleTab(btn, panelId) {
