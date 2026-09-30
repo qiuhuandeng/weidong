@@ -5039,7 +5039,7 @@
   #page-customer-allocation .allocation-drawer { background:rgba(0,0,0,.45); }
   #page-customer-allocation .allocation-drawer-panel { width:min(560px,100vw); box-shadow:none; border-left:1px solid #e5e7eb; }
   #page-customer-allocation .allocation-drawer-panel.narrow { width:min(560px,100vw); }
-  #page-customer-allocation .allocation-drawer-panel.detail { width:min(760px,100vw); }
+  #page-customer-allocation .allocation-drawer-panel.detail { width:min(1080px,100vw); }
   #page-customer-allocation .allocation-drawer-header { min-height:64px; padding:14px 24px; border-bottom-color:#f0f0f0; }
   #page-customer-allocation .allocation-drawer-title { align-items:center; }
   #page-customer-allocation .allocation-drawer-title h1 { font-size:16px; line-height:24px; font-weight:600; }
@@ -5197,7 +5197,7 @@
   #page-transfer-rules .node-card{background:#fff;border:1px solid #f0f0f0;border-radius:6px;padding:16px;margin-bottom:12px}
   #page-transfer-rules .node-card.node-disabled{opacity:.56;background:#fafafa}
   #page-transfer-rules .node-card.node-disabled input,#page-transfer-rules .node-card.node-disabled select,#page-transfer-rules .node-card.node-disabled .radio-card{pointer-events:none}
-  #page-transfer-rules #transfer-rule-drawer .drawer-panel{width:min(860px,100vw);background:#fff;box-shadow:-8px 0 28px rgba(15,35,70,.14)}
+  #page-transfer-rules #transfer-rule-drawer .drawer-panel{width:min(840px,100vw);background:#fff;box-shadow:-8px 0 28px rgba(15,35,70,.14)}
   #page-transfer-rules #transfer-rule-drawer .drawer-header{min-height:56px;padding:0 24px;border-bottom:1px solid #e8edf2;background:#fff;display:flex;align-items:center;justify-content:space-between;gap:16px}
   #page-transfer-rules #transfer-rule-drawer .drawer-title{display:flex;align-items:center;gap:12px;min-width:0}
   #page-transfer-rules #transfer-rule-drawer .drawer-close{width:26px;height:26px;border:0;border-radius:4px;background:transparent;display:flex;align-items:center;justify-content:center;color:#64748b;font-size:16px;cursor:pointer}
@@ -5322,16 +5322,16 @@
   #page-transfer-rules .dropdown-menu{position:absolute;right:0;top:36px;background:#fff;border:1px solid #e5e7eb;border-radius:8px;box-shadow:0 10px 24px rgba(15,35,70,.14);padding:4px 0;width:128px;z-index:30}
   #page-transfer-rules .dropdown-menu button{border:0;background:transparent;cursor:pointer}
   #page-transfer-rules #transfer-scope-drawer label input[type="checkbox"]{accent-color:#3b82f6;flex:none}
-  #page-transfer-rules #transfer-scope-drawer .transfer-scope-panel{width:min(760px,100vw)}
-  #page-transfer-rules #transfer-scope-drawer .transfer-scope-body{padding:18px;background:#fff;display:flex;min-height:0;overflow:hidden}
-  #page-transfer-rules #transfer-scope-drawer .transfer-scope-widget{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 220px;gap:18px}
+  #page-transfer-rules #transfer-scope-drawer .transfer-scope-panel{width:min(1080px,100vw)}
+  #page-transfer-rules #transfer-scope-drawer .transfer-scope-body{padding:20px 24px;background:#fff;display:flex;flex-direction:column;gap:16px;min-height:0;overflow:hidden}
+  #page-transfer-rules #transfer-scope-drawer .transfer-scope-widget{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,0.9fr) minmax(0,1.1fr);gap:16px}
   #page-transfer-rules #transfer-scope-drawer .transfer-scope-main,
   #page-transfer-rules #transfer-scope-drawer .transfer-scope-selected{min-height:0;border:1px solid #d9e0e8;border-radius:4px;background:#fff;overflow:hidden}
   #page-transfer-rules #transfer-scope-drawer .transfer-scope-toolbar{height:46px;padding:9px 14px;border-bottom:1px solid #eef2f7;display:flex;align-items:center;gap:12px}
-  #page-transfer-rules #transfer-scope-drawer .transfer-scope-search{width:232px;height:28px;padding:0 10px;border:1px solid #d9e0e8;border-radius:3px;color:#555;font-size:12px;outline:none}
+  #page-transfer-rules #transfer-scope-drawer .transfer-scope-search{width:232px;min-width:0;flex:1;height:28px;padding:0 10px;border:1px solid #d9e0e8;border-radius:3px;color:#555;font-size:12px;outline:none}
   #page-transfer-rules #transfer-scope-drawer .transfer-scope-search:focus{border-color:#1677ff;box-shadow:0 0 0 2px rgba(22,119,255,.08)}
   #page-transfer-rules #transfer-scope-drawer .transfer-scope-all,
-  #page-transfer-rules #transfer-scope-drawer .transfer-scope-clear{margin-left:auto;border:0;background:transparent;color:#1677ff;cursor:pointer;font-size:12px}
+  #page-transfer-rules #transfer-scope-drawer .transfer-scope-clear{margin-left:auto;flex:none;border:0;background:transparent;color:#1677ff;cursor:pointer;font-size:12px}
   #page-transfer-rules #transfer-scope-drawer .transfer-scope-all:hover,
   #page-transfer-rules #transfer-scope-drawer .transfer-scope-clear:hover{color:#0958d9}
   #page-transfer-rules #transfer-scope-drawer .transfer-scope-list{height:calc(100% - 46px);overflow-y:auto;padding:10px 12px;background:#fff;display:grid;gap:8px;align-content:start}
@@ -5349,12 +5349,33 @@
   #page-transfer-rules #transfer-scope-drawer .transfer-scope-status.warning{color:#d97706}
   #page-transfer-rules #transfer-scope-drawer .transfer-scope-selected-head{height:46px;padding:0 12px;border-bottom:1px solid #eef2f7;display:flex;align-items:center;justify-content:space-between;color:#64748b;font-size:13px;background:#fafbfc}
   #page-transfer-rules #transfer-scope-drawer .transfer-scope-selected-head strong{font-weight:400}
-  #page-transfer-rules #transfer-scope-drawer .transfer-scope-tags{height:calc(100% - 46px);padding:10px;display:grid;align-content:start;gap:6px;overflow-y:auto}
-  #page-transfer-rules #transfer-scope-drawer .transfer-scope-tag{min-height:28px;padding:0 2px;display:flex;align-items:center;gap:8px;color:#555;font-size:13px;background:transparent}
-  #page-transfer-rules #transfer-scope-drawer .transfer-scope-tag:hover{color:#1677ff}
-  #page-transfer-rules #transfer-scope-drawer .transfer-scope-tag span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  #page-transfer-rules #transfer-scope-drawer .transfer-scope-tag button{margin-left:auto;border:0;background:transparent;color:#a8b3c2;cursor:pointer;font-size:16px;line-height:1}
-  #page-transfer-rules #transfer-scope-drawer .transfer-scope-tag button:hover{color:#cf1322}
+  #page-transfer-rules #transfer-scope-drawer .transfer-scope-tags{height:calc(100% - 46px);padding:12px;display:grid;align-content:start;gap:12px;overflow-y:auto;background:#f8fafc}
+  #page-transfer-rules #transfer-scope-drawer .transfer-scope-context{padding:12px 14px;border:1px solid #d6e8ff;border-radius:6px;background:#f5f9ff;color:#52657a;font-size:12px;line-height:1.7}
+  #page-transfer-rules #transfer-scope-drawer .transfer-scope-context strong{display:block;margin-bottom:3px;color:#334155;font-size:13px}
+  #page-transfer-rules #transfer-scope-drawer .transfer-scope-config{padding:14px;border:1px solid #e3e9f1;border-radius:7px;background:#fff;min-width:0}
+  #page-transfer-rules #transfer-scope-drawer .transfer-scope-config-head{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+  #page-transfer-rules #transfer-scope-drawer .transfer-scope-config-head strong{flex:1;min-width:0;overflow-wrap:anywhere;font-size:13px;color:#334155}
+  #page-transfer-rules #transfer-scope-drawer .transfer-scope-remove{border:0;background:none;color:#8c9bab;cursor:pointer;font-size:12px;flex:none}
+  #page-transfer-rules #transfer-scope-drawer .transfer-scope-remove:hover{color:#cf1322}
+  #page-transfer-rules #transfer-scope-drawer .transfer-scope-field-label{display:block;margin-bottom:8px;font-size:12px;color:#64748b}
+  #page-transfer-rules #transfer-scope-drawer .transfer-scope-date{margin:0}
+  #page-transfer-rules #transfer-scope-drawer .transfer-scope-date[hidden]{display:none}
+  #page-transfer-rules #transfer-scope-drawer .transfer-scope-date input[type="datetime-local"]{width:100%;min-width:0;max-width:210px;height:34px;padding:5px 10px;border:1px solid #d9e0e8;border-radius:4px;font:inherit;font-size:13px;color:#334155;background:#fff}
+  #page-transfer-rules #transfer-scope-drawer .transfer-scope-date input[type="datetime-local"]:focus{outline:2px solid #bae0ff;border-color:#1677ff}
+  #page-transfer-rules #transfer-scope-drawer .transfer-scope-date-row{display:flex;align-items:center;gap:14px}
+  #page-transfer-rules #transfer-scope-drawer .transfer-scope-date-row>.transfer-scope-field-label{margin:0;flex:none}
+  #page-transfer-rules #transfer-scope-drawer .transfer-scope-date-options{display:flex;align-items:center;gap:12px;flex:1;min-width:0}
+  #page-transfer-rules #transfer-scope-drawer .transfer-scope-date-custom{display:flex;align-items:center;gap:8px;flex:0 1 232px;min-width:0}
+  #page-transfer-rules #transfer-scope-drawer .transfer-scope-date-all{display:flex;align-items:center;gap:5px;flex:none;white-space:nowrap;font-size:12px;color:#334155;cursor:pointer}
+  #page-transfer-rules #transfer-scope-drawer .transfer-scope-date input[type="radio"]{margin:0;width:14px;height:14px;flex:none;accent-color:#1677ff;cursor:pointer}
+  #page-transfer-rules #transfer-scope-drawer .transfer-scope-date input[type="datetime-local"]:disabled{background:#f5f7fa;color:#a8b3c2;cursor:not-allowed}
+  @media(max-width:480px){#page-transfer-rules #transfer-scope-drawer .transfer-scope-date-row{flex-wrap:wrap}#page-transfer-rules #transfer-scope-drawer .transfer-scope-date-options{flex-basis:100%}}
+  @media(max-width:700px){
+    #page-transfer-rules #transfer-scope-drawer .transfer-scope-body{padding:16px;overflow-y:auto}
+    #page-transfer-rules #transfer-scope-drawer .transfer-scope-widget{display:flex;flex-direction:column;flex:none;gap:16px}
+    #page-transfer-rules #transfer-scope-drawer .transfer-scope-main{height:260px;flex:none}
+    #page-transfer-rules #transfer-scope-drawer .transfer-scope-tags{height:auto;overflow:visible}
+  }
   #page-transfer-rules #transfer-scope-drawer .transfer-scope-empty{padding:26px 10px;color:#8c9bab;font-size:13px;text-align:center}
   @media(max-width:700px){#page-transfer-rules .transfer-list-view-header{margin-left:-16px;margin-right:-16px;padding-left:16px;padding-right:16px}#page-transfer-rules .transfer-filter-bar{align-items:flex-start;flex-direction:column}#page-transfer-rules .transfer-filter-bar .transfer-search-wrap,#page-transfer-rules .transfer-filter-bar .transfer-search-wrap .form-input{width:100%}#page-transfer-rules #transfer-rule-drawer .drawer-panel,#page-transfer-rules .drawer-panel-sm{width:100%}#page-transfer-rules #transfer-rule-drawer .drawer-header{align-items:center;padding:0 16px}#page-transfer-rules #transfer-rule-drawer .form-section,#page-transfer-rules #transfer-rule-drawer #transfer-common-chain,#page-transfer-rules #transfer-rule-drawer #transfer-rule-chains{padding-left:16px;padding-right:16px}#page-transfer-rules #transfer-rule-drawer .form-grid,#page-transfer-rules #transfer-rule-drawer .node-card .form-item,#page-transfer-rules #transfer-rule-drawer .node-card .target-form,#page-transfer-rules #transfer-rule-drawer .target-select-row{grid-template-columns:1fr;gap:8px}#page-transfer-rules #transfer-rule-drawer .node-card .form-label{text-align:left;margin-top:0}#page-transfer-rules #transfer-rule-drawer .node-ai-select{width:150px}#page-transfer-rules #transfer-rule-drawer .radio-list,#page-transfer-rules #transfer-rule-drawer .choice-grid,#page-transfer-rules #transfer-rule-drawer .inline-grid{grid-template-columns:1fr}}
   @media(max-width:700px){#page-transfer-rules #transfer-rule-drawer .target-select-row.has-ai-state{grid-template-columns:minmax(0,1fr) 138px}#page-transfer-rules #transfer-rule-drawer .target-select-row.has-ai-state>.target-type-select{grid-column:1/-1}}
@@ -5411,17 +5432,14 @@
 
 
   /* AI协作策略抽屉：与新建sop统一布局 */
-  #page-transfer-rules #transfer-rule-drawer .drawer-panel{width:min(960px,100vw);height:100%;max-height:100dvh;min-height:0;display:grid;grid-template-rows:auto minmax(0,1fr) auto;overflow:hidden;box-shadow:-8px 0 32px rgba(0,21,41,.18)}
-  #page-transfer-rules #transfer-rule-drawer .drawer-panel>.drawer-body{min-height:0;overflow-y:auto;overscroll-behavior:contain}
+  #page-transfer-rules #transfer-rule-drawer .drawer-panel{position:fixed;inset:0 0 0 auto;width:min(840px,100vw);height:100vh;height:100dvh;max-height:100dvh;min-height:0;display:grid;grid-template-rows:auto minmax(0,1fr) auto;overflow:hidden;box-shadow:-8px 0 32px rgba(0,21,41,.18)}
+  #page-transfer-rules #transfer-rule-drawer .drawer-panel>.drawer-body{grid-row:2;min-height:0;overflow-y:auto;overscroll-behavior:contain}
   #page-transfer-rules #transfer-rule-drawer .drawer-header{min-height:0;padding:18px 24px 14px;border-bottom-color:#f0f2f5}
   #page-transfer-rules #transfer-rule-drawer .drawer-header h1{font-size:16px;font-weight:600;line-height:24px}
   #page-transfer-rules #transfer-rule-drawer .drawer-close{width:28px;height:28px;font-size:18px;color:#8c9bab}
   #page-transfer-rules #transfer-rule-drawer .transfer-builder{padding:16px 24px;gap:16px}
   #page-transfer-rules #transfer-rule-drawer .schedule-section{overflow:visible}
   #page-transfer-rules #transfer-rule-drawer .schedule-section-title{margin:0;line-height:20px}
-  #page-transfer-rules #transfer-rule-drawer #transfer-effective-date-field[hidden]{display:none}
-  #page-transfer-rules #transfer-rule-drawer #transfer-effective-date{max-width:280px}
-  #page-transfer-rules #transfer-rule-drawer #transfer-effective-date-hint{color:#64748b;line-height:1.7}
   #page-transfer-rules #transfer-rule-drawer #transfer-rule-chains{padding:0;gap:10px}
   #page-transfer-rules #transfer-rule-drawer #transfer-rule-chains .node-card{background:#fafbfc;border-radius:7px}
   #page-transfer-rules #transfer-rule-drawer #transfer-rule-chains .node-header{border-radius:7px 7px 0 0}
@@ -5431,8 +5449,13 @@
   #page-transfer-rules #transfer-rule-drawer #transfer-timeout-chain .node-card,#page-transfer-rules #transfer-rule-drawer #transfer-common-chain .node-card{border-radius:8px}
   #page-transfer-rules #transfer-rule-drawer #transfer-timeout-chain .node-header,#page-transfer-rules #transfer-rule-drawer #transfer-common-chain .node-header{padding:14px 16px;border-radius:8px 8px 0 0}
   #page-transfer-rules #transfer-rule-drawer #transfer-timeout-chain h4,#page-transfer-rules #transfer-rule-drawer #transfer-common-chain h4{font-size:14px}
-  #page-transfer-rules #transfer-rule-drawer .drawer-footer{position:relative;z-index:1;min-height:65px;padding:14px 24px 18px;padding-bottom:max(18px,env(safe-area-inset-bottom));border-top-color:#f0f2f5;background:#fff}
-  #page-transfer-rules #transfer-rule-drawer .drawer-footer .btn{font-size:13px;min-width:72px;min-height:32px}
+  #page-transfer-rules #transfer-rule-drawer .drawer-panel>.drawer-footer{grid-row:3;position:relative;z-index:1;min-height:65px;padding:14px 24px 18px;padding-bottom:max(18px,env(safe-area-inset-bottom));border-top-color:#f0f2f5;background:#fff}
+  #page-transfer-rules #transfer-rule-drawer .drawer-footer .btn{display:inline-flex;align-items:center;justify-content:center;flex:none;font-size:13px;min-width:72px;height:32px;padding:4px 15px;border-radius:6px;cursor:pointer}
+  #page-transfer-rules #transfer-rule-drawer .drawer-footer .btn-default{border:1px solid #d9e0e8;background:#fff;color:#555}
+  #page-transfer-rules #transfer-rule-drawer .drawer-footer .btn-default:hover{border-color:#1677ff;color:#1677ff}
+  #page-transfer-rules #transfer-rule-drawer .drawer-footer .btn-primary{border:1px solid #1677ff;background:#1677ff;color:#fff}
+  #page-transfer-rules #transfer-rule-drawer .drawer-footer .btn-primary:hover{border-color:#0958d9;background:#0958d9}
+  #page-transfer-rules #transfer-rule-drawer .drawer-footer .btn:focus-visible{outline:2px solid #91caff;outline-offset:2px}
   @media(max-width:700px){
     #page-transfer-rules #transfer-rule-drawer .drawer-header,#page-transfer-rules #transfer-rule-drawer .drawer-footer{padding-left:16px;padding-right:16px}
     #page-transfer-rules #transfer-rule-drawer .transfer-builder{padding:16px}
@@ -5452,12 +5475,6 @@
   #page-transfer-rules #transfer-rule-drawer .transfer-event-option:disabled{background:#f8fafc;color:#a8b3c2;cursor:default}
   #page-transfer-rules #transfer-rule-drawer .transfer-event-option-state{font-size:11px;color:#1677ff;white-space:nowrap}
   #page-transfer-rules #transfer-rule-drawer .transfer-event-option:disabled .transfer-event-option-state{color:#a8b3c2}
-  #page-transfer-rules #transfer-rule-drawer .transfer-scene-choice{display:inline-flex;gap:2px;padding:3px;background:#f1f4f8;border-radius:7px;max-width:100%}
-  #page-transfer-rules #transfer-rule-drawer .transfer-scene-choice label{position:relative;cursor:pointer}
-  #page-transfer-rules #transfer-rule-drawer .transfer-scene-choice input{position:absolute;width:1px;height:1px;opacity:0}
-  #page-transfer-rules #transfer-rule-drawer .transfer-scene-choice span{display:block;padding:5px 16px;border-radius:5px;color:#64748b;font-size:13px;line-height:20px;white-space:nowrap}
-  #page-transfer-rules #transfer-rule-drawer .transfer-scene-choice input:checked+span{background:#fff;color:#1677ff;box-shadow:0 1px 4px rgba(15,35,70,.1)}
-  #page-transfer-rules #transfer-rule-drawer .transfer-scene-choice input:focus-visible+span{outline:2px solid #91caff;outline-offset:1px}
 
   #page-transfer-rules #transfer-rule-drawer .target-multi-select.open .target-multi-menu.transfer-floating-menu,
   #page-transfer-rules #transfer-rule-drawer .transfer-event-menu.transfer-floating-menu{position:fixed;inset:auto;margin:0;box-sizing:border-box;z-index:3000;overscroll-behavior:contain}
@@ -5527,7 +5544,7 @@
   .ko-empty { text-align:center; color:#8c9bab; padding:48px 20px!important; font-size:13px; }
   .ko-muted { color:#8b98aa; font-size:12px; line-height:20px; margin:6px 0 0; }
   .ko-overlay { z-index:1120; }
-  .ko-overlay .ko-drawer { width:min(760px,100vw); max-width:760px; }
+  .ko-overlay .ko-drawer { width:min(1080px,100vw); max-width:760px; }
   .ko-overlay .modal-header { align-items:flex-start; }
   .ko-overlay .modal-body { background:#f7f9fc; padding:20px 24px; }
   .ko-drawer-footer { padding:14px 24px; border-top:1px solid #e7edf4; display:flex; align-items:center; justify-content:flex-end; gap:10px; flex-wrap:wrap; background:#fff; flex-shrink:0; }
@@ -9379,16 +9396,11 @@
                   <input type="text" class="form-input" placeholder="请输入规则名称" id="transfer-rule-name">
                 </div>
                 <div class="form-item">
-                  <label class="form-label" for="transfer-effective-scope">生效范围 <span class="text-red-500">*</span></label>
-                  <select class="form-input form-select" id="transfer-effective-scope" onchange="syncTransferEffectiveDate()">
-                    <option value="new-session" selected>仅新会话生效</option>
-                    <option value="include-history">含历史存量客户</option>
+                  <label class="form-label" for="transfer-scene">业务场景 <span class="text-red-500">*</span></label>
+                  <select class="form-input form-select" id="transfer-scene" name="transfer-scene" onchange="switchTransferScene(this.value)">
+                    <option value="online" selected>线上场景</option>
+                    <option value="offline">线下场景</option>
                   </select>
-                </div>
-                <div class="form-item wide" id="transfer-effective-date-field" hidden>
-                  <label class="form-label" for="transfer-effective-date">生效时间 <span class="text-red-500">*</span></label>
-                  <input type="datetime-local" step="60" class="form-input" id="transfer-effective-date" aria-describedby="transfer-effective-date-hint" disabled>
-                  <p class="form-hint" id="transfer-effective-date-hint">此时间后加微的客户，加微记录中的员工变更为分配后的员工。</p>
                 </div>
                 <div class="form-item">
                   <label class="form-label">AI 聊天使用的策略 <span class="text-red-500">*</span></label>
@@ -9407,13 +9419,6 @@
                     <option value="ww0601">思杰战队-吴明杰-WW0601</option>
                     <option value="sl0080">江燕芬-SL0080</option>
                   </select>
-                </div>
-                <div class="form-item wide">
-                  <label class="form-label">业务场景 <span class="text-red-500">*</span></label>
-                  <div class="transfer-scene-choice" role="radiogroup" aria-label="业务场景">
-                    <label><input type="radio" name="transfer-scene" value="online" checked onchange="switchTransferScene(this.value)"><span>线上场景</span></label>
-                    <label><input type="radio" name="transfer-scene" value="offline" onchange="switchTransferScene(this.value)"><span>线下场景</span></label>
-                  </div>
                 </div>
               </div>
             </section>
@@ -9710,7 +9715,7 @@
           </div>
           <footer class="drawer-footer modal-footer">
             <button type="button" onclick="closeTransferRuleDrawer()" class="btn btn-default">取消</button>
-            <button type="button" onclick="saveTransferRule()" class="btn btn-primary">确认</button>
+            <button type="button" onclick="saveTransferRule()" class="btn btn-primary">保存</button>
           </footer>
         </aside>
       </div>
@@ -9718,28 +9723,29 @@
 
       <!-- ======================== 右抽屉：适用企微号 ======================== -->
       <div id="transfer-scope-drawer" class="drawer-overlay" onclick="handleTransferScopeBackdrop(event)">
-        <aside class="drawer-panel transfer-scope-panel" onclick="event.stopPropagation()">
+        <aside class="drawer-panel transfer-scope-panel" role="dialog" aria-modal="true" aria-labelledby="transfer-scope-title" onclick="event.stopPropagation()">
           <header class="drawer-header px-6 py-4">
             <div class="flex items-center gap-3">
-              <button onclick="closeTransferScopeDrawer()" class="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-500"><i class="fas fa-xmark"></i></button>
+              <button aria-label="关闭" onclick="closeTransferScopeDrawer()" class="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-500"><i class="fas fa-xmark"></i></button>
               <div>
                 <h2 class="text-lg font-bold text-gray-900" id="transfer-scope-title">设置适用企微号</h2>
               </div>
             </div>
           </header>
           <div class="drawer-body transfer-scope-body">
+            <div class="transfer-scope-context"><strong id="transfer-scope-rule-name"></strong>先选择适用企微号，再分别设置生效时间；默认当天 00:00，也可选择全部继承加微。</div>
             <div class="transfer-scope-widget">
               <div class="transfer-scope-main">
                 <div class="transfer-scope-toolbar">
-                  <input type="text" class="transfer-scope-search" id="transfer-scope-search" placeholder="请输入名称搜索" oninput="renderTransferScopeAccounts()">
-                  <button class="transfer-scope-all" type="button" onclick="selectAllTransferScopeAccounts()">全选</button>
+                  <input type="text" class="transfer-scope-search" id="transfer-scope-search" placeholder="搜索企微号名称" aria-label="搜索企微号" oninput="renderTransferScopeAccounts()">
+                  <button class="transfer-scope-all" type="button" onclick="selectAllTransferScopeAccounts()">全选当前结果</button>
                 </div>
                 <div class="transfer-scope-list" id="transfer-scope-list"></div>
               </div>
               <div class="transfer-scope-selected">
                 <div class="transfer-scope-selected-head">
-                  <span>已选(<strong id="transfer-scope-count">0</strong>)</span>
-                  <button class="transfer-scope-clear" type="button" onclick="clearTransferScopeAccounts()">清除</button>
+                  <span>已选企微号 · <strong id="transfer-scope-count">0</strong> 个</span>
+                  <button class="transfer-scope-clear" type="button" onclick="clearTransferScopeAccounts()">清空</button>
                 </div>
                 <div class="transfer-scope-tags" id="transfer-scope-selected-list"></div>
               </div>
@@ -14119,31 +14125,20 @@ function unlockTransferRuleBodyIfIdle(){
   if(!document.querySelector('#page-transfer-rules .drawer-overlay.show'))document.body.style.overflow='';
 }
 
-function syncTransferEffectiveDate(){
-  const includeHistory=document.getElementById('transfer-effective-scope').value==='include-history';
-  const date=document.getElementById('transfer-effective-date');
-  document.getElementById('transfer-effective-date-field').hidden=!includeHistory;
-  date.disabled=!includeHistory;
-  date.required=includeHistory;
-}
-
 function openTransferRuleDrawer(mode='create',button){
   transferEditingCard=mode==='edit'?(button?.closest('.rule-card')||null):null;
   const data=transferEditingCard?transferEditingCard._transferRule:null;
   document.getElementById('transfer-rule-edit-title').textContent=data?'编辑协作策略':'新建协作策略';
   document.getElementById('transfer-rule-name').value=data?data.name:'';
-  const basics=[['transfer-ai-employee','aiStrategy'],['transfer-related-service-account','serviceAccount'],['transfer-effective-scope','effectiveScope']];
+  const basics=[['transfer-ai-employee','aiStrategy'],['transfer-related-service-account','serviceAccount']];
   basics.forEach(([id,key])=>{
     const field=document.getElementById(id);
     field.value=data?data[key]:Array.from(field.options).find(option=>option.defaultSelected)?.value||field.options[0].value;
   });
-  const effectiveDate=data?.effectiveDate||'';
-  document.getElementById('transfer-effective-date').value=/^\d{4}-\d{2}-\d{2}$/.test(effectiveDate)?effectiveDate+'T00:00':effectiveDate;
-  syncTransferEffectiveDate();
   closeTransferEventPicker();
   transferCurrentScene=data?.scene||'online';
   transferSceneDrafts={};
-  document.querySelectorAll('input[name="transfer-scene"]').forEach(input=>{input.checked=input.value===transferCurrentScene;});
+  document.getElementById('transfer-scene').value=transferCurrentScene;
   loadTransferRuleNodes(data?data.nodes:[]);
   loadTransferCommonSettings(data?data.common:transferCommonDefaults);
   document.getElementById('transfer-rule-drawer').classList.add('show');
@@ -14165,82 +14160,112 @@ function handleTransferDrawerBackdrop(e){
 }
 
 var transferScopeAccounts=[
-  {name:'敏虔战队-黄天雄-DY3510',id:'acc-ed15b34cb1025f74bbfb21da7aa5df78',status:'current',selected:true},
-  {name:'叶久龙-SL8076',id:'acc-c677ff6b9aed575d94b10da5d65e8d77',status:'current',selected:true},
-  {name:'思杰战队-吴明杰-WW0601',id:'auto-128138db746fc41f',status:'current',selected:true},
-  {name:'江燕芬-SL0080',id:'virtual-sl0080',status:'free',selected:false},
-  {name:'敬虔战队-9516',id:'auto-4fb5c9f6192d558db866e0c20755a00f',status:'bound',boundText:'已绑定：抖音高意向 - 客户开口后分配客服',selected:false,disabled:true},
-  {name:'志伟战队-刘嘉俊-DY3184',id:'acc-1026d0345fa75d1ba587dbe00a3d30a1',status:'bound-green',boundText:'已绑定：低意向长培育 - 预约金支付后分配客服',selected:false,disabled:true},
-  {name:'沈晓欣',id:'auto-T1007',status:'warning',selected:false},
-  {name:'敏虔战队-李伟-DY3498',id:'acc-88b311c75d4d909ca9ef77a160bc6182',status:'free',selected:false}
+  {name:'敏虔战队-黄天雄-DY3510',id:'acc-ed15b34cb1025f74bbfb21da7aa5df78'},
+  {name:'叶久龙-SL8076',id:'acc-c677ff6b9aed575d94b10da5d65e8d77'},
+  {name:'思杰战队-吴明杰-WW0601',id:'auto-128138db746fc41f'},
+  {name:'江燕芬-SL0080',id:'virtual-sl0080'},
+  {name:'敬虔战队-9516',id:'auto-4fb5c9f6192d558db866e0c20755a00f'},
+  {name:'志伟战队-刘嘉俊-DY3184',id:'acc-1026d0345fa75d1ba587dbe00a3d30a1'},
+  {name:'沈晓欣',id:'auto-T1007'},
+  {name:'敏虔战队-李伟-DY3498',id:'acc-88b311c75d4d909ca9ef77a160bc6182'}
 ];
 
+let transferScopeEditingCard=null;
+let transferScopeDraft=[];
+
+function getTransferScopeMatches(){
+  const keyword=(document.getElementById('transfer-scope-search').value||'').trim().toLowerCase();
+  return transferScopeDraft.filter(item=>(item.name+' '+item.id+' '+(item.boundText||'')).toLowerCase().includes(keyword));
+}
+
 function renderTransferScopeAccounts(){
-  var list=document.getElementById('transfer-scope-list');
-  var keywordEl=document.getElementById('transfer-scope-search');
-  var keyword=keywordEl?keywordEl.value.trim().toLowerCase():'';
-  if(!list)return;
-  var items=transferScopeAccounts.filter(function(item){
-    if(!keyword)return true;
-    return (item.name+' '+item.id+' '+(item.boundText||'')).toLowerCase().indexOf(keyword)>-1;
-  });
-  if(!items.length){
-    list.innerHTML='<div class="transfer-scope-empty">暂无匹配企微号</div>';
-    renderTransferScopeSelected();
-    return;
-  }
-  list.innerHTML=items.map(function(item,index){
-    var statusText=item.status==='current'?'当前规则':(item.boundText||'未分配');
-    var statusClass=item.status==='current'?'current':(item.status==='warning'?'warning':(item.status==='bound-green'?'bound bound-green':(item.status==='bound'?'bound':'')));
-    var rowClass=(item.selected?' selected':'')+(item.disabled?' disabled':'')+(item.status==='warning'?' warning':'');
-    return '<label class="transfer-scope-row'+rowClass+'"><input type="checkbox" value="'+escapeAttr(item.name)+'" onchange="toggleTransferScopeAccount(this)"'+(item.selected?' checked':'')+(item.disabled?' disabled':'')+'><span class="transfer-scope-name">'+escapeHtml(item.name)+'</span><span class="transfer-scope-status '+statusClass+'">'+escapeHtml(statusText)+'</span></label>';
-  }).join('');
+  const list=document.getElementById('transfer-scope-list');
+  const items=getTransferScopeMatches();
+  list.innerHTML=items.length?items.map(item=>{
+    const statusText=item.disabled?item.boundText:(item.selected?'已选':'未分配');
+    return '<label class="transfer-scope-row'+(item.selected?' selected':'')+(item.disabled?' disabled':'')+'">'+
+      '<input type="checkbox" value="'+escapeAttr(item.id)+'" onchange="toggleTransferScopeAccount(this)"'+(item.selected?' checked':'')+(item.disabled?' disabled':'')+'>'+
+      '<span class="transfer-scope-name" title="'+escapeAttr(item.name)+'">'+escapeHtml(item.name)+'</span>'+
+      '<span class="transfer-scope-status '+(item.disabled?'bound':(item.selected?'current':''))+'" title="'+escapeAttr(statusText)+'">'+escapeHtml(statusText)+'</span></label>';
+  }).join(''):'<div class="transfer-scope-empty">暂无匹配企微号</div>';
   renderTransferScopeSelected();
 }
 
 function renderTransferScopeSelected(){
-  var count=document.getElementById('transfer-scope-count');
-  var selectedList=document.getElementById('transfer-scope-selected-list');
-  var selected=transferScopeAccounts.filter(function(item){return item.selected&&!item.disabled;});
-  if(count)count.textContent=selected.length;
-  if(!selectedList)return;
-  if(!selected.length){
-    selectedList.innerHTML='<div class="transfer-scope-empty">暂无已选企微号</div>';
-    return;
-  }
-  selectedList.innerHTML=selected.map(function(item){
-    return '<div class="transfer-scope-tag"><span>'+escapeHtml(item.name)+'</span><button type="button" aria-label="移除" onclick=\'removeTransferScopeAccount('+JSON.stringify(item.name)+')\'>×</button></div>';
-  }).join('');
+  const selected=transferScopeDraft.filter(item=>item.selected&&!item.disabled);
+  document.getElementById('transfer-scope-count').textContent=selected.length;
+  document.getElementById('transfer-scope-selected-list').innerHTML=selected.length?selected.map(item=>{
+    const key=escapeAttr(item.id);
+    const custom=item.effectiveDateMode!=='all';
+    return '<section class="transfer-scope-config" data-account-id="'+key+'">'+
+      '<div class="transfer-scope-config-head"><strong>'+escapeHtml(item.name)+'</strong><button type="button" class="transfer-scope-remove" data-account-id="'+key+'" aria-label="移除 '+escapeAttr(item.name)+'" onclick="removeTransferScopeAccount(this.dataset.accountId)">移除</button></div>'+
+      '<div class="transfer-scope-date"><div class="transfer-scope-date-row"><span class="transfer-scope-field-label" id="scope-time-label-'+key+'">生效时间 <span class="text-red-500">*</span></span>'+
+      '<div class="transfer-scope-date-options" role="radiogroup" aria-labelledby="scope-time-label-'+key+'"><div class="transfer-scope-date-custom">'+
+      '<input type="radio" name="scope-time-'+key+'" value="custom" aria-label="自定义日期" onchange="updateTransferAccountDateMode(this)"'+(custom?' checked':'')+'>'+
+      '<input id="scope-date-'+key+'" type="datetime-local" step="60" value="'+escapeAttr(item.effectiveDate||'')+'" aria-label="自定义生效时间" oninput="updateTransferAccountDate(this)"'+(custom?' required':' disabled')+'></div>'+
+      '<label class="transfer-scope-date-all"><input type="radio" name="scope-time-'+key+'" value="all" onchange="updateTransferAccountDateMode(this)"'+(!custom?' checked':'')+'>全部继承加微</label></div></div>'+
+      '</div></section>';
+  }).join(''):'<div class="transfer-scope-empty">请从左侧选择企微号<br>选中后可分别设置生效时间</div>';
+}
+
+function updateTransferAccountDateMode(input){
+  const row=input.closest('[data-account-id]');
+  const item=transferScopeDraft.find(account=>account.id===row.dataset.accountId);
+  item.effectiveDateMode=input.value;
+  const custom=input.value==='custom';
+  const date=row.querySelector('input[type="datetime-local"]');
+  date.disabled=!custom;
+  date.required=!date.disabled;
+}
+
+function updateTransferAccountDate(input){
+  const item=transferScopeDraft.find(account=>account.id===input.closest('[data-account-id]').dataset.accountId);
+  item.effectiveDate=input.value;
+  input.setCustomValidity('');
 }
 
 function toggleTransferScopeAccount(input){
-  var item=transferScopeAccounts.find(function(account){return account.name===input.value;});
+  const item=transferScopeDraft.find(account=>account.id===input.value);
   if(!item||item.disabled)return;
   item.selected=input.checked;
   renderTransferScopeAccounts();
 }
 
-function removeTransferScopeAccount(name){
-  var item=transferScopeAccounts.find(function(account){return account.name===name;});
+function removeTransferScopeAccount(id){
+  const item=transferScopeDraft.find(account=>account.id===id);
   if(item&&!item.disabled)item.selected=false;
   renderTransferScopeAccounts();
 }
 
 function clearTransferScopeAccounts(){
-  transferScopeAccounts.forEach(function(item){if(!item.disabled)item.selected=false;});
+  transferScopeDraft.forEach(item=>{if(!item.disabled)item.selected=false;});
   renderTransferScopeAccounts();
 }
 
 function selectAllTransferScopeAccounts(){
-  transferScopeAccounts.forEach(function(item){if(!item.disabled)item.selected=true;});
+  getTransferScopeMatches().forEach(item=>{if(!item.disabled)item.selected=true;});
   renderTransferScopeAccounts();
 }
 
-function openTransferScopeDrawer(ruleName='all'){
-  const title=document.getElementById('transfer-scope-title');
-  title.textContent='设置适用企微号';
-  const search=document.getElementById('transfer-scope-search');
-  if(search)search.value='';
+function getTransferDefaultEffectiveDate(){
+  const today=new Date();
+  return today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0')+'T00:00';
+}
+
+function openTransferScopeDrawer(card){
+  if(!card?._transferRule)return;
+  transferScopeEditingCard=card;
+  const bindings=card._transferRule.accountScopes||[];
+  const cards=Array.from(document.querySelectorAll('#transfer-rule-list .rule-card'));
+  transferScopeDraft=transferScopeAccounts.map(account=>{
+    const binding=bindings.find(item=>item.accountId===account.id);
+    const owner=cards.find(other=>other!==card&&other._transferRule?.accountScopes?.some(item=>item.accountId===account.id));
+    return {id:account.id,name:account.name,selected:!!binding,disabled:!!owner,
+      boundText:owner?'已绑定：'+owner._transferRule.name:'',
+      effectiveDateMode:binding?.effectiveDateMode||'custom',effectiveDate:binding?.effectiveDate||getTransferDefaultEffectiveDate()};
+  });
+  document.getElementById('transfer-scope-rule-name').textContent='当前策略：'+card._transferRule.name;
+  document.getElementById('transfer-scope-search').value='';
   renderTransferScopeAccounts();
   document.getElementById('transfer-scope-drawer').classList.add('show');
   lockTransferRuleBody();
@@ -14248,6 +14273,8 @@ function openTransferScopeDrawer(ruleName='all'){
 
 function closeTransferScopeDrawer(){
   document.getElementById('transfer-scope-drawer').classList.remove('show');
+  transferScopeDraft=[];
+  transferScopeEditingCard=null;
   unlockTransferRuleBodyIfIdle();
 }
 
@@ -14256,18 +14283,27 @@ function handleTransferScopeBackdrop(e){
 }
 
 function saveTransferScope(){
+  if(!transferScopeEditingCard)return;
+  const invalid=Array.from(document.querySelectorAll('#transfer-scope-selected-list input[type="datetime-local"]')).find(input=>!input.disabled&&!input.checkValidity());
+  if(invalid){
+    showTransferRuleToast('请为企微号设置有效的生效时间');
+    invalid.focus();invalid.reportValidity();return;
+  }
+  const selected=transferScopeDraft.filter(item=>item.selected&&!item.disabled);
+  transferScopeEditingCard._transferRule.accountScopes=selected.map(item=>({accountId:item.id,effectiveDateMode:item.effectiveDateMode||'custom',effectiveDate:item.effectiveDateMode!=='all'?item.effectiveDate:''}));
+  const scope=transferScopeEditingCard.querySelector('.flex.items-center.gap-6.text-sm');
+  if(scope)scope.innerHTML=selected.length?'<div class="flex items-center gap-2 text-gray-500" style="flex-wrap:wrap"><i class="fab fa-weixin text-green-500 text-xs"></i><span>适用企微号：</span>'+selected.map(item=>'<span class="wx-badge text-xs" title="'+escapeAttr(item.effectiveDateMode==='all'?'全部继承加微':'生效时间：'+item.effectiveDate.replace('T',' '))+'">'+escapeHtml(item.name)+'</span>').join('')+'</div>':'<span class="transfer-wecom-unbound text-xs text-gray-400">适用企微号：未绑定</span>';
+  if(!selected.length){
+    const toggle=transferScopeEditingCard.querySelector('.toggle-track');
+    toggle.classList.remove('on');toggle.classList.add('off');
+  }
   closeTransferScopeDrawer();
-  showTransferRuleToast('适用企微号保存成功');
+  showTransferRuleToast('适用企微号及生效时间保存成功');
 }
 
 function saveTransferRule(){
   const name=document.getElementById('transfer-rule-name');
   if(!name.value.trim()){showTransferRuleToast('请输入规则名称');name.focus();return;}
-  const effectiveScope=document.getElementById('transfer-effective-scope').value;
-  const effectiveDate=document.getElementById('transfer-effective-date');
-  if(effectiveScope==='include-history'&&(!effectiveDate.value||!effectiveDate.checkValidity())){
-    showTransferRuleToast('请选择有效的生效时间');effectiveDate.focus();return;
-  }
   if(!document.querySelector('#transfer-rule-chains > .rule-node')){showTransferRuleToast('请至少添加一个事件');return;}
   const eventTypes=Array.from(document.querySelectorAll('#transfer-rule-chains > .rule-node')).map(node=>node.dataset.nodeType);
   if(new Set(eventTypes).size!==eventTypes.length){showTransferRuleToast('同一策略不能重复添加相同事件');return;}
@@ -14305,7 +14341,7 @@ function saveTransferRule(){
   card._transferRule={name:name.value.trim(),scene:transferCurrentScene,nodes:readTransferRuleNodes(),common,
     aiStrategy:document.getElementById('transfer-ai-employee').value,
     serviceAccount:document.getElementById('transfer-related-service-account').value,
-    effectiveScope,effectiveDate:effectiveScope==='include-history'?effectiveDate.value:''};
+    accountScopes:card._transferRule?.accountScopes||[]};
   updateTransferRuleCard(card);
   addTransferScopeEntrances();
   filterTransferList();
@@ -14429,7 +14465,7 @@ function switchTransferScene(scene){
   closeTransferEventPicker();
   document.querySelectorAll('#transfer-rule-drawer .target-multi-select.open').forEach(closeTransferTargetMulti);
   transferCurrentScene=scene;
-  document.querySelectorAll('input[name="transfer-scene"]').forEach(input=>{input.checked=input.value===scene;});
+  document.getElementById('transfer-scene').value=scene;
   const draft=transferSceneDrafts[scene]||{nodes:[],common:JSON.parse(JSON.stringify(transferCommonDefaults))};
   loadTransferRuleNodes(draft.nodes);
   loadTransferCommonSettings(draft.common);
@@ -14659,8 +14695,12 @@ function initTransferRuleCards(){
       name:card.querySelector('h3').textContent.trim(),scene,nodes,
       aiStrategy:document.getElementById('transfer-ai-employee').value,
       serviceAccount:document.getElementById('transfer-related-service-account').value,
-      effectiveScope:document.getElementById('transfer-effective-scope').value,
-      effectiveDate:'',
+      accountScopes:Array.from(card.querySelectorAll('.wx-badge')).map(badge=>{
+        const name=badge.textContent.trim();
+        let account=transferScopeAccounts.find(item=>item.name===name);
+        if(!account){account={id:'scope-account-'+transferScopeAccounts.length,name};transferScopeAccounts.push(account);}
+        return {accountId:account.id,effectiveDateMode:'custom',effectiveDate:''};
+      }),
       common
     };
     updateTransferRuleCard(card);
@@ -14851,6 +14891,7 @@ window.addEventListener('resize',()=>{
 });
 document.addEventListener('click',event=>{if(!event.target.closest('#transfer-event-picker'))closeTransferEventPicker();},true);
 document.addEventListener('keydown',event=>{
+  if(event.key==='Escape'&&document.getElementById('transfer-scope-drawer').classList.contains('show')){closeTransferScopeDrawer();return;}
   if(event.key==='Escape'&&document.getElementById('transfer-rule-drawer').classList.contains('show')){
     if(!document.getElementById('transfer-event-menu').hidden){event.preventDefault();closeTransferEventPicker(true);}
     else if(document.querySelector('#transfer-rule-drawer .target-multi-select.open')){
@@ -14874,11 +14915,10 @@ function addTransferScopeEntrances(){
     card.querySelectorAll('.scope-entry').forEach(btn=>btn.remove());
     const actions=card.querySelector('.flex.items-start.justify-between.mb-3 > .flex.items-center.gap-2.flex-shrink-0');
     if(!actions)return;
-    const title=card.querySelector('h3')?.textContent.trim()||'当前规则';
     const btn=document.createElement('button');
     btn.className='scope-entry h-8 px-3 rounded-lg text-xs text-primary-700 bg-primary-50 border border-primary-100 hover:bg-primary-100 hover:border-primary-200 font-semibold flex items-center gap-1.5 transition';
     btn.innerHTML='<i class="fab fa-weixin"></i><span>适用企微号</span>';
-    btn.onclick=()=>openTransferScopeDrawer(title);
+    btn.onclick=()=>openTransferScopeDrawer(card);
     actions.insertBefore(btn,actions.firstChild);
   });
 }
@@ -25677,5 +25717,6 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 });
 </script>
+<script src="complaint-prototype/zuhu-entry.js?v=20260930-full-overlay"></script>
 </body>
 </html>
