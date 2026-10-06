@@ -17,8 +17,13 @@
     document.body.classList.toggle('embedded', workspaceParams.get('embed') === '1');
     if (!location.hash) history.replaceState(null, '', location.search + (workspaceParams.get('page') === 'rules' ? '#/rules' : workspaceParams.get('page') === 'demo' ? '#/demo' : workspaceParams.get('view') === 'h5' || (!workspaceParams.has('embed') && matchMedia('(max-width:760px)').matches) ? '#/mobile' : '#/tickets'));
   </script>
-  <script src="engine.js?v=20260930-no-risk-response"></script>
-  <script src="app.js?v=20261006-mobile-create"></script>
+  <script src="../approval-flow.js?v=20261006-unified"></script>
+  <script src="../rules.js?v=20261006-unified"></script>
+  <script src="../node-assignment.js?v=20261006-unified"></script>
+  <script src="../configuration.js?v=20261006-unified"></script>
+  <script src="engine.js?v=20261006-unified"></script>
+  <script src="../shared-store.js?v=20261006-unified"></script>
+  <script src="app.js?v=20261006-unified"></script>
   <script src="integration.js?v=20260930-navigation-fab"></script>
   <script src="../overlay-bridge.js?v=20260930-full-overlay"></script>
 </body>

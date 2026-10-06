@@ -25,5 +25,5 @@ function createNodeAssignment(E){
  function preview(s,c,r,{cursor=0,loads={},previous={}}={}){if(r.source==='inherit')return {person:previous[r.from]||null,reason:'沿用'+definitions.find(d=>d.id===r.from).name+'办理人'};if(r.source==='person')return {person:r.person,reason:'固定指定人员'};const pool=people(s,c,r);if(!pool.length)return {person:r.fallback,reason:'无可用岗位成员，交兜底人员'};if(r.method==='manual')return {person:null,reason:'由'+(E.STAFF.find(p=>p.id===r.manualBy)?.name||'指定负责人')+'在候选人员中手动指定'};if(r.method==='least_load')return {person:[...pool].sort((a,b)=>(loads[a]||0)-(loads[b]||0))[0],reason:'选择当前待办量最少的人员；相同时按岗位顺序'};return {person:pool[cursor%pool.length],reason:'按岗位人员顺序轮排，末位之后回到首位'};}
  return {definitions,methods,defaults,get,people,validate,save,preview};
 }
-if(typeof module!=='undefined'&&module.exports)module.exports=createNodeAssignment;else root.NodeAssignment=createNodeAssignment(root.CaseEngine);
+if(typeof module!=='undefined'&&module.exports)module.exports=createNodeAssignment;else {root.createNodeAssignment=createNodeAssignment;if(root.CaseEngine)root.NodeAssignment=createNodeAssignment(root.CaseEngine);}
 })(typeof window!=='undefined'?window:globalThis);

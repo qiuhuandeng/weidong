@@ -17,7 +17,7 @@
     if (approval) document.querySelector('.mobile-top strong').textContent = '钉钉审批详情';
     const title = document.querySelector('.page-head h1');
     if (title?.textContent === '工单列表') title.textContent = '客诉工单';
-    document.querySelectorAll('a[href="#/rules"]').forEach(el => el.href = '../index.html?v=20260929-filefix2&view=pc&actor=manager&page=rules');
+    document.querySelectorAll('a[href="#/rules"]').forEach(el => el.href = '../index.html?v=20261006-unified&view=pc&actor=manager&page=rules');
     document.querySelectorAll('.brand strong').forEach(el => el.textContent = '美业AI平台');
 
   };
