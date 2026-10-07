@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>客诉工单 · 美业AI平台</title>
   <link rel="stylesheet" href="base.css?v=20260930-no-risk-stripe">
-  <link rel="stylesheet" href="theme.css?v=20260930-no-risk-stripe">
+  <link rel="stylesheet" href="theme.css?v=20261007-solution-details">
 </head>
 <body>
   <div id="app"></div>
@@ -17,14 +17,26 @@
     document.body.classList.toggle('embedded', workspaceParams.get('embed') === '1');
     if (!location.hash) history.replaceState(null, '', location.search + (workspaceParams.get('page') === 'rules' ? '#/rules' : workspaceParams.get('page') === 'demo' ? '#/demo' : workspaceParams.get('view') === 'h5' || (!workspaceParams.has('embed') && matchMedia('(max-width:760px)').matches) ? '#/mobile' : '#/tickets'));
   </script>
-  <script src="../approval-flow.js?v=20261006-unified"></script>
-  <script src="../rules.js?v=20261006-unified"></script>
-  <script src="../node-assignment.js?v=20261006-unified"></script>
-  <script src="../configuration.js?v=20261006-unified"></script>
-  <script src="engine.js?v=20261006-unified"></script>
-  <script src="../shared-store.js?v=20261006-unified"></script>
-  <script src="app.js?v=20261006-unified"></script>
-  <script src="integration.js?v=20260930-navigation-fab"></script>
+  <script src="../approval-flow.js?v=20261007-procurement"></script>
+  <script src="../rules.js?v=20261007-single-contact"></script>
+  <script src="../node-assignment.js?v=20261007-procurement"></script>
+  <script src="../aftercare-schedule.js?v=20261007-editable-branches"></script>
+  <script src="../ai-grading.js?v=20261007-intake-examples"></script>
+  <script src="../intake.js?v=20261007-ticket-operations"></script>
+  <script src="../ticket-flow-config.js?v=20261007-ticket-operations"></script>
+  <script src="../solution-flow.js?v=20261007-ticket-operations"></script>
+  <script src="../aftercare-actions.js?v=20261007-editable-branches"></script>
+  <script src="../suspension-control.js?v=20261007-ticket-operations"></script>
+  <script src="../ticket-lifecycle.js?v=20261007-ticket-operations"></script>
+  <script src="../ticket-operations.js?v=20261007-ticket-operations"></script>
+  <script src="../workflow-examples.js?v=20261007-solution-details"></script>
+  <script src="../configuration.js?v=20261007-ticket-operations"></script>
+  <script src="engine.js?v=20261007-ticket-operations"></script>
+  <script src="../shared-store.js?v=20261007-procurement"></script>
+  <script src="../suspension-ui.js?v=20261007-editable-branches"></script>
+  <script src="app.js?v=20261007-solution-details"></script>
+  <script src="integration.js?v=20261007-editable-branches"></script>
+  <script src="../schedule-runner.js?v=20261007-editable-branches"></script>
   <script src="../overlay-bridge.js?v=20260930-full-overlay"></script>
 </body>
 </html>

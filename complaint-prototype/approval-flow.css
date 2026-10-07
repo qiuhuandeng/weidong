@@ -80,3 +80,47 @@
 .condition-legacy .btn{padding-left:0;color:#1677ff;margin-top:8px}
 .condition-drawer [data-amount-relation][hidden]{display:none}
 @media(max-width:420px){.condition-fixed-amount{grid-template-columns:100px minmax(0,1fr);gap:8px}.condition-fixed-amount>label{grid-column:1/-1}}
+
+/* Whole-ticket workflow uses the existing canvas and drawer visual language. */
+.ac-node-handling{border-top-color:#4096ff}.ac-node-handling .ac-node-head{background:#edf5ff;color:#1677ff}.flow-kind.handling{color:#1677ff;background:#edf5ff}.handling-candidates{border:1px solid #e7edf3;border-radius:5px;padding:12px;margin-top:12px}.handling-candidates>div{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.handling-candidates .scene-check,.handling-action-options .scene-check{margin:0}.handling-action-options{display:grid;gap:10px}.flow-drawer .handling-candidates input[type=checkbox],.handling-action-options input[type=checkbox]{accent-color:#1677ff;width:14px;height:14px;min-height:0}
+
+/* Branch connectors are derived from live node layout; completed paths bypass the continuing branches. */
+.ac-branches{position:relative}.ac-branch-footer:after{display:none}.ac-branch-terminal>.ac-branch-footer{background:none}.ac-join-lines{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}.ac-join-lines path{fill:none;stroke:#d8dee7;stroke-width:1;vector-effect:non-scaling-stroke}
+.ac-node-end{border-top-color:#8aa596}.ac-node-end .ac-node-head{background:#f0f5f2;color:#587367}.flow-kind.end{background:#f0f5f2;color:#587367}
+.ac-grading-connector{height:28px;width:1px;background:#d8dee7;margin:0 auto}.ac-grading-node{box-sizing:border-box;width:300px;margin:0 auto;padding:16px;text-align:center;border:1px solid #dbe1e9;border-radius:4px;background:#fff;font-size:13px}.ac-grading-node strong{font-weight:500;color:#263244}.ac-grading-node small{display:block;margin-top:8px;color:#8a94a3;font-size:12px}
+
+.ac-branch:last-of-type:before{right:50%}
+
+/* A single live exit continues vertically until the outer merge. */
+.ac-direct-outlet.ac-connector:before{left:var(--ac-outlet-x);transform:translateX(-50%)}
+.ac-direct-outlet.ac-connector>.ac-add{position:absolute;left:var(--ac-outlet-x);transform:translateX(-50%)}
+.ac-direct-outlet.ac-branch-footer{background-position:var(--ac-outlet-x) center}
+
+/* Completed subtrees keep their columns through to the common finish. */
+.ac-flow-canvas{position:relative}.ac-flow-canvas.ac-has-terminal{padding-left:var(--ac-terminal-space);padding-right:0}
+.ac-completion-lines{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
+.ac-completion-lines path{fill:none;stroke:#d8dee7;stroke-width:1;vector-effect:non-scaling-stroke}
+.ac-final-merge{height:24px;position:relative}.ac-final-merge:before{content:'';position:absolute;top:0;bottom:0;left:50%;width:1px;background:#d8dee7}
+.ac-flow-canvas>.ac-flow-end{display:table;margin:0 auto 8px}
+
+.ac-branch:before,.ac-branch:after{display:none}
+.ac-completion-lane{position:absolute;top:0;flex:none}
+.ac-fork-lines{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
+.ac-fork-lines path{fill:none;stroke:#d8dee7;stroke-width:1;vector-effect:non-scaling-stroke}
+
+/* Compact cards and spacing retain the existing node colors and controls. */
+.ac-flow-canvas{margin:0 auto}
+.ac-node,.ac-condition-card,.ac-grading-node{width:240px}
+.ac-node-head,.ac-condition-card-head{min-height:30px;padding:5px 10px;font-size:11px}
+.ac-node-body{padding:10px;gap:8px;font-size:12px;line-height:18px}
+.ac-node-body strong{font-size:13px;line-height:19px;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+.ac-muted{font-size:11px;line-height:16px;margin-top:4px}
+.ac-branch-title{padding:10px;min-height:48px;gap:8px;font-size:12px;line-height:18px}
+.ac-branch-title>span:first-child{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+.ac-condition-card-head>.ac-node-heading{min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.ac-card-chevron{font-size:20px}.ac-condition-priority{font-size:10px}
+.ac-connector{height:28px}.ac-add{width:22px;height:22px;font-size:16px;line-height:18px}.ac-add[hidden]{display:none}
+.ac-branch,.ac-branch-group,.ac-branch .ac-branch-group{min-width:calc(var(--ac-branch-count,1) * 260px)}
+.ac-branch{min-width:260px;padding:24px 10px 0}.ac-branch-footer{min-height:12px;margin:0 -10px}
+.ac-branch-group-head{height:32px;padding-bottom:10px}.ac-forkbar>.btn{min-height:28px;padding:4px 10px;font-size:12px}
+.ac-grading-node{padding:12px;font-size:12px}.ac-grading-node small{margin-top:5px;font-size:11px}.ac-grading-connector{height:20px}

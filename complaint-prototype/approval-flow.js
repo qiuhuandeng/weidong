@@ -5,7 +5,13 @@ function createApprovalFlow(STAFF,STORES){
   const duties=['客诉主管','财务审核','公司负责人','品控复核','售后受理','独立回访'];
   const sources={position:'指定岗位',department:'指定部门负责人',manager:'指定上级',duty:'公司审批人员'};
   const modes={all:'会签（全部同意）',any:'或签（一人同意）',sequential:'依次审批'};
-  const planTypes={service:'普通处理',refund:'退款',compensation:'赔偿',combined:'退款＋赔偿'};
+  const planTypes={service:'无退赔',refund:'退款',compensation:'赔偿',combined:'退款+赔偿',exchange:'商品置换',refund_exchange:'退款+商品置换',compensation_exchange:'赔偿+商品置换'};
+  const ticketSources={hotline:'400客服 / 总经理热线',crm:'CRM系统',wechat:'微信小程序 / AI企微'};
+  const storeResults={resolved:'已解决',unresolved:'未解决'};
+  const conditionKinds={source:'工单来源',storeResult:'门店处理结果',plan:'适用方案类型'};
+  const complaintLevels={1:'一级',2:'二级',3:'三级',4:'四级',5:'五级'};
+  const typeAmounts={service:[],refund:['refund'],compensation:['compensation'],combined:['refund','compensation'],exchange:[],refund_exchange:['refund'],compensation_exchange:['compensation']};
+  const maxBranches=8;
   const amountFields={refund:'退款金额',compensation:'赔偿金额',total:'申请总额'};
   const compareLabels={gt:'>',gte:'≥',lt:'<',lte:'≤',eq:'='};
   const uid=()=> 'flow-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8);
@@ -13,15 +19,15 @@ function createApprovalFlow(STAFF,STORES){
   function positions(s){const model=typeof module!=='undefined'&&module.exports?require('./node-assignment.js')({STAFF}):root.NodeAssignment;return clone(s.nodeAssignmentRules?.positions||model.defaults().positions);}
   function organization(s){const org=clone(s.organization||{
     version:1,company:{id:'company',name:'艺施集团'},
-    departments:[{id:'company',name:'集团总部',parent:null,leaders:['director']},{id:'operations',name:'门店运营中心',parent:'company',leaders:['manager']},{id:'aftercare',name:'售后服务部',parent:'company',leaders:['manager']},{id:'finance',name:'财务部',parent:'company',leaders:['finance']},{id:'quality',name:'品控部',parent:'company',leaders:['quality']},...STORES.map((store,i)=>({id:'store'+(i+1),name:store,store,parent:'operations',leaders:['store'+(i+1)]}))],
-    appointments:STAFF.map(p=>({personId:p.id,departmentId:p.store==='*'?(['finance','quality'].includes(p.id)?p.id:p.id==='director'?'company':'aftercare'):p.id,managerId:p.id==='director'?null:p.id==='manager'?'director':p.id==='finance'||p.id==='quality'?'director':'manager',active:true})),
+    departments:[{id:'company',name:'集团总部',parent:null,leaders:['director']},{id:'operations',name:'门店运营中心',parent:'company',leaders:['manager']},{id:'aftercare',name:'售后服务部',parent:'company',leaders:['manager']},{id:'finance',name:'财务部',parent:'company',leaders:['finance']},{id:'procurement',name:'采购部',parent:'company',leaders:['procurement']},{id:'quality',name:'品控部',parent:'company',leaders:['quality']},...STORES.map((store,i)=>({id:'store'+(i+1),name:store,store,parent:'operations',leaders:['store'+(i+1)]}))],
+    appointments:STAFF.map(p=>({personId:p.id,departmentId:p.store==='*'?(['finance','quality','procurement'].includes(p.id)?p.id:p.id==='director'?'company':'aftercare'):p.id,managerId:p.id==='director'?null:p.id==='manager'?'director':p.id==='finance'||p.id==='quality'?'director':'manager',active:true})),
     arrangements:STAFF.filter(p=>legacyDuty[p.id]).map(p=>({duty:legacyDuty[p.id],departmentId:p.id==='director'?'company':p.id==='finance'||p.id==='quality'?p.id:'aftercare',position:p.role,members:[p.id]}))
   });org.positions=positions(s);org.arrangements.forEach(row=>{row.members=org.appointments.filter(a=>a.active&&a.departmentId===row.departmentId&&STAFF.find(p=>p.id===a.personId)?.role===row.position).map(a=>a.personId);});return org;}
   function getList(flow,id){if(id==='root')return flow;for(const n of flow){if(n.type==='branch')for(const b of n.branches){if(b.id===id)return b.nodes;const found=getList(b.nodes,id);if(found)return found;}}return null;}
   function find(flow,id){for(const n of flow){if(n.id===id)return n;if(n.type==='branch')for(const b of n.branches){if(b.id===id)return b;const found=find(b.nodes,id);if(found)return found;}}return null;}
   function node(type='approval'){return {id:uid(),type,title:type==='cc'?'抄送人':'部门审核',source:'department',mode:'all',hierarchy:{base:'business',mode:'single',origin:'bottom',level:1,empty:'block'}};}
-  function condition(){return {id:uid(),title:'方案条件',planTypes:['refund'],match:'all',conditions:[{field:'refund',op:'gt',value:500}],nodes:[]};}
-  function branch(){return {id:uid(),type:'branch',title:'按方案条件分流',branches:[condition(),{id:uid(),title:'默认条件',fallback:true,conditions:[],nodes:[]}]};}
+  function condition(){return {id:uid(),title:'条件分支',judgeBy:'plan',planTypes:['refund'],match:'all',conditions:[{field:'refund',op:'gt',value:500}],nodes:[]};}
+  function branch(){return {id:uid(),type:'branch',title:'条件分流',branches:[condition(),{id:uid(),title:'默认条件',fallback:true,conditions:[],nodes:[]}]};}
   function duplicate(value){const d=clone(value);function walk(n){n.id=uid();if(n.branches)n.branches.forEach(walk);if(n.nodes)n.nodes.forEach(walk);}walk(d);return d;}
   function fromLegacy(a){return (a.nodes||[{assigneeId:a.managerId,condition:'amountAbove',amount:a.refundManagerAbove},{assigneeId:a.financeId,condition:'always'}]).map(n=>{
     const made={...node(),title:legacyDuty[n.assigneeId]||'门店审核',source:legacyDuty[n.assigneeId]?'duty':'department',duty:legacyDuty[n.assigneeId]};
@@ -33,10 +39,13 @@ function createApprovalFlow(STAFF,STORES){
   function validNode(n){if(n.type==='approval'&&n.handling){assert(n.handling.hours!==''&&Number.isFinite(Number(n.handling.hours))&&Number(n.handling.hours)>=0.25&&Number(n.handling.hours)<=720,'办理时限须在0.25至720小时之间');n.handling.hours=Number(n.handling.hours);if(n.handling.emptyAssigneeId)assert(STAFF.some(p=>p.id===n.handling.emptyAssigneeId),'请选择有效的空节点承接人');}assert(n.title?.trim()&&n.title.length<=40,'请填写1至40字的节点名称');assert(['approval','cc'].includes(n.type),'节点类型无效');assert(sources[n.source],'请选择组织架构中的人员来源');assert(modes[n.mode],'请选择多人办理方式');if(n.source==='position')assert(typeof n.positionId==='string'&&n.positionId,'请选择审批岗位');else if(n.source==='duty')assert(duties.includes(n.duty),'请选择有效审批职责');else{const h=n.hierarchy;assert(h&&['business','applicant','receptionist'].includes(h.base)&&['single','continuous'].includes(h.mode)&&['top','bottom'].includes(h.origin),'请配置审批层级');assert(Number.isInteger(Number(h.level))&&h.level>=1&&h.level<=10,'审批层级须在1至10级');assert(['block','parent'].includes(h.empty),'请选择无人负责时的处理方式');}return n;}
   function allowedFields(types=[]){
     if(!types.length)return Object.keys(amountFields);
-    if(types.length===1)return ({service:[],refund:['refund'],compensation:['compensation'],combined:['refund','compensation','total']})[types[0]]||[];
-    return Object.keys(amountFields).filter(key=>key==='refund'?types.some(t=>['refund','combined'].includes(t)):key==='compensation'?types.some(t=>['compensation','combined'].includes(t)):types.some(t=>t!=='service'));
+    const fields=[...new Set(types.flatMap(type=>typeAmounts[type]||[]))];
+    if(fields.length&&(types.length>1||fields.length===2))fields.push('total');
+    return fields;
   }
   function conditionSummary(b){
+    if(b.judgeBy==='source'||b.judgeBy==='storeResult'){const labels=b.judgeBy==='source'?ticketSources:storeResults,key=b.judgeBy==='source'?'sources':'results';return conditionKinds[b.judgeBy]+'为「'+(b[key]||[]).map(v=>labels[v]||v).join('、')+'」';}
+    if(b.judgeBy==='level')return b.levels?.length?'客诉等级为「'+b.levels.map(level=>complaintLevels[level]||level).join('、')+'」':'请选择客诉等级';
     const scope=b.planTypes?.length?'方案类型为「'+b.planTypes.map(t=>planTypes[t]||t).join('、')+'」':'不限方案类型';
     const amounts=(b.conditions||[]).map(c=>(amountFields[c.field||'refund']||'未知金额')+' '+(compareLabels[c.op]||'')+' '+(c.value===''?'待填写':c.value)+' 元').join(b.match==='any'?' 或 ':' 且 ');
     return scope+(amounts?'，且'+(b.conditions.length>1?'（'+amounts+'）':amounts):'');
@@ -45,17 +54,32 @@ function createApprovalFlow(STAFF,STORES){
   function clauses(b){return !b.conditions?.length?[[]]:b.match==='any'?b.conditions.map(c=>[c]):[b.conditions];}
   function feasible(type,conditions){
     const bounds={refund:[0,Infinity],compensation:[0,Infinity],total:[0,Infinity]};
-    if(['service','compensation'].includes(type))bounds.refund[1]=0;
-    if(['service','refund'].includes(type))bounds.compensation[1]=0;
+    if(!typeAmounts[type].includes('refund'))bounds.refund[1]=0;
+    if(!typeAmounts[type].includes('compensation'))bounds.compensation[1]=0;
     for(const c of conditions){const b=bounds[c.field||'refund'],v=Math.round(Number(c.value)*100);if(!b||!Number.isFinite(v))return false;
       if(c.op==='gt')b[0]=Math.max(b[0],v+1);if(c.op==='gte'||c.op==='eq')b[0]=Math.max(b[0],v);
       if(c.op==='lt')b[1]=Math.min(b[1],v-1);if(c.op==='lte'||c.op==='eq')b[1]=Math.min(b[1],v);
     }
     return Object.values(bounds).every(([lo,hi])=>lo<=hi)&&Math.max(bounds.total[0],bounds.refund[0]+bounds.compensation[0])<=Math.min(bounds.total[1],bounds.refund[1]+bounds.compensation[1]);
   }
-  function conditionsOverlap(a,b){return Object.keys(planTypes).some(type=>(!a.planTypes?.length||a.planTypes.includes(type))&&(!b.planTypes?.length||b.planTypes.includes(type))&&clauses(a).some(x=>clauses(b).some(y=>feasible(type,[...x,...y]))));}
+  function conditionsOverlap(a,b){
+    for(const [kind,key] of [['source','sources'],['storeResult','results']])if(a.judgeBy===kind&&b.judgeBy===kind&&!a[key]?.some(v=>b[key]?.includes(v)))return false;
+    const grades=b=>b.judgeBy==='level'?(b.levels||[]).map(Number):[1,2,3,4,5];
+    if(!grades(a).some(level=>grades(b).includes(level)))return false;
+    // A level branch has no solution filters; both kinds may match the same ticket.
+    const plan=b=>b.judgeBy&&b.judgeBy!=='plan'?{}:b;a=plan(a);b=plan(b);
+    return Object.keys(planTypes).some(type=>(!a.planTypes?.length||a.planTypes.includes(type))&&(!b.planTypes?.length||b.planTypes.includes(type))&&clauses(a).some(x=>clauses(b).some(y=>feasible(type,[...x,...y]))));
+  }
   function validCondition(b){
-    assert(b.title?.trim()&&b.title.length<=40,'请填写1至40字的分支名称');assert(['all','any'].includes(b.match),'请选择金额条件匹配方式');
+    assert(b.title?.trim()&&b.title.length<=40,'请填写1至40字的分支名称');assert(['plan','level','source','storeResult'].includes(b.judgeBy??'plan'),'请选择有效的判断方式');
+    if(b.judgeBy==='source'||b.judgeBy==='storeResult'){const key=b.judgeBy==='source'?'sources':'results',labels=b.judgeBy==='source'?ticketSources:storeResults;assert(Array.isArray(b[key])&&b[key].length,'请至少选择一个'+conditionKinds[b.judgeBy]);assert(b[key].every(v=>Object.hasOwn(labels,v)),'请选择有效的'+conditionKinds[b.judgeBy]);b[key]=[...new Set(b[key])];delete b.levels;delete b[key==='sources'?'results':'sources'];b.planTypes=[];b.conditions=[];b.match='all';return;}
+    delete b.sources;delete b.results;
+    if(b.judgeBy==='level'){
+      assert(Array.isArray(b.levels)&&b.levels.length>0,'请至少选择一个客诉等级');
+      assert(b.levels.every(level=>[1,2,3,4,5].includes(Number(level))),'请选择一至五级的有效客诉等级');
+      b.levels=[...new Set(b.levels.map(Number))].sort((a,b)=>a-b);b.planTypes=[];b.conditions=[];b.match='all';return;
+    }
+    delete b.levels;assert(['all','any'].includes(b.match),'请选择金额条件匹配方式');
     assert(b.planTypes===undefined||Array.isArray(b.planTypes),'方案类型无效');const types=b.planTypes||[];
     assert(types.every(t=>Object.hasOwn(planTypes,t)),'请选择有效的方案类型');
     assert(Array.isArray(b.conditions)&&(b.conditions.length>0||types.length>0),'请选择适用方案类型或添加金额条件；兜底请使用默认分支');
@@ -69,15 +93,23 @@ function createApprovalFlow(STAFF,STORES){
     assert(p&&Object.hasOwn(planTypes,p.type),'请传入本次提交的方案类型');
     const refund=Number(p.refund??0),compensation=Number(p.compensation??0);
     assert([refund,compensation].every(n=>Number.isFinite(n)&&n>=0&&Math.abs(n*100-Math.round(n*100))<0.000001),'方案金额须为非负数且最多两位小数');
-    assert(p.type==='combined'||p.type==='refund'&&compensation===0||p.type==='compensation'&&refund===0||p.type==='service'&&refund+compensation===0,'方案类型与金额不一致');
+    assert((typeAmounts[p.type].includes('refund')||refund===0)&&(typeAmounts[p.type].includes('compensation')||compensation===0),'方案类型与金额不一致');
     return {type:p.type,refund:Math.round(refund*100),compensation:Math.round(compensation*100),total:Math.round(refund*100)+Math.round(compensation*100)};
   }
-  function matchesProposal(b,p){
+  function matchesCondition(b,context={}){
+    if(b.judgeBy==='source')return context.source===undefined?null:(b.sources||[]).includes(context.source);
+    if(b.judgeBy==='storeResult')return !context.storeResult?null:(b.results||[]).includes(context.storeResult);
+    if(b.judgeBy==='level')return b.levels?.includes(Number(context.level))||false;
+    return context.proposal?matchesProposal(b,context.proposal,context.level):null;
+  }
+  function matchesProposal(b,p,level){
+    if(['source','storeResult'].includes(b.judgeBy))return false;
+    if(b.judgeBy==='level')return b.levels?.includes(Number(level))||false;
     if(b.planTypes?.length&&!b.planTypes.includes(p.type))return false;
     if(!b.conditions.length)return true;
     return b.conditions[b.match==='any'?'some':'every'](c=>{const amount=p[c.field||'refund'],v=Math.round(Number(c.value)*100);return ({gt:amount>v,gte:amount>=v,lt:amount<v,lte:amount<=v,eq:amount===v})[c.op];});
   }
-  function validate(flow,roles){const ids=new Set();let count=0;function walk(list,depth){assert(Array.isArray(list)&&depth<=4,'条件分支最多嵌套4层');for(const n of list){count++;assert(n.id&&!ids.has(n.id),'流程节点标识重复');ids.add(n.id);if(n.type==='branch'){assert(n.branches.length>=2&&n.branches.length<=6,'每组分支须保留2至6条条件');assert(n.branches.at(-1).fallback&&n.branches.filter(b=>b.fallback).length===1,'最后一条须为默认条件');for(const b of n.branches){assert(b.id&&!ids.has(b.id),'条件标识重复');ids.add(b.id);if(!b.fallback)validCondition(b);walk(b.nodes,depth+1);}}else validNode(n);}}
+  function validate(flow,roles){const ids=new Set();let count=0;function walk(list,depth){assert(Array.isArray(list)&&depth<=4,'条件分支最多嵌套4层');for(const n of list){count++;assert(n.id&&!ids.has(n.id),'流程节点标识重复');ids.add(n.id);if(n.type==='branch'){assert(n.branches.length>=2&&n.branches.length<=maxBranches,'每组分支须保留2至8条条件（含默认条件）');assert(n.branches.at(-1).fallback&&n.branches.filter(b=>b.fallback).length===1,'最后一条须为默认条件');for(const b of n.branches){assert(b.id&&!ids.has(b.id),'条件标识重复');ids.add(b.id);if(!b.fallback)validCondition(b);walk(b.nodes,depth+1);}}else validNode(n);}}
     walk(flow,0);assert(count<=30,'流程最多30个节点');const last=flow.filter(n=>n.type!=='cc').at(-1);assert(last?.type==='approval'&&((last.source==='duty'&&last.duty==='财务审核')||last.source==='position'),'退款流程最后一个审批节点须为公司财务审核');if(roles){const check=list=>list.forEach(n=>{if(n.type==='branch')n.branches.forEach(b=>check(b.nodes));else if(n.source==='position')assert(roles.some(p=>p.id===n.positionId),'审批岗位已删除，请重新选择');});check(flow);if(last.source==='position'){const p=roles.find(p=>p.id===last.positionId);assert(p?.members.length&&p.members.every(id=>STAFF.find(x=>x.id===id)?.role==='财务审核'),'退款流程最后一个审批岗位须由财务审核人员承担');}}return flow;
   }
   function personnelError(ids,message){const error=Error(message);error.personnel=ids.length?'departed':'empty';throw error;}
@@ -117,7 +149,7 @@ function createApprovalFlow(STAFF,STORES){
     return groups.map(ids=>[...new Set(ids.flatMap(id=>id===context.applicantId?resolveSource(org,{source:'duty',duty:r.approval.delegateDuty},context).flat():[id]))]).map(ids=>{assert(ids.every(id=>id!==context.applicantId),'代审职责仍匹配到申请人，请调整组织任职');return ids;});
   }
   function plan(r,s,context,proposal){context={...context,receptionistId:context.receptionistId||s.customers?.find(c=>c.id===context.customerId)?.receptionistId};validate(r.approval.flow,positions(s));const org=organization(s),steps=[],values=proposalValues(proposal);let path=[];
-    const matches=b=>matchesProposal(b,values);
+    const matches=b=>matchesProposal(b,values,context.level);
     function walk(list){for(const n of list){if(n.type==='branch'){const selected=n.branches.find(b=>b.fallback||matches(b));path.push({nodeId:n.id,branchId:selected.id,title:selected.title});walk(selected.nodes);continue;}
       const groups=n.type==='approval'?resolveApprovers(r,org,n,context):resolveSource(org,n,context);groups.forEach((members,i)=>{if(n.type==='approval')members=members.flatMap(id=>id===context.applicantId?resolveSource(org,{source:'duty',duty:r.approval.delegateDuty},context).flat():[id]);members=[...new Set(members)];assert(n.type==='cc'||members.every(id=>id!==context.applicantId),'代审职责仍匹配到申请人，请调整组织任职');if(n.mode==='sequential'&&n.type==='approval')members.forEach(id=>steps.push({nodeId:n.id,title:n.title,members:[id],mode:'all',type:n.type,source:sourceLabel(n,org.positions),sourceNode:clone(n)}));else steps.push({nodeId:n.id,title:n.title+(groups.length>1?' · 第'+(i+1)+'层':''),members,mode:n.mode,type:n.type,source:sourceLabel(n,org.positions),sourceNode:clone(n)});});}}
     walk(r.approval.flow);assert(steps.some(x=>x.type==='approval'),'请至少设置一个审批节点');return {steps,path,organizationVersion:org.version};
@@ -127,7 +159,7 @@ function createApprovalFlow(STAFF,STORES){
     STAFF.forEach(p=>{if(!org.appointments.some(a=>a.personId===p.id&&a.active))r.routing.available[p.id]=false;else if(r.routing.available[p.id]===undefined)r.routing.available[p.id]=true;});
     r.closure.callbackId=one(r.closure.callbackDuty);if(!r.closure.callbackOnly){r.closure.qualityId=one(r.closure.qualityDuty);assert(r.closure.callbackId!==r.closure.qualityId,'回访与复核职责不能由同一人办理');}r.approval.financeId=one('财务审核');return r;
   }
-  return {clone,uid,duties,sources,modes,planTypes,amountFields,compareLabels,allowedFields,conditionSummary,conditionsOverlap,positions,organization,node,condition,branch,duplicate,getList,find,prepare,fromLegacy,sourceLabel,summary,validNode,validCondition,validate,resolveSource,resolveApprovers,delegated,plan,bindRouting};
+  return {clone,uid,duties,sources,modes,planTypes,ticketSources,storeResults,conditionKinds,complaintLevels,maxBranches,amountFields,compareLabels,allowedFields,conditionSummary,conditionsOverlap,positions,organization,node,condition,branch,duplicate,getList,find,prepare,fromLegacy,sourceLabel,summary,validNode,validCondition,proposalValues,matchesCondition,matchesProposal,validate,resolveSource,resolveApprovers,delegated,plan,bindRouting};
 }
 if(typeof module!=='undefined'&&module.exports)module.exports=createApprovalFlow;else root.createApprovalFlow=createApprovalFlow;
 })(typeof window!=='undefined'?window:globalThis);

@@ -78,9 +78,9 @@
       requireValue([2,3].includes(Number(r.classification.keywordLevel)),'关键词升级等级请选择二级或三级');
       r.classification.keywordLevel=Number(r.classification.keywordLevel);
       Object.keys(defaults().timing).forEach(key=>number(r.timing,key,key.endsWith('Minutes')?1:0.25,key.endsWith('Minutes')?1440:720,'办理时限'));
-      requireValue(r.timing.assignMinutes<=r.timing.firstContactHours*60,'派单时限不能晚于首次联系时限');
-      requireValue(r.timing.acceptMinutes<=r.timing.firstContactHours*60,'接单时限不能晚于首次联系时限');
+      if(r.contactTimingVersion!==1){requireValue(r.timing.assignMinutes<=r.timing.firstContactHours*60,'派单时限不能晚于首次联系时限');requireValue(r.timing.acceptMinutes<=r.timing.firstContactHours*60,'接单时限不能晚于首次联系时限');}
       requireValue(r.timing.firstContactHours<=r.timing.targetHours,'首次联系时限不能晚于整体处理目标');
+      delete r.timing.storeFirstContactHours;
       requireValue(r.timing.planHours<=r.timing.targetHours,'方案制定时限不能超过整体处理目标');
       requireValue(r.timing.serviceHours<=r.timing.targetHours,'默认履行时长不能超过整体处理目标');
       requireValue(['auto','manual'].includes(r.routing.mode),'请选择派单方式');
@@ -175,7 +175,7 @@
     function validateScene(s,draft){
       let d=copy(draft);if(d.config?.handling)d=prepareScene(d);d.name=String(d.name||'').trim();d.description=String(d.description||'').trim();d.level=Number(d.level);
       requireValue(d.name&&d.name.length<=30,'请填写1至30字的场景名称');
-      requireValue([1,2,3,4].includes(d.level),'请选择一级至四级客诉等级');
+      requireValue([1,2,3,4,5].includes(d.level),'请选择一级至五级客诉等级');
       requireValue(d.description.length<=300,'场景说明最多300字');requireValue(typeof d.enabled==='boolean','场景状态无效');
       requireValue(!sceneList(s).some(x=>x.id!==d.id&&x.name===d.name),'场景名称不能重复');
       requireValue(['store','manager'].includes(d.config?.routing?.sceneMode),'请选择场景承接方式');

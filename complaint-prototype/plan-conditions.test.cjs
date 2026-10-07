@@ -9,11 +9,13 @@ function harness(branches){
  const state=E.seed(NOW),scene=F.prepare(E.Rules.sceneList(state)[0]),group=F.branch();
  group.branches=[...branches,group.branches.at(-1)];
  scene.config.approval.flow=[group,{...F.node(),source:'duty',duty:'财务审核'}];
- return {state,scene,group,run:proposal=>F.plan(scene.config,state,{store:E.STORES[0],applicantId:'intake'},proposal)};
+ return {state,scene,group,run:(proposal,level)=>F.plan(scene.config,state,{store:E.STORES[0],applicantId:'intake',level},proposal)};
 }
-test('four proposal types select distinct type-only branches',()=>{
+test('all seven proposal types select distinct type-only branches, including funded exchanges',()=>{
+ assert.deepEqual(Object.values(F.planTypes),['无退赔','退款','赔偿','退款+赔偿','商品置换','退款+商品置换','赔偿+商品置换']);
  const branches=Object.keys(F.planTypes).map(type=>({...rule([type]),title:type})),h=harness(branches);
- for(const type of Object.keys(F.planTypes))assert.equal(h.run({type,refund:['refund','combined'].includes(type)?300:0,compensation:['compensation','combined'].includes(type)?80:0}).path[0].title,type);
+ for(const type of Object.keys(F.planTypes))assert.equal(h.run({type,refund:['refund','combined','refund_exchange'].includes(type)?300:0,compensation:['compensation','combined','compensation_exchange'].includes(type)?80:0}).path[0].title,type);
+ h.group.branches.splice(-1,0,rule(['refund']));assert.throws(()=>h.run(300),/2至8/);
 });
 test('type scope is required even when any amount condition is satisfied',()=>{
  const h=harness([rule(['combined'],[amount('refund','gte',5000),amount('compensation','gte',1000)],'any')]);
@@ -30,8 +32,46 @@ test('all amount conditions, exact total and cent boundaries',()=>{
  assert.equal(h.run({type:'combined',refund:0.1,compensation:0.2}).path[0].title,'方案分支');
 });
 test('legacy refund conditions and numeric callers preserve boundary behavior',()=>{
- const b=rule([],[{op:'gt',value:500}]);delete b.planTypes;
+ const b=rule([],[{op:'gt',value:500}]);delete b.planTypes;delete b.judgeBy;
  const h=harness([b]);assert.equal(h.run(500).path[0].title,'默认条件');assert.equal(h.run(500.01).path[0].title,'方案分支');
+});
+test('exchange amount fields are restricted to the actual financial component',()=>{
+ assert.deepEqual(F.allowedFields(['service']),[]);assert.deepEqual(F.allowedFields(['exchange']),[]);
+ assert.deepEqual(F.allowedFields(['refund_exchange']),['refund']);assert.deepEqual(F.allowedFields(['compensation_exchange']),['compensation']);
+ for(const type of ['service','exchange'])assert.throws(()=>F.validCondition(rule([type],[amount('refund','gt',0)])),/不适用/);
+ assert.throws(()=>F.validCondition(rule(['refund_exchange'],[amount('compensation','gte',1)])),/不适用/);
+ const h=harness([rule(['refund_exchange'],[amount('refund','gte',500)])]);
+ assert.equal(h.run({type:'refund_exchange',refund:499.99}).path[0].title,'默认条件');
+ assert.equal(h.run({type:'refund_exchange',refund:500}).path[0].title,'方案分支');
+ assert.throws(()=>h.run({type:'refund_exchange',refund:500,compensation:1}),/类型与金额/);
+ assert.throws(()=>h.run({type:'exchange',refund:1}),/类型与金额/);
+ assert.throws(()=>h.run({type:'compensation_exchange',refund:1}),/类型与金额/);
+});
+const grade=(levels,title='等级分支')=>({...F.condition(),title,judgeBy:'level',levels});
+test('level branches support grades one to five and ignore solution filters',()=>{
+ const h=harness([grade([1,2],'普通等级'),grade([3,4,5],'升级处理')]);
+ for(const level of [1,2,3,4,5])for(const type of ['service','refund','exchange'])assert.equal(h.run({type,refund:type==='refund'?0.01:0},level).path[0].title,level<3?'普通等级':'升级处理');
+ assert.equal(h.run({type:'refund',refund:999}).path[0].title,'默认条件');
+ assert.equal(h.run({type:'refund',refund:999},6).path[0].title,'默认条件');
+ const b=grade([5,1,5]);F.validCondition(b);assert.deepEqual(b.levels,[1,5]);assert.deepEqual(b.planTypes,[]);assert.deepEqual(b.conditions,[]);
+ assert.equal(F.conditionSummary(b),'客诉等级为「一级、五级」');
+ for(const levels of [[],[0],[6],[1.5],['invalid'],null])assert.throws(()=>F.validCondition(grade(levels)),/等级/);
+ assert.throws(()=>F.validCondition({...grade([1]),judgeBy:'unknown'}),/判断方式/);
+ b.judgeBy='plan';b.planTypes=['exchange'];F.validCondition(b);assert.equal(b.levels,undefined);
+});
+test('overlap compares grade intersections and mixed modes follow branch priority',()=>{
+ assert.equal(F.conditionsOverlap(grade([1,2]),grade([3,4,5])),false);
+ assert.equal(F.conditionsOverlap(grade([1,2]),grade([2,5])),true);
+ const p=rule(['exchange']);assert.equal(F.conditionsOverlap(grade([5]),p),true);assert.equal(F.conditionsOverlap(p,grade([5])),true);
+ const h=harness([grade([5]),p]);assert.equal(h.run({type:'exchange'},5).path[0].title,'等级分支');assert.equal(h.run({type:'exchange'},4).path[0].title,'方案分支');
+ h.group.branches=[p,h.group.branches[0],h.group.branches.at(-1)];assert.equal(h.run({type:'exchange'},5).path[0].title,'方案分支');
+});
+test('saved mixed branches retain their mode and route correctly after reloading',()=>{
+ const h=harness([grade([1,5]),rule(['refund_exchange'],[amount('refund','gte',20)])]);
+ const saved=E.Rules.saveScene(h.state,'manager',h.scene,0,NOW),state=JSON.parse(JSON.stringify(saved));
+ const config=E.Rules.prepareScene(E.Rules.sceneList(state).find(s=>s.id===h.scene.id)).config;
+ const run=(level,type)=>F.plan(config,state,{store:E.STORES[0],applicantId:'intake',level},{type,refund:20});
+ assert.equal(run(5,'refund').path[0].title,'等级分支');assert.equal(run(2,'refund_exchange').path[0].title,'方案分支');assert.equal(run(2,'refund').path[0].title,'默认条件');
 });
 test('reject invalid amounts, incompatible types and contradictory ranges',()=>{
  for(const value of ['', ' ', -1, 0.001, Infinity])assert.throws(()=>F.validCondition(rule(['refund'],[amount('refund','gte',value)])));

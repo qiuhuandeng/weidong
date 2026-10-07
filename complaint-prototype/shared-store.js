@@ -5,10 +5,13 @@ const KEY='meiye.complaint.unified.v1',TICKETS_KEY='meiye.complaint.reference.v4
 function createStore(storage,engine,configuration,locks){
  const parse=key=>{const raw=storage.getItem(key);if(raw===null)return null;try{return JSON.parse(raw);}catch{throw Error('本地数据无法读取，已保留原始数据，请勿重置：'+key);}};
  function load(){
-  const existing=parse(KEY);if(existing){if(existing.unifiedVersion!==1||!Array.isArray(existing.tickets)||!existing.configuration)throw Error('统一数据版本不支持，已保留数据');return existing;}
+  const existing=parse(KEY);if(existing){if(existing.unifiedVersion!==1||!Array.isArray(existing.tickets)||!existing.configuration)throw Error('统一数据版本不支持，已保留数据');const configured=configuration.upgrade?.(existing),examples=engine.ensureIntakeExamples?.(existing),upgraded=engine.prepareTickets?.(existing),scenarios=engine.ensureWorkflowExamples?.(existing);if(configured||examples||upgraded||scenarios){existing._revision=(existing._revision||0)+1;storage.setItem(KEY,JSON.stringify(existing));}return existing;}
   const previous=parse(TICKETS_KEY);if(previous&&previous.version!==4)throw Error('工单数据版本不支持，已保留数据');
   const state=previous?engine.migrate(previous):engine.seed();
   configuration.initialize(state,parse(RULES_KEY)||parse(OLD_RULES_KEY));
+  engine.ensureIntakeExamples?.(state);
+  engine.prepareTickets?.(state);
+  engine.ensureWorkflowExamples?.(state);
   state._revision=0;state.migratedAt=Date.now();state.migratedFrom={tickets:!!previous,rules:!!storage.getItem(RULES_KEY)||!!storage.getItem(OLD_RULES_KEY)};
   storage.setItem(KEY,JSON.stringify(state));return state;
  }

@@ -30,9 +30,8 @@ test('空人阻止提交且不占用退款额度，备用职责是本人时也�
  r.c.rulesSnapshot.handling.empty={mode:'replace',duty:'公司负责人'};const row=r.s.organization.arrangements.find(a=>a.duty==='公司负责人');row.departmentId='store1';row.position='门店店长';assert.throws(submit,/申请人/);
 });
 test('代办授权已过期时不得派给代办人',()=>{const r=setup();r.refund();r.s.organization=F.organization(r.s);r.s.organization.delegations=[{from:'manager',to:'director',startAt:NOW-2*E.HOUR,endAt:NOW}];r.s.organization.appointments.find(a=>a.personId==='manager').active=false;r.poll(NOW+E.HOUR);assert.equal(E.pending(r.c)[0].kind,'approvalException');});
-test('风险响应时限默认半小时，保存及校验不改变在途工单',()=>{
+test('旧风险响应字段作为历史值保留，不改变在途工单快照',()=>{
  const r=setup(),draft=R.prepareScene(R.sceneList(r.s)[0]);assert.equal(draft.config.timing.riskHours,0.5);
  draft.config.timing.riskHours=0.1;const saved=R.saveScene(r.s,'manager',draft,r.s.sceneRevision,NOW);assert.equal(saved.ruleScenes[0].config.timing.riskHours,0.1);assert.equal(saved.cases[0].rulesSnapshot.timing.riskHours,0.5);
- for(const value of ['',0,-1,73,NaN]){draft.config.timing.riskHours=value;assert.throws(()=>R.saveScene(r.s,'manager',draft,r.s.sceneRevision,NOW),/风险响应时限/);}
 });
 console.log(`完成 ${count} 项处理规则运行验证。`);

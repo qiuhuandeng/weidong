@@ -7,10 +7,11 @@
     if (!sidebar || !content || typeof window.showPage !== 'function') return;
     const entries = [
       ['complaint-tickets', '客诉工单', 'tickets'],
+      ['complaint-schedule', '售后排班', 'schedule'],
       ['complaint-rules', '规则配置', 'rules'],
       ['complaint-demo', '演示入口', 'demo']
     ];
-    const entryURL=entry=>entry[2]==='tickets'?'complaint-prototype/workflow/index.html?v=20261006-unified&embed=1&page=tickets':entry[2]==='demo'?'complaint-prototype/demo.html?v=20260930-mobile-only&embed=1':'complaint-prototype/index.html?v=20261006-unified&embed=1&view=pc&actor=manager&page='+entry[2];
+    const entryURL=entry=>entry[2]==='schedule'?'complaint-prototype/schedule.html?v=20261007-ticket-operations&embed=1':entry[2]==='tickets'?'complaint-prototype/workflow/index.html?v=20261007-solution-details&embed=1&page=tickets':entry[2]==='demo'?'complaint-prototype/demo.html?v=20261007-ticket-operations&embed=1':'complaint-prototype/index.html?v=20261007-ticket-operations&embed=1&view=pc&actor=manager&page='+entry[2];
     const section = document.createElement('div');
     section.className = 'nav-section'; section.id = 'complaint-nav';
     section.innerHTML = '<div class="nav-group-title" onclick="toggleNavSection(this)"><span>客诉管理</span><span class="nav-group-arrow">⌄</span></div>' + entries.map(function (entry) {

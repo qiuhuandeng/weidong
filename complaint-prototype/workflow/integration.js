@@ -11,7 +11,7 @@
     const route = location.hash;
     const isMobile = route.startsWith('#/mobile');
     const current = ticket(route.split('/')[2]);
-    const approval = isMobile && current?.state === '待方案审批';
+    const approval = isMobile && current?.phase==='待部门审批';
     document.body.classList.toggle('workflow-mobile', isMobile);
     document.body.classList.toggle('workflow-portal', route === '#/demo');
     if (approval) document.querySelector('.mobile-top strong').textContent = '钉钉审批详情';
