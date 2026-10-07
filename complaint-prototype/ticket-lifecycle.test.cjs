@@ -26,9 +26,9 @@ test('payment and purchase handling start only after their preceding approvals c
 test('existing six-state tickets refresh only their status labels, preserving all progress and evidence',()=>{
  const mem=memory(),store=Store.createStore(mem,E,C),s=store.load();
  for(const t of s.tickets)if(['付款办理','采购办理'].includes(t.state)||E.ticketStageKey(t)==='store'&&t.execution)t.state='审批中';
- const original=E.clone(s);mem.setItem(Store.KEY,JSON.stringify(s));const next=store.load();assert.equal(next._revision,original._revision+1);
+ delete s.ticketStatusVersion;const original=E.clone(s);mem.setItem(Store.KEY,JSON.stringify(s));const next=store.load();assert.equal(next._revision,original._revision+1);assert.equal(next.ticketStatusVersion,2);
  for(const t of next.tickets){const old=original.tickets.find(x=>x.id===t.id),{state,...rest}=t;assert.deepEqual(rest,((({state,...r})=>r)(old)));assert.equal(state,E.ticketStatus(t));}
- const {tickets:oldTickets,_revision:oldRevision,...oldRest}=original,{tickets:newTickets,_revision:newRevision,...newRest}=next;assert.deepEqual(newRest,oldRest);
+ const {tickets:oldTickets,_revision:oldRevision,ticketStatusVersion:oldStatusVersion,...oldRest}=original,{tickets:newTickets,_revision:newRevision,ticketStatusVersion:newStatusVersion,...newRest}=next;assert.deepEqual(newRest,oldRest);
  for(const suffix of ['D08','D14','D17','D18'])assert.equal(find(next,suffix).state,'采购办理');assert.equal(find(next,'D02').state,'付款办理');assert.equal(find(next,'D03').state,'审批中');assert.equal(find(next,'P10').state,'处理中');assert.deepEqual(store.load(),next);
 });
 test('grading stays pending; aftercare starts handling and a direct solution waits for manual closure',()=>{

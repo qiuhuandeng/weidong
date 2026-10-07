@@ -99,6 +99,9 @@ function createTicketLifecycle(E,C,P){
  }
  function prepareTickets(s){
   let changed=E.prepareSuspensions(s);
+  // Status is a projection of the current node. Persist its migration once;
+  // an older open tab must not start a storage-event write-back loop.
+  if((s.ticketStatusVersion||0)<2){s.ticketStatusVersion=2;changed=true;}
   for(const t of s.tickets||[]){
    if(!t.phase){t.phase=t.state;changed=true;}
    if(!t.lifecycleVersion){
@@ -108,7 +111,7 @@ function createTicketLifecycle(E,C,P){
     catch(error){t.workflowIssue={reason:error.message};}
     t.lifecycleVersion=1;changed=true;
    }
-   const value=status(t);if(t.state!==value){t.state=value;changed=true;}
+   t.state=status(t);
   }
   return changed;
  }

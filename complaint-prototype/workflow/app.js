@@ -605,9 +605,15 @@ document.addEventListener('submit',async ev=>{ev.preventDefault();const f=ev.tar
  }catch(e){const slot=f.querySelector('.error-slot');if(slot)slot.innerHTML=`<div class="error-inline">${esc(e.message)}</div>`;else toast(e.message)}finally{if(submit?.isConnected)submit.disabled=false}
 });
 window.addEventListener('hashchange',()=>{window.CRMCustomerView?.dismiss({restore:false});if(!location.hash.startsWith('#/rules')){UI.editor=null;UI.node=null;}closeModal(true);UI.drawer=null;UI.tab='info';render()});
-window.addEventListener('complaint-dispatch',()=>{if(!$('#modal-root').children.length){S=Store.load();render();}});
+const backgroundRefresh=ComplaintRefreshQueue.create({
+ blocked:()=>document.hidden||!!$('#modal-root').children.length||!!UI.editor||!!document.activeElement?.matches('input,select,textarea,[contenteditable="true"]'),
+ refresh:()=>{S=Store.load();render();},
+ onError:error=>toast(error.message)
+});
+window.addEventListener('complaint-dispatch',()=>backgroundRefresh.request());
 window.addEventListener('complaint-dispatch-error',e=>toast(e.detail));
-window.addEventListener('storage',ev=>{if(ev.key===KEY&&ev.newValue&&!$('#modal-root').children.length&&!UI.editor){try{S=JSON.parse(ev.newValue);render()}catch{}}});
+window.addEventListener('storage',ev=>{if(ev.key===KEY&&ev.newValue)backgroundRefresh.request();});
+for(const event of ['focusout','click','keydown','visibilitychange'])document.addEventListener(event,()=>backgroundRefresh.flush());
 
 function renderArchive(id){
  const c=S.configuration.cases.find(c=>c.id===decodeURIComponent(id||''));
