@@ -19,8 +19,9 @@
   document.getElementById('entry-links').innerHTML = entries.map(([id,title,device,desc,symbol,route]) => `<article class="directory-card"><a class="directory-page-link" data-demo-entry="${id}" target="_blank" rel="noopener" href="${url(route)}"><span class="directory-icon">${icon(symbol)}</span><span class="directory-device">${device}</span><h3>${title}</h3><p>${desc}</p><span class="directory-arrow">${icon('arrow')}</span></a>${id==='mobile'?'<a class="directory-external" href="workflow/index.html?view=h5#/mobile" target="_blank" rel="noopener">独立打开 H5 ↗</a>':''}</article>`).join('');
   const state=ComplaintStore.load();
   const escape=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const scenarios=[...Engine.EXTERNAL_APPROVAL_EXAMPLES,...Engine.WORKFLOW_EXAMPLES.filter(row=>!['all','sequential','any'].includes(row.kind))];
   document.getElementById('scene-links').innerHTML=Engine.STATES.map(status=>{
-    const entries=Engine.WORKFLOW_EXAMPLES.filter(row=>row.state===status);
+    const entries=scenarios.filter(row=>state.tickets.some(t=>t.id===row.id&&t.state===status));
     return `<section class="directory-state-group"><div class="directory-heading"><h2>${status}</h2><span>${entries.length} 种办理情况</span></div><div class="directory-scenes">${entries.map(row=>{
       const t=state.tickets.find(t=>t.id===row.id);
       return `<a class="directory-scene" data-demo-entry="${row.kind}" target="_blank" rel="noopener" href="${url('#/mobile/'+row.id)}"><span class="directory-icon">${icon(status==='已结案'?'check':'ticket')}</span><span class="grow"><span class="directory-device">${row.id} · 当前${escape(t.state)}</span><h3>${escape(row.title)}</h3></span>${icon('arrow')}</a>`;

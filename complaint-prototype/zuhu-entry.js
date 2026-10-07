@@ -7,11 +7,12 @@
     if (!sidebar || !content || typeof window.showPage !== 'function') return;
     const entries = [
       ['complaint-tickets', '客诉工单', 'tickets'],
-      ['complaint-schedule', '售后排班', 'schedule'],
       ['complaint-rules', '规则配置', 'rules'],
+      ['complaint-schedule', '售后排班', 'schedule'],
+      ['complaint-approvals', '审批管理', 'approvals'],
       ['complaint-demo', '演示入口', 'demo']
     ];
-    const entryURL=entry=>entry[2]==='schedule'?'complaint-prototype/schedule.html?v=20261007-ticket-operations&embed=1':entry[2]==='tickets'?'complaint-prototype/workflow/index.html?v=20261007-solution-details&embed=1&page=tickets':entry[2]==='demo'?'complaint-prototype/demo.html?v=20261007-ticket-operations&embed=1':'complaint-prototype/index.html?v=20261007-ticket-operations&embed=1&view=pc&actor=manager&page='+entry[2];
+    const entryURL=entry=>entry[2]==='approvals'?'complaint-prototype/approvals.html?v=20261007-crm-profile&embed=1':entry[2]==='schedule'?'complaint-prototype/schedule.html?v=20261007-crm-profile&embed=1':entry[2]==='tickets'?'complaint-prototype/workflow/index.html?v=20261007-crm-profile&embed=1&page=tickets':entry[2]==='demo'?'complaint-prototype/demo.html?v=20261007-crm-profile&embed=1':'complaint-prototype/index.html?v=20261007-crm-profile&embed=1&view=pc&actor=manager&page='+entry[2];
     const section = document.createElement('div');
     section.className = 'nav-section'; section.id = 'complaint-nav';
     section.innerHTML = '<div class="nav-group-title" onclick="toggleNavSection(this)"><span>客诉管理</span><span class="nav-group-arrow">⌄</span></div>' + entries.map(function (entry) {
@@ -35,6 +36,14 @@
     const ticketFrame = document.querySelector('#page-complaint-tickets iframe');
     const overlayFrames = new Map();
     window.addEventListener('message', function (event) {
+      if(event.source===document.querySelector('#page-complaint-approvals iframe')?.contentWindow&&event.data?.type==='complaint-approval-navigate'){
+        const target=event.data.target==='ticket'?'tickets':event.data.target==='rule'?'rules':null;
+        if(target&&typeof event.data.id==='string'){
+          const entry=entries.find(e=>e[2]===target),frame=document.querySelector('#page-'+entry[0]+' iframe');
+          frame.src=entryURL(entry)+(target==='tickets'?'#/tickets/':'#rules/')+encodeURIComponent(event.data.id)+(target==='rules'?'/flow':'');
+          window.showPage(entry[0]);
+        }
+      }
       if(event.source===ticketFrame?.contentWindow && event.data?.type==='complaint-demo-return')window.showPage('complaint-demo');
       if (event.data?.type !== 'complaint-overlay-state') return;
       const frame = entries.map(entry => document.querySelector('#page-' + entry[0] + ' iframe')).find(item => item?.contentWindow === event.source);

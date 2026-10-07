@@ -9,7 +9,9 @@ const defaults=()=>({version:0,enabled:true,inputs:['title','description'],level
  {level:4,name:'外部投诉',criteria:'涉及监管投诉、媒体曝光等外部投诉事项，需结合客户陈述和实际情况判断。',keywords:'工商投诉,监管投诉,媒体曝光',exclusions:'未向外部投诉'},
  {level:5,name:'紧急风险',criteria:'出现严重人身伤害、警方或监管到店等紧急风险，需要售后经理直接协调。',keywords:'严重人身伤害,警方到店,监管到店',exclusions:'没有人员受伤,警方未到店'}
 ]});
-function get(state){const config=copy(state.aiGrading||defaults());config.inputs=[...new Set(config.inputs.map(key=>key==='request'?'description':key))];return config;}
+function get(state){const config=copy(state.aiGrading||defaults());config.inputs=[...new Set(config.inputs.map(key=>key==='request'?'description':key))];
+ if(state.ruleSetupVersion){config.enabled=true;config.inputs=['title','description'];config.version=state.sceneRevision||0;config.levels=[1,2,3,4,5].flatMap(level=>{const rows=(state.ruleScenes||[]).filter(s=>Number(s.level)===level),scene=rows.find(s=>s.enabled)||rows[0];return scene?.grading?[{level,name:scene.name,...copy(scene.grading)}]:[];});}
+ return config;}
 function classify(state,data){
  const config=get(state),split=value=>String(value||'').split(/[、,，;；\n]/).map(x=>x.trim()).filter(Boolean);
  const clauses=config.inputs.flatMap(key=>String(data[key]||'').split(/[。！!？?；;\n，,]/)).map(x=>x.trim()).filter(Boolean),matches=[];

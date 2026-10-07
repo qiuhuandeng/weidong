@@ -1,0 +1,25 @@
+/* Existing browser storage upgrade, verified through every PC and H5 solution. */
+const {chromium}=require('playwright'),assert=require('node:assert/strict'),{pathToFileURL}=require('node:url'),path=require('node:path');
+const root=path.resolve(__dirname,'..'),url=p=>pathToFileURL(path.join(root,p)).href,KEY='meiye.complaint.unified.v1';
+(async()=>{const browser=await chromium.launch({headless:true,executablePath:'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'});try{
+ const context=await browser.newContext({viewport:{width:1440,height:1000},reducedMotion:'reduce'}),errors=[];context.on('page',page=>page.on('pageerror',e=>errors.push(e.message)));
+ const page=await context.newPage();page.setDefaultTimeout(10000);await page.goto(url('index.html')+'#complaint-tickets',{waitUntil:'domcontentloaded'});const f=page.frameLocator('#page-complaint-tickets iframe');await f.locator('.tickets-table').waitFor();
+ const before=await f.locator('body').evaluate(()=>{
+  const s=ComplaintStore.load();delete s.solutionExamplesVersion;delete s.solutionDetailsBackup;
+  // All old records are already present: no reset and no new-catalog-only path.
+  for(const t of s.tickets){if(!t.proposal)continue;const p=t.proposal;for(const name of ['detailsVersion','refundOrderId','refundOrderNo','refundItems','refundStore','performanceId','performanceName','payout'])delete p[name];if(Engine.solutionIncludes.exchange(Engine.solutionKey(p))){p.exchangeItems=[];p.exchangeValue=0;}}
+  const t=Engine.clone(s.tickets.find(t=>t.id.endsWith('-P39')));t.id='KS20261007-OLD-ZERO';t.title='旧方案退款明细';t.proposal={type:'退款',refund:0,compensation:0,content:'222',account:'原支付渠道',version:1};s.tickets.push(t);s.actor='manager';s._revision++;
+  localStorage.setItem('meiye.complaint.unified.v1',JSON.stringify(s));return {revision:s._revision,phases:s.tickets.map(t=>[t.id,t.phase]),count:s.tickets.length};
+ });
+ await page.reload({waitUntil:'domcontentloaded'});await f.locator('.tickets-table').waitFor();const after=await f.locator('body').evaluate(()=>{const s=ComplaintStore.load();return {revision:s._revision,version:s.solutionExamplesVersion,phases:s.tickets.map(t=>[t.id,t.phase]),count:s.tickets.length,plans:s.tickets.filter(t=>t.proposal).map(t=>({id:t.id,refund:Engine.solutionIncludes.refund(Engine.solutionKey(t.proposal)),exchange:Engine.solutionIncludes.exchange(Engine.solutionKey(t.proposal)),amount:t.proposal.refund,refundCount:t.proposal.refundItems?.length||0,exchangeCount:t.proposal.exchangeItems?.length||0}))};});
+ assert.equal(after.revision,before.revision+1);assert.equal(after.version,1);assert.equal(after.count,before.count);assert.deepEqual(after.phases,before.phases);
+ const h5=await context.newPage();h5.setDefaultTimeout(10000);await h5.setViewportSize({width:390,height:844});
+ for(const plan of after.plans){
+  await f.locator('#filter-form [name=q]').fill(plan.id);await f.locator('#filter-form [type=submit]').click();await f.locator('[data-action=detail][data-id="'+plan.id+'"]').click();await f.locator('[data-action=detailTab][data-id=fund]').click();
+  await h5.goto(url('complaint-prototype/workflow/index.html')+'?view=h5#/mobile/'+plan.id,{waitUntil:'domcontentloaded'});await h5.locator('.plan-detail').waitFor();
+  for(const [scope,isMobile] of [[f,false],[h5,true]]){const detail=scope.locator('.plan-detail'),text=await detail.innerText();assert.doesNotMatch(text,/未记录|未关联订单|原记录|undefined|NaN/,plan.id);if(plan.refund){const section=detail.locator('.plan-read-section').filter({has:scope.getByRole('heading',{name:'订单退款',exact:true})});assert.equal(await section.locator(isMobile?'.plan-mobile-line':'tbody tr').count(),plan.refundCount,plan.id);assert(plan.refundCount>0&&plan.amount>0,plan.id);}if(plan.exchange){const section=detail.locator('.plan-read-section').filter({has:scope.getByRole('heading',{name:'置换商品',exact:true})});assert.equal(await section.locator(isMobile?'.plan-mobile-line':'tbody tr').count(),plan.exchangeCount,plan.id);assert(plan.exchangeCount>0,plan.id);}if(isMobile)assert.equal(await detail.locator('table').count(),0);}
+  if(['KS20261007-OLD-ZERO','KS20261007-P34'].includes(plan.id)){await h5.locator('.plan-detail').scrollIntoViewIfNeeded();await h5.screenshot({path:'/tmp/complaint-old-details-'+plan.id+'-h5.png'});await f.locator('.plan-detail').scrollIntoViewIfNeeded();await page.screenshot({path:'/tmp/complaint-old-details-'+plan.id+'-pc.png'});}
+  await f.getByRole('button',{name:'关闭详情',exact:true}).click();
+ }
+ await page.reload({waitUntil:'domcontentloaded'});await f.locator('.tickets-table').waitFor();assert.equal(await f.locator('body').evaluate(()=>ComplaintStore.load()._revision),after.revision);assert.deepEqual(errors,[]);console.log('PASS: upgraded existing storage, checked all '+after.plans.length+' PC and H5 solution details (including the old zero refund and empty exchange records); preserved workflow phases, no missing detail placeholders, reload is stable, no browser errors.');
+}finally{await browser.close()}})().catch(e=>{console.error(e);process.exitCode=1});

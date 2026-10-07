@@ -2,25 +2,26 @@
 (function(root){
 'use strict';
 function create(F,STAFF,Assignment){
+ const Templates=typeof module!=='undefined'&&module.exports?require('./approval-templates.js'):root.ApprovalTemplates;
  const copy=x=>JSON.parse(JSON.stringify(x)),assert=(v,m)=>{if(!v)throw Error(m);};
- const kinds={sales:'售后办理',store:'门店办理',payment:'付款办理',close:'售后结案',procurement:'采购办理'};
- const handlingTypes={store:'门店办理',sales:'售后办理',payment:'付款办理',store_close:'门店结案',close:'售后结案',procurement:'采购办理'};
+ const kinds={sales:'专员办理',store:'门店办理',payment:'付款办理',close:'售后结案',procurement:'采购办理'};
+ const handlingTypes={store:'门店办理',sales:'专员办理',manager:'经理办理',payment:'付款办理',store_close:'门店结案',close:'售后结案',procurement:'采购办理'};
  const methods={round_robin:'按顺序轮排'};
  const sourceTypes={hotline:'400客服 / 总经理热线',crm:'CRM系统',wechat:'微信小程序 / AI企微'};
  const sourceDescriptions={hotline:'两个坐席分别接听 400 和总经理热线，由 400 客服统一发起。',crm:'门店店长、市场部、销售部；归口门店 / 网咨发起，已沟通但未解决。',wechat:'客户点击链接自助提交，由客户发起。'};
  function useRotation(n){n.method='round_robin';n.allMembers=true;n.members=[];delete n.manualBy;return n;}
- const descriptions={procurement:'按已确认方案中的商品、数量和价值安排采购，记录采购结果及交付情况，完成后进入下一节点。',sales:'先填写跟进记录，再录入线下沟通确认的解决方案；提交后完成本节点。',store:'核实本门店的客户与订单情况，记录沟通及处理结果，提交后进入下一节点。',payment:'根据已确认的退款、赔偿事项登记付款结果和凭证；付款成功后完成本节点。',close:'由售后主负责人线下确认各部门及商品事项已处理完成，填写结果并手动结案。'};
+ const descriptions={procurement:'按审批通过的商品明细登记发货方式、发货数量、物流单号及备注，全部发货后进入下一节点。',sales:'先填写跟进记录，再录入线下沟通确认的解决方案；提交后完成本节点。',store:'核实本门店的客户与订单情况，记录沟通及处理结果，提交后进入下一节点。',payment:'根据已确认的退款、赔偿事项登记付款结果和凭证；付款成功后完成本节点。',close:'由售后主负责人线下确认各部门及商品事项已处理完成，填写结果并手动结案。'};
  function node(kind,s,scene){
   const c=Assignment.get(s),key=kind==='payment'?'execution':kind==='close'?'callback':'contact';let r=kind==='payment'?c.nodes.execution.payment:c.nodes[key];
   if(r?.source==='inherit')r=c.nodes.contact;
   const n={id:F.uid(),type:'handling',kind,title:kinds[kind],source:r?.source==='person'?'person':'position',positionId:r?.position||'aftercare',personId:r?.person||'',method:'round_robin',allMembers:true,members:[],fallbackId:r?.fallback||'manager',hours:scene?.config?.timing?.[kind==='payment'?'refundHours':kind==='close'?'visitHours':'processingHours']||24,actions:{transfer:true,store:true,suspend:true}};
   if(kind==='procurement')Object.assign(n,{source:'position',positionId:'procurement',personId:'',fallbackId:'procurement'});if(kind==='store'){n.source='store';n.positionId='';n.personId='';n.fallbackId='';}if(kind==='close')n.source='owner';if(kind==='payment')n.fallbackId='finance';if(kind==='sales'&&scene?.level===5){n.source='person';n.personId='manager';}return n;
  }
- function handlingType(n){return n.type==='end'?'store_close':n.kind;}
+ function handlingType(n){return n.type==='end'?'store_close':n.kind==='sales'&&n.entryRole==='manager'?'manager':n.kind;}
  function handlingNode(type,s,scene){
   assert(Object.hasOwn(handlingTypes,type),'请选择有效的办理类型');
   if(type==='store_close')return endNode();
-  if(type==='sales'){const manager=Number(scene?.level)===5;return {...node('sales',s,scene),entryRole:manager?'manager':'specialist',source:manager?'person':'position',positionId:'aftercare',personId:manager?'manager':'',fallbackId:manager?'manager':'aftercare',actions:{transfer:true,store:false,suspend:true}};}
+  if(type==='sales'||type==='manager'){const manager=type==='manager';return {...node('sales',s,scene),title:manager?'售后经理办理':'售后专员办理',entryRole:manager?'manager':'specialist',source:manager?'person':'position',positionId:manager?'':'aftercare',personId:manager?'manager':'',fallbackId:manager?'manager':'aftercare',actions:{transfer:true,store:false,suspend:true}};}
   return node(type,s,scene);
  }
  function fundedBranch(nodes){return {id:F.uid(),type:'branch',title:'按款项分流',branches:[{id:F.uid(),title:'退款或赔偿',judgeBy:'plan',planTypes:['refund','compensation','combined','refund_exchange','compensation_exchange'],match:'any',conditions:[{field:'refund',op:'gt',value:0},{field:'compensation',op:'gt',value:0}],nodes},{id:F.uid(),title:'默认条件',fallback:true,conditions:[],nodes:[]}]};}
@@ -72,7 +73,7 @@ function create(F,STAFF,Assignment){
    timing.firstContactHours=sales?.firstHours??timing.firstContactHours;config.contactTimingVersion=1;
   }
   delete timing.storeFirstContactHours;
-  for(const n of [...nodes,...Object.values(flow?.entryRouting||{})]){delete n.firstHours;if(n.kind==='store'){if(!['store','receptionist'].includes(n.source))n.source='store';n.positionId='';n.members=[];n.personId='';n.fallbackId='';}if(n.kind==='close')n.source='owner';}
+  for(const n of [...nodes,...Object.values(flow?.entryRouting||{})]){delete n.firstHours;if(n.kind==='store'){if(!['store','receptionist'].includes(n.source))n.source='store';n.positionId='';n.members=[];n.personId='';n.fallbackId='';}if(n.kind==='close')n.source='owner';if(n.kind==='sales'&&n.entryRole==='manager'){n.source='person';n.personId||='manager';n.positionId='';}}
   return d;
  }
  function prepareEntry(s,d){
@@ -81,7 +82,7 @@ function create(F,STAFF,Assignment){
   if(flow.schema===2){
    const sales=flow.nodes.find(n=>n.kind==='sales'),role=Number(d.level)===5?'manager':'specialist';
    if(sales&&sales.entryRole!==role){const defaults=node('sales',s,d);Object.assign(sales,{entryRole:role,title:role==='manager'?'售后经理办理':'售后专员办理',source:role==='manager'?'person':'position',personId:role==='manager'?'manager':'',positionId:defaults.positionId,fallbackId:role==='manager'?'manager':'aftercare'});sales.actions??={};sales.actions.store=false;}
-   return flow.nodes;
+   prepareSettings(d);return flow.nodes;
   }
   const legacy=flow.entryRouting,role=Number(d.level)===5?'manager':'specialist';
   let sales=copy(legacy?.[role]||flow.nodes[0]),store=copy(legacy?.store||node('store',s,d));
@@ -120,12 +121,14 @@ function create(F,STAFF,Assignment){
  function sourceLabel(n,positions){if(n.type!=='handling')return F.sourceLabel(n,positions);return n.source==='owner'?'工单售后主负责人':n.source==='store'?'工单所属门店负责人':n.source==='receptionist'?'客户的接待老师':n.source==='person'?'指定人员 · '+(STAFF.find(p=>p.id===n.personId)?.name||'未指定'): '指定岗位 · '+(positions.find(p=>p.id===n.positionId)?.name||'未指定');}
  function validNode(n,s){
   const ps=F.positions(s),person=id=>STAFF.find(p=>p.id===id);delete n.guard;
+  if(n.type==='approval'&&n.provider==='dingtalk')return Templates.validateNode(n,s);
   if(n.type==='end'){assert(n.outcome==='store-closed'&&n.title?.trim()&&n.title.length<=40,'请填写有效的门店结案节点名称');return n;}
   if(n.type!=='handling'){F.validNode(n);if(n.source==='position')assert(ps.some(p=>p.id===n.positionId&&p.members.length),'请选择有成员的岗位');return n;}
   useRotation(n);assert(kinds[n.kind],'请选择办理类型');assert(n.title?.trim()&&n.title.length<=40,'节点名称须为 1 至 40 字');
   assert(Number.isFinite(Number(n.hours))&&Number(n.hours)>=0.25&&Number(n.hours)<=720,'节点时限须在 0.25 至 720 小时之间');n.hours=Number(n.hours);
   assert(['position','person','store','receptionist','owner'].includes(n.source),'请选择办理人来源');
   if(n.source==='owner')assert(n.kind==='close','仅售后结案可沿用售后主负责人');if(['store','receptionist'].includes(n.source))assert(n.kind==='store','仅门店办理可使用门店负责人或客户接待老师');
+  if(handlingType(n)==='manager')assert(n.source==='person','经理办理须指定人员');
   if(n.source==='position'){const p=ps.find(x=>x.id===n.positionId);assert(p&&p.members.length,'请选择岗位人员中已配置的岗位');}
   if(n.source==='person')assert(person(n.personId),'请选择有效办理人');if(n.fallbackId)assert(person(n.fallbackId),'请选择有效兜底人员');
   if(n.kind==='sales'){n.actions??={};for(const key of ['transfer','store','suspend']){n.actions[key]??=false;assert(typeof n.actions[key]==='boolean','请选择有效的售后操作权限');}}

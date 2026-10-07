@@ -46,8 +46,8 @@ test('changing the rule grade updates the single sales role without losing node 
  const {s,d}=fixture();d.level=5;d.name='五级规则';byKind(d,'sales').hours=17;const storeBefore=E.clone(byKind(d,'store'));const next=C.Rules.saveScene(s,'manager',d,s.sceneRevision,Date.now()),saved=next.ruleScenes.find(r=>r.id===d.id);P.validate(saved,next);assert.equal(byKind(saved,'sales').entryRole,'manager');assert.equal(byKind(saved,'sales').personId,'manager');assert.equal(byKind(saved,'sales').hours,17);assert.deepEqual(byKind(saved,'store'),storeBefore);assert.equal(byKind(d,'sales').entryRole,'specialist');
 });
 test('handling type options cover every example node and create the matching handler configuration',()=>{
- const {s,d}=fixture();assert.deepEqual(Object.keys(P.handlingTypes),['store','sales','payment','store_close','close','procurement']);
+ const {s,d}=fixture();assert.deepEqual(Object.keys(P.handlingTypes),['store','sales','manager','payment','store_close','close','procurement']);
  for(const type of Object.keys(P.handlingTypes)){const n=P.handlingNode(type,s,d);assert.equal(P.handlingType(n,d),type);if(n.entryRole)P.validEntryNode(n,s);else P.validNode(n,s);if(type==='store_close')assert.equal(n.type,'end');else assert.equal(n.type,'handling');}
  for(const level of [1,2,3,4,5]){const {d:rule}=fixture(level);for(const n of P.all(P.list(rule)).filter(n=>['handling','end'].includes(n.type)))assert(Object.hasOwn(P.handlingTypes,P.handlingType(n,rule)));}
- assert.equal(P.handlingNode('store',s,d).source,'store');assert.equal(P.handlingNode('sales',s,{...d,level:5}).personId,'manager');assert.equal(P.handlingNode('close',s,d).source,'owner');assert.equal(P.handlingNode('procurement',s,d).positionId,'procurement');assert.throws(()=>P.handlingNode('unknown',s,d),/有效的办理类型/);
+ assert.equal(P.handlingNode('store',s,d).source,'store');assert.equal(P.handlingNode('manager',s,{...d,level:5}).personId,'manager');assert.equal(P.handlingNode('close',s,d).source,'owner');assert.equal(P.handlingNode('procurement',s,d).positionId,'procurement');assert.throws(()=>P.handlingNode('unknown',s,d),/有效的办理类型/);
 });

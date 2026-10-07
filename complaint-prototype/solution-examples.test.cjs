@@ -1,0 +1,27 @@
+'use strict';
+const {test}=require('node:test'),assert=require('node:assert/strict');
+const E=require('./workflow/engine'),C=require('./configuration'),Store=require('./shared-store');
+function fixture(){const s=C.initialize(E.seed());E.ensureIntakeExamples(s);E.prepareTickets(s);E.ensureWorkflowExamples(s);s._revision=20;return s;}
+function storage(state){const values=new Map([[Store.KEY,JSON.stringify(state)]]),api={getItem:key=>values.get(key)??null,setItem:(key,value)=>values.set(key,value)};// Isolate the financial-detail migration; external sample migration has its own suite.
+return Store.createStore(api,{...E,ensureExternalApprovalExamples:()=>false,ensureApprovalPresentation:()=>false},C);}
+const missingFields=['detailsVersion','refundOrderId','refundOrderNo','refundItems','refundStore','performanceId','performanceName','payout'];
+function assertDetails(s){for(const t of s.tickets){const p=t.proposal;if(!p)continue;const key=E.solutionKey(p);if(E.solutionIncludes.refund(key)){assert(p.refund>0,t.id);assert(p.refundItems.length,t.id);assert.equal(p.refundItems.reduce((sum,row)=>sum+row.amount,0),p.refund,t.id);assert(p.refundItems.every(row=>row.name&&row.quantity>0&&row.paid>=row.amount),t.id);assert(p.refundOrderId&&p.refundOrderNo&&p.refundStore&&(p.performanceId||p.performanceName),t.id);}if(E.solutionIncludes.exchange(key)){assert(p.exchangeItems.length,t.id);assert(p.exchangeItems.every(row=>row.name&&row.quantity>0&&row.unitPrice>0&&row.value===row.quantity*row.unitPrice),t.id);assert.equal(p.exchangeValue,p.exchangeItems.reduce((sum,row)=>sum+row.value,0),t.id);}if(E.solutionIncludes.refund(key)||E.solutionIncludes.compensation(key)){assert(p.payout.name&&p.payout.method,t.id);if(t.scenarioKey==='dingtalk-application-data'&&t.proposal.version===1){assert.equal(p.payout.account,'');assert.deepEqual(E.approvalRecovery(s,t).missing,['收款账号']);}else assert(p.payout.account,t.id);}}}
+test('fresh storage has complete details in every refund and exchange solution, including original seed tickets',()=>{const map=new Map(),store=Store.createStore({getItem:key=>map.get(key)??null,setItem:(key,value)=>map.set(key,value)},E,C),s=store.load();assertDetails(s);for(const suffix of ['005','006','007'])assert.equal(s.tickets.find(t=>t.id==='KS20260929-'+suffix).proposal.refundItems.length,2);assert.deepEqual(store.load(),s);});
+test('all saved legacy solution types are filled without changing workflow, positive amounts, payment evidence or order totals',()=>{
+ const original=fixture();for(const t of original.tickets){const p=t.proposal;if(!p)continue;for(const key of missingFields)delete p[key];if(E.solutionIncludes.exchange(E.solutionKey(p))){p.exchangeItems=[];p.exchangeValue=0;}}
+ const store=storage(original),s=store.load();assert.equal(s._revision,21);assertDetails(s);
+ for(const old of original.tickets){const t=s.tickets.find(row=>row.id===old.id);for(const key of ['state','phase','execution','approval','flow','owner','currentAssignee','deadline','taskDeadline','logs','payments','attachments','closure'])assert.deepEqual(t[key],old[key],old.id+' '+key);if(old.proposal){assert.equal(t.proposal.refund,old.proposal.refund);assert.equal(t.proposal.compensation,old.proposal.compensation);assert.equal(t.proposal.content,old.proposal.content);}}
+ for(const old of original.orders){const o=s.orders.find(row=>row.id===old.id);assert.equal(o.paid,old.paid);assert.equal(o.refunded,old.refunded);}
+ assert.deepEqual(store.load(),s);assert(s.solutionDetailsBackup.proposals['KS20260929-006']);
+});
+test('zero-refund custom ticket from the old form gets real item examples on reload, without advancing its current task',()=>{
+ const original=fixture(),t=E.clone(original.tickets.find(t=>t.id.endsWith('-P39')));t.id='KS20261007-CUSTOM';t.title='旧页面确认的退款';t.proposal={type:'退款',refund:0,compensation:0,content:'222',account:'原支付渠道',version:1};original.tickets.push(t);
+ const store=storage(original),s=store.load(),updated=s.tickets.find(row=>row.id===t.id);assertDetails(s);assert.equal(updated.proposal.refund,50000);assert.equal(updated.proposal.refundItems.length,2);assert.equal(updated.proposal.content,'222');assert.equal(updated.phase,t.phase);assert.deepEqual(updated.execution,t.execution);assert.deepEqual(s.solutionDetailsBackup.proposals[t.id],t.proposal);assert.deepEqual(store.load(),s);
+});
+test('saved complete solutions and tickets without a confirmed solution retain their existing data',()=>{
+ const original=fixture(),s=storage(original).load();for(const old of original.tickets.filter(t=>!t.proposal||t.proposal.detailsVersion===2)){assert.deepEqual(s.tickets.find(t=>t.id===old.id),old,old.id);}
+});
+test('missing order and empty product rows are populated, and an enriched legacy refund can still be paid',()=>{
+ const original=fixture(),t=original.tickets.find(t=>t.id.endsWith('-P34'));for(const key of missingFields)delete t.proposal[key];t.order='missing';t.proposal.exchangeItems=[];t.proposal.exchangeValue=0;
+ const s=storage(original).load(),updated=s.tickets.find(row=>row.id===t.id);assertDetails(s);const o=s.orders.find(o=>o.id===updated.proposal.refundOrderId);assert.equal(o.phone,t.phone);E.pay(s,updated,E.taskPeople(s,updated)[0],{result:'成功',amount:updated.proposal.refund,reference:'DETAIL-PAY',proof:[{name:'付款凭证'}]});assert.equal(updated.phase,'待采购办理');assert.equal(o.refunded,updated.proposal.refund);assert.equal(o.items.reduce((sum,item)=>sum+item.refunded,0),updated.proposal.refund);
+});

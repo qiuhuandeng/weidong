@@ -11,7 +11,8 @@ function createSolutionFlow(E,C,P){
   if(!t.execution)return old.taskPeople(s,t);
   if(t.pendingAssignment)return [t.pendingAssignment.dispatcher];
   if(t.phase==='已结案')return [];
-  const step=current(t);return step?.type==='approval'?t.approval.steps[t.approval.index].people.filter(id=>!t.approval.steps[t.approval.index].votes.includes(id)):[t.currentAssignee].filter(Boolean);
+  const step=current(t);if(step?.provider==='dingtalk')return [];
+  return step?.type==='approval'?t.approval.steps[t.approval.index].people.filter(id=>!t.approval.steps[t.approval.index].votes.includes(id)):[t.currentAssignee].filter(Boolean);
  }
  function canView(s,t,a){return old.canView(s,t,a)||!!t.execution&&taskPeople(s,t).includes(a);}
  function canHandle(s,t,a){return t.execution?!t.pendingAssignment&&t.phase!=='已结案'&&current(t)?.type==='handling'&&taskPeople(s,t).includes(a)&&C.active(s,a):old.canHandle(s,t,a);}
@@ -33,7 +34,7 @@ function createSolutionFlow(E,C,P){
   return {...detail,typeKey,type:types[typeKey],refund,compensation,exchangeItems,exchangeValue,content:data.content.trim(),account:refund+compensation>0?data.account.trim():'',status:'已确认'};
  }
  function flowSnapshot(s,t){
-  if(t.flow?.config){const scene=P.prepare(s.configuration,{id:t.flow.id,name:t.flow.name,level:t.level,config:t.flow.config});P.validate(scene,s.configuration);return {...copy(t.flow),config:scene.config};}
+  if(t.flow?.config){const scene=P.prepare(s.configuration,{id:t.flow.id,name:t.flow.name,level:t.level,config:t.flow.config});if(s.externalApprovalVersion)scene.config.ticketFlow.nodes=E.prepareExternalNodes(scene.config.ticketFlow.nodes);P.validate(scene,s.configuration);return {...copy(t.flow),config:scene.config};}
   const scene=P.prepare(s.configuration,C.scene(s,t.level));P.validate(scene,s.configuration);const holder={...copy(t)};C.bind(s,holder);holder.flow.config=scene.config;return holder.flow;
  }
  function pathFor(flow,proposal,level){
@@ -63,6 +64,7 @@ function createSolutionFlow(E,C,P){
     const people=[...new Set(F.resolveSource(F.organization(s.configuration),step,context(s,t)).flat())];t.participants=[...new Set([...t.participants,...people])];step.people=people;step.done=true;step.completedAt=now;E.log(t,'系统',step.title,'抄送：'+people.map(id=>E.user(id)?.name||id).join('、'));t.execution.index++;return enter(s,t);
    }
    if(step.type==='approval'){
+    if(step.provider==='dingtalk'){archiveApproval(t);E.enterExternalApproval(s,t,step);return;}
     const groups=F.resolveApprovers(t.flow.config,F.organization(s.configuration),step,context(s,t));
     const tasks=groups.flatMap(group=>step.mode==='sequential'?group.map(id=>[id]):[group]).map((people,i)=>({id:step.id+'-'+i,nodeId:step.id,name:step.title,type:'approval',people,mode:step.mode==='sequential'?'all':step.mode,votes:[],done:false,hours:step.handling?.hours||24}));
     assert(tasks.length&&tasks.every(task=>task.people.length),'部门审批未匹配到有效人员，请维护人员配置');archiveApproval(t);
@@ -92,6 +94,7 @@ function createSolutionFlow(E,C,P){
   t.execution.index=0;const sales=current(t);sales.done=false;t.phase='处理中';t.currentAssignee=t.owner;t.activeNode=sales.id;t.taskDeadline=Date.now()+sales.hours*E.H;delete t.pendingAssignment;E.log(t,a,'退回售后办理',from.title+'；'+reason.trim());
  }
  function approve(s,t,a,pass,note=''){
+  assert(!s.approvalPresentationVersion&&current(t)?.provider!=='dingtalk','请在钉钉中处理审批，工单内不能代为同意或拒绝');
   if(!t.execution)return old.approve(s,t,a,pass,note);
   assert(t.phase==='待部门审批'&&current(t)?.type==='approval'&&taskPeople(s,t).includes(a)&&C.active(s,a),'不是当前待审批人员');assert(t.approval.proposalVersion===t.proposal.version,'方案版本已更新');
   if(!pass){returnToSales(s,t,a,note);return;}
@@ -112,10 +115,21 @@ function createSolutionFlow(E,C,P){
   t.payments.push({id:E.id(),version:t.proposal.version,nodeId:current(t).id,at:Date.now(),actor:E.user(a).name,result:data.result,amount:data.result==='成功'?amount:0,reference:data.reference?.trim()||'',reason:data.reason||'',proof:copy(data.proof||[])});E.log(t,a,'付款'+data.result,data.result==='成功'?'流水号：'+data.reference:data.reason);if(data.result==='成功')advance(s,t,a,'付款完成');
  }
  function finishStore(s,t,a,data){requireTask(s,t,a,'store');assert(data.note?.trim(),'请填写门店处理结果');t.handlingRecords??=[];t.handlingRecords.push({nodeId:current(t).id,kind:'store',by:a,at:Date.now(),note:data.note.trim(),files:copy(data.files||[])});advance(s,t,a,data.note.trim());}
+ const shipmentMethods=['总部发货','门店发货','其他'];
+ function procurementItems(t){
+  const records=(t.handlingRecords||[]).filter(r=>r.action==='shipment'&&r.nodeId===current(t)?.id&&r.version===t.proposal?.version&&(r.proposalRevision||1)===(t.proposal?.revision||1));
+  return (t.proposal?.exchangeItems||[]).map((item,lineIndex)=>{const shipped=records.reduce((sum,r)=>sum+(r.items||[]).filter(x=>x.lineIndex===lineIndex).reduce((n,x)=>n+x.quantity,0),0);return {...copy(item),lineIndex,shipped,remaining:Math.max(0,item.quantity-shipped)};});
+ }
  function finishProcurement(s,t,a,data){
-  requireTask(s,t,a,'procurement');assert(data.note?.trim(),'请填写采购办理结果');assert(data.completed===true||data.completed==='yes','请确认本节点的采购事项已完成');
-  const reference=String(data.reference||'').trim();t.handlingRecords??=[];t.handlingRecords.push({id:E.id(),nodeId:current(t).id,kind:'procurement',version:t.proposal.version,at:Date.now(),actor:a,note:data.note.trim(),reference,items:copy(t.proposal.exchangeItems||[]),files:copy(data.files||[])});
-  if(data.files)t.attachments.push(...copy(data.files));advance(s,t,a,data.note.trim()+(reference?'；单据号：'+reference:''));
+  requireTask(s,t,a,'procurement');assert(shipmentMethods.includes(data.method),'请选择发货方式');
+  const lines=procurementItems(t),selected=data.items,seen=new Set();assert(Array.isArray(selected)&&selected.length>0&&selected.length<=lines.length,'请填写本次发货的商品及数量');
+  const items=selected.map(row=>{const line=lines.find(x=>x.lineIndex===row.lineIndex);assert(line&&!seen.has(row.lineIndex),'发货商品须来自已确认方案，且不能重复');seen.add(row.lineIndex);const quantity=Number(row.quantity);assert(Number.isSafeInteger(quantity)&&quantity>0&&quantity<=line.remaining,'本次发货数量须为正整数，且不能超过商品待发数量');const {shipped,remaining,...item}=line;return {...item,quantity,value:line.unitPrice*quantity};});
+  const trackingNumber=String(data.trackingNumber||'').trim(),note=String(data.note||'').trim();assert(trackingNumber.length<=100,'物流单号最多 100 字');assert(note.length<=1000,'备注最多 1000 字');
+  const record={id:E.id(),nodeId:current(t).id,kind:'procurement',action:'shipment',version:t.proposal.version,proposalRevision:t.proposal.revision||1,at:Date.now(),actor:a,method:data.method,trackingNumber,note,items};
+  t.handlingRecords??=[];t.handlingRecords.push(record);
+  E.log(t,a,'采购发货',data.method+'；'+items.map(x=>x.name+' × '+x.quantity).join('、')+(trackingNumber?'；物流单号：'+trackingNumber:'')+(note?'；备注：'+note:''));
+  if(procurementItems(t).every(x=>x.remaining===0))advance(s,t,a,'商品已全部发货');
+  return record;
  }
  function closeTicket(s,t,a,data){
   requireTask(s,t,a,'close');assert(data.note?.trim(),'请填写结案说明');assert(data.completed===true||data.completed==='yes','请确认相关部门及方案事项已处理完成');
@@ -125,7 +139,7 @@ function createSolutionFlow(E,C,P){
  function retryFlowNode(s,t,a){assert(t.pendingAssignment?.mode==='flow-node','当前节点无需重试');assert(C.STAFF.some(p=>p.id===a&&p.role==='售后主管')&&C.active(s,a),'请由售后经理重新匹配办理人');enter(s,t);}
  function follow(s,t,a,data){if(!t.execution)return old.follow(s,t,a,data);assert(t.phase!=='已结案'&&(taskPeople(s,t).includes(a)||t.owner===a)&&C.active(s,a),'当前人员不可添加跟进');assert(data.content?.trim(),'请填写沟通内容');E.log(t,a,'添加跟进',data.content.trim());t.nextFollow=data.next||'';if(data.files)t.attachments.push(...data.files);}
  function rejectLegacyAction(name,s,t,...args){assert(!t.execution,'请使用当前流程节点的办理操作');return old[name](s,t,...args);}
- return {SOLUTION_TYPES:types,solutionKey:keyOf,solutionIncludes:{refund:includesRefund,compensation:includesCompensation,exchange:includesExchange},currentFlowNode:current,validateSolution,confirmSolution,finishStore,finishProcurement,closeTicket,retryFlowNode,taskPeople,canView,canHandle,isPending,follow,approve,pay,
+ return {enterFlowNode:enter,advanceFlowNode:advance,returnFlowToSales:returnToSales,SOLUTION_TYPES:types,SHIPMENT_METHODS:shipmentMethods,procurementItems,solutionKey:keyOf,solutionIncludes:{refund:includesRefund,compensation:includesCompensation,exchange:includesExchange},currentFlowNode:current,validateSolution,confirmSolution,finishStore,finishProcurement,closeTicket,retryFlowNode,taskPeople,canView,canHandle,isPending,follow,approve,pay,
   needsRiskReview:t=>t.execution?false:old.needsRiskReview(t),
   startApproval:(s,t,a,p)=>t.execution?confirmSolution(s,t,a,p):old.startApproval(s,t,a,p),
   completeNormal:(s,t,a,note)=>t.execution?confirmSolution(s,t,a,{type:'无退赔',content:note}):old.completeNormal(s,t,a,note),

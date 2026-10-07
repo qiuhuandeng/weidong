@@ -221,3 +221,5 @@ body.embedded{background:transparent}
 /* Timing settings live inside the assignment-rule tabs. */
 .na-timing-panel .timing-editor-meta{padding-top:0}
 .na-timing-panel .form-actions{margin-top:0;border-top:1px solid var(--line)}
+
+.rule-basic-drawer .required{color:var(--red)}

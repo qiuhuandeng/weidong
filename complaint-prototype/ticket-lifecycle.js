@@ -3,7 +3,7 @@
 'use strict';
 function createTicketLifecycle(E,C,P){
  const copy=E.clone,assert=(value,message)=>{if(!value)throw Error(message);},old={...E};
- const states=['待处理','处理中','审批中','待结案','已挂起','已结案'];
+ const states=['待处理','处理中','审批中','付款办理','采购办理','待结案','已挂起','已结案'];
  const legacyPhases=['待方案审批','待打款','待回访'];
  const aftercare=id=>C.STAFF.some(p=>p.id===id&&['售后专员','售后主管'].includes(p.role));
  function status(t){
@@ -11,13 +11,20 @@ function createTicketLifecycle(E,C,P){
   if(t.mergedInto||['已结案','已合并'].includes(phase))return '已结案';
   if(t.suspension||phase==='已挂起')return '已挂起';
   if(t.storeIntake&&!t.storeIntake.completedAt)return t.storeIntake.contactedAt||t.logs?.some(row=>row.title==='联系尝试')?'处理中':'待处理';
-  // Temporary assistance remains part of aftercare; formal store/payment nodes are downstream.
+  // Retain unfinished historical assistance within customer handling.
   if(t.storeAssistance||phase==='待门店协同')return '处理中';
   const node=E.currentFlowNode(t);
-  if(node?.kind==='close'||['待结案','待回访'].includes(phase))return '待结案';
-  if(node?.type==='approval'||['store','payment','procurement'].includes(node?.kind)||['待部门审批','待门店办理','待采购办理','待付款','待方案审批','待打款'].includes(phase))return '审批中';
+  // The active node determines the stage even when assignment is still pending.
+  if(node?.type==='approval')return '审批中';
+  const handlingState=({payment:'付款办理',procurement:'采购办理',close:'待结案',store_close:'待结案',store:'处理中',sales:'处理中',manager:'处理中'})[node?.kind];
+  if(handlingState)return handlingState;
+  if(['待结案','待回访'].includes(phase))return '待结案';
+  if(['待部门审批','待方案审批'].includes(phase))return '审批中';
+  if(['待付款','待打款','付款办理'].includes(phase))return '付款办理';
+  if(['待采购办理','采购办理'].includes(phase))return '采购办理';
+  if(phase==='待门店办理')return '处理中';
   // An unanswered follow-up starts handling without fabricating an effective first contact.
-  if(node?.kind==='sales'||t.firstContact||phase==='处理中'||t.storeAssistanceHistory?.length||t.logs?.some(row=>['首次联系','有效联系 / 跟进','联系尝试','添加跟进'].includes(row.title)))return '处理中';
+  if(t.firstContact||phase==='处理中'||t.storeAssistanceHistory?.length||t.logs?.some(row=>['首次联系','有效联系 / 跟进','联系尝试','添加跟进'].includes(row.title)))return '处理中';
   return '待处理';
  }
  function sync(s){for(const t of s.tickets||[]){t.phase??=t.state;t.state=status(t);}return s;}
@@ -30,16 +37,19 @@ function createTicketLifecycle(E,C,P){
   if(t.phase==='待定级')return 'grading';
   if(t.pendingAssignment||t.phase==='待分派')return 'assignment';
   const n=E.currentFlowNode(t);if(n)return n.type==='approval'?'approval':n.kind;
-  return ({'待方案审批':'approval','待部门审批':'approval','待打款':'payment','待付款':'payment','待回访':'close','待结案':'close','待门店办理':'store'})[t.phase]||'sales';
+  return ({'待方案审批':'approval','待部门审批':'approval','待打款':'payment','待付款':'payment','付款办理':'payment','待采购办理':'procurement','采购办理':'procurement','待回访':'close','待结案':'close','待门店办理':'store'})[t.phase]||'sales';
  }
  function stage(t){
   const key=stageKey(t);
   if(key==='assignment')return t.pendingAssignment?.mode==='configuration'?'规则匹配':t.pendingAssignment?.mode==='flow-node'?(E.currentFlowNode(t)?.title||'当前节点')+' · 人员待匹配':'售后派单';
   if(key==='ended')return t.mergedInto?'已并入主工单':'流程结束';
-  if(key==='sales')return '售后办理';
+  if(key==='sales')return t.approvalAmendment?'售后办理 · 采购调整':'售后办理';
+  if(E.currentFlowNode(t)?.provider==='dingtalk')return E.currentFlowNode(t).title+(['发起失败','状态待确认'].includes(t.approval?.status)?' · '+t.approval.status:'');
   return ({grading:'定级确认',assistance:'门店协同',exception:'流程待处理'})[key]||E.currentFlowNode(t)?.title||({approval:'部门审批',store:'门店办理',procurement:'采购办理',payment:'付款办理',close:'售后结案'})[key];
  }
  function task(t){
+  if(t.approvalAmendment)return '调整采购商品并重新发起审批';
+  if(E.currentFlowNode(t)?.provider==='dingtalk')return t.approval?.status==='发起失败'?'恢复审批发起':t.approval?.status==='状态待确认'?'同步审批状态':'等待钉钉审批结果';
   if(t.suspension)return '恢复办理';
   if(t.workflowIssue)return '核对流程并重新匹配';
   if(t.pendingAssignment?.mode==='schedule')return '待派单';
@@ -47,7 +57,7 @@ function createTicketLifecycle(E,C,P){
   if(t.pendingAssignment?.mode==='configuration')return '重新匹配规则';
   if(t.pendingAssignment?.mode==='flow-node')return '重新匹配办理人';
   if(t.phase==='待首联')return '首次联系客户';
-  const key=stageKey(t);return ({grading:'确认客诉等级',assignment:'分派工单',sales:'跟进并确认方案',assistance:'反馈协同结果',approval:'处理审批意见',store:'填写门店处理结果',procurement:'填写采购办理结果',payment:'登记付款结果',close:'确认结案',ended:'办理已结束'})[key]||stage(t);
+  const key=stageKey(t);return ({grading:'确认客诉等级',assignment:'分派工单',sales:'跟进并确认方案',assistance:'反馈协同结果',approval:'处理审批意见',store:'填写门店处理结果',procurement:'采购发货',payment:'登记付款结果',close:'确认结案',ended:'办理已结束'})[key]||stage(t);
  }
  function findOwner(s,t,sales){
   if(aftercare(t.owner))return t.owner;

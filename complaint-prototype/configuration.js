@@ -27,8 +27,11 @@ const STORES=['南京浦口店','上海徐汇店'];
 const makeRules=typeof module!=='undefined'&&module.exports?require('./rules.js'):root.createCaseRules;
 const makeAssignment=typeof module!=='undefined'&&module.exports?require('./node-assignment.js'):root.createNodeAssignment;
 const baseRules=makeRules(STAFF,STORES,HOUR),Rules={...baseRules};
+const Grading=typeof module!=='undefined'&&module.exports?require('./ai-grading.js'):root.AIGrading;
+Rules.newScene=function(s){const d=baseRules.newScene(s);if(s.ruleSetupVersion)d.grading={criteria:'',keywords:'',exclusions:''};return d;};
 Rules.saveScene=function(s,actor,draft,revision,now){
  const create=typeof module!=='undefined'&&module.exports?require('./ticket-flow-config.js'):root.createTicketFlowConfig,P=create(baseRules.Flow,STAFF,Assignment);draft=P.prepareSettings(copy(draft));
+ if(s.ruleSetupVersion){draft.grading??={};for(const key of ['criteria','keywords','exclusions'])draft.grading[key]=String(draft.grading[key]||'').trim();assert(draft.grading.criteria&&draft.grading.criteria.length<=1000,'请填写定级条件，最多 1000 字');assert(draft.grading.keywords.length<=500&&draft.grading.exclusions.length<=500,'识别关键词及排除条件各最多 500 字');}
  if(draft.config?.ticketFlow?.schema===2){draft=P.prepare(s,draft);P.prepareEntry(s,draft);P.validate(draft,s);}
  const next=baseRules.saveScene(s,actor,draft,revision,now);
  // Intake selects a grade, so a new ambiguous grade cannot be activated silently.
@@ -39,6 +42,25 @@ Rules.toggleScene=function(s,actor,id,revision,now){const d=Rules.sceneList(s).f
 const facade={STAFF,STORES,HOUR,Rules,person:(_,id)=>STAFF.find(p=>p.id===id)};
 const Assignment=makeAssignment(facade);
 const Schedule=(typeof module!=='undefined'&&module.exports?require('./aftercare-schedule.js'):root.createAftercareSchedule)({STAFF,Assignment,Rules});
+function ensureRuleSetup(state){
+ const c=state.configuration;if(c.ruleSetupVersion>=1)return false;
+ const grading=Grading.get(c),create=typeof module!=='undefined'&&module.exports?require('./ticket-flow-config.js'):root.createTicketFlowConfig,P=create(baseRules.Flow,STAFF,Assignment);
+ c.ruleSetupBackup={at:Date.now(),ruleScenes:copy(c.ruleScenes),aiGrading:copy(grading)};
+ const scenes=copy(c.ruleScenes);
+ if(!scenes.some(r=>Number(r.level)===5)){
+  const scene=copy(scenes.find(r=>r.level===4)||scenes[0]);scene.id=scenes.some(r=>r.id==='scene-level-5')?'scene-five-'+Date.now().toString(36):'scene-level-5';scene.name='五级客诉';scene.level=5;scene.enabled=true;scene.description='';scene.version=0;delete scene.grading;
+  scene.config.timing.firstContactHours=0.5;scene.config.timing.targetHours=24;scenes.push(scene);
+ }
+ c.ruleScenes=scenes.map(scene=>{
+  const row=grading.levels.find(r=>r.level===Number(scene.level))||Grading.get({}).levels.find(r=>r.level===Number(scene.level));
+  scene.grading??={criteria:row.criteria,keywords:row.keywords,exclusions:row.exclusions};
+  const d=P.prepare(c,Rules.prepareScene(scene));P.prepareEntry(c,d);
+  const sales=d.config.ticketFlow.nodes.find(n=>n.kind==='sales');
+  if(sales&&['售后办理','专员办理'].includes(sales.title))sales.title=sales.entryRole==='manager'?'售后经理办理':'售后专员办理';
+  d.version=(d.version||0)+1;d.updatedAt=Date.now();d.updatedBy='manager';return d;
+ });
+ c.ruleSetupVersion=1;c.sceneRevision=(c.sceneRevision||0)+1;c.revision=(c.revision||0)+1;return true;
+}
 function upgrade(state){
  const c=state.configuration;if(!c||c.procurementConfigVersion>=1)return false;
  const assignment=Assignment.get(c);if(!assignment.positions.some(p=>p.id==='procurement'))assignment.positions.push({id:'procurement',name:'商品采购岗',members:['procurement']});c.nodeAssignmentRules=assignment;
@@ -88,7 +110,7 @@ function allocate(state,ticket,key,now=Date.now()){
  if((scheduled||ticket.flow.wholeFlowConfigured)&&sales?.kind==='sales'&&key==='contact')rule={source:sales.source,position:sales.positionId,person:sales.personId,fallback:sales.fallbackId,method:'round_robin',allMembers:true,members:[]};
  if(key==='proposal'&&ticket.flow.wholeFlowConfigured){assert(active(state,ticket.owner),'售后办理人已失效，请维护人员配置');return {person:ticket.owner,reason:'继续由售后办理人跟进'};}
  if(scheduled)rule={...rule,method:'round_robin',allMembers:true,members:[]};
- if(key==='contact'&&ticket.level>=5){const person=sales?.source==='person'&&STAFF.find(p=>p.id===sales.personId)?.role==='售后主管'?sales.personId:'manager';assert(active(state,person),'售后经理不可用，请维护人员配置');return {person,reason:'紧急工单直达售后经理'};}
+ if(key==='contact'&&ticket.level>=5){const primary=sales?.source==='person'?sales.personId:'manager',eligible=id=>STAFF.find(p=>p.id===id)?.role==='售后主管'&&active(state,id),person=eligible(primary)?primary:eligible(sales?.fallbackId)?sales.fallbackId:null;assert(person,'售后经理不可用，请维护人员配置');return {person,reason:person===primary?'紧急工单直达售后经理':'由经理办理承接人处理'};}
  assert(rule,'节点未配置指派规则');
  const eligible=id=>{const p=STAFF.find(x=>x.id===id);return p&&active(state,id)&&(p.store==='*'||p.store===ticket.store)&&(key!=='payment'||p.role==='财务审核');};
  if(rule.source==='inherit'){
@@ -143,6 +165,6 @@ function approvals(state,ticket,actor,proposal){
  const plan=Rules.Flow.plan(r,state.configuration,{store:ticket.store,level:ticket.level,applicantId:actor,receptionistId:order?.receptionistId,now:Date.now()},{type:types[proposal.type],refund:proposal.refund/100,compensation:proposal.compensation/100});
  return {...plan,steps:plan.steps.map((n,i)=>({id:n.nodeId+'-'+i,nodeId:n.nodeId,name:n.title,type:n.type,people:n.members,mode:n.mode,hours:n.sourceNode.handling?.hours||r.timing.approvalHours,votes:[],done:false}))};
 }
-const API={...facade,Assignment,Schedule,initialize,upgrade,scene,bind,active,allocate,activate,assignPending,approvals};
+const API={...facade,Assignment,Schedule,initialize,upgrade,ensureRuleSetup,scene,bind,active,allocate,activate,assignPending,approvals};
 if(typeof module!=='undefined'&&module.exports)module.exports=API;else {root.ComplaintConfiguration=API;root.CaseEngine=facade;root.NodeAssignment=Assignment;root.AftercareSchedule=Schedule;}
 })(typeof window!=='undefined'?window:globalThis);

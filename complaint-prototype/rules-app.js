@@ -16,22 +16,21 @@ function toast(message){$('#toast').textContent=message;$('#toast').classList.ad
 function closeModal(){activeForm=null;$('#modal-root').innerHTML='';document.body.style.overflow='';dirty=false;lastFocus?.focus();}
 function render(){
  document.body.classList.toggle('embedded',embedded);const a=E.person(state,actorId);
- $('#application').innerHTML=`<div class="pc-shell"><aside class="side"><div class="brand"><span class="brand-mark">✦</span><div><strong>美业AI平台</strong><small>SERVICE OPERATIONS</small></div></div><div class="side-label">客诉管理</div><button class="nav" data-go="tickets">${ico('ticket')}客诉工单</button><button class="nav" data-go="schedule">${ico('ticket')}售后排班</button><button class="nav active" data-go="rules">${ico('shield')}规则配置</button><div class="side-foot">受理、跟进与回访<br>在一张工单中协作</div></aside><main class="main"><header class="pc-header"><span>客诉管理 / 规则配置</span><div class="row"><span>${esc(a?.name||'未授权')} · ${esc(a?.role||'')}</span><span class="avatar">${esc(a?.name?.[0]||'')}</span></div></header><div class="page-body">${rulesPage()}</div></main></div>`;
+ $('#application').innerHTML=`<div class="pc-shell"><aside class="side"><div class="brand"><span class="brand-mark">✦</span><div><strong>美业AI平台</strong><small>SERVICE OPERATIONS</small></div></div><div class="side-label">客诉管理</div><button class="nav" data-go="tickets">${ico('ticket')}客诉工单</button><button class="nav active" data-go="rules">${ico('shield')}规则配置</button><button class="nav" data-go="schedule">${ico('ticket')}售后排班</button><a class="nav" href="approvals.html">${ico('shield')}审批管理</a><div class="side-foot">受理、跟进与回访<br>在一张工单中协作</div></aside><main class="main"><header class="pc-header"><span>客诉管理 / 规则配置</span><div class="row"><span>${esc(a?.name||'未授权')} · ${esc(a?.role||'')}</span><span class="avatar">${esc(a?.name?.[0]||'')}</span></div></header><div class="page-body">${rulesPage()}</div></main></div>`;
  window.ApprovalFlowUI.mount();
 }
   function rulesPage() {
     if(view!=='pc'||!A.canConfigure(actorId))return empty('暂无配置权限','规则配置仅由授权管理员在PC端维护。');
     if(rulesDraft)return window.RuleSettingsView.editor(state,rulesDraft,rulesTab);
-    const pageHeader=heading('规则配置','维护审批场景、AI 定级、岗位人员及工单办理流程。',rulesListTab==='scenes'?'<button class="btn primary" data-scene-action="new">＋ 新建规则</button>':'');
-    const tabs=`<section class="panel rules-query-panel"><nav class="tabs na-tabs" role="tablist" aria-label="规则配置">${[['scenes','审批场景'],['ai-grading','AI 定级'],['positions','岗位人员']].map(([id,label])=>`<button type="button" role="tab" aria-selected="${rulesListTab===id}" class="${rulesListTab===id?'active':''}" data-scene-action="list-tab" data-id="${id}">${label}</button>`).join('')}</nav></section>`;
+    const pageHeader=heading('规则配置','维护审批场景、定级条件、岗位人员及工单办理流程。',rulesListTab==='scenes'?'<button class="btn primary" data-scene-action="new">＋ 新建规则</button>':'');
+    const tabs=`<section class="panel rules-query-panel"><nav class="tabs na-tabs" role="tablist" aria-label="规则配置">${[['scenes','审批场景'],['positions','岗位人员']].map(([id,label])=>`<button type="button" role="tab" aria-selected="${rulesListTab===id}" class="${rulesListTab===id?'active':''}" data-scene-action="list-tab" data-id="${id}">${label}</button>`).join('')}</nav></section>`;
     if(rulesListTab==='positions')return pageHeader+tabs+window.NodeAssignmentView.renderPositions(state,{actorId,toast,refresh:()=>{state=load();render();}});
-    if(rulesListTab==='ai-grading')return pageHeader+tabs+window.AIGradingView.render(state,{actorId,toast,refresh:()=>{state=load();render();}});
     return pageHeader+tabs+`<section class="panel rules-query-panel">${window.RuleSettingsView.filterBar(sceneFilters)}</section>`+window.RuleSettingsView.list(state,sceneFilters);
   }
   function captureRules(){if(rulesDraft)rulesDraft=window.RuleSettingsView.read($('#rules-form'),rulesDraft);}
   async function sceneAction(action,b){
     if(!A.canConfigure(actorId))return;
-    if(action==='list-tab'){location.hash='rules/'+(['ai-grading','positions'].includes(b.dataset.id)?b.dataset.id:'scenes');return;}
+    if(action==='list-tab'){location.hash='rules/'+(b.dataset.id==='positions'?'positions':'scenes');return;}
     if(action==='reset-filter'){sceneFilters.keyword='';sceneFilters.status='';render();return;}
     if(action==='new'||action==='edit-basic'){
       state=load();const scene=action==='new'?E.Rules.prepareScene(E.Rules.newScene(state)):E.Rules.sceneList(state).find(x=>x.id===b.dataset.id);
@@ -71,8 +70,8 @@ function render(){
 function parseRoute(){
  if(params.get('view')==='customer'){$('#application').innerHTML='<main class="page-body">'+empty('客户入口已停用','请联系工单负责人反馈处理意见。')+'</main>';return;}
  const parts=location.hash.slice(1).split('/');rulesDraft=null;rulesListTab='scenes';window.NodeAssignmentView.reset();
- if(!window.AIGradingView.isDirty())window.AIGradingView.reset();
- if(parts[0]==='rules'&&(['ai-grading','positions'].includes(parts[1])||(parts[2]==='assignment'&&parts[3]==='positions'))){rulesListTab=parts[1]==='ai-grading'?'ai-grading':'positions';if(parts[3]==='positions')history.replaceState(null,'','#rules/positions');render();window.scrollTo(0,0);return;}
+ if(parts[0]==='rules'&&parts[1]==='ai-grading'){history.replaceState(null,'','#rules/scenes');render();return;}
+ if(parts[0]==='rules'&&(parts[1]==='positions'||(parts[2]==='assignment'&&parts[3]==='positions'))){rulesListTab='positions';if(parts[3]==='positions')history.replaceState(null,'','#rules/positions');render();window.scrollTo(0,0);return;}
  if(parts[0]&&parts[0]!=='rules'){
   const q=new URLSearchParams(location.search);q.delete('page');q.delete('embed');const old=parts[0]==='detail'&&state.cases.some(c=>c.id===parts[1]);
   const mobile=['staff','approval'].includes(params.get('view'));q.set('view',mobile?'h5':'pc');
@@ -96,8 +95,7 @@ for(const type of ['input','change'])document.addEventListener(type,event=>{if(e
 document.addEventListener('submit',event=>{const f=event.target;if(!['rules-form','scene-basic-form','scene-filters'].includes(f.id))return;event.preventDefault();if(f.id==='rules-form')submitRules(f);if(f.id==='scene-basic-form')submitSceneBasic(f);if(f.id==='scene-filters'){sceneFilters.keyword=f.elements.keyword.value.trim();sceneFilters.status=f.elements.status.value;render();}});
 document.addEventListener('keydown',event=>{if(!activeForm)return;if(event.key==='Escape')closeModal();if(event.key==='Tab'){const elements=[...document.querySelectorAll('#modal-root button:not(:disabled), #modal-root input:not(:disabled), #modal-root select:not(:disabled), #modal-root textarea:not(:disabled)')].filter(el=>el.offsetParent!==null);const first=elements[0],last=elements.at(-1);if(event.shiftKey&&document.activeElement===first){event.preventDefault();last?.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first?.focus();}}});
 window.addEventListener('hashchange',()=>{state=load();parseRoute();});
-window.addEventListener('storage',event=>{if(event.key!==KEY)return;state=load();if(dirty||activeForm||rulesDraft||window.AIGradingView.isDirty()||window.NodeAssignmentView.isEditing())toast('其他页面已更新数据，保存时将校验最新版本');else {window.AIGradingView.reset();render();}});
-window.addEventListener('beforeunload',event=>{if(window.AIGradingView.isDirty()){event.preventDefault();event.returnValue='';}});
+window.addEventListener('storage',event=>{if(event.key!==KEY)return;state=load();if(dirty||activeForm||rulesDraft||window.NodeAssignmentView.isEditing())toast('其他页面已更新数据，保存时将校验最新版本');else {render();}});
 try{state=load();if(!location.hash&&params.get('page')!=='rules')history.replaceState(null,'','#tickets');parseRoute();}
 catch(e){$('#application').innerHTML=`<main class="page-body"><div class="callout error">${esc(e.message)}</div></main>`;console.error(e);}
 })();

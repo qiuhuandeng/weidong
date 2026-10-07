@@ -3,7 +3,7 @@
 'use strict';
 const H=3600000, USERS=[{id:'chen',name:'陈悦',role:'agent',title:'售后专员'},{id:'zhou',name:'周宁',role:'agent',title:'售后专员'},{id:'jiang',name:'蒋琴',role:'lead',title:'售后负责人'},{id:'gu',name:'顾岚',role:'lead',title:'区域审批负责人'},{id:'li',name:'李晓',role:'store',title:'杭州湖滨店店长',store:'杭州湖滨店'},{id:'zhang',name:'张敏',role:'store',title:'上海徐汇店店长',store:'上海徐汇店'},{id:'sun',name:'孙琳',role:'finance',title:'财务'},{id:'wu',name:'吴桐',role:'sales',title:'业务员',store:'杭州湖滨店'},{id:'wang',name:'王言',role:'admin',title:'系统管理员'}];
 const CHANNELS=['400电话','经理热线','门店H5 / A3','微信小程序','售后保障 / 企微','业务员代发起'];
-const STATES=['待处理','处理中','审批中','待结案','已挂起','已结案'];
+const STATES=['待处理','处理中','审批中','付款办理','采购办理','待结案','已挂起','已结案'];
 const STORES=['杭州湖滨店','上海徐汇店','南京新街口店','成都春熙店'];
 const Configuration=typeof module!=='undefined'&&module.exports?require('../configuration.js'):root.ComplaintConfiguration;
 for(const p of Configuration.STAFF)if(!USERS.some(u=>u.id===p.id))USERS.push({id:p.id,name:p.name,title:p.role,role:({'售后主管':'lead','审批主管':'lead','财务审核':'finance','采购专员':'procurement','门店店长':'store','系统管理员':'admin','业务员':'sales'})[p.role]||'agent',...(p.store!=='*'?{store:p.store}:{})});
@@ -110,5 +110,7 @@ const Lifecycle=(typeof module!=='undefined'&&module.exports?require('../ticket-
 Object.assign(API,Lifecycle);
 Object.assign(API,(typeof module!=='undefined'&&module.exports?require('../ticket-operations.js'):root.createTicketOperations)(API,Configuration,FlowConfig));
 Object.assign(API,(typeof module!=='undefined'&&module.exports?require('../workflow-examples.js'):root.createWorkflowExamples)(API,Configuration,FlowConfig));
+Object.assign(API,(typeof module!=='undefined'&&module.exports?require('../external-approvals.js'):root.createExternalApprovals)(API,Configuration,FlowConfig,typeof module!=='undefined'&&module.exports?require('../approval-templates.js'):root.ApprovalTemplates));
+Object.assign(API,(typeof module!=='undefined'&&module.exports?require('../external-approval-examples.js'):root.createExternalApprovalExamples)(API,Configuration,FlowConfig));
 if(typeof module!=='undefined')module.exports=API;root.Engine=API;
 })(typeof window!=='undefined'?window:globalThis);
