@@ -10,12 +10,22 @@
       ['complaint-rules', '规则配置', 'rules'],
       ['complaint-schedule', '售后排班', 'schedule'],
       ['complaint-approvals', '审批管理', 'approvals'],
-      ['complaint-demo', '演示入口', 'demo']
+      ['complaint-demo', '演示入口', 'demo'],
+      ['complaint-bi', '客诉分析', 'bi']
     ];
-    const entryURL=entry=>entry[2]==='approvals'?'complaint-prototype/approvals.html?v=20261007-crm-profile&embed=1':entry[2]==='schedule'?'complaint-prototype/schedule.html?v=20261007-crm-profile&embed=1':entry[2]==='tickets'?'complaint-prototype/workflow/index.html?v=20261007-crm-profile&embed=1&page=tickets':entry[2]==='demo'?'complaint-prototype/demo.html?v=20261007-crm-profile&embed=1':'complaint-prototype/index.html?v=20261007-crm-profile&embed=1&view=pc&actor=manager&page='+entry[2];
+    const entryURL=entry=>entry[2]==='bi'?'complaint-prototype/bi.html?v=20261008-standalone':entry[2]==='approvals'?'complaint-prototype/approvals.html?v=20261007-crm-profile&embed=1':entry[2]==='schedule'?'complaint-prototype/schedule.html?v=20261007-crm-profile&embed=1':entry[2]==='tickets'?'complaint-prototype/workflow/index.html?v=20261007-crm-profile&embed=1&page=tickets':entry[2]==='demo'?'complaint-prototype/demo.html?v=20261007-crm-profile&embed=1':'complaint-prototype/index.html?v=20261007-crm-profile&embed=1&view=pc&actor=manager&page='+entry[2];
+    // Existing BI bookmarks now open the same standalone dashboard.
+    window.addEventListener('hashchange', function () {
+      if (location.hash === '#complaint-bi') location.replace(entryURL(entries.find(entry => entry[2] === 'bi')));
+    });
+    if (location.hash === '#complaint-bi') {
+      location.replace(entryURL(entries.find(entry => entry[2] === 'bi')));
+      return;
+    }
     const section = document.createElement('div');
     section.className = 'nav-section'; section.id = 'complaint-nav';
     section.innerHTML = '<div class="nav-group-title" onclick="toggleNavSection(this)"><span>客诉管理</span><span class="nav-group-arrow">⌄</span></div>' + entries.map(function (entry) {
+      if (entry[2] === 'bi') return '<a class="nav-item" href="' + entryURL(entry) + '" target="_blank" rel="noopener noreferrer" title="在新标签页打开客诉分析" style="text-decoration:none"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M4 20V4M4 20h16M8 16v-5m5 5V7m5 9v-6"/></svg></span>' + entry[1] + '</a>';
       return '<div class="nav-item" role="button" tabindex="0" onclick="showPage(\'' + entry[0] + '\')"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M5 3h14v18H5zM8 8h8M8 12h8M8 16h5"/></svg></span>' + entry[1] + '</div>';
     }).join('');
     const responsive = document.createElement('style');
@@ -24,6 +34,7 @@
     const first = sidebar.querySelector('.nav-section');
     if (first) first.after(section); else sidebar.appendChild(section);
     entries.forEach(function (entry) {
+      if (entry[2] === 'bi') return;
       const page = document.createElement('div');
       page.id = 'page-' + entry[0]; page.className = 'page';
       page.style.height = 'calc(100vh - 144px)'; page.style.minHeight = entry[2] === 'tickets' ? '480px' : '660px';

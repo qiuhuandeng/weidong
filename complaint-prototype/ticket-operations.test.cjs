@@ -13,6 +13,19 @@ test('detailed refund and multiple products persist, payment updates each item t
 test('refund plus compensation clearly separates order refunds from extra payout',()=>{
  const {s,t,o}=fixture(),p={...proposal(),typeKey:'combined',compensation:2000,exchangeItems:[]};confirm(s,t,p);assert.equal(t.proposal.refund,15000);assert.equal(t.proposal.compensation,2000);pay(s,t);assert.equal(o.refunded,15000);assert.equal(t.payments[0].amount,17000);
 });
+test('solution attachments survive confirmation, reload and revision without sharing file objects',()=>{
+ const {s,t}=fixture(),files=[{name:'处理依据.txt',type:'text/plain',size:6,data:'data:text/plain;base64,YWdyZWVk'}];
+ confirm(s,t,{...proposal(),attachments:files});assert.deepEqual(t.proposal.attachments,files);assert.notEqual(t.proposal.attachments[0],files[0]);
+ const loaded=E.clone(s),saved=loaded.tickets.find(row=>row.id===t.id);E.prepareTickets(loaded);assert.deepEqual(saved.proposal.attachments,files);
+ E.pay(s,t,actor(s,t),{result:'退回',reason:'补充最新确认记录'});
+ const next=[{...files[0],name:'最新处理依据.txt'}];confirm(s,t,{...proposal(),attachments:next});
+ assert.deepEqual(t.proposalHistory[0].attachments,files);assert.deepEqual(t.proposal.attachments,next);
+ next[0].name='修改外部输入';assert.equal(t.proposal.attachments[0].name,'最新处理依据.txt');
+});
+test('bank payout requires the account holder name before changing ticket data',()=>{
+ const {s,t}=fixture(),p=proposal(),before=E.clone(s);p.payout.name='  ';
+ assert.throws(()=>confirm(s,t,p),/开户姓名/);assert.deepEqual(E.clone(s),before);
+});
 test('refund validation rejects foreign orders, duplicate items, hidden amounts and invalid attribution atomically',()=>{
  const {s,t}=fixture();const p=proposal(),before=E.clone(s);for(const invalid of [{refundOrderId:'O1'},{refundItems:[{itemId:'bad',amount:15000}]},{refundItems:[{itemId:'line1',amount:10000},{itemId:'line1',amount:5000}]},{refund:15001},{refundItems:[{itemId:'line1',amount:200001}],refund:200001},{performanceId:'finance'},{performanceId:'li'},{refundStore:'不存在的门店'},{refundItems:[]},{refundItems:[{itemId:'line1',amount:-1}],refund:-1}]){assert.throws(()=>confirm(s,t,{...p,...invalid}));assert.deepEqual(E.clone(s),before);}
 });
