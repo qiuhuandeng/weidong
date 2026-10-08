@@ -5,6 +5,7 @@ const H=3600000,D=24*H,START=Date.parse('2026-07-25T00:00:00+08:00'),END=Date.pa
 const SOURCES=['400电话','经理热线','微动','小程序','企微'];
 const REASONS=['服务效果未达预期','服务态度与沟通','退款与费用争议','预约与履约','产品使用反馈','操作规范'];
 const STAGES=['等待派单','门店办理','售后办理','方案审批','付款办理','采购办理','客服结案'];
+const EFFICIENCY_TARGET=95; // Prototype target; replace with the approved business rule.
 const COLORS=['#3478f6','#20a59a','#8d78d1','#efa34a'];
 const structure=[['华东大区',['沪苏区域','浙江区域','安徽区域'],[['上海徐汇','上海静安','南京新街口','苏州中心'],['杭州湖滨','杭州滨江','宁波天一','温州鹿城'],['合肥政务','合肥包河','芜湖镜湖','蚌埠万达']]],['华南大区',['广东区域','福建区域','湘赣区域'],[['广州天河','深圳南山','佛山千灯湖','东莞东城'],['福州鼓楼','厦门思明','泉州丰泽','漳州龙文'],['长沙五一','株洲天元','南昌红谷滩','赣州章贡']]],['华北大区',['京津区域','山东区域','豫冀区域'],[['北京朝阳','北京海淀','天津和平','天津南开'],['济南历下','青岛市南','烟台芝罘','潍坊奎文'],['郑州金水','洛阳西工','石家庄长安','保定竞秀']]],['华西大区',['川渝区域','云贵区域','陕西区域'],[['成都春熙','成都高新','重庆观音桥','重庆渝中'],['昆明盘龙','昆明五华','贵阳南明','贵阳观山湖'],['西安高新','西安雁塔','咸阳秦都','宝鸡渭滨']]]];
 const stores=structure.flatMap(([district,regions,names],di)=>regions.flatMap((region,ri)=>names[ri].map((name,si)=>({id:`s${di}${ri}${si}`,name:name+'店',district,region,di,ri,si,color:COLORS[di]}))));
@@ -63,10 +64,47 @@ function summarize(f){const start=parse(f.start),end=Math.min(parse(f.end)+D-1,E
 function previous(f){const days=(parse(f.end)-parse(f.start))/D+1;return {...f,start:date(parse(f.start)-days*D),end:date(parse(f.start)-D)};}
 function groups(f,dimension){let list=dimension==='district'?[...new Set(scopedStores(f).map(s=>s.district))]:dimension==='region'?[...new Set(scopedStores(f).map(s=>s.region))]:scopedStores(f).map(s=>s.id);
  return list.map(key=>({key,name:dimension==='store'?byStore[key].name:key,...summarize({...f,[dimension]:key})}));}
-function efficiency(s,dimension='stage'){if(dimension!=='stage')s={...s,completed:s.completed.filter(n=>n.stage!=='等待派单'),pending:s.pending.filter(n=>n.stage!=='等待派单')};const field=dimension==='person'?'personId':dimension,keys=[...new Set([...s.completed,...s.pending].map(n=>n[field]))].filter(k=>dimension==='stage'||k!=='派单队列'&&k!=='自动派单');return keys.map(key=>{const done=s.completed.filter(n=>n[field]===key),pending=s.pending.filter(n=>n[field]===key),sample=done[0]||pending[0];return {key,name:dimension==='person'?sample.person:key,department:sample.department,store:dimension==='person'&&sample.stage==='门店办理'?byStore[byTicket[sample.ticketId].store].name:'',done,pending,mean:mean(done.map(n=>net(n)/H)),p90:quantile(done.map(n=>net(n)/H),.9),timely:pct(done.filter(n=>net(n)<=n.limit).length,done.length),overdue:pending.filter(n=>net(n,s.end)>n.limit),returned:done.filter(n=>n.returned).length};});}
+// Only observed suspension before the SLA expires can extend its deadline.
+// A later suspension cannot undo an existing breach or move it to another period.
+function nodeDeadline(n,end){const base=n.started+n.limit;return base+(n.pauseStart<=base?pauseAt(n,end):0);}
+function compliance(nodes,start,end){
+ const visible=nodes.filter(n=>n.started<=end),done=visible.filter(n=>n.ended>=start&&n.ended<=end),pending=visible.filter(n=>n.ended>end);
+ const due=visible.filter(n=>{const deadline=nodeDeadline(n,end);return deadline>=start&&deadline<=end&&(n.ended<=end||net(n,end)>n.limit);});
+ const onTime=due.filter(n=>n.ended<=end&&net(n)<=n.limit),late=due.filter(n=>!(n.ended<=end&&net(n)<=n.limit));
+ const overdue=pending.filter(n=>net(n,end)>n.limit),longestOverdue=overdue.length?Math.max(...overdue.map(n=>(net(n,end)-n.limit)/H)):null;
+ const longest=overdue.filter(n=>(net(n,end)-n.limit)/H===longestOverdue),timely=pct(onTime.length,due.length),target=EFFICIENCY_TARGET;
+ const sample=[...new Map([...due,...done,...pending].map(n=>[n.id,n])).values()];
+ const rules=[...new Map(sample.map(n=>[n.stage+'|'+n.limit,{stage:n.stage,limit:n.limit}])).values()];
+ return {done,pending,due,onTime,late,overdue,longest,longestOverdue,rules,target,timely,lateRate:pct(late.length,due.length),gap:timely==null?null:timely-target,met:timely==null?null:timely>=target,mean:mean(done.map(n=>net(n)/H)),p90:quantile(done.map(n=>net(n)/H),.9),returned:done.filter(n=>n.returned).length};
+}
+function efficiency(s,dimension='stage'){
+ const nodes=s.nodes.filter(n=>dimension==='stage'||n.stage!=='等待派单'),field=dimension==='person'?'personId':dimension;
+ const rows=[...new Set(nodes.map(n=>n[field]))].map(key=>{
+  const members=nodes.filter(n=>n[field]===key),sample=members[0],stats=compliance(members,s.start,s.end);
+  return {key,name:dimension==='person'?sample.person:key,department:sample.department,store:dimension==='person'&&sample.stage==='门店办理'?byStore[byTicket[sample.ticketId].store].name:'',...stats};
+ });
+ return rows.filter(r=>r.done.length||r.pending.length||r.due.length);
+}
 function distribution(rows,key){return [...new Set(rows.map(t=>t[key]))].map(name=>({name,value:rows.filter(t=>t[key]===name).length})).sort((a,b)=>b.value-a.value);}
 function trend(f){const start=parse(f.start),end=parse(f.end),span=(end-start)/D+1,size=span>14?Math.ceil(span/10):1,rows=[];const selected=tickets.filter(t=>inScope(t,f)),ids=new Set(scopedStores(f).map(s=>s.id));for(let at=start;at<=end;at+=size*D){const to=Math.min(end+D,at+size*D),count=selected.filter(t=>t.created>=at&&t.created<to).length,service=services.filter(s=>ids.has(s.store)&&s.day>=at&&s.day<to).reduce((v,s)=>v+s.count,0);rows.push({label:date(at).slice(5),full:date(at)+' 至 '+date(to-D),count,rate:service?count/service*1000:0});}return rows;}
 function activeNode(t,end){return t.nodes.find(n=>n.started<=end&&n.ended>end);}
-const API={H,D,START,END,SOURCES,REASONS,STAGES,COLORS,stores,tickets,services,byStore,byTicket,date,parse,round,pct,quantile,mean,net,pauseAt,inScope,scopedStores,summarize,previous,groups,efficiency,distribution,trend,activeNode};
+// Snapshot-safe ticket lineage: repeated stages remain separate node instances.
+function ticketFlow(t,end=END){
+ const cutoff=Math.min(end,END);if(t.created>cutoff)return null;
+ const occurrences={};
+ const nodes=t.nodes.filter(n=>n.started<=cutoff).slice().sort((a,b)=>a.started-b.started).map((n,index)=>{
+  const done=n.ended!=null&&n.ended<=cutoff,elapsed=Math.max(0,(done?n.ended:cutoff)-n.started),pause=pauseAt(n,cutoff),effective=elapsed-pause;
+  const suspended=!done&&n.pause>0&&cutoff>=n.pauseStart&&cutoff<n.pauseStart+n.pause;
+  return {id:n.id,sequence:index+1,stage:n.stage,label:n.stage==='等待派单'?'分派':n.stage,occurrence:occurrences[n.stage]=(occurrences[n.stage]||0)+1,person:n.person,department:n.department,started:n.started,ended:done?n.ended:null,elapsed,pause,effective,limit:n.limit,overdue:effective>n.limit,returned:done&&n.returned,status:done?(n.returned?'已退回':'已完成'):suspended?'已挂起':n.stage==='等待派单'?'待分派':'办理中'};
+ });
+ const closed=t.closed!=null&&t.closed<=cutoff?t.closed:null,elapsed=(closed??cutoff)-t.created;
+ return {ticket:t,cutoff,created:t.created,assigned:t.assigned<=cutoff?t.assigned:null,closed,elapsed,nodes,status:closed!=null?'已结案':nodes.at(-1)?.status==='已挂起'?'已挂起':nodes.at(-1)?.label||'待处理'};
+}
+function ticketFlows(s){return s.all.filter(t=>t.closed==null||t.closed>=s.start).map(t=>ticketFlow(t,s.end)).sort((a,b)=>b.created-a.created);}
+function flowRecords(flow){
+ const event=(name,at,sequence,id)=>({id,sequence,stage:name,label:name,occurrence:1,person:'',department:'',started:at,ended:at,elapsed:0,pause:0,effective:0,limit:null,overdue:false,returned:false,status:'已发生',type:'里程碑'});
+ return [event('工单创建',flow.created,0,flow.ticket.id+'-created'),...flow.nodes.map(n=>({...n,type:'办理节点'})),...(flow.closed!=null?[event('工单结案',flow.closed,flow.nodes.length+1,flow.ticket.id+'-closed')]:[])];
+}
+const API={H,D,START,END,SOURCES,REASONS,STAGES,EFFICIENCY_TARGET,COLORS,stores,tickets,services,byStore,byTicket,date,parse,round,pct,quantile,mean,net,pauseAt,nodeDeadline,compliance,inScope,scopedStores,summarize,previous,groups,efficiency,distribution,trend,activeNode,ticketFlow,ticketFlows,flowRecords};
 if(typeof module!=='undefined'&&module.exports)module.exports=API;else root.ComplaintBI=API;
 })(typeof window!=='undefined'?window:globalThis);
