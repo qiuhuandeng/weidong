@@ -2,7 +2,8 @@
 (function(root){
 'use strict';
 const H=3600000, USERS=[{id:'chen',name:'陈悦',role:'agent',title:'售后专员'},{id:'zhou',name:'周宁',role:'agent',title:'售后专员'},{id:'jiang',name:'蒋琴',role:'lead',title:'售后负责人'},{id:'gu',name:'顾岚',role:'lead',title:'区域审批负责人'},{id:'li',name:'李晓',role:'store',title:'杭州湖滨店店长',store:'杭州湖滨店'},{id:'zhang',name:'张敏',role:'store',title:'上海徐汇店店长',store:'上海徐汇店'},{id:'sun',name:'孙琳',role:'finance',title:'财务'},{id:'wu',name:'吴桐',role:'sales',title:'业务员',store:'杭州湖滨店'},{id:'wang',name:'王言',role:'admin',title:'系统管理员'}];
-const CHANNELS=['400电话','经理热线','门店H5 / A3','微信小程序','售后保障 / 企微','业务员代发起'];
+const Sources=typeof module!=='undefined'&&module.exports?require('../ticket-sources.js'):root.TicketSources;
+const CHANNELS=Sources.channels;
 const STATES=['待处理','处理中','审批中','付款办理','采购办理','待结案','已挂起','已结案'];
 const STORES=['杭州湖滨店','上海徐汇店','南京新街口店','成都春熙店'];
 const Configuration=typeof module!=='undefined'&&module.exports?require('../configuration.js'):root.ComplaintConfiguration;
@@ -27,13 +28,13 @@ function seed(){
  const samples=[
  [0,4,'处理中','chen','服务效果争议，客户提及12315','客户对护理效果不满意，表示将向12315投诉，要求退款。',30,0,true],
  [1,2,'待首联','chen','淡斑项目退款申请','剩余项目希望退款，请尽快联系客户核实。',4,3,false],
- [2,2,'处理中','chen','定金退款未解决，再次来电','客户反馈上次约定的退款未推进，再次要求退款。',62,5,true],
+ [2,2,'处理中','chen','定金退款未解决，再次来电','客户反馈上次约定的退款未推进，再次要求退款。',62,2,true],
  [4,1,'待首联','zhang','预约到店等待时间过长','客户等待时间较长，希望门店说明并改善安排。',5,2,false],
  [3,3,'待方案审批','zhou','护理后不适，协商补偿方案','已与客户沟通补偿方案，等待负责人批准。',35,0,false],
  [1,2,'待打款','chen','剩余疗程退款，等待打款','客户已确认退款金额与退款方式。',45,3,false],
  [5,2,'待打款','zhou','套餐退款，收款信息待核验','上次付款未成功，请财务核实。',66,1,false],
  [4,1,'待回访','zhang','门店服务态度反馈','店长已致歉并完成服务安排，等待回访确认。',12,2,false],
- [2,2,'待分派','','业务员代发起定金退款','客户申请退回尚未使用的项目定金。',1,5,false],
+ [2,2,'待分派','','业务员代发起定金退款','客户申请退回尚未使用的项目定金。',1,2,false],
  [5,2,'已结案','zhou','未使用套餐退款已完成','客户确认收到退款，对处理结果认可。',120,4,false],
  [0,2,'处理中','li','消费项目沟通存在误解','客户希望重新核实项目使用规则。',7,2,false],
  [3,3,'处理中','chen','护理补偿金额待协商','等待门店提交服务记录，售后继续与客户沟通。',18,0,false]
@@ -56,7 +57,7 @@ function requireHandle(s,t,a){assert(canHandle(s,t,a),'当前人员没有办理�
 function taskDue(s,t,key){const k=key==='level2'?'process':key;const h=t.flow?.doc.stage?.[k]||s.rules[key]||4;t.taskDeadline=stamp()+h*H;const node={process:'proposal',payment:'payment',review:'callback'}[k];if(node&&t.flow?.config)Configuration.activate(s,t,node);}
 function scan(s,t,actor,body){const hit=(s.rules.riskConfig?.keywords||s.rules.keywords).filter(k=>body.includes(k));if(hit.length){const old=t.level;t.level=Math.max(4,t.level);if(s.rulesSchema===5&&old<4){holdForUpgrade(s,t,'命中风险关键词');bindFlow(s,t,'命中 '+hit.join('、'));if(t.flow?.config)t.deadline=deadlineFor(t);}t.riskAck=false;t.gradeReason='命中风险词：'+hit.join('、');t.riskWords=[...new Set([...(t.riskWords||[]),...hit])];log(t,'系统',old<4?'升级四级':'风险关键词提示',`命中：${hit.join('、')}；保留风险标识，结案前须完成风险复核。`)}if(hit.length&&user(t.owner)?.role==='store'){t.owner=autoOwner(s,t);if(!t.owner)t.phase='待分派'}if(t.level>=3&&!t.participants.includes('jiang'))t.participants.push('jiang')}
 function inShift(s,uid){const q=s.rules.schedule?.[uid];if(!q)return true;const d=new Date(),x=d.getHours()*60+d.getMinutes(),v=z=>{const[a,b]=z.split(':').map(Number);return a*60+b};const a=v(q.start),b=v(q.end);return a<=b?x>=a&&x<=b:x>=a||x<=b}
-function autoOwner(s,t){if(t.flow?.assignment){Configuration.activate(s,t,'contact');return t.currentAssignee&&!t.pendingAssignment?t.currentAssignee:'';}if(t.level===1)return USERS.find(x=>x.role==='store'&&x.store===t.store)?.id||'';if(t.channel==='微信小程序')return s.rules.channelOwner;const pool=s.rules.onDuty.filter(x=>inShift(s,x));return pool.length?pool[(s.round++)%pool.length]:''}
+function autoOwner(s,t){if(t.flow?.assignment){Configuration.activate(s,t,'contact');return t.currentAssignee&&!t.pendingAssignment?t.currentAssignee:'';}if(t.level===1)return USERS.find(x=>x.role==='store'&&x.store===t.store)?.id||'';if(t.channel==='小程序')return s.rules.channelOwner;const pool=s.rules.onDuty.filter(x=>inShift(s,x));return pool.length?pool[(s.round++)%pool.length]:''}
 function create(s,a,data){return Intake.create(s,a,data);}
 function dispatchPending(s,now=stamp()){
  if(!s.configuration?.aftercareSchedule)return 0;let count=0;

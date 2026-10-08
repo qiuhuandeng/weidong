@@ -42,8 +42,8 @@ const url=relative=>pathToFileURL(path.join(root,relative)).href;
   console.log('PASS host: rule changes determine real intake handler, deadline and snapshot');
   async function act(name){await tickets.locator('.drawer-footer [data-action="'+name+'"], .mobile-footer [data-action="'+name+'"]').click();}
   async function submit(type){const f=tickets.locator('[data-form="'+type+'"]');await f.locator('[type="submit"]').click();await f.waitFor({state:'detached'});}
-  await act('follow');await tickets.locator('[data-form="follow"] [name="content"]').fill('已核实订单，客户认可本次退款');await submit('follow');
-  await act('proposal');await tickets.locator('[data-form="proposal"] [name="refund"]').fill('100');await tickets.locator('[data-form="proposal"] [name="content"]').fill('原路退回未消费项目100元');await submit('proposal');
+  await act('follow');await tickets.locator('[data-form="follow"] [name="content"]').fill('已核实订单，客户认可本次退款');await tickets.locator('[data-form=follow] [name=result]').selectOption('plan');await submit('follow');
+  await tickets.locator('[data-form="proposal"] [name="refund"]').fill('100');await tickets.locator('[data-form="proposal"] [name="content"]').fill('原路退回未消费项目100元');await submit('proposal');
   t=(await state()).tickets.find(x=>x.id===id);assert.equal(t.state,'待方案审批');assert.equal(t.approval.steps[0].people[0],'finance');
   await act('approve');await submit('approve');
   t=(await state()).tickets.find(x=>x.id===id);assert.equal(t.state,'待打款');assert.equal(t.flow.doc.finance,'finance');

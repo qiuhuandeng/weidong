@@ -4,7 +4,8 @@
 function createTicketOperations(E,C,P){
  const old={...E},copy=E.clone,assert=(v,m)=>{if(!v)throw Error(m);};
  const products=[{id:'repair-cream',name:'舒缓修护霜 50g',unitPrice:18000},{id:'repair-mask',name:'舒缓修护面膜 5片装',unitPrice:12000},{id:'hydrating-serum',name:'保湿精华 30ml',unitPrice:26000}];
- const source=t=>['门店H5 / A3','CRM系统','业务员代发起'].includes(t.channel)?'crm':['400电话','经理热线','400客服 / 总经理热线'].includes(t.channel)?'hotline':'wechat';
+ const Sources=typeof module!=='undefined'&&module.exports?require('./ticket-sources.js'):root.TicketSources;
+ const source=t=>Sources.key(t.channel);
  const isStore=t=>!!t.storeIntake&&!t.storeIntake.completedAt&&t.phase!=='已结案';
  const sync=t=>{t.state=E.ticketStatus(t);};
  function transact(t,fn){const before=copy(t.nodeTiming||E.initialNodeClock(t));const result=fn();E.trackNodeClock(t,before);sync(t);return result;}
@@ -27,30 +28,72 @@ function createTicketOperations(E,C,P){
  }
  function requireStore(s,t,a){assert(isStore(t)&&!t.pendingAssignment&&!t.suspension&&t.currentAssignee===a&&C.active(s,a),'请由当前门店办理人操作');}
  function follow(s,t,a,data){
+  if(isStore(t)&&Object.hasOwn(data,'result'))return handleStoreIntake(s,t,a,data);
   if(isStore(t))return transact(t,()=>{requireStore(s,t,a);assert(data.content?.trim(),'请填写沟通内容');if(data.connected){t.firstContact??=Date.now();t.storeIntake.contactedAt??=Date.now();t.phase='门店处理中';t.taskDeadline=t.assignedAt+t.storeIntake.node.hours*E.H;}E.log(t,a,data.connected?'有效联系 / 跟进':'联系尝试',(data.method||'电话')+' · '+(data.connected?'已接通':'未接通')+'\n'+data.content.trim());t.attachments.push(...copy(data.files||[]));t.nextFollow=data.next||'';});
+  if(Object.hasOwn(data,'result'))return handleAftercareFollow(s,t,a,data);
+  return recordAftercareFollow(s,t,a,data);
+ }
+ function recordAftercareFollow(s,t,a,data){
   const first=t.firstContact;const result=old.follow(s,t,a,data);if(t.storeIntake?.completedAt&&data.connected){t.aftercareContactAt??=Date.now();t.firstContact=first||t.firstContact;}return result;
  }
- function finishStoreIntake(s,t,a,data){return transact(t,()=>{
+ function handleAftercareFollow(s,t,a,data){
+  assert(E.isAftercareStage(s,t)&&E.canHandle(s,t,a)&&C.active(s,a)&&!t.workflowIssue&&!t.mergedInto,'请由当前售后办理人填写跟进');
+  const content=data.content?.trim(),resolved=data.result==='resolved';
+  assert(content,'请填写沟通内容');assert(['resolved','plan'].includes(data.result),'请选择本次处理结果');
+  assert(typeof data.connected==='boolean','请选择联系结果');
+  if(resolved){
+   assert(data.connected,'请有效联系客户后结案');
+   assert(canCloseEarly(s,{...t,firstContact:t.firstContact||Date.now(),aftercareContactAt:t.aftercareContactAt||Date.now()},a),'仍有待完成的退款、赔偿或商品置换事项，请继续填写方案');
+  }
+  recordAftercareFollow(s,t,a,{...data,next:resolved?'':data.next,content:content+'\n本次处理结果：'+(resolved?'沟通已解决，直接结案':'需继续跟进，填写方案')});
+  if(resolved)return closeEarly(s,t,a,{note:content,completed:true});
+ }
+ function finishStoreIntake(s,t,a,data){return transact(t,()=>completeStoreIntake(s,t,a,data));}
+ function completeStoreIntake(s,t,a,data){
   requireStore(s,t,a);assert(t.storeIntake.contactedAt,'请先记录与客户的有效沟通');assert(data.note?.trim(),'请填写未解决原因及交接说明');
   const route=P.entryPath({level:t.level,config:t.flow.config},{source:source(t),storeResult:'unresolved'});assert(route.some(n=>n.kind==='sales'),'当前规则未配置未解决转售后的路径，请先核对流程');
-  t.storeIntake.completedAt=Date.now();t.storeIntake.result='unresolved';t.storeIntake.note=data.note.trim();t.storeIntake.by=a;t.attachments.push(...copy(data.files||[]));E.log(t,a,'门店未解决，进入售后',data.note.trim());
+  t.storeIntake.completedAt=Date.now();t.storeIntake.result='unresolved';t.storeIntake.note=data.note.trim();t.storeIntake.by=a;t.attachments.push(...copy(data.files||[]));E.log(t,a,'门店处理：未解决，已转售后',data.note.trim());
   t.phase='待首联';t.currentAssignee='';t.owner='';delete t.pendingAssignment;
   try{C.activate(s,t,'contact');if(t.owner){t.taskDeadline=Date.now()+t.flow.doc.stage.process*E.H;}}
   catch(error){t.phase='待分派';t.pendingAssignment={mode:'configuration',dispatcher:'manager',reason:error.message};t.currentAssignee='manager';t.taskDeadline=null;}
- });}
+ }
  function canCloseEarly(s,t,a){
   if(t.suspension||t.pendingAssignment||t.workflowIssue||['已结案','已合并'].includes(t.phase))return false;
   if(isStore(t))return t.currentAssignee===a&&C.active(s,a)&&!!t.storeIntake.contactedAt;
   if(!E.isAftercareStage(s,t)||!E.canHandle(s,t,a)||!t.firstContact||t.storeIntake&&!t.aftercareContactAt)return false;
   return !t.proposal||!(t.proposal.refund||t.proposal.compensation||t.proposal.exchangeItems?.length);
  }
- function closeEarly(s,t,a,data){return transact(t,()=>{
+ function closeEarly(s,t,a,data){return transact(t,()=>completeEarlyClosure(s,t,a,data));}
+ function completeEarlyClosure(s,t,a,data){
   assert(canCloseEarly(s,t,a),'当前节点仍有待办事项，或尚未有效联系客户，不能直接结案');assert(data.note?.trim(),'请填写结案说明');assert(data.completed===true||data.completed==='yes','请确认客户问题已解决且无未完成的退款、赔偿、置换事项');
   const store=isStore(t);if(store){t.storeIntake.completedAt=Date.now();t.storeIntake.result='resolved';t.storeIntake.note=data.note.trim();t.storeIntake.by=a;}
   t.closure={kind:store?'store':'sales',by:a,at:Date.now(),note:data.note.trim(),early:true};
   if(t.execution){t.execution.steps.forEach((n,i)=>{if(i===t.execution.index){n.done=true;n.completedAt=Date.now();n.completedBy=a;}else if(i>t.execution.index)n.skipped=true;});t.execution.completedAt=Date.now();}
-  t.phase='已结案';t.closed=Date.now();t.currentAssignee='';t.taskDeadline=null;E.log(t,a,store?'门店直接结案':'售后直接结案',data.note.trim());
- });}
+  t.phase='已结案';t.closed=Date.now();t.currentAssignee='';t.taskDeadline=null;E.log(t,a,store?'门店处理：已解决并结案':'售后直接结案',data.note.trim());
+ }
+ function handleStoreIntake(s,t,a,data){
+  requireStore(s,t,a);assert(!t.workflowIssue,'请先核对当前工单的办理流程');
+  const content=data.content?.trim(),result=data.result,continuing=result==='continue';
+  assert(content,'请填写沟通情况');assert(['resolved','unresolved','continue'].includes(result),'请选择本次处理结果');
+  if(continuing)assert(typeof data.connected==='boolean','请选择本次联系情况');
+  else assert(data.connected!==false,'未有效联系客户，请选择需继续跟进');
+  // Check the complete transition before recording any communication.
+  if(result==='unresolved')assert(P.entryPath({level:t.level,config:t.flow.config},{source:source(t),storeResult:'unresolved'}).some(n=>n.kind==='sales'),'当前规则未配置未解决转售后的路径，请先核对流程');
+  if(result==='resolved')assert(canCloseEarly(s,{...t,storeIntake:{...t.storeIntake,contactedAt:t.storeIntake.contactedAt||Date.now()}},a),'当前节点仍有待办事项，不能直接结案');
+  return transact(t,()=>{
+   const now=Date.now(),connected=!continuing||data.connected;
+   if(connected){
+    t.firstContact??=now;
+    if(!t.storeIntake.contactedAt){t.storeIntake.contactedAt=now;t.taskDeadline=t.assignedAt+t.storeIntake.node.hours*E.H;}
+    t.phase='门店处理中';
+   }
+   t.storeIntake.lastHandledAt=now;t.storeIntake.lastResult=result;
+   t.nextFollow=continuing?data.next||'':'';t.attachments.push(...copy(data.files||[]));
+   E.log(t,a,connected?'有效联系 / 跟进':'联系尝试',(data.method||'电话')+' · '+(connected?'已接通 / 有效沟通':'未接通')+'\n'+content+'\n处理结果：'+({resolved:'已解决',unresolved:'未解决，转售后',continue:'需继续跟进'})[result]+(t.nextFollow?'\n下次跟进：'+t.nextFollow:''));
+   if(result==='resolved')completeEarlyClosure(s,t,a,{note:content,completed:true});
+   else if(result==='unresolved')completeStoreIntake(s,t,a,{note:content});
+  });
+ }
  function assignmentCandidates(s,t){return (t.pendingAssignment?.candidates||[]).map(id=>C.STAFF.find(p=>p.id===id)).filter(p=>p&&C.active(s,p.id)&&['售后专员','售后主管'].includes(p.role)&&(p.store==='*'||p.store===t.store));}
  function canAssignPending(s,t,a){return !!t.pendingAssignment&&['schedule',undefined].includes(t.pendingAssignment.mode)&&C.active(s,a)&&(t.pendingAssignment.dispatcher===a||C.STAFF.some(p=>p.id===a&&p.role==='售后主管'));}
  function assign(s,t,a,person,note){
@@ -70,7 +113,7 @@ function createTicketOperations(E,C,P){
  }
  function prepareTickets(s){let changed=old.prepareTickets(s);for(const t of s.tickets){if(t.storeAssistance){const row=t.storeAssistance;t.storeAssistanceHistory??=[];t.storeAssistanceHistory.push({...copy(row),status:'已结束',completedAt:Date.now(),note:'门店协同入口已取消，恢复原售后办理，保留原时限。'});t.phase=row.returnState;t.currentAssignee=t.owner;delete t.storeAssistance;E.log(t,'系统','恢复售后办理','保留原记录及办理时限');sync(t);changed=true;}}return changed;}
  const retired=()=>{throw Error('转门店协同已取消，门店办理由工单来源和流程配置决定');};
- return {PRODUCTS:products,orderItems,refundBalance,refundStaff,validateFinancialDetails,routeStoreEntry,isStoreIntake:isStore,finishStoreIntake,canCloseEarly,closeEarly,assignmentCandidates,canAssignPending,assign,follow,prepareTickets,
+ return {PRODUCTS:products,orderItems,refundBalance,refundStaff,validateFinancialDetails,routeStoreEntry,isStoreIntake:isStore,handleStoreIntake,finishStoreIntake,canCloseEarly,closeEarly,assignmentCandidates,canAssignPending,assign,follow,prepareTickets,
   taskPeople:(s,t)=>isStore(t)?[t.pendingAssignment?.dispatcher||t.currentAssignee].filter(Boolean):old.taskPeople(s,t),
   canHandle:(s,t,a)=>isStore(t)?!t.pendingAssignment&&t.currentAssignee===a&&C.active(s,a):old.canHandle(s,t,a),
   isPending:(s,t,a)=>isStore(t)?E.taskPeople(s,t).includes(a):old.isPending(s,t,a),

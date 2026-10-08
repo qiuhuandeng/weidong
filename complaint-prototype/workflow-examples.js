@@ -25,6 +25,7 @@ function createWorkflowExamples(E,C,P){
   ['P35','采购办理','退款已完成，待采购置换商品','procurement_refund_exchange'],['P36','采购办理','赔偿已完成，待采购置换商品','procurement_compensation_exchange'],
   ['P37','处理中','门店已联系，待确认是否解决','store_first'],['P38','待处理','微信来源，等待门店联系','store_waiting'],['P39','处理中','门店未解决，转售后继续跟进','store_escalated'],
   ['P34','付款办理','退款及置换，付款完成后进入采购','payment_exchange'],
+  ['P42','处理中','门店已沟通，继续跟进并确认处理结果','store_first'],
   ['P40','审批中','两个项目退款并额外赔偿，等待付款','multi_refund'],['P41','付款办理','多项目退款及多商品置换，付款后采购','multi_exchange'],
   ['C01','已结案','服务协调完成，无退赔结案','service'],['C02','已结案','退款到账，客服确认结案','refund'],['C03','已结案','赔偿到账，客服确认结案','compensation'],
   ['C04','已结案','退款与赔偿到账，客服确认结案','combined'],['C05','已结案','置换商品已签收，客服确认结案','exchange'],['C06','已结案','退款及商品置换完成，客服结案','refund_exchange'],['C07','已结案','赔偿及商品置换完成，客服结案','compensation_exchange']
@@ -51,8 +52,13 @@ function createWorkflowExamples(E,C,P){
   scene.config.ticketFlow={schema:1,start:'ticket-created',nodes:[sales,...middle,close]};if(['store_first','store_waiting','store_escalated','store_resolved'].includes(kind))P.prepareEntry(x.configuration,scene);P.validate(scene,x.configuration);
   x.configuration=C.Rules.saveScene(x.configuration,'manager',scene,x.configuration.sceneRevision,Date.now());
   const order={id:'ORDER-'+entry.suffix,external:'DD20261007'+entry.suffix,system:'A3主系统',member:'M20261007'+entry.suffix,name:'林女士',phone:'13800001002',store:'上海徐汇店',project:exchange?'修护护理及配套商品':'面部护理套餐',paid:398000,refunded:0,staff:'刘欣',receptionistId:'zhang',isNew:'老客'};order.items=[{id:order.id+'-1',name:'面部护理疗程',quantity:5,paid:298000,refunded:0},{id:order.id+'-2',name:'配套修护护理',quantity:2,paid:100000,refunded:0}];x.orders.push(order);
-  let t=E.create(x,'chen',{...order,order:order.id,channel:['store_first','store_waiting','store_escalated','store_resolved'].includes(kind)?(entry.suffix==='P38'?'微信小程序':'400电话'):'门店H5 / A3',title:entry.title,description:kind==='urgent'?'客户纠纷升级，警方到店协调，请售后经理介入。':'客户对已购护理项目提出退款相关诉求，请核实服务记录并协调处理。'});t.id=entry.id;
-  if(E.isStoreIntake(t)){if(kind!=='store_waiting')E.follow(x,t,t.currentAssignee,{connected:true,content:'门店已电话联系客户，核实服务情况并沟通处理。'});if(kind==='store_resolved')E.closeEarly(x,t,t.currentAssignee,{note:'门店解释并安抚后客户问题已解决，无退赔及置换事项。',completed:true});if(kind==='store_escalated'){E.finishStoreIntake(x,t,t.currentAssignee,{note:'门店无法满足客户要求，请售后继续处理。'});E.follow(x,t,t.owner,{connected:true,content:'售后已重新联系客户并继续沟通。'});}E.prepareTickets(x);t.scenarioKey=kind;return {ticket:t,order};}
+  let t=E.create(x,'chen',{...order,order:order.id,channel:['store_first','store_waiting','store_escalated','store_resolved'].includes(kind)?(entry.suffix==='P38'?'小程序':'400电话'):'微动',title:entry.title,description:kind==='urgent'?'客户纠纷升级，警方到店协调，请售后经理介入。':'客户对已购护理项目提出退款相关诉求，请核实服务记录并协调处理。'});t.id=entry.id;
+  if(E.isStoreIntake(t)){
+   if(kind==='store_first')E.handleStoreIntake(x,t,t.currentAssignee,{result:'continue',connected:true,content:'门店已电话联系客户，客户仍需考虑，待继续跟进。'});
+   if(kind==='store_resolved')E.handleStoreIntake(x,t,t.currentAssignee,{result:'resolved',content:'门店解释并安抚后客户问题已解决，无退赔及置换事项。'});
+   if(kind==='store_escalated'){E.handleStoreIntake(x,t,t.currentAssignee,{result:'unresolved',content:'门店无法满足客户要求，请售后继续处理。'});E.follow(x,t,t.owner,{connected:true,content:'售后已重新联系客户并继续沟通。'});}
+   E.prepareTickets(x);t.scenarioKey=kind;return {ticket:t,order};
+  }
   if(kind==='waiting'){t.owner='';t.currentAssignee='';t.phase='待分派';t.taskDeadline=null;t.pendingAssignment={mode:'schedule',node:'contact',dispatcher:'manager',candidates:['aftercare','chen','zhou'],reason:'受理时未到开派时间，等待当班售后人员',resumeState:'待首联',queuedAt:t.created};}
   else if(kind==='staffing'){t.owner='';t.currentAssignee='manager';t.phase='待分派';t.taskDeadline=null;t.pendingAssignment={mode:'configuration',dispatcher:'manager',reason:'受理时售后岗位没有有效人员，请维护岗位人员后重新匹配规则'};}
   else if(kind==='unanswered')E.follow(x,t,t.owner,{connected:false,content:'电话暂未接通，已记录本次联系情况，将继续联系客户。'});
@@ -95,7 +101,7 @@ function createWorkflowExamples(E,C,P){
    if(kind==='invalidated')E.invalidateSuspension(x,t,'manager','实际等待内部处理，应正常流转，不符合挂起条件。');
    if(['resumed','quota_used','suspended_manager'].includes(kind)){t.suspension.at-=E.H;E.resumeTicket(x,t,owner(),'资料已补齐，恢复原售后节点继续办理。');if(kind==='suspended_manager')E.suspendTicket(x,t,'manager',{reasonType:'materials',evidenceId:E.suspensionEvidence(t)[0]?.id,note:'仍缺少客户必要材料，已核实继续等待。',basis:'已使用一次自主挂起，由主管核实后再次挂起。',expectedAt:Date.now()+12*E.H});}
   }
-  if(kind==='channels'){t.sources.push({channel:'门店H5 / A3',at:Date.now(),content:'门店补充当日服务记录，合并到同一客诉工单继续办理。'});E.log(t,'store2','补充来源记录','门店已补充服务记录，沿用原工单处理。');}
+  if(kind==='channels'){t.sources.push({channel:'微动',at:Date.now(),content:'门店补充当日服务记录，合并到同一客诉工单继续办理。'});E.log(t,'store2','补充来源记录','门店已补充服务记录，沿用原工单处理。');}
   E.prepareTickets(x);t.scenarioKey=entry.kind;return {ticket:t,order};
  }
  // Upgrade saved prototype solutions as well as the initial catalogue. This is a
@@ -168,10 +174,10 @@ function createWorkflowExamples(E,C,P){
   s.solutionDetailsBackup=backup;s.solutionExamplesVersion=1;return true;
  }
  function ensureWorkflowExamples(s){
-  if(s.workflowExamplesVersion>=7)return false;
+  if(s.workflowExamplesVersion>=8)return false;
   const additions=catalog.filter(row=>!s.tickets.some(t=>t.id===row.id)).map(entry=>{try{return build(s,entry);}catch(error){throw Error(entry.id+'：'+error.message,{cause:error});}});
   for(const built of additions){s.tickets.push(built.ticket);if(built.order&&!s.orders.some(o=>o.id===built.order.id))s.orders.push(built.order);}
-  s.workflowExamplesVersion=7;return true;
+  s.workflowExamplesVersion=8;return true;
  }
  return {WORKFLOW_EXAMPLES:catalog,ensureWorkflowExamples,ensureSolutionExamples};
 }

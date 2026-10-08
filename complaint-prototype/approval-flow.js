@@ -6,7 +6,7 @@ function createApprovalFlow(STAFF,STORES){
   const sources={position:'指定岗位',department:'指定部门负责人',manager:'指定上级',duty:'公司审批人员'};
   const modes={all:'会签（全部同意）',any:'或签（一人同意）',sequential:'依次审批'};
   const planTypes={service:'无退赔',refund:'退款',compensation:'赔偿',combined:'退款+赔偿',exchange:'商品置换',refund_exchange:'退款+商品置换',compensation_exchange:'赔偿+商品置换'};
-  const ticketSources={hotline:'400客服 / 总经理热线',crm:'CRM系统',wechat:'微信小程序 / AI企微'};
+  const ticketSources=(typeof module!=='undefined'&&module.exports?require('./ticket-sources.js'):root.TicketSources).labels;
   const storeResults={resolved:'已解决',unresolved:'未解决'};
   const conditionKinds={source:'工单来源',storeResult:'门店处理结果',plan:'适用方案类型'};
   const complaintLevels={1:'一级',2:'二级',3:'三级',4:'四级',5:'五级'};

@@ -2,6 +2,7 @@
 (function(root){
 'use strict';
 function createIntake(E,C,Grading){
+ const Sources=typeof module!=='undefined'&&module.exports?require('./ticket-sources.js'):root.TicketSources;
  const assert=(ok,message)=>{if(!ok)throw Error(message);};
  function manager(s){return C.STAFF.find(p=>p.role==='售后主管'&&C.active(s,p.id))?.id||'manager';}
  function canConfirmGrading(s,t,actor){return C.STAFF.some(p=>p.id===actor&&p.role==='售后主管')&&C.active(s,actor)&&E.canView(s,t,actor);}
@@ -30,7 +31,7 @@ function createIntake(E,C,Grading){
   if(['store','sales'].includes(u.role))assert(store===u.store,'只能为本店订单发起');
   const related=data.related?s.tickets.find(t=>t.id===data.related):null;
   if(data.related)assert(related&&(related.phone===data.phone||(data.member&&related.member===data.member)),'关联工单不属于同一客户');
-  const channel=u.role==='sales'?E.CHANNELS[5]:u.role==='store'?E.CHANNELS[2]:data.channel;
+  const channel=Sources.normalize(['sales','store'].includes(u.role)?'微动':data.channel);
   const grading=Grading.classify(s.configuration,{title:data.title,description:data.description}),t={
    id:'KS'+new Date(now).toISOString().slice(0,10).replaceAll('-','')+'-'+String(s.sequence++).padStart(3,'0'),
    name:data.name.trim(),phone:data.phone,member:o?.member||data.member||'',isNew:o?.isNew||data.isNew||'待核实',
@@ -73,7 +74,7 @@ function createIntake(E,C,Grading){
   fixture.configuration.ruleScenes=C.Rules.sceneList(fixture.configuration).map(scene=>({...scene,enabled:scene.level===5?false:scene.enabled}));
   const examples=[
    {id:'KS20261007-G01',name:'陈女士',phone:'13800002081',store:'上海徐汇店',channel:'400电话',title:'护理后不适，待核实具体情况',description:'客户反映护理后皮肤出现短暂泛红，尚未提供持续时间、照片及检查资料，希望工作人员进一步联系核实，具体处理要求尚未明确。'},
-   {id:'KS20261007-R01',name:'刘女士',phone:'13800002082',store:'上海徐汇店',channel:'门店H5 / A3',title:'警方到店协调纠纷，待匹配处理规则',description:'客户因护理纠纷在门店争执，警方到店协助协调，门店负责人请求售后经理尽快介入处理。'}
+   {id:'KS20261007-R01',name:'刘女士',phone:'13800002082',store:'上海徐汇店',channel:'微动',title:'警方到店协调纠纷，待匹配处理规则',description:'客户因护理纠纷在门店争执，警方到店协助协调，门店负责人请求售后经理尽快介入处理。'}
   ];
   const added=[];
   for(const data of examples){

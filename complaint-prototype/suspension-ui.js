@@ -17,7 +17,3 @@ function controlledSuspensionForm(act,t){
  else{title=submit='恢复办理';body=`<div class="banner">${esc(r.reason)}</div><div class="gap"></div>${dataRows([['原定恢复时间',date(r.expectedAt)],['恢复至',esc(r.returnState==='待首联'?'首次联系':'售后办理')]])}<div class="gap"></div>${field('恢复说明 *',txt('note'),true)}`;}
  modal(title,body,{form:act,id:t.id,submit});return true;
 }
-function suspensionReport(){
- const rows=E.suspensionStatistics(S,S.actor),ids=[...new Set(rows.flatMap(r=>r.tickets))],tickets=ids.map(ticket);UI.suspensionReviewer=S.actor;
- modal('挂起管理',`<p class="sub">按客服曾负责的工单统计，转派不重置额度；主管代办挂起计入当时的主责客服。临近超时指剩余时限不超过 1 小时（含已超时），作为复核线索。</p><div class="table-wrap"><table><thead><tr><th>客服</th><th>挂起工单 / 负责工单</th><th>挂起比例</th><th>次数</th><th>累计时长</th><th>临近超时</th><th>原因不成立</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(r.name)}</td><td>${r.suspended} / ${r.total}</td><td>${Math.round(r.rate*100)}%</td><td>${r.count}</td><td>${elapsedLabel(r.duration)}</td><td>${r.near}</td><td>${r.invalid}</td></tr>`).join('')}</tbody></table></div><div class="gap"></div><h3>挂起记录工单</h3>${tickets.map(t=>`<div class="aftercare-history-row"><div class="section-title"><b>${esc(t.id)}</b>${btn('主管查看','supervisorDetail',t.id,'link')}</div><p>${esc(t.title)}</p><span class="sub">${esc(name(t.owner))} · ${esc(t.state)} · ${E.suspensionUsage(t).count} 次</span>${suspensionListNote(t)}</div>`).join('')||'<p class="sub">暂无挂起记录</p>'}`,{wide:true});
-}

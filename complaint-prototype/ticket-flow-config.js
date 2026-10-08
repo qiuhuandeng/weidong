@@ -3,12 +3,13 @@
 'use strict';
 function create(F,STAFF,Assignment){
  const Templates=typeof module!=='undefined'&&module.exports?require('./approval-templates.js'):root.ApprovalTemplates;
+ const Sources=typeof module!=='undefined'&&module.exports?require('./ticket-sources.js'):root.TicketSources;
  const copy=x=>JSON.parse(JSON.stringify(x)),assert=(v,m)=>{if(!v)throw Error(m);};
  const kinds={sales:'专员办理',store:'门店办理',payment:'付款办理',close:'售后结案',procurement:'采购办理'};
  const handlingTypes={store:'门店办理',sales:'专员办理',manager:'经理办理',payment:'付款办理',store_close:'门店结案',close:'售后结案',procurement:'采购办理'};
  const methods={round_robin:'按顺序轮排'};
- const sourceTypes={hotline:'400客服 / 总经理热线',crm:'CRM系统',wechat:'微信小程序 / AI企微'};
- const sourceDescriptions={hotline:'两个坐席分别接听 400 和总经理热线，由 400 客服统一发起。',crm:'门店店长、市场部、销售部；归口门店 / 网咨发起，已沟通但未解决。',wechat:'客户点击链接自助提交，由客户发起。'};
+ const sourceTypes=Sources.labels;
+ const sourceDescriptions={hotline:'400 客服接听后发起。',manager_hotline:'经理热线接听后发起。',crm:'门店 / 网咨已沟通但未解决，提交售后处理。',miniapp:'客户通过小程序提交。',wechat:'客户通过企微提交。'};
  function useRotation(n){n.method='round_robin';n.allMembers=true;n.members=[];delete n.manualBy;return n;}
  const descriptions={procurement:'按审批通过的商品明细登记发货方式、发货数量、物流单号及备注，全部发货后进入下一节点。',sales:'先填写跟进记录，再录入线下沟通确认的解决方案；提交后完成本节点。',store:'核实本门店的客户与订单情况，记录沟通及处理结果，提交后进入下一节点。',payment:'根据已确认的退款、赔偿事项登记付款结果和凭证；付款成功后完成本节点。',close:'由售后主负责人线下确认各部门及商品事项已处理完成，填写结果并手动结案。'};
  function node(kind,s,scene){
@@ -42,9 +43,9 @@ function create(F,STAFF,Assignment){
   }flush();return result;
  }
  function prepare(s,scene){
-  const d=copy(scene);if(d.config.ticketFlow){d.config.ticketFlow.nodes=normalizeFlow(d.config.ticketFlow.nodes);return d;}
+  const d=copy(scene);if(d.config.ticketFlow){Sources.upgradeFlow(d.config.ticketFlow);d.config.ticketFlow.nodes=normalizeFlow(d.config.ticketFlow.nodes);return d;}
   const approvals=copy(d.config.approval.flow||[]);
-  d.config.ticketFlow={schema:1,start:'ticket-created',procurementVersion:2,nodes:normalizeFlow([node('sales',s,d),fundedBranch([...approvals,node('payment',s,d)]),exchangeBranch(s,d),node('close',s,d)])};return d;
+  d.config.ticketFlow={schema:1,start:'ticket-created',sourceOptionsVersion:1,procurementVersion:2,nodes:normalizeFlow([node('sales',s,d),fundedBranch([...approvals,node('payment',s,d)]),exchangeBranch(s,d),node('close',s,d)])};return d;
  }
  // Upgrade only the editor draft; in-flight ticket snapshots keep their saved version.
  function foldLevels(nodes,level){
@@ -78,7 +79,7 @@ function create(F,STAFF,Assignment){
  }
  function prepareEntry(s,d){
   prepareSettings(d);
-  const flow=d.config.ticketFlow;flow.nodes=foldLevels(flow.nodes,Number(d.level));prepareProcurement(s,d);
+  const flow=d.config.ticketFlow;Sources.upgradeFlow(flow);flow.nodes=foldLevels(flow.nodes,Number(d.level));prepareProcurement(s,d);
   if(flow.schema===2){
    const sales=flow.nodes.find(n=>n.kind==='sales'),role=Number(d.level)===5?'manager':'specialist';
    if(sales&&sales.entryRole!==role){const defaults=node('sales',s,d);Object.assign(sales,{entryRole:role,title:role==='manager'?'售后经理办理':'售后专员办理',source:role==='manager'?'person':'position',personId:role==='manager'?'manager':'',positionId:defaults.positionId,fallbackId:role==='manager'?'manager':'aftercare'});sales.actions??={};sales.actions.store=false;}
@@ -91,7 +92,7 @@ function create(F,STAFF,Assignment){
   sales.actions??={transfer:true,suspend:true};sales.actions.store=false;
   if(role==='specialist'&&STAFF.find(p=>p.id===sales.fallbackId)?.role!=='售后专员')sales.fallbackId='aftercare';
   const results={id:F.uid(),type:'branch',title:'门店处理结果',branches:[condition('门店已解决','storeResult',['resolved'],[endNode()]),fallback([])]};
-  const source={id:F.uid(),type:'branch',title:'工单来源',branches:[condition('非 CRM 来源','source',['hotline','wechat'],[store,results]),fallback([])]};
+  const source={id:F.uid(),type:'branch',title:'工单来源',branches:[condition('非微动来源','source',['hotline','manager_hotline','miniapp','wechat'],[store,results]),fallback([])]};
   flow.nodes=[source,sales,...flow.nodes.slice(1)];flow.schema=2;delete flow.entryRouting;prepareSettings(d);return flow.nodes;
  }
  function validEntryNode(n,s){

@@ -10,7 +10,7 @@ function createTicketLifecycle(E,C,P){
   const phase=t.phase||t.state;
   if(t.mergedInto||['已结案','已合并'].includes(phase))return '已结案';
   if(t.suspension||phase==='已挂起')return '已挂起';
-  if(t.storeIntake&&!t.storeIntake.completedAt)return t.storeIntake.contactedAt||t.logs?.some(row=>row.title==='联系尝试')?'处理中':'待处理';
+  if(t.storeIntake&&!t.storeIntake.completedAt)return t.storeIntake.contactedAt||t.storeIntake.lastHandledAt||t.logs?.some(row=>row.title==='联系尝试')?'处理中':'待处理';
   // Retain unfinished historical assistance within customer handling.
   if(t.storeAssistance||phase==='待门店协同')return '处理中';
   const node=E.currentFlowNode(t);

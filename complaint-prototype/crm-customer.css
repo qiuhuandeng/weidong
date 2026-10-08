@@ -5,3 +5,98 @@
 
 .crm-mobile-lightbox{left:50%;right:auto;transform:translateX(-50%);width:min(430px,100%)}
 @media(max-width:760px){.crm-mobile{max-width:none;box-shadow:none}.crm-mobile-lightbox{width:100%}}
+
+/* Order information and the same transaction fields in both payment views. */
+.crm-orders-table,.crm-items-table,.crm-payments-table{table-layout:fixed}
+.crm-orders-table>thead th:nth-child(1){width:25%}
+.crm-orders-table>thead th:nth-child(2){width:20%}
+.crm-orders-table>thead th:nth-child(3){width:19%}
+.crm-orders-table>thead th:nth-child(4){width:19%}
+.crm-orders-table>thead th:nth-child(5){width:10%}
+.crm-orders-table>thead th:nth-child(6){width:7%}
+.crm-orders-table td,.crm-items-table td,.crm-payments-table td{overflow-wrap:anywhere}
+.crm-orders-table td:first-child,.crm-items-table td:first-child,.crm-payments-table td:first-child{min-width:0;max-width:none}
+.crm-order-staff{display:grid;gap:2px;font-size:12px;line-height:19px}
+.crm-order-staff>span{color:#8798ae;font-size:11px}
+.crm-order-staff>span:not(:first-child){margin-top:5px}
+.crm-order-money{margin:0;display:grid;gap:7px;font-variant-numeric:tabular-nums}
+.crm-order-money>div{display:flex;align-items:baseline;justify-content:space-between;gap:10px;min-width:0}
+.crm-order-money dt{font-size:12px;color:#8798ae;white-space:nowrap}
+.crm-order-money dd{margin:0;font-size:13px;white-space:nowrap;font-weight:500}
+.crm-order-money .is-paid{color:#1677ff}
+.crm-order-money .is-outstanding{color:#e55a57}
+.crm-order-section+.crm-order-section{margin-top:24px}
+.crm-order-section h4{font-size:13px;font-weight:600;margin:0 0 12px;color:#31465f}
+.crm-order-section .crm-table-wrap{background:white}
+.crm-order-section .crm-table td{padding:14px 12px}
+.crm-items-table th:first-child{width:39%}
+.crm-items-table th:nth-child(2){width:16%}
+.crm-items-table th:nth-child(n+3){width:15%}
+.crm-item-heading{display:flex;gap:7px;align-items:baseline;min-width:0;line-height:22px}
+.crm-item-heading strong{overflow-wrap:anywhere}
+.crm-item-type{display:inline-flex;padding:0 5px;border-radius:3px;background:#edf8f3;color:#409e84;font-size:10px;line-height:18px;flex:none;font-weight:400}
+.crm-inline-empty{margin:8px 0;padding:10px 0}
+.crm-payment-content{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:baseline;gap:7px 10px}
+.crm-payment-content>span:first-child{font-size:12px}
+.crm-payment-content>strong{font-size:15px;font-weight:600;white-space:nowrap;font-variant-numeric:tabular-nums;color:#263e5a}
+.crm-payment-status{grid-column:1/-1;justify-self:start;font-size:11px;line-height:19px;padding:0 5px;border-radius:3px;color:#409e84;background:#edf8f3}
+.crm-payment-status.is-voided{color:#7c8fa9;background:#eef2f7}
+.crm-payments-table th:first-child{width:26%}
+.crm-payments-table th:nth-child(2){width:42%}
+.crm-payments-table th:nth-child(3){width:32%}
+.crm-payment-channel{font-size:14px;font-weight:600;color:#31465f}
+.crm-payment-operator{color:#8798ae;font-size:12px;margin:8px 0 12px}
+.crm-payment-card time{font-variant-numeric:tabular-nums;white-space:nowrap;font-size:11px}
+/* Mobile order summaries follow a compact vertical reading order. */
+.crm-mobile .crm-order-card{padding:14px 14px 0}
+.crm-order-brief{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:6px}
+.crm-order-brief .crm-state{font-size:11px;flex:none}
+.crm-order-intention{display:flex;flex-wrap:wrap;align-items:baseline;margin:0;font-size:13px;line-height:21px;color:#31465f}
+.crm-order-intention .crm-linked{margin:0 0 0 7px;font-size:10px;line-height:17px;padding:0 4px}
+.crm-order-line{margin:4px 0;font-size:12px;line-height:19px;color:#536780;overflow-wrap:anywhere}
+.crm-order-reference{display:flex;flex-wrap:wrap;gap:2px 12px;color:#8a9aaf;font-size:11px}
+.crm-order-reference time{font-variant-numeric:tabular-nums}
+.crm-order-personnel{display:flex;flex-wrap:wrap;gap:2px 14px}
+.crm-order-personnel label{color:#8798ae;font-size:11px}
+.crm-mobile .crm-order-money{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:11px 0 13px;margin:0}
+.crm-mobile .crm-order-money>div{display:flex;flex-wrap:wrap;justify-content:flex-start;gap:2px 3px}
+.crm-mobile .crm-order-money dt{font-size:11px;line-height:18px}
+.crm-mobile .crm-order-money dt:after{content:'：'}
+.crm-mobile .crm-order-money dd{font-size:12px;line-height:18px;font-weight:600;overflow-wrap:anywhere;white-space:normal}
+.crm-mobile .crm-order-money>div:nth-child(2){justify-content:center}
+.crm-mobile .crm-order-money>div:last-child{justify-content:flex-end}
+.crm-mobile .crm-order-disclosure{padding:0;border-top:1px solid #edf1f7}
+.crm-mobile .crm-order-disclosure>summary{min-height:44px;color:#536b86;font-size:12px}
+.crm-mobile .crm-order-disclosure[open]>summary{color:#1677ff}
+.crm-mobile .crm-order-disclosure[open]>summary>span{transform:rotate(180deg)}
+.crm-mobile .crm-order-disclosure>summary:focus-visible{outline:2px solid #1677ff;outline-offset:-2px;border-radius:4px}
+.crm-mobile .crm-order-items{gap:0;margin:0}
+.crm-project-item{padding:0 0 14px}
+.crm-project-item+.crm-project-item{padding-top:14px;border-top:1px solid #edf1f7}
+.crm-project-item .crm-item-heading{gap:5px;line-height:21px}
+.crm-project-item .crm-item-heading strong{font-size:13px;font-weight:500}
+.crm-mobile .crm-project-item .crm-item-type{font-size:10px;color:#409e84;line-height:16px;padding:0 4px}
+.crm-item-person{font-size:11px;line-height:18px;color:#8a9aaf;margin:6px 0 10px}
+.crm-project-prices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:0}
+.crm-project-prices dt{font-size:11px;line-height:16px;color:#8a9aaf;margin-bottom:4px}
+.crm-project-prices dd{font-size:12px;line-height:18px;margin:0;font-variant-numeric:tabular-nums;overflow-wrap:anywhere;color:#536780}
+.crm-project-prices>div:last-child dd{font-weight:600;color:#263e5a}
+/* All payments and order payments share the same compact, continuous list. */
+.crm-mobile .crm-payment-list{background:white;border:1px solid #e4ebf5;border-radius:8px;padding:0 14px;min-width:0}
+.crm-mobile .crm-payment-card{padding:16px 0;border:0;border-radius:0;background:none}
+.crm-mobile .crm-payment-card+.crm-payment-card{border-top:1px solid #edf1f7}
+.crm-payment-line{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.crm-payment-line>div{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 7px;min-width:0}
+.crm-mobile .crm-payment-channel{font-size:13px;line-height:20px;font-weight:500}
+.crm-payment-action{font-size:11px;color:#7b8ea6;line-height:18px}
+.crm-payment-value{font-size:16px;line-height:22px;font-weight:600;white-space:nowrap;font-variant-numeric:tabular-nums;color:#263e5a}
+.crm-payment-meta{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-top:6px;color:#8a9aaf;font-size:11px;line-height:17px}
+.crm-payment-meta time{font-size:10px}
+.crm-mobile .crm-payment-status{font-size:10px;line-height:16px;padding:0 4px}
+.crm-mobile .crm-payment-list.is-scoped{padding:0;border:0;border-radius:0}
+.crm-mobile .crm-payment-list.is-scoped .crm-payment-card{padding:12px 0}
+@media(max-width:1100px){
+ .crm-customer-view:not(.crm-mobile) .crm-order-expanded>td{padding:16px 12px}
+ .crm-customer-view:not(.crm-mobile) .crm-order-money>div{gap:5px}
+ .crm-customer-view:not(.crm-mobile) .crm-order-money dd{font-size:12px}
+}

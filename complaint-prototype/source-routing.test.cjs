@@ -7,8 +7,8 @@ const proposal=F.proposalValues({type:'service'}),route=(d,source,storeResult='u
 test('editable tree contains real source/result branches and just the current rule sales role',()=>{
  for(let level=1;level<=5;level++){const {s,d}=fixture(level);P.validate(d,s);const old=E.clone(d);P.prepareEntry(s,d);assert.deepEqual(d,old);assert.equal(d.config.ticketFlow.schema,2);assert(!d.config.ticketFlow.entryRouting);assert.equal(sourceBranch(d).judgeBy,'source');assert.equal(resultBranch(d).judgeBy,'storeResult');assert.equal(P.all(P.list(d)).filter(n=>n.kind==='sales').length,1);assert.equal(byKind(d,'sales').entryRole,level===5?'manager':'specialist');}
 });
-test('all three sources follow their configured first handling and fixed rule grade',()=>{
- for(let level=1;level<=5;level++){const {d}=fixture(level),sales=byKind(d,'sales'),direct=route(d,'crm');assert.equal(direct[0].id,sales.id);assert.equal(direct.at(-1).kind,'close');for(const source of ['hotline','wechat']){assert.deepEqual(route(d,source).slice(1),direct);assert.equal(route(d,source)[0].entryRole,'store');assert.deepEqual(route(d,source,''),[byKind(d,'store')]);}}
+test('all five sources follow their configured first handling and fixed rule grade',()=>{
+ for(let level=1;level<=5;level++){const {d}=fixture(level),sales=byKind(d,'sales'),direct=route(d,'crm');assert.equal(direct[0].id,sales.id);assert.equal(direct.at(-1).kind,'close');for(const source of ['hotline','manager_hotline','miniapp','wechat']){assert.deepEqual(route(d,source).slice(1),direct);assert.equal(route(d,source)[0].entryRole,'store');assert.deepEqual(route(d,source,''),[byKind(d,'store')]);}}
 });
 test('a store terminal ends the entire path, without reaching sales or funding nodes',()=>{
  const {d}=fixture();for(const source of ['hotline','wechat']){const path=route(d,source,'resolved');assert.equal(path.length,2);assert.equal(path[0].kind,'store');assert.equal(path[1].type,'end');assert.equal(path[1].outcome,'store-closed');}
