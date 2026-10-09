@@ -25,8 +25,8 @@ function create(F,STAFF,Assignment){
   if(type==='sales'||type==='manager'){const manager=type==='manager';return {...node('sales',s,scene),title:manager?'售后经理办理':'售后专员办理',entryRole:manager?'manager':'specialist',source:manager?'person':'position',positionId:manager?'':'aftercare',personId:manager?'manager':'',fallbackId:manager?'manager':'aftercare',actions:{transfer:true,store:false,suspend:true}};}
   return node(type,s,scene);
  }
- function fundedBranch(nodes){return {id:F.uid(),type:'branch',title:'按款项分流',branches:[{id:F.uid(),title:'退款或赔偿',judgeBy:'plan',planTypes:['refund','compensation','combined','refund_exchange','compensation_exchange'],match:'any',conditions:[{field:'refund',op:'gt',value:0},{field:'compensation',op:'gt',value:0}],nodes},{id:F.uid(),title:'默认条件',fallback:true,conditions:[],nodes:[]}]};}
- function exchangeBranch(s,scene){return {id:F.uid(),type:'branch',title:'按商品置换分流',branches:[{id:F.uid(),title:'涉及商品置换',judgeBy:'plan',planTypes:['exchange','refund_exchange','compensation_exchange'],match:'all',conditions:[],nodes:[node('procurement',s,scene)]},{id:F.uid(),title:'默认条件',fallback:true,conditions:[],nodes:[]}]};}
+ function fundedBranch(nodes){return {id:F.uid(),type:'branch',title:'按款项分流',branches:[{id:F.uid(),title:'退款或赔偿',judgeBy:'plan',methodFilter:{methods:['refund','compensation'],match:'any'},match:'any',conditions:[{field:'refund',op:'gt',value:0},{field:'compensation',op:'gt',value:0}],nodes},{id:F.uid(),title:'默认条件',fallback:true,conditions:[],nodes:[]}]};}
+ function exchangeBranch(s,scene){return {id:F.uid(),type:'branch',title:'按商品置换分流',branches:[{id:F.uid(),title:'涉及商品置换',judgeBy:'plan',methodFilter:{methods:['exchange'],match:'all'},match:'all',conditions:[],nodes:[node('procurement',s,scene)]},{id:F.uid(),title:'默认条件',fallback:true,conditions:[],nodes:[]}]};}
  function prepareProcurement(s,d){const flow=d.config.ticketFlow;if(flow.procurementVersion>=2)return;
   const index=flow.nodes.findIndex(n=>n.title==='按商品置换分流'&&n.type==='branch'&&all([n]).some(x=>x.kind==='procurement'));
   if(index>=0){const [branch]=flow.nodes.splice(index,1);flow.nodes.splice(flow.nodes.length-1,0,branch);}
@@ -38,7 +38,7 @@ function create(F,STAFF,Assignment){
  function normalizeFlow(nodes,funded=false){
   const result=[];let pending=[];const flush=()=>{if(pending.length){result.push(fundedBranch(pending));pending=[];}};
   for(const n of nodes){const gated=n.guard==='funded'&&!funded;delete n.guard;if(n.type==='handling')useRotation(n);
-   if(n.type==='branch')n.branches.forEach(b=>{b.nodes=normalizeFlow(b.nodes,funded||requiresFunds(b));});
+   if(n.type==='branch')n.branches.forEach(b=>{F.Methods.upgradeCondition(b);b.nodes=normalizeFlow(b.nodes,funded||requiresFunds(b));});
    if(gated)pending.push(n);else{flush();result.push(n);}
   }flush();return result;
  }
@@ -146,7 +146,7 @@ function create(F,STAFF,Assignment){
    const sales=config.nodes[salesIndex];assert(sales.entryRole===(Number(d.level)===5?'manager':'specialist'),'售后办理角色须与当前规则等级一致');
    assert(all(config.nodes).filter(n=>n.kind==='sales').length===1,'当前等级规则只能保留一个公共售后办理节点');
    for(const n of all(config.nodes.slice(0,salesIndex)))if(n.type==='branch')assert(n.branches.every(b=>b.fallback||['source','storeResult'].includes(b.judgeBy)),'售后办理前仅可按工单来源或门店处理结果判断');
-   for(const n of all(config.nodes.slice(salesIndex)))if(n.type==='branch')assert(n.branches.every(b=>b.fallback||(b.judgeBy||'plan')==='plan'),'售后办理后的条件请使用适用方案类型');
+   for(const n of all(config.nodes.slice(salesIndex)))if(n.type==='branch')assert(n.branches.every(b=>b.fallback||(b.judgeBy||'plan')==='plan'),'售后办理后的条件请使用处理方式');
   }
   function paths(nodes){let result=[[]];for(const n of nodes){const items=n.type==='branch'?n.branches.flatMap(b=>paths(b.nodes)):[[n]];result=result.flatMap(x=>x.at(-1)?.type==='end'?[x]:items.map(y=>x.concat(y)));assert(result.length<=100,'流程分支路径过多');}return result;}
   for(const path of paths(config.nodes)){

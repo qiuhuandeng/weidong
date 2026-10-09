@@ -6,8 +6,10 @@
   <title>客诉工单 · 美业AI平台</title>
   <link rel="stylesheet" href="base.css?v=20260930-no-risk-stripe">
   <link rel="stylesheet" href="../crm-customer.css?v=20261008-order-accordion">
-  <link rel="stylesheet" href="theme.css?v=20261008-solution-attachments">
-  <link rel="stylesheet" href="../approval-detail.css?v=20261008-core-progress">
+  <link rel="stylesheet" href="theme.css?v=20261009-payout-compact">
+  <link rel="stylesheet" href="../approval-detail.css?v=20261009-reference-templates-v2">
+  <link rel="stylesheet" href="../method-select.css?v=20261009-select-followup">
+  <link rel="stylesheet" href="proposal-desktop.css?v=20261009-pc-proposal">
 </head>
 <body>
   <div id="app"></div>
@@ -20,30 +22,32 @@
     if (!location.hash) history.replaceState(null, '', location.search + (workspaceParams.get('page') === 'rules' ? '#/rules' : workspaceParams.get('page') === 'demo' ? '#/demo' : workspaceParams.get('view') === 'h5' || (!workspaceParams.has('embed') && matchMedia('(max-width:760px)').matches) ? '#/mobile' : '#/tickets'));
   </script>
   <script src="../ticket-sources.js?v=20261008-sources"></script>
-  <script src="../approval-flow.js?v=20261008-sources"></script>
+  <script src="../method-select.js?v=20261009-select-followup"></script>
+  <script src="../solution-methods.js?v=20261009-solution-ui"></script>
+  <script src="../approval-flow.js?v=20261009-solution-ui"></script>
   <script src="../rules.js?v=20261007-rule-setup"></script>
   <script src="../node-assignment.js?v=20261007-procurement"></script>
   <script src="../aftercare-schedule.js?v=20261007-editable-branches"></script>
   <script src="../ai-grading.js?v=20261007-rule-setup"></script>
   <script src="../intake.js?v=20261008-sources"></script>
-  <script src="../approval-templates.js?v=20261007-approval-recovery"></script>
-  <script src="../ticket-flow-config.js?v=20261008-sources"></script>
-  <script src="../solution-flow.js?v=20261008-solution-attachments"></script>
+  <script src="../approval-templates.js?v=20261009-reference-templates-v2"></script>
+  <script src="../ticket-flow-config.js?v=20261009-solution-ui"></script>
+  <script src="../solution-flow.js?v=20261009-solution-ui"></script>
   <script src="../aftercare-actions.js?v=20261007-editable-branches"></script>
   <script src="../suspension-control.js?v=20261007-ticket-operations"></script>
   <script src="../ticket-lifecycle.js?v=20261008-store-followup"></script>
-  <script src="../ticket-operations.js?v=20261008-solution-attachments"></script>
-  <script src="../workflow-examples.js?v=20261008-store-followup"></script>
-  <script src="../configuration.js?v=20261007-rule-setup"></script>
-  <script src="../external-approvals.js?v=20261007-approval-recovery"></script>
-  <script src="../external-approval-examples.js?v=20261007-eight-states"></script>
+  <script src="../ticket-operations.js?v=20261009-solution-ui"></script>
+  <script src="../workflow-examples.js?v=20261009-solution-recipient"></script>
+  <script src="../configuration.js?v=20261009-solution-ui"></script>
+  <script src="../external-approvals.js?v=20261009-reference-templates-v2"></script>
+  <script src="../external-approval-examples.js?v=20261009-reference-templates-v2"></script>
   <script src="engine.js?v=20261008-sources"></script>
   <script src="../crm-profiles.js?v=20261008-normal-profiles"></script>
-  <script src="../shared-store.js?v=20261008-sources"></script>
+  <script src="../shared-store.js?v=20261009-solution-ui"></script>
   <script src="../suspension-ui.js?v=20261008-remove-suspension-report"></script>
   <script src="../refresh-queue.js?v=20261007-dropdown-sync"></script>
-  <script src="../approval-detail-view.js?v=20261008-core-progress"></script>
-  <script src="app.js?v=20261008-detail-simplification"></script>
+  <script src="../approval-detail-view.js?v=20261009-reference-templates-v2"></script>
+  <script src="app.js?v=20261009-reference-compat"></script>
   <script src="../crm-customer-view.js?v=20261008-order-accordion"></script>
   <script src="integration.js?v=20261007-editable-branches"></script>
   <script src="../schedule-runner.js?v=20261007-dropdown-sync"></script>

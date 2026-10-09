@@ -124,3 +124,6 @@
 .ac-branch{min-width:260px;padding:24px 10px 0}.ac-branch-footer{min-height:12px;margin:0 -10px}
 .ac-branch-group-head{height:32px;padding-bottom:10px}.ac-forkbar>.btn{min-height:28px;padding:4px 10px;font-size:12px}
 .ac-grading-node{padding:12px;font-size:12px}.ac-grading-node small{margin-top:5px;font-size:11px}.ac-grading-connector{height:20px}
+
+.condition-method-relation{margin-top:18px}.condition-fixed-amount{grid-template-columns:94px 110px minmax(100px,1fr)}
+@media(max-width:420px){.condition-fixed-amount{grid-template-columns:100px minmax(0,1fr)}}

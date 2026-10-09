@@ -3,7 +3,7 @@ const {test}=require('node:test'),assert=require('node:assert/strict');
 const E=require('./workflow/engine'),C=require('./configuration'),P=require('./ticket-flow-config')(C.Rules.Flow,C.STAFF,C.Assignment),Store=require('./shared-store');
 const base={name:'林女士',phone:'13800001002',store:'上海徐汇店',order:'O2',channel:'门店H5 / A3',title:'退款处理',description:'客户申请未使用项目退款'};
 function fixture(){const s=C.initialize(E.seed());E.prepareTickets(s);const scene=P.prepare(s.configuration,C.Rules.sceneList(s.configuration).find(r=>r.level===2));scene.config.ticketFlow.nodes=[P.node('sales',s.configuration,scene),P.node('payment',s.configuration,scene),P.node('procurement',s.configuration,scene),P.node('close',s.configuration,scene)];s.configuration=C.Rules.saveScene(s.configuration,'manager',scene,s.configuration.sceneRevision);const o=s.orders.find(o=>o.id==='O2');o.items=[{id:'line1',name:'面部护理',quantity:2,paid:200000,refunded:0},{id:'line2',name:'修护护理',quantity:1,paid:o.paid-200000,refunded:o.refunded}];const t=E.create(s,'chen',base);E.follow(s,t,t.owner,{connected:true,content:'线下已确认退款与置换事项'});return {s,t,o};}
-function proposal(){return {detailsVersion:2,typeKey:'refund_exchange',refundOrderId:'O2',refundItems:[{itemId:'line1',amount:10000},{itemId:'line2',amount:5000}],refund:15000,compensation:0,refundStore:'上海徐汇店',performanceId:'zhang',payout:{method:'bank',name:'林女士',account:'6222000000000000',bank:'工商银行上海支行'},exchangeItems:[{productId:'repair-cream',quantity:2,remark:'两件同批次'},{productId:'repair-mask',quantity:1,remark:'与面霜一起交付'}],content:'按线下确认事项处理'};}
+function proposal(){return {detailsVersion:2,refundReason:'退还未消费项目费用',compensationReason:'额外赔偿客户损失',delivery:{name:'林女士',phone:'13800001002',address:'上海市徐汇区漕溪北路88号601室'},typeKey:'refund_exchange',refundOrderId:'O2',refundItems:[{itemId:'line1',amount:10000},{itemId:'line2',amount:5000}],refund:15000,compensation:0,refundStore:'上海徐汇店',performanceId:'zhang',payout:{method:'bank',name:'林女士',account:'6222000000000000',bank:'工商银行上海支行'},exchangeItems:[{productId:'repair-cream',quantity:2,remark:'两件同批次'},{productId:'repair-mask',quantity:1,remark:'与面霜一起交付'}],content:'按线下确认事项处理'};}
 const actor=(s,t)=>E.taskPeople(s,t)[0];
 function confirm(s,t,p=proposal()){return E.confirmSolution(s,t,t.owner,p);}
 function pay(s,t){E.pay(s,t,actor(s,t),{result:'成功',amount:t.proposal.refund+t.proposal.compensation,reference:'PAY-'+t.id,proof:[{name:'付款凭证'}]});}
@@ -25,6 +25,23 @@ test('solution attachments survive confirmation, reload and revision without sha
 test('bank payout requires the account holder name before changing ticket data',()=>{
  const {s,t}=fixture(),p=proposal(),before=E.clone(s);p.payout.name='  ';
  assert.throws(()=>confirm(s,t,p),/开户姓名/);assert.deepEqual(E.clone(s),before);
+});
+test('solution reasons and recipient fields are required only for the selected handling items, without partial writes',()=>{
+ const {s,t}=fixture(),p=proposal(),before=E.clone(s);
+ for(const bad of [{refundReason:'  '},{delivery:{...p.delivery,name:''}},{delivery:{...p.delivery,phone:''}},{delivery:{...p.delivery,address:'  '}},{delivery:{...p.delivery,phone:'不是电话号码'}}]){
+  assert.throws(()=>confirm(s,t,{...p,...bad}),/退款原因备注|收货/);assert.deepEqual(E.clone(s),before);
+ }
+ assert.throws(()=>confirm(s,t,{...p,typeKey:'combined',exchangeItems:[],compensation:1000,compensationReason:''}),/赔偿原因备注/);assert.deepEqual(E.clone(s),before);
+ confirm(s,t,{...p,typeKey:'service',refund:0,compensation:0,exchangeItems:[],refundReason:'',compensationReason:'',delivery:{}});
+ assert.equal(t.proposal.refundReason,undefined);assert.equal(t.proposal.compensationReason,undefined);assert.equal(t.proposal.delivery,undefined);
+});
+test('recipient and reasons persist independently through payment return and solution revision',()=>{
+ const {s,t}=fixture(),p=proposal();p.refundReason='  按剩余疗程退款  ';confirm(s,t,p);
+ assert.equal(t.proposal.refundReason,'按剩余疗程退款');assert.deepEqual(t.proposal.delivery,p.delivery);assert.notEqual(t.proposal.delivery,p.delivery);
+ E.pay(s,t,actor(s,t),{result:'退回',reason:'核实资料'});const first=E.clone(t.proposal);
+ confirm(s,t,{...p,typeKey:'combined',compensation:2000,exchangeItems:[],compensationReason:'客户额外交通费用'});
+ assert.equal(t.proposal.compensationReason,'客户额外交通费用');assert.equal(t.proposal.delivery,undefined);assert.deepEqual(t.proposalHistory[0],first);
+ const loaded=E.clone(s);E.prepareTickets(loaded);assert.deepEqual(loaded.tickets.find(x=>x.id===t.id).proposal,t.proposal);
 });
 test('refund validation rejects foreign orders, duplicate items, hidden amounts and invalid attribution atomically',()=>{
  const {s,t}=fixture();const p=proposal(),before=E.clone(s);for(const invalid of [{refundOrderId:'O1'},{refundItems:[{itemId:'bad',amount:15000}]},{refundItems:[{itemId:'line1',amount:10000},{itemId:'line1',amount:5000}]},{refund:15001},{refundItems:[{itemId:'line1',amount:200001}],refund:200001},{performanceId:'finance'},{performanceId:'li'},{refundStore:'不存在的门店'},{refundItems:[]},{refundItems:[{itemId:'line1',amount:-1}],refund:-1}]){assert.throws(()=>confirm(s,t,{...p,...invalid}));assert.deepEqual(E.clone(s),before);}

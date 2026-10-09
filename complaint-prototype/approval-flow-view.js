@@ -121,21 +121,21 @@ function handlingDrawer(original,onSave,list,index,state,draft){
  },form=>{form.capture();if(n.entryRole)P.validEntryNode(n,state);else P.validNode(n,state);onSave(n,index);});
 }
 function conditionDrawer(original,onSave,group,siblings=group){
- const b=F.clone(original);b.planTypes??=[];b.conditions??=[];
- let judgeBy=b.judgeBy||'plan',selectedSources=[...(b.sources||[])],selectedResults=[...(b.results||[])],selectedTypes=[...b.planTypes],amountMatch=b.match||'all';
- const amountFields=()=>selectedTypes.length?F.allowedFields(selectedTypes).filter(key=>key!=='total'):[];
+ const b=F.Methods.upgradeCondition(F.clone(original));b.conditions??=[];
+ let judgeBy=b.judgeBy||'plan',selectedSources=[...(b.sources||[])],selectedResults=[...(b.results||[])],selectedTypes=[...(b.methodFilter?.methods||[])],methodMatch=b.methodFilter?.match||'any',legacyMethodGroups=b.methodFilter?.groups,amountMatch=b.match||'all';
+ const amountFields=()=>{const methods=legacyMethodGroups?[...new Set(legacyMethodGroups.flat())]:selectedTypes;return methods.length?F.allowedFields(methods).filter(key=>key!=='total'):[];};
  let priority=Math.max(0,group?.branches.findIndex(x=>x.id===b.id)||0);
  // Do not silently discard older range/total conditions when opening their editor.
  let legacyAmounts=b.conditions.some((c,i)=>!amountFields().includes(c.field||'refund')||b.conditions.slice(0,i).some(other=>(other.field||'refund')===(c.field||'refund')));
  const oldSummary=F.conditionSummary(original),values={};
- const initialize=()=>{for(const key of ['refund','compensation']){const c=b.conditions.find(c=>(c.field||'refund')===key);values[key]={op:c?.op||'gte',value:c?.value??''};}};initialize();
+ const initialize=()=>{for(const key of ['refund','compensation','exchangeValue']){const c=b.conditions.find(c=>(c.field||'refund')===key);values[key]={op:c?.op||'gte',value:c?.value??''};}};initialize();
  layer('设置条件分支',form=>{
    form.closest('.drawer').classList.add('condition-drawer');form.closest('.drawer').querySelector('[data-flow-save]').textContent='保存';
    const capture=()=>{
      b.title=form.elements.title.value;priority=Number(form.elements.priority?.value??priority);b.judgeBy=judgeBy;
      delete b.levels;delete b.sources;delete b.results;
-     if(judgeBy!=='plan'){b[judgeBy==='source'?'sources':'results']=[...(judgeBy==='source'?selectedSources:selectedResults)];b.planTypes=[];b.conditions=[];b.match='all';return;}
-     b.planTypes=[...selectedTypes];
+     if(judgeBy!=='plan'){b[judgeBy==='source'?'sources':'results']=[...(judgeBy==='source'?selectedSources:selectedResults)];delete b.methodFilter;b.planTypes=[];b.conditions=[];b.match='all';return;}
+     delete b.planTypes;methodMatch=form.elements.methodMatch?.value||methodMatch;if(legacyMethodGroups)b.methodFilter={groups:legacyMethodGroups};else if(selectedTypes.length)b.methodFilter={methods:[...selectedTypes],match:methodMatch};else delete b.methodFilter;
      form.querySelectorAll('[data-amount-row]').forEach(row=>{values[row.dataset.amountRow]={op:row.querySelector('[data-amount-op]').value,value:row.querySelector('[data-amount-value]').value};});
      amountMatch=form.elements.match?.value||amountMatch;b.match=amountMatch;
      if(!legacyAmounts)b.conditions=amountFields().filter(key=>String(values[key].value).trim()!=='').map(key=>({field:key,...values[key]}));
@@ -144,34 +144,35 @@ function conditionDrawer(original,onSave,group,siblings=group){
      form.closest('.drawer').querySelector('[data-flow-error]').textContent='';
      const complete=amountFields().filter(key=>String(values[key].value).trim()!=='').length;
      const relation=form.querySelector('[data-amount-relation]');if(relation)relation.hidden=complete<2;
-     const hasSelection=(judgeBy==='source'?selectedSources:judgeBy==='storeResult'?selectedResults:selectedTypes).length,selectionError='请至少选择一个'+F.conditionKinds[judgeBy];
+     const hasSelection=judgeBy==='plan'?(selectedTypes.length||legacyMethodGroups?.length||b.conditions.length):(judgeBy==='source'?selectedSources:selectedResults).length,selectionError='请至少选择一个'+F.conditionKinds[judgeBy];
      form.querySelector('[data-condition-summary]').textContent=hasSelection?F.conditionSummary(b)+'时，进入本分支。':selectionError+'。';
      const notice=form.querySelector('[data-condition-notice]');let message='',invalid=false;
      try{if(!hasSelection)throw Error(selectionError);if(judgeBy==='plan'&&legacyAmounts)throw Error('原金额条件无法直接编辑，请重新设置金额后保存。');F.validCondition(F.clone(b));const overlaps=(siblings?.branches||[]).filter(other=>!other.fallback&&other.id!==b.id&&F.conditionsOverlap(b,other));if(overlaps.length)message='与「'+overlaps.map(other=>other.title).join('、')+'」存在重叠，将按优先级命中第一条分支。';}catch(error){message=error.message;invalid=true;}
-     notice.textContent=message;notice.hidden=!message;notice.classList.toggle('is-error',invalid);
+     if(!hasSelection)message='';notice.textContent=message;notice.hidden=!message;notice.classList.toggle('is-error',invalid);
    };
    function draw(){
      const fields=amountFields();
      form.innerHTML=`<section class="flow-drawer-section"><h3>基本信息</h3><div class="form-grid">${input('分支名称','title',b.title,'maxlength="40"')}${group?select('匹配优先级','priority',group.branches.filter(x=>!x.fallback).map((x,i)=>[i,'优先级 '+(i+1)]),priority):''}</div></section>
        <section class="flow-drawer-section"><h3 id="condition-judge-title">判断方式</h3><div class="condition-type-options" role="radiogroup" aria-labelledby="condition-judge-title">${Object.entries(F.conditionKinds).map(([value,label])=>`<label class="condition-type-option"><input type="radio" name="judgeBy" value="${value}" ${judgeBy===value?'checked':''}><span>${label}</span></label>`).join('')}</div></section>
        ${judgeBy!=='plan'?`<section class="flow-drawer-section"><h3>${F.conditionKinds[judgeBy]}</h3><p class="small muted mb">可多选，匹配任一所选项时进入本分支。</p><div class="condition-type-options" role="group" aria-label="${F.conditionKinds[judgeBy]}">${Object.entries(judgeBy==='source'?F.ticketSources:F.storeResults).map(([value,label])=>`<label class="condition-type-option"><input type="checkbox" name="conditionValue" value="${value}" data-condition-value ${ (judgeBy==='source'?selectedSources:selectedResults).includes(value)?'checked':''}><span>${label}</span></label>`).join('')}</div></section>`:
-       `<section class="flow-drawer-section"><h3 id="condition-types-title">适用方案类型</h3><p class="small muted mb">可多选，匹配任一所选类型后，再判断金额条件。</p><div class="condition-type-options" role="group" aria-labelledby="condition-types-title">${Object.entries(F.planTypes).map(([value,label])=>`<label class="condition-type-option"><input type="checkbox" name="planType" value="${value}" data-plan-type="${value}" ${selectedTypes.includes(value)?'checked':''}><span>${label}</span></label>`).join('')}</div></section>`}
+       `<section class="flow-drawer-section"><h3 id="condition-types-title">包含处理方式</h3>${legacyMethodGroups?`<div class="condition-legacy"><p>${esc(F.conditionSummary(b))}</p><button type="button" class="btn quiet" data-reset-methods>重新选择处理方式</button></div>`:`${MethodSelect.render({name:'planType',labels:F.Methods.labels,selected:selectedTypes,title:'包含处理方式'})}${selectedTypes.length>1?`<div class="condition-method-relation">${select('所选方式之间的关系','methodMatch',[['any','包含其中任意一种'],['all','同时包含所有所选方式']],methodMatch)}</div>`:''}`}</section>`}
        ${judgeBy==='plan'&&legacyAmounts?`<section class="condition-legacy"><p>原条件：${esc(oldSummary)}</p><button type="button" class="btn quiet" data-reset-amounts>重新设置金额</button></section>`:''}
-       ${judgeBy==='plan'&&fields.length&&!legacyAmounts?`<section class="flow-drawer-section"><div class="condition-section-heading"><h3>金额条件</h3><span>选填</span></div><p class="condition-help">金额不填则不限制，仅按方案类型匹配。</p>
+       ${judgeBy==='plan'&&fields.length&&!legacyAmounts?`<section class="flow-drawer-section"><div class="condition-section-heading"><h3>金额条件</h3><span>选填</span></div><p class="condition-help">金额不填则不限制。</p>
        ${fields.map(key=>`<div class="condition-fixed-amount" data-amount-row="${key}"><label for="branch-amount-${key}">${F.amountFields[key]}</label><select data-amount-op aria-label="${F.amountFields[key]}比较方式">${options([['gt','大于'],['gte','大于等于'],['lt','小于'],['lte','小于等于'],['eq','等于']],values[key].op)}</select><div class="condition-amount"><input id="branch-amount-${key}" data-amount-value aria-label="${F.amountFields[key]}" type="number" min="0" max="1000000" step="0.01" inputmode="decimal" placeholder="不限金额" value="${esc(values[key].value)}"><span>元</span></div></div>`).join('')}
-       ${fields.length===2?`<div data-amount-relation>${select('两项金额条件','match',[['all','同时满足'],['any','任一满足']],amountMatch)}</div>`:''}</section>`:''}
+       ${fields.length>=2?`<div data-amount-relation>${select('金额条件之间的关系','match',[['all','同时满足'],['any','任一满足']],amountMatch)}</div>`:''}</section>`:''}
        <section class="condition-summary"><h3>条件摘要</h3><p data-condition-summary aria-live="polite"></p></section><p class="condition-notice" data-condition-notice role="status" hidden></p>`;
      capture();feedback();
    }
+   form.addEventListener('methodselectchange',e=>{capture();selectedTypes=e.detail.values;legacyAmounts=false;for(const key of Object.keys(values))if(!amountFields().includes(key))values[key]={op:'gte',value:''};draw();form.querySelector('.method-select-trigger')?.focus();});
    form.addEventListener('input',e=>{if(!e.target.matches('[data-amount-value],[name=title]'))return;capture();feedback();});
    form.addEventListener('change',e=>{
      capture();if(e.target.name==='judgeBy'){judgeBy=e.target.value;draw();form.querySelector('[name=judgeBy][value="'+judgeBy+'"]')?.focus();}
      else if(e.target.hasAttribute('data-condition-value')){const selected=[...form.querySelectorAll('[data-condition-value]:checked')].map(el=>el.value);if(judgeBy==='source')selectedSources=selected;else selectedResults=selected;capture();feedback();}
-     else if(e.target.hasAttribute('data-plan-type')){const changed=e.target.value;selectedTypes=[...form.querySelectorAll('[data-plan-type]:checked')].map(el=>el.value);legacyAmounts=false;for(const key of Object.keys(values))if(!amountFields().includes(key))values[key]={op:'gte',value:''};draw();form.querySelector('[data-plan-type="'+changed+'"]')?.focus();}else feedback();
+     else if(e.target.hasAttribute('data-plan-type')){const changed=e.target.value;selectedTypes=[...form.querySelectorAll('[data-plan-type]:checked')].map(el=>el.value);legacyAmounts=false;for(const key of Object.keys(values))if(!amountFields().includes(key))values[key]={op:'gte',value:''};draw();form.querySelector('[data-plan-type="'+changed+'"]')?.focus();}else {capture();feedback();}
    });
-   form.addEventListener('click',e=>{if(!e.target.closest('[data-reset-amounts]'))return;capture();legacyAmounts=false;b.conditions=[];for(const key of Object.keys(values))values[key]={op:'gte',value:''};draw();form.querySelector('[data-amount-value]')?.focus();});
+   form.addEventListener('click',e=>{if(e.target.closest('[data-reset-methods]')){capture();legacyMethodGroups=null;selectedTypes=[];methodMatch='any';draw();return;}if(!e.target.closest('[data-reset-amounts]'))return;capture();legacyAmounts=false;b.conditions=[];for(const key of Object.keys(values))values[key]={op:'gte',value:''};draw();form.querySelector('[data-amount-value]')?.focus();});
    form.capture=capture;draw();
- },form=>{form.capture();if(judgeBy==='plan'){if(!selectedTypes.length)throw Error('请至少选择一种方案类型');if(legacyAmounts)throw Error('请重新设置金额后保存');}F.validCondition(b);onSave(b,priority);});
+ },form=>{form.capture();if(judgeBy==='plan'){if(!selectedTypes.length&&!legacyMethodGroups&&!b.conditions.length)throw Error('请选择处理方式或填写金额条件');if(legacyAmounts)throw Error('请重新设置金额后保存');}F.validCondition(b);onSave(b,priority);});
 }
 function showMenu(button,fn){menu?.remove();menu=document.createElement('div');menu.className='flow-add-menu';menu.innerHTML=[...(P?[['handling','办理节点']]:[]),['approval','审批节点'],['branch','条件分支'],['cc','抄送节点']].map(([type,label])=>`<button type="button" data-kind="${type}"><span class="flow-kind ${type}">${type==='handling'?'▤':type==='approval'?'✓':type==='cc'?'↗':'⑂'}</span>${label}</button>`).join('');document.body.appendChild(menu);const box=button.getBoundingClientRect();menu.style.left=Math.max(8,Math.min(innerWidth-(P?360:270),box.left-120))+'px';menu.style.top=Math.min(innerHeight-100,box.bottom+8)+'px';menu.onclick=e=>{const b=e.target.closest('[data-kind]');if(b){menu.remove();menu=null;fn(b.dataset.kind);}};const dismiss=e=>{if(menu&&!menu.contains(e.target)&&e.target!==button){menu.remove();menu=null;}document.removeEventListener('pointerdown',dismiss);};document.addEventListener('pointerdown',dismiss);}
 function handle(button,ctx){const a=button.dataset.flowAction,{draft,state,change}=ctx,flow=draft&&(P?P.list(draft):draft.config.approval.flow);

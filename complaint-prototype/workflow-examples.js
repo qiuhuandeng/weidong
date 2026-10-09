@@ -65,6 +65,7 @@ function createWorkflowExamples(E,C,P){
   else if(!['first','suspended_first','assistance_first'].includes(kind))E.follow(x,t,t.owner,{connected:true,content:'已与客户联系并核实订单，相关事项按线下沟通结果继续处理。'});
   const owner=()=>t.owner,actor=()=>E.taskPeople(x,t)[0];
   const proposal={detailsVersion:2,typeKey:type,refundOrderId:order.id,refundItems:[{itemId:order.items[0].id,amount:50000}],refundStore:order.store,performanceId:'zhang',payout:{method:'alipay',name:'林女士',account:'13800001002'},refund:E.solutionIncludes.refund(type)?50000:0,compensation:E.solutionIncludes.compensation(type)?10000:0,exchangeItems:exchange?[{productId:'repair-cream',name:'舒缓修护霜 50g',quantity:2,unitPrice:18000,remark:'按客户确认的规格安排交付'}]:[],content:'已线下沟通确认：'+E.SOLUTION_TYPES[type]+'，按约定完成处理事项。',account:'原支付渠道'};
+  fillSolutionSupplement(proposal,t);
   if(['multi_refund','multi_exchange'].includes(kind)){proposal.refundItems=[{itemId:order.items[0].id,amount:30000},{itemId:order.items[1].id,amount:20000}];proposal.content=kind==='multi_refund'?'已确认面部护理疗程退款300元、配套修护护理退款200元，另额外赔偿100元，应付款合计600元。':'已确认两个项目合计退款500元，另置换修护霜2件、面膜1件，商品总价值480元。付款完成后安排采购交付。';}
   if(kind==='multi_exchange')proposal.exchangeItems=[{productId:'repair-cream',quantity:2},{productId:'repair-mask',quantity:1}];
   const procure=()=>E.finishProcurement(x,t,actor(),{method:'总部发货',items:E.procurementItems(t).filter(x=>x.remaining>0).map(x=>({lineIndex:x.lineIndex,quantity:x.remaining})),trackingNumber:'SF20261007'+entry.suffix,note:'已按客户确认的商品及数量发货。'});
@@ -106,8 +107,21 @@ function createWorkflowExamples(E,C,P){
  }
  // Upgrade saved prototype solutions as well as the initial catalogue. This is a
  // one-time data fill; it never confirms a solution or advances a workflow node.
+ function fillSolutionSupplement(p,t){
+  const key=E.solutionKey(p);
+  if(E.solutionIncludes.refund(key))p.refundReason??='客户申请退还未消费项目费用，已核实剩余服务及退款金额。';
+  if(E.solutionIncludes.compensation(key))p.compensationReason??='服务安排影响客户体验，经沟通另行赔偿，金额不包含订单退款。';
+  if(E.solutionIncludes.exchange(key))p.delivery??={name:t.name||'林女士',phone:t.phone||'13800001002',address:t.store?.includes('杭州')?'浙江省杭州市上城区庆春路88号2幢601室':t.store?.includes('南京')?'江苏省南京市浦口区浦口大道88号2幢601室':'上海市徐汇区漕溪北路88号2幢601室'};
+ }
+ function supplementExamples(s){
+  if(s.solutionSupplementExamplesVersion>=1)return false;
+  const ids=new Set([...catalog.map(row=>row.id),...Array.from({length:18},(_,i)=>'KS20261007-D'+String(i+1).padStart(2,'0')),...Array.from({length:12},(_,i)=>'KS20260929-'+String(i+1).padStart(3,'0'))]);
+  const backup={};
+  for(const t of s.tickets){if(!t.proposal||!ids.has(t.id))continue;const before=E.clone(t.proposal);fillSolutionSupplement(t.proposal,t);if(JSON.stringify(before)!==JSON.stringify(t.proposal))backup[t.id]=before;}
+  s.solutionSupplementBackup=backup;s.solutionSupplementExamplesVersion=1;return true;
+ }
  function ensureSolutionExamples(s){
-  if(s.solutionExamplesVersion>=1)return false;
+  if(s.solutionExamplesVersion>=1)return supplementExamples(s);
   const backup={version:1,proposals:{},orders:{}},positive=n=>Number.isSafeInteger(n)&&n>0;
   const archiveOrder=o=>{if(!backup.orders[o.id])backup.orders[o.id]=E.clone(o);};
   const split=(total,capacities)=>{
@@ -171,7 +185,7 @@ function createWorkflowExamples(E,C,P){
     p.version??=1;p.status||='已确认';p.confirmedBy||=t.owner||t.creator||'aftercare';p.confirmedAt||=t.updated||t.created;
    }
   }
-  s.solutionDetailsBackup=backup;s.solutionExamplesVersion=1;return true;
+  s.solutionDetailsBackup=backup;s.solutionExamplesVersion=1;supplementExamples(s);return true;
  }
  function ensureWorkflowExamples(s){
   if(s.workflowExamplesVersion>=8)return false;

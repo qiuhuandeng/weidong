@@ -15,13 +15,13 @@ function create(E,C,P,T){
  function approvalRecovery(s,t,r=active(s,t)){
   const step=t&&E.currentFlowNode(t),current=!!r&&t.approval?.recordId===r.id&&step?.id===r.nodeId&&step.provider==='dingtalk'&&!['已结案','已合并'].includes(t.phase);
   const template=T.get(s,step?.templateId||r?.templateId),issues=!template?['关联审批模板不存在']:!template.enabled?['关联审批模板已停用']:T.issues(template);
-  const snapshot=!issues.length&&t?.proposal?T.preview(template,t):null;
+  const snapshot=!issues.length&&t?.proposal?T.preview(template,t,s):null;
   return {current,templateId:template?.id,issues,missing:snapshot?.missing||[],snapshot,failed:current&&r.status==='failed'&&!r.instanceId};
  }
  function enterExternalApproval(s,t,step){
-  T.ensure(s);const now=Date.now(),template=T.get(s,step.templateId),snapshot=T.ready(template)?T.preview(template,t):{fields:[],missing:['关联审批模板配置不完整']};
+  T.ensure(s);const now=Date.now(),template=T.get(s,step.templateId),snapshot=T.ready(template)?T.preview(template,t,s):{fields:[],missing:['关联审批模板配置不完整']};
   const prior=(s.approvalRecords||[]).filter(r=>r.ticketId===t.id&&r.nodeId===step.id),round=prior.length+1;
-  const r={id:E.id(),provider:'dingtalk',ticketId:t.id,customer:t.name,nodeId:step.id,name:step.title,templateId:step.templateId,templateName:template?.name||'模板待配置',templateVersion:template?.version||0,processCode:template?.processCode||'',proposalVersion:t.proposal.version,proposalRevision:t.proposal.revision||1,round,at:now,status:'failed',people:[],initiator:E.user(t.owner)?.name||t.owner,initiatorId:t.owner,instanceId:'',url:'',snapshot:copy(snapshot),events:[],eventIds:[],syncStatus:'ok',syncedAt:null,error:'',reason:''};
+  const r={id:E.id(),provider:'dingtalk',ticketId:t.id,customer:t.name,nodeId:step.id,name:step.title,templateId:step.templateId,templateName:template?.name||'模板待配置',templateVersion:template?.version||0,processCode:template?.processCode||'',proposalVersion:t.proposal.version,proposalRevision:t.proposal.revision||1,round,at:now,status:'failed',people:[],initiator:E.user(t.owner)?.name||t.owner,initiatorId:t.owner,initiatorDepartment:t.approvalContext?.initiatorDepartment||E.user(t.owner)?.department||'市场运营中心-售后服务部',instanceId:'',url:'',snapshot:copy(snapshot),events:[],eventIds:[],syncStatus:'ok',syncedAt:null,error:'',reason:''};
   r.requestKey=[t.id,step.id,r.proposalVersion,r.proposalRevision,round].join(':');
   r.templateSnapshot=template?copy(template):null;
   r.error=!T.ready(template||{})?'关联审批模板未启用或配置不完整':snapshot.missing.length?'申请资料缺失：'+snapshot.missing.join('、'):'';
@@ -83,8 +83,9 @@ function create(E,C,P,T){
   assert(data.note?.trim(),'请填写调整说明');assert(data.items?.length&&data.items.length<=20,'请添加 1 至 20 项置换商品');
   const seen=new Set(),items=data.items.map(row=>{const p=E.PRODUCTS.find(p=>p.id===row.productId),q=Number(row.quantity);assert(p&&!seen.has(p.id),'请检查商品是否有效或重复');seen.add(p.id);assert(Number.isInteger(q)&&q>0&&q<=9999,'商品数量须为 1 至 9999 的整数');return {productId:p.id,name:p.name,quantity:q,unitPrice:p.unitPrice,value:q*p.unitPrice};});
   const next=t.execution.steps[m.index];assert(next?.id===m.nodeId&&next.provider==='dingtalk','原采购审批节点不存在，请核对流程');
+  const delivery=E.validateDelivery(data.delivery||t.proposal.delivery);
   const before=copy(t.nodeTiming||E.initialNodeClock(t));t.proposalHistory??=[];t.proposalHistory.push(copy(t.proposal));
-  t.proposal.exchangeItems=items;t.proposal.exchangeValue=items.reduce((n,p)=>n+p.value,0);t.proposal.revision=(t.proposal.revision||1)+1;t.proposal.procurementNote=data.note.trim();t.proposal.status='已确认';
+  t.proposal.exchangeItems=items;t.proposal.exchangeValue=items.reduce((n,p)=>n+p.value,0);t.proposal.delivery=delivery;t.proposal.revision=(t.proposal.revision||1)+1;t.proposal.procurementNote=data.note.trim();t.proposal.status='已确认';
   const sales=E.currentFlowNode(t);sales.done=true;sales.completedAt=Date.now();sales.completedBy=a;
   t.execution.index=m.index;delete t.approvalAmendment;E.log(t,a,'调整采购事项',data.note.trim());E.enterFlowNode(s,t);sync(t,before);return t;
  }

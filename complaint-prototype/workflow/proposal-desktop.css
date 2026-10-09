@@ -1,0 +1,105 @@
+/* PC solution composer: compact worksheet, shared calculations and controls. */
+.proposal-surface.form-drawer.pc-proposal{width:min(1000px,100vw)}
+.pc-proposal>.drawer-header{padding:18px 24px;min-height:64px;border-bottom:1px solid #e5ebf2;background:#fff}
+.pc-proposal>.drawer-header h2{font-size:16px;font-weight:600;line-height:24px}
+.proposal-surface.form-drawer.pc-proposal .drawer-body{padding:20px 24px 24px;background:#f5f7fa}
+.pc-proposal .proposal-composer{display:grid;gap:16px;min-width:0}
+.pc-proposal .proposal-type-row{display:grid;grid-template-columns:88px minmax(0,1fr);align-items:center;gap:16px;padding:16px 20px;border:1px solid #e5ebf2;border-radius:8px;background:#fff}
+.pc-proposal .proposal-type-row h3{font-size:13px;line-height:20px;font-weight:500;color:#425571}
+.proposal-surface.form-drawer.pc-proposal .proposal-type-row .method-select{max-width:none}
+.pc-proposal .method-select-trigger{min-height:38px;padding:5px 10px}
+.pc-proposal .proposal-composer .solution-form-grid{display:flex;flex-direction:column;gap:16px}
+.pc-proposal .proposal-support{display:contents}
+.pc-proposal .proposal-composer .solution-section.pc-solution-block,.pc-proposal .pc-solution-block{display:block;padding:0;margin:0;min-width:0;background:#fff;border:1px solid #e5ebf2;border-radius:8px;overflow:hidden}
+.pc-proposal .pc-solution-block>.proposal-section-heading{display:flex;align-items:center;justify-content:space-between;min-height:48px;padding:12px 20px;gap:20px;border-bottom:1px solid #edf1f6;background:#fbfcfe}
+.pc-proposal .pc-solution-block>.proposal-section-heading h3{margin:0;font-size:14px;line-height:22px;font-weight:600;color:#24334b}
+.pc-proposal .pc-solution-block>.proposal-section-heading>div{display:flex;align-items:center;flex-wrap:wrap;gap:8px 16px}
+.pc-proposal .pc-solution-block>.proposal-section-heading p{font-size:12px;line-height:20px;margin:0;color:#8594a8}
+.pc-proposal .pc-solution-block>.proposal-section-heading>.link{min-height:24px;padding:0;font-size:12px}
+.pc-proposal .pc-solution-body{display:grid;gap:16px;padding:18px 20px 20px;min-width:0}
+.pc-proposal .proposal-composer .field{gap:7px;min-width:0}
+.pc-proposal .proposal-composer .field>label,.pc-proposal .pc-evidence-label{font-size:12px;font-weight:400;color:#6b7c93;line-height:18px;margin:0}
+.pc-proposal .proposal-composer .form-grid{gap:16px 20px}
+.pc-proposal .proposal-composer input:not([type=checkbox]):not([type=radio]):not([type=file]),.pc-proposal .proposal-composer select,.pc-proposal .proposal-composer textarea{font-family:inherit;font-size:13px;color:#24334b;border:1px solid #dce4ef;border-radius:5px;background-color:#fff;box-shadow:none}
+.pc-proposal .proposal-composer input:not([type=checkbox]):not([type=radio]):not([type=file]),.pc-proposal .proposal-composer select{min-height:36px;padding-top:7px;padding-bottom:7px}
+.pc-proposal .proposal-composer input:focus,.pc-proposal .proposal-composer select:focus,.pc-proposal .proposal-composer textarea:focus{outline:none;border-color:#1677ff;box-shadow:0 0 0 2px #1677ff14}
+.pc-proposal .proposal-composer input:disabled{background:#f6f8fb;color:#a0adbe;border-color:#e6ebf2}
+.pc-proposal .proposal-composer textarea{resize:vertical;line-height:21px;padding:10px 12px}
+.pc-proposal .proposal-composer input::placeholder,.pc-proposal .proposal-composer textarea::placeholder{color:#a0adbe}
+.pc-proposal .proposal-composer .pc-refund-order{display:grid;grid-template-columns:68px minmax(0,1fr);align-items:center;gap:12px}
+.pc-proposal .proposal-composer .refund-order-summary{font-size:12px;padding:0 0 10px;gap:12px;line-height:18px}
+.pc-proposal .proposal-composer .refund-order-summary b{font-variant-numeric:tabular-nums;font-weight:500;color:#425571}
+.pc-proposal .pc-refund-lines,.pc-proposal .pc-exchange-lines{min-width:0}
+.pc-proposal .solution-table-wrap{border-color:#e3e9f1;border-bottom:0;border-radius:6px 6px 0 0}
+.pc-proposal .proposal-composer .solution-edit-table th{font-size:12px;padding:10px 12px;line-height:18px;color:#7b8ba1;background:#f7f9fc;border-color:#e7edf4}
+.pc-proposal .proposal-composer .solution-edit-table td{font-size:13px;line-height:20px;padding:12px;border-color:#edf1f6}
+.pc-proposal .solution-edit-table tbody tr.is-selected{background:#fff}
+.pc-proposal .solution-edit-table .sub{font-size:11px;color:#93a1b3;line-height:17px;margin-top:3px}
+.pc-proposal .solution-edit-table .refund-amount-cell input{min-height:34px;height:34px;width:100%;padding:6px 9px;text-align:right;font-variant-numeric:tabular-nums}
+.pc-proposal .refund-amount-cell{gap:10px}
+.pc-proposal .refund-amount-cell>.link{font-size:12px;min-height:32px}
+.pc-proposal .solution-edit-table input[type=number]{appearance:textfield;-moz-appearance:textfield}
+.pc-proposal .solution-edit-table input[type=number]::-webkit-inner-spin-button,.pc-proposal .solution-edit-table input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.pc-proposal .proposal-composer .refund-selection-total,.pc-proposal .proposal-composer .exchange-total{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:0;padding:11px 12px;min-height:42px;border:1px solid #e3e9f1;border-top:1px solid #edf1f6;border-radius:0 0 6px 6px;background:#fafbfd;color:#7b8ba1;font-size:12px;line-height:20px}
+.pc-proposal .refund-selection-total b,.pc-proposal .exchange-total b{font-size:15px;color:#24334b;font-weight:600;font-variant-numeric:tabular-nums}
+.pc-proposal .refund-selection-total [data-refund-count]{font-size:12px;font-weight:500;color:#61758e}
+.pc-proposal .exchange-total small{font-size:11px;margin-left:10px;color:#93a1b3}
+.pc-proposal .refund-attribution{padding-top:0}
+.pc-proposal .proposal-composer .solution-reason-input{min-height:66px;height:66px}
+.pc-proposal .compensation-editor .pc-solution-body{grid-template-columns:220px minmax(0,1fr);gap:20px;align-items:start}
+.pc-proposal .compensation-input{max-width:none}
+.pc-proposal .compensation-input input{font-variant-numeric:tabular-nums;text-align:left}
+.pc-proposal .solution-recipient{padding:16px 0 0;border-top:1px solid #edf1f6}
+.pc-proposal .solution-recipient h4{font-size:12px;line-height:18px;color:#6b7c93;font-weight:500;margin:0 0 14px}
+.pc-proposal .solution-recipient .form-grid{grid-template-columns:140px 180px minmax(0,1fr);gap:16px}
+.pc-proposal .solution-recipient .field.full{grid-column:auto}
+.pc-proposal .solution-recipient textarea{height:36px;min-height:36px;padding:7px 10px;line-height:20px}
+.pc-proposal .product-choice{min-height:34px;line-height:20px;border-color:#dce4ef;background:#fff;font-size:13px}
+.pc-proposal .proposal-composer .exchange-empty{padding:20px;border:1px solid #e3e9f1;border-bottom:0;border-radius:0;color:#93a1b3;font-size:12px}
+.pc-proposal .payout-editor .payout-methods{margin:0;border:0;padding:0;flex:none}
+.pc-proposal .payout-methods legend{position:absolute;overflow:hidden;clip-path:inset(50%);width:1px;height:1px;padding:0;margin:0;white-space:nowrap}
+.pc-proposal .payout-method-options{display:flex;gap:18px;align-items:center}
+.pc-proposal .payout-methods label{display:inline-flex;gap:6px;align-items:center;min-width:0;min-height:24px}
+.pc-proposal .payout-methods input{position:static;opacity:1;width:14px;height:14px;min-height:0;margin:0;accent-color:#1677ff}
+.pc-proposal .payout-methods span{border:0;padding:0;background:none;color:#6b7c93;font-size:12px;line-height:20px}
+.pc-proposal .payout-methods input:checked+span{background:none;color:#1677ff}
+.pc-proposal .payout-methods input:focus-visible+span{outline:none}
+.pc-proposal .payout-methods input:focus-visible{outline:2px solid #91c2ff;outline-offset:2px}
+.pc-proposal .payout-editor .pc-solution-body>.form-grid{grid-template-columns:180px minmax(0,1fr)}
+.pc-proposal .payout-editor .pc-solution-body>.form-grid:has([name=payoutBank]:not(:disabled)){grid-template-columns:160px minmax(0,1.2fr) minmax(0,1fr)}
+.pc-proposal .payout-editor .field.full{grid-column:auto}
+.pc-proposal .pc-evidence-body{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(240px,1fr);gap:24px;padding:18px 20px 20px}
+.pc-proposal .proposal-composer .pc-evidence-body>.solution-section{display:flex;flex-direction:column;grid-column:auto;gap:8px;background:none;border:0;padding:0;margin:0;border-radius:0;min-width:0}
+.pc-proposal .proposal-composer .pc-evidence-body>.solution-section:last-child{padding:0}
+.pc-proposal .proposal-composer .pc-evidence-label h3{font-size:12px;font-weight:400;color:#6b7c93;line-height:18px}
+.pc-proposal .proposal-composer .proposal-description textarea{width:100%;min-height:130px;flex:1;line-height:22px}
+.pc-proposal .proposal-attachments .proposal-upload{display:flex;align-items:center;justify-content:center;align-self:stretch;min-height:64px;padding:12px;border:1px dashed #cfdbea;border-radius:5px;background:#fafcff;font-size:12px;color:#617b9b}
+.pc-proposal .proposal-attachments .proposal-upload:hover{background:#f2f7ff;border-color:#91c2ff;color:#1677ff}
+.pc-proposal .proposal-file-list{gap:6px}
+.pc-proposal .proposal-file-row{padding:6px 8px;background:#f6f8fb;border-radius:4px;gap:10px;font-size:12px}
+.pc-proposal .proposal-file-row>span{line-height:18px;font-size:12px}
+.pc-proposal .proposal-file-row>.link{font-size:12px}
+.pc-proposal .drawer-footer.proposal-footer{padding:16px 24px;background:#fff;border-top:1px solid #e5ebf2;box-shadow:0 -3px 14px #28446505}
+.pc-proposal .proposal-footer .form-actions{gap:12px;min-height:44px;margin:0;padding:0;align-items:center}
+.pc-proposal .proposal-footer-total{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:2px 12px;justify-content:start;align-items:baseline;min-width:0;flex:1}
+.pc-proposal .proposal-footer-total>span{font-size:12px;line-height:20px;color:#6b7c93;white-space:nowrap}
+.pc-proposal .proposal-footer-total>strong{font-size:24px;font-weight:600;line-height:30px;letter-spacing:-.3px;white-space:nowrap}
+.pc-proposal .proposal-footer-total.is-text>strong{font-size:14px;font-weight:500;line-height:22px;letter-spacing:0}
+.pc-proposal .proposal-footer-total>small{font-size:11px;line-height:18px;color:#8b9bb0}
+.pc-proposal .proposal-footer .form-actions>button{min-width:88px;height:38px;min-height:38px;border-radius:5px;font-size:13px}
+.pc-proposal .proposal-footer .form-actions>button[type=submit]{min-width:112px}
+@media(max-width:800px){
+ .proposal-surface.form-drawer.pc-proposal .drawer-body{padding:16px}
+ .pc-proposal .solution-recipient .form-grid{grid-template-columns:1fr 1fr}.pc-proposal .solution-recipient .field.full{grid-column:1/-1}
+ .pc-proposal .pc-evidence-body{grid-template-columns:minmax(0,1fr)}
+ .pc-proposal .compensation-editor .pc-solution-body{grid-template-columns:180px minmax(0,1fr)}
+ .pc-proposal .payout-editor .pc-solution-body>.form-grid:has([name=payoutBank]:not(:disabled)){grid-template-columns:1fr 1fr}
+ .pc-proposal .payout-editor .field.full{grid-column:1/-1}
+}
+@media(max-width:560px){
+ .pc-proposal .proposal-type-row{grid-template-columns:minmax(0,1fr);gap:10px}
+ .pc-proposal .pc-solution-block>.proposal-section-heading{flex-wrap:wrap;gap:8px}
+ .pc-proposal .compensation-editor .pc-solution-body{grid-template-columns:minmax(0,1fr)}
+ .pc-proposal .pc-solution-body,.pc-proposal .pc-evidence-body{padding:16px}
+ .pc-proposal .proposal-footer-total>strong{font-size:19px}
+}

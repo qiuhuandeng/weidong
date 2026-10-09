@@ -37,7 +37,7 @@ test('shipping examples cover all methods and load incrementally without changin
 test('new procurement entries remain ready to fill when older shipping examples have already been completed',()=>{
  const {s,store}=fixture(),old=ticket(s,'D08');E.finishProcurement(s,old,'procurement',{method:'门店发货',items:remaining(old),note:'已验收原工单'});
  s.externalApprovalExamplesVersion=3;s.tickets=s.tickets.filter(t=>!/-D1[78]$/.test(t.id));s.orders=s.orders.filter(o=>!/-D1[78]$/.test(o.id));s.approvalRecords=s.approvalRecords.filter(r=>!/-D1[78]$/.test(r.ticketId));
- const before=E.clone(s);store.save(s);const next=store.load();assert.equal(next.externalApprovalExamplesVersion,4);
+ const before=E.clone(s);store.save(s);const next=store.load();assert.equal(next.externalApprovalExamplesVersion,7);
  for(const suffix of ['D17','D18']){const t=ticket(next,suffix);assert.equal(E.currentFlowNode(t).kind,'procurement');assert.equal(t.currentAssignee,'procurement');assert.equal(remaining(t).length,2);assert.equal(E.taskPeople(next,t)[0],'procurement');assert.equal(next.approvalRecords.filter(r=>r.ticketId===t.id&&r.templateId==='approval-purchase').at(-1).status,'approved');}
  assert.deepEqual(remaining(ticket(next,'D17')).map(x=>x.quantity),[2,1]);assert.deepEqual(remaining(ticket(next,'D18')).map(x=>x.quantity),[1,1]);
  assert.deepEqual(next.tickets.filter(t=>before.tickets.some(x=>x.id===t.id)),before.tickets);assert.deepEqual(next.orders.filter(o=>before.orders.some(x=>x.id===o.id)),before.orders);assert.deepEqual(next.configuration,before.configuration);assert.deepEqual(next.crmProfiles,before.crmProfiles);assert.deepEqual(store.load(),next);

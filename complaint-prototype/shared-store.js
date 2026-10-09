@@ -6,9 +6,10 @@ function createStore(storage,engine,configuration,locks){
  const Sources=typeof module!=='undefined'&&module.exports?require('./ticket-sources.js'):root.TicketSources;
  const CRM=typeof module!=='undefined'&&module.exports?require('./crm-profiles.js'):root.CRMProfiles;
  const Templates=typeof module!=='undefined'&&module.exports?require('./approval-templates.js'):root.ApprovalTemplates;
+ const Methods=typeof module!=='undefined'&&module.exports?require('./solution-methods.js'):root.SolutionMethods;
  const parse=key=>{const raw=storage.getItem(key);if(raw===null)return null;try{return JSON.parse(raw);}catch{throw Error('本地数据无法读取，已保留原始数据，请勿重置：'+key);}};
  function load(){
-  const existing=parse(KEY);if(existing){if(existing.unifiedVersion!==1||!Array.isArray(existing.tickets)||!existing.configuration)throw Error('统一数据版本不支持，已保留数据');const sourceOptions=Sources.ensure(existing),configured=configuration.upgrade?.(existing),examples=engine.ensureIntakeExamples?.(existing),upgraded=engine.prepareTickets?.(existing),scenarios=engine.ensureWorkflowExamples?.(existing),details=engine.ensureSolutionExamples?.(existing),templates=Templates?.ensure(existing),external=engine.ensureExternalApprovals?.(existing),externalExamples=engine.ensureExternalApprovalExamples?.(existing),localApprovals=engine.ensureLocalApprovalInteractions?.(existing),approvalPresentation=engine.ensureApprovalPresentation?.(existing),ruleSetup=configuration.ensureRuleSetup?.(existing),crm=CRM?.ensure(existing);if(sourceOptions||crm||configured||examples||upgraded||scenarios||details||templates||external||externalExamples||localApprovals||approvalPresentation||ruleSetup){existing._revision=(existing._revision||0)+1;storage.setItem(KEY,JSON.stringify(existing));}return existing;}
+  const existing=parse(KEY);if(existing){if(existing.unifiedVersion!==1||!Array.isArray(existing.tickets)||!existing.configuration)throw Error('统一数据版本不支持，已保留数据');const sourceOptions=Sources.ensure(existing),configured=configuration.upgrade?.(existing),examples=engine.ensureIntakeExamples?.(existing),upgraded=engine.prepareTickets?.(existing),scenarios=engine.ensureWorkflowExamples?.(existing),details=engine.ensureSolutionExamples?.(existing),templates=Templates?.ensure(existing),external=engine.ensureExternalApprovals?.(existing),externalExamples=engine.ensureExternalApprovalExamples?.(existing),localApprovals=engine.ensureLocalApprovalInteractions?.(existing),approvalPresentation=engine.ensureApprovalPresentation?.(existing),ruleSetup=configuration.ensureRuleSetup?.(existing),crm=CRM?.ensure(existing),methods=Methods.normalizeTickets(existing);if(methods||sourceOptions||crm||configured||examples||upgraded||scenarios||details||templates||external||externalExamples||localApprovals||approvalPresentation||ruleSetup){existing._revision=(existing._revision||0)+1;storage.setItem(KEY,JSON.stringify(existing));}return existing;}
   const previous=parse(TICKETS_KEY);if(previous&&previous.version!==4)throw Error('工单数据版本不支持，已保留数据');
   const state=previous?engine.migrate(previous):engine.seed();
   configuration.initialize(state,parse(RULES_KEY)||parse(OLD_RULES_KEY));
@@ -24,6 +25,7 @@ function createStore(storage,engine,configuration,locks){
   configuration.ensureRuleSetup?.(state);
   CRM?.ensure(state);
   Sources.ensure(state);
+  Methods.normalizeTickets(state);
   state._revision=0;state.migratedAt=Date.now();state.migratedFrom={tickets:!!previous,rules:!!storage.getItem(RULES_KEY)||!!storage.getItem(OLD_RULES_KEY)};
   storage.setItem(KEY,JSON.stringify(state));return state;
  }

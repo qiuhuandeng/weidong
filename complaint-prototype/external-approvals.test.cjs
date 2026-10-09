@@ -103,10 +103,10 @@ test('template repair retries with current mappings in a new round and retains f
 });
 test('missing application data returns to the existing solution form and confirmation creates a fresh application',()=>{
  const s=fixture(),t=ticket(s,'D13'),old=E.externalApprovalRecord(s,t),before=E.clone(old),plan=E.clone(t.proposal);
- assert.deepEqual(E.approvalRecovery(s,t).missing,['收款账号']);assert.throws(()=>E.retryExternalApproval(s,t,t.owner),/收款账号/);
+ assert.deepEqual(E.approvalRecovery(s,t).missing,['收款账户']);assert.throws(()=>E.retryExternalApproval(s,t,t.owner),/收款账户/);
  E.correctApprovalApplication(s,t,t.owner,old.id);assert.equal(t.state,'处理中');assert.equal(t.proposal.status,'待调整');assert.deepEqual(old,before);assert.equal(E.approvalRecovery(s,t,old).failed,false);
  E.confirmSolution(s,t,t.owner,{...plan,payout:{...plan.payout,account:'customer_alipay'},content:'已核实收款账号并补充方案'});
- assert.equal(t.proposal.version,plan.version+1);assert.equal(t.state,'审批中');assert.equal(E.externalApprovalRecord(s,t).status,'running');assert.equal(E.externalApprovalRecord(s,t).snapshot.fields.find(f=>f.id==='account').value,'customer_alipay');assert.deepEqual(old,before);
+ assert.equal(t.proposal.version,plan.version+1);assert.equal(t.state,'审批中');assert.equal(E.externalApprovalRecord(s,t).status,'running');assert.match(E.externalApprovalRecord(s,t).snapshot.fields.find(f=>f.id==='account').value,/customer_alipay/);assert.deepEqual(old,before);
 });
 test('after-payment failed procurement correction preserves paid amounts and resumes at procurement approval',()=>{
  const s=fixture(),t=ticket(s,'D03'),step=E.currentFlowNode(t);t.proposal.exchangeItems=[];const failure=E.enterExternalApproval(s,t,step),before=E.clone(failure),payments=E.clone(t.payments),order=E.clone(s.orders.find(o=>o.id===t.order)),version=t.proposal.version;

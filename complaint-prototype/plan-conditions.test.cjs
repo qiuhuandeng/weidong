@@ -11,11 +11,10 @@ function harness(branches){
  scene.config.approval.flow=[group,{...F.node(),source:'duty',duty:'财务审核'}];
  return {state,scene,group,run:(proposal,level)=>F.plan(scene.config,state,{store:E.STORES[0],applicantId:'intake',level},proposal)};
 }
-test('all seven proposal types select distinct type-only branches, including funded exchanges',()=>{
- assert.deepEqual(Object.values(F.planTypes),['无退赔','退款','赔偿','退款+赔偿','商品置换','退款+商品置换','赔偿+商品置换']);
- const branches=Object.keys(F.planTypes).map(type=>({...rule([type]),title:type})),h=harness(branches);
- for(const type of Object.keys(F.planTypes))assert.equal(h.run({type,refund:['refund','combined','refund_exchange'].includes(type)?300:0,compensation:['compensation','combined','compensation_exchange'].includes(type)?80:0}).path[0].title,type);
- h.group.branches.splice(-1,0,rule(['refund']));assert.throws(()=>h.run(300),/2至8/);
+test('all eight combinations retain legacy exact-match conditions',()=>{
+ assert.equal(Object.keys(F.planTypes).length,8);assert.equal(F.planTypes.service,'无需退赔或置换');assert.equal(F.planTypes.combined_exchange,'退款+赔偿+商品置换');
+ for(const type of Object.keys(F.planTypes)){const h=harness([{...rule([type]),title:type}]);assert.equal(h.run({type,refund:F.Methods.includes(type,'refund')?300:0,compensation:F.Methods.includes(type,'compensation')?80:0}).path[0].title,type);}
+ const h=harness(Array.from({length:8},()=>rule(['refund'])));assert.throws(()=>h.run(300),/2至8/);
 });
 test('type scope is required even when any amount condition is satisfied',()=>{
  const h=harness([rule(['combined'],[amount('refund','gte',5000),amount('compensation','gte',1000)],'any')]);
@@ -35,9 +34,9 @@ test('legacy refund conditions and numeric callers preserve boundary behavior',(
  const b=rule([],[{op:'gt',value:500}]);delete b.planTypes;delete b.judgeBy;
  const h=harness([b]);assert.equal(h.run(500).path[0].title,'默认条件');assert.equal(h.run(500.01).path[0].title,'方案分支');
 });
-test('exchange amount fields are restricted to the actual financial component',()=>{
- assert.deepEqual(F.allowedFields(['service']),[]);assert.deepEqual(F.allowedFields(['exchange']),[]);
- assert.deepEqual(F.allowedFields(['refund_exchange']),['refund']);assert.deepEqual(F.allowedFields(['compensation_exchange']),['compensation']);
+test('exchange price and cash fields follow the selected components',()=>{
+ assert.deepEqual(F.allowedFields(['service']),[]);assert.deepEqual(F.allowedFields(['exchange']),['exchangeValue']);
+ assert.deepEqual(F.allowedFields(['refund_exchange']),['refund','exchangeValue']);assert.deepEqual(F.allowedFields(['compensation_exchange']),['compensation','exchangeValue']);
  for(const type of ['service','exchange'])assert.throws(()=>F.validCondition(rule([type],[amount('refund','gt',0)])),/不适用/);
  assert.throws(()=>F.validCondition(rule(['refund_exchange'],[amount('compensation','gte',1)])),/不适用/);
  const h=harness([rule(['refund_exchange'],[amount('refund','gte',500)])]);

@@ -4,7 +4,7 @@ const P=require('./ticket-flow-config.js')(C.Rules.Flow,C.STAFF,C.Assignment);
 const fixture=()=>{const s=C.initialize(E.seed()).configuration,d=P.prepare(s,C.Rules.prepareScene(C.Rules.sceneList(s)[1]));return {s,d};};
 function route(nodes,proposal){
  const amounts={refund:proposal.refund||0,compensation:proposal.compensation||0};amounts.total=amounts.refund+amounts.compensation;
- const matches=b=>(!b.planTypes?.length||b.planTypes.includes(proposal.type))&&(!b.conditions.length||b.conditions[b.match==='any'?'some':'every'](c=>{const a=amounts[c.field||'refund'],v=Number(c.value);return {gt:a>v,gte:a>=v,lt:a<v,lte:a<=v,eq:a===v}[c.op];}));
+ const matches=b=>C.Rules.Flow.matchesProposal(b,{type:proposal.type,...Object.fromEntries(Object.entries(amounts).map(([key,value])=>[key,value*100]))});
  return nodes.flatMap(n=>n.guard==='funded'&&!amounts.total?[]:n.type==='branch'?route(n.branches.find(b=>b.fallback||matches(b)).nodes,proposal):[n.id]);
 }
 test('creation-based configuration adds handling stages and retains original approval snapshots',()=>{
@@ -38,6 +38,7 @@ test('level conditions do not suppress legacy funding guards and remain stable w
 test('old guards migrate to editable branches preserving task order, configuration and repeated prepares',()=>{
  const {s,d}=fixture(),F=C.Rules.Flow,approval=P.all(P.list(d)).find(n=>n.type==='approval');
  const cc=F.node('cc'),store=P.node('store',s,d),payment=P.node('payment',s,d),fork=F.branch();
+ fork.branches[0].planTypes=['refund'];fork.branches[0].conditions=[{field:'refund',op:'gt',value:500}];
  const nested=F.node();nested.guard='funded';fork.branches[0].nodes=[nested];
  approval.guard=store.guard=payment.guard='funded';cc.guard='always';
  d.config.ticketFlow.nodes=[P.node('sales',s,d),cc,store,approval,fork,payment,P.node('close',s,d)];

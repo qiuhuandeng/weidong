@@ -162,7 +162,7 @@ function assignPending(state,ticket,person){
 function approvals(state,ticket,actor,proposal){
  const r=ticket.flow.config,order=state.orders.find(o=>o.id===ticket.order);
  const types={'普通处理':'service','无退赔':'service','退款':'refund','赔偿':'compensation','退款＋赔偿':'combined','退款+赔偿':'combined','商品置换':'exchange','退款+商品置换':'refund_exchange','赔偿+商品置换':'compensation_exchange'};
- const plan=Rules.Flow.plan(r,state.configuration,{store:ticket.store,level:ticket.level,applicantId:actor,receptionistId:order?.receptionistId,now:Date.now()},{type:types[proposal.type],refund:proposal.refund/100,compensation:proposal.compensation/100});
+ const plan=Rules.Flow.plan(r,state.configuration,{store:ticket.store,level:ticket.level,applicantId:actor,receptionistId:order?.receptionistId,now:Date.now()},{type:Rules.Flow.Methods.keyOf(proposal)||types[proposal.type],refund:proposal.refund/100,compensation:proposal.compensation/100});
  return {...plan,steps:plan.steps.map((n,i)=>({id:n.nodeId+'-'+i,nodeId:n.nodeId,name:n.title,type:n.type,people:n.members,mode:n.mode,hours:n.sourceNode.handling?.hours||r.timing.approvalHours,votes:[],done:false}))};
 }
 const API={...facade,Assignment,Schedule,initialize,upgrade,ensureRuleSetup,scene,bind,active,allocate,activate,assignPending,approvals};
