@@ -20,7 +20,7 @@ function createSolutionFlow(E,C,P){
  function requireTask(s,t,a,kind){assert(t.execution&&!t.pendingAssignment&&current(t)?.kind===kind&&canHandle(s,t,a),'请由当前节点的办理人操作');}
  function validateSolution(s,t,data){
   const detail=data.detailsVersion===2?E.validateFinancialDetails(s,t,{...data,typeKey:keyOf(data)}):{};data={...data,...detail};
-  const typeKey=keyOf(data);assert(types[typeKey],'请选择有效的方案类型');assert(data.content?.trim(),'请填写处理方案');
+  const typeKey=keyOf(data);assert(types[typeKey],'请选择有效的方案类型');
   const refund=Number(data.refund??0),compensation=Number(data.compensation??0);
   assert([refund,compensation].every(n=>Number.isSafeInteger(n)&&n>=0),'金额须为非负数且最多两位小数');
   assert(includesRefund(typeKey)?refund>0:refund===0,includesRefund(typeKey)?'请输入大于 0 的退款金额':'当前方案不包含退款，请清除退款金额');
@@ -31,7 +31,7 @@ function createSolutionFlow(E,C,P){
   const exchangeValue=exchangeItems.reduce((v,x)=>v+x.value,0);assert(Number.isSafeInteger(exchangeValue)&&Number.isSafeInteger(refund+compensation),'方案金额过大');
   if(refund+compensation>0)assert(data.account?.trim(),'请填写收款方式');
   if(refund>0){const order=s.orders.find(o=>o.id===(data.refundOrderId||t.order));assert(order&&order.phone===t.phone,'退款方案须先关联并核实客户订单');const reserved=s.tickets.filter(x=>x.id!==t.id&&(x.proposal?.refundOrderId||x.order)===order.id&&((x.execution&&x.proposal?.status==='已确认'&&!['已结案','已合并'].includes(x.phase)&&!x.payments.some(p=>p.result==='成功'&&p.version===x.proposal.version))||(!x.execution&&x.phase==='待打款'))).reduce((v,x)=>v+(x.proposal?.refund||0),0);assert(refund<=order.paid-order.refunded-reserved,'退款超过订单可退余额（含其他工单占用）');}
-  return {...detail,...Methods.normalize(data),refund,compensation,exchangeItems,exchangeValue,content:data.content.trim(),...(data.attachments?{attachments:copy(data.attachments)}:{}),account:refund+compensation>0?data.account.trim():'',status:'已确认'};
+  return {...detail,...Methods.normalize(data),refund,compensation,exchangeItems,exchangeValue,content:String(data.content??'').trim(),...(data.attachments?{attachments:copy(data.attachments)}:{}),account:refund+compensation>0?data.account.trim():'',status:'已确认'};
  }
  function flowSnapshot(s,t){
   if(t.flow?.config){const scene=P.prepare(s.configuration,{id:t.flow.id,name:t.flow.name,level:t.level,config:t.flow.config});if(s.externalApprovalVersion)scene.config.ticketFlow.nodes=E.prepareExternalNodes(scene.config.ticketFlow.nodes);P.validate(scene,s.configuration);return {...copy(t.flow),config:scene.config};}

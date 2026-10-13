@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>接待规则设置 - 极致简易版</title>
-  <!-- 引入 Tailwind CSS (快速、轻量、无其他JS依赖) -->
+  <title>床位安排 - 上海徐汇店</title>
+  <!-- 沿用原页面的样式版本、颜色与移动端卡片规范 -->
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     /* 隐藏滚动条 */
@@ -28,11 +28,15 @@
     input[type="number"] {
       -moz-appearance: textfield;
     }
-    /* 自定义 select 下拉箭头隐藏（用SVG替代） */
-    select {
-      -webkit-appearance: none;
-      -moz-appearance: none;
-      appearance: none;
+    /* 类型和数量放在同一行，说明独占下一行；列表仅保留细分隔线。 */
+    #active-depts-list > .bed-type-row + .bed-type-row::before,
+    #shared-depts-list > .bed-type-row + .bed-type-row::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      border-top: 1px solid #f3f4f6;
     }
   </style>
 </head>
@@ -44,239 +48,136 @@
     <!-- 顶部导航栏 -->
     <header class="sticky top-0 z-50 bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between">
       <div class="flex items-center space-x-2">
-        <button class="p-1 text-gray-400 hover:text-gray-600 focus:outline-none">
+        <button id="header-back" onclick="returnToOverview()" aria-label="返回全部日期安排" class="p-1 text-gray-400 hover:text-gray-600 focus:outline-none hidden">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" /></svg>
         </button>
         <div>
-          <h1 class="text-lg font-bold text-gray-800">修改接待规则</h1>
+          <h1 id="page-title" class="text-lg font-bold text-gray-800">床位安排</h1>
           <p class="text-xs text-gray-400">上海徐汇店</p>
         </div>
       </div>
-      <button onclick="resetAll()" class="text-sm font-medium text-gray-500 hover:text-blue-600 px-2.5 py-1 rounded-full hover:bg-gray-100 transition-all">
+      <button id="reset-button" onclick="resetAll()" class="hidden text-sm font-medium text-gray-500 hover:text-blue-600 px-2.5 py-1 rounded-full hover:bg-gray-100 transition-all">
         重置
       </button>
     </header>
 
-    <!-- 主体配置内容 -->
-    <main class="flex-1 p-4 space-y-4 overflow-y-auto no-scrollbar">
-      
-      <!-- 历史配置预览 -->
-      <section class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
-        <details class="group" open>
-          <summary class="flex justify-between items-center text-xs text-gray-400 cursor-pointer list-none select-none">
-            <span class="text-sm font-bold text-gray-700">查看已配床位数</span>
-            <svg class="w-4 h-4 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
-          </summary>
-          <div class="grid grid-cols-2 gap-2 mt-3 bg-gray-50 p-3 rounded-xl text-[11px] text-gray-500">
-            <div class="flex justify-between bg-white px-2.5 py-1.5 rounded-lg border border-gray-200">
-              <span>06-02 (周二)</span>
-              <span class="text-blue-600 font-semibold">新3 / 老3</span>
-            </div>
-            <div class="flex justify-between bg-white px-2.5 py-1.5 rounded-lg border border-gray-200">
-              <span>06-03 (周三)</span>
-              <span class="text-blue-600 font-semibold">新3 / 老3</span>
-            </div>
-            <div class="flex justify-between bg-white px-2.5 py-1.5 rounded-lg border border-gray-200">
-              <span>06-04 (周四)</span>
-              <span class="text-blue-600 font-semibold">新3 / 老3</span>
-            </div>
-            <div class="flex justify-between bg-white px-2.5 py-1.5 rounded-lg border border-gray-200">
-              <span>06-06 (周六)</span>
-              <span class="text-blue-600 font-semibold">新6 / 老6</span>
-            </div>
-            <div class="flex justify-between bg-white px-2.5 py-1.5 rounded-lg border border-gray-200">
-              <span>06-07 (周日)</span>
-              <span class="text-blue-600 font-semibold">新5 / 老5</span>
-            </div>
-            <div class="flex justify-between bg-white px-2.5 py-1.5 rounded-lg border border-gray-200">
-              <span>06-09 (周二)</span>
-              <span class="text-blue-600 font-semibold">新4 / 老4</span>
-            </div>
-          </div>
-        </details>
+    <!-- 首页只看已安排结果，沿用原页面的字号、卡片、间距与蓝色按钮。 -->
+    <main id="overview-page" class="flex-1 p-4 space-y-4">
+      <section id="reception-interval-card" class="bg-white rounded-2xl px-4 py-2 shadow-sm border border-gray-100 flex items-center justify-between gap-2">
+        <h2 class="text-sm font-semibold text-gray-800 whitespace-nowrap">客户接待时长间隔</h2>
+        <div class="flex shrink-0" role="group" aria-label="客户接待时长间隔">
+          <button id="btn-interval-60" type="button" onclick="selectInterval(60)" class="min-h-[44px] px-2 text-xs font-semibold"><span class="block rounded-full px-2 py-1.5">60分钟</span></button>
+          <button id="btn-interval-90" type="button" onclick="selectInterval(90)" class="min-h-[44px] px-2 text-xs font-semibold"><span class="block rounded-full px-2 py-1.5">90分钟</span></button>
+        </div>
       </section>
+      <div class="flex items-center justify-between">
+        <span class="text-sm font-bold text-gray-700">全部日期安排</span>
+        <span class="text-xs text-gray-400">点日期查看、调整</span>
+      </div>
+      <div id="schedule-list" class="space-y-3"></div>
+    </main>
 
+    <!-- 单日直接填写；批量设置保留日期选择，新老客分别填写，共用床位只填写一次。 -->
+    <main id="settings-page" class="hidden flex-1 p-4 space-y-4 overflow-y-auto no-scrollbar">
       <section class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
         <!-- 选择目标日期 -->
-        <div class="p-4 bg-slate-50/50">
+        <div id="date-picker" class="p-4 bg-slate-50/50">
           <div class="flex justify-between items-center mb-3">
             <div class="flex items-center space-x-1.5">
-              <span class="w-1.5 h-4 bg-blue-600 rounded-full"></span>
-              <h2 class="text-base font-bold text-gray-800">1. 选择生效日期</h2>
+              <h2 class="text-base font-bold text-gray-800">设置总床位数</h2>
             </div>
             <span id="selected-count-badge" class="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-semibold">
               已选 0 天
             </span>
           </div>
           <div class="flex space-x-2 mb-3">
-            <button onclick="selectQuickDays(8)" class="flex-1 py-2 px-3 text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors flex items-center justify-center space-x-1.5 border border-blue-100 active:scale-95 duration-150">
+            <button onclick="selectQuickDays(15)" class="flex-1 py-2 px-3 text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors flex items-center justify-center space-x-1.5 border border-blue-100 active:scale-95 duration-150">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
-              <span>一键选下周 (8天)</span>
+              <span>一键选未来15天</span>
             </button>
             <button onclick="clearDateSelection()" class="py-2 px-4 text-xs font-medium text-gray-500 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors active:scale-95 duration-150">
               清除
             </button>
           </div>
-          <div class="grid grid-cols-4 gap-2" id="date-grid"></div>
+          <div class="grid grid-cols-5 gap-1.5" id="date-grid"></div>
         </div>
 
-        <!-- 视觉引导线 -->
-        <div class="relative flex items-center justify-center py-1 bg-white">
-          <div class="absolute inset-0 flex items-center px-4" aria-hidden="true">
-            <div class="w-full border-t border-dashed border-gray-200"></div>
-          </div>
-          <div class="relative z-10 w-8 h-8 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-500 shadow-xs">
-            <svg class="w-4 h-4 animate-bounce mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 13l-7 7-7-7m14-6l-7 7-7-7" />
-            </svg>
-          </div>
-        </div>
-
-        <!-- 配置选定日期的床位数 -->
-        <div class="p-4 bg-white transition-all duration-300" id="bed-config-container">
-          <div class="mb-3" id="bed-config-header"></div>
-          <div id="bed-config-content-wrapper" class="space-y-4 transition-opacity duration-300">
-            <div class="bg-gray-100 p-1 rounded-xl flex">
-              <button onclick="switchGuestTab('new')" id="tab-new" class="flex-1 py-2.5 text-sm font-bold rounded-lg transition-all text-blue-600 bg-white shadow-sm">
-                新客床位
-              </button>
-              <button onclick="switchGuestTab('old')" id="tab-old" class="flex-1 py-2.5 text-sm font-medium rounded-lg transition-all text-gray-500 hover:text-gray-800">
-                老客床位
-              </button>
-            </div>
-            <div class="space-y-4">
-              <!-- 总数配额卡片 -->
-              <div class="flex items-center justify-between bg-blue-50/50 p-4 rounded-xl border border-blue-100">
-                <div>
-                  <span class="text-sm font-bold text-gray-800" id="total-bed-title">新客总接待上限</span>
-                  <p class="text-xs text-gray-400 mt-0.5" id="total-bed-desc">以此总预约床位数为准</p>
-                </div>
-                <div class="flex items-center space-x-3">
-                  <button onclick="adjustTotalBed(-1)" class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-blue-600 border border-blue-200 active:scale-95 transition-transform shadow-sm">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 12H4" /></svg>
-                  </button>
-                  <span id="total-bed-value" class="text-xl font-extrabold text-blue-600 w-8 text-center">5</span>
-                  <button onclick="adjustTotalBed(1)" class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-blue-600 border border-blue-200 active:scale-95 transition-transform shadow-sm">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" /></svg>
-                  </button>
-                </div>
-              </div>
-
-              <!-- 开关 1：按科室品类细分配置 -->
-              <div class="flex items-center justify-between py-2 border-t border-gray-50">
-                <div>
-                  <span class="text-sm font-semibold text-gray-700">按科室品类细分配置</span>
-                </div>
-                <button onclick="toggleDepartmentConfig()" id="dept-toggle" class="w-12 h-6 rounded-full transition-colors duration-200 ease-in-out relative focus:outline-none bg-blue-600">
-                  <span id="dept-toggle-dot" class="translate-x-7 ease-in-out duration-200 block w-4 h-4 rounded-full bg-white shadow transform ring-0 transition"></span>
-                </button>
-              </div>
-
-              <!-- 品类动态配置面板 -->
-              <div id="dept-config-panel" class="space-y-3 transition-all duration-300">
-                <div class="flex justify-between items-center py-1 mb-1">
-                  <span class="text-[13px] font-bold text-gray-700">床位初始分配规则 <span class="text-[11px] font-normal text-gray-400">(门店可更改)</span></span>
-                  <button onclick="addDepartment()" class="text-xs font-bold text-blue-600 bg-blue-50 px-2.5 py-1.5 rounded-lg hover:bg-blue-100 flex items-center space-x-1 transition-colors border border-blue-100">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" /></svg>
-                    <span>增加床位类型</span>
-                  </button>
-                </div>
-                
-                <div class="space-y-3" id="active-depts-list"></div>
-                
-                <div class="p-3 bg-slate-50 rounded-xl border border-dashed border-slate-200 flex items-center justify-between mt-2">
-                  <div>
-                    <div class="flex items-center space-x-1.5">
-                      <span class="text-sm font-bold text-slate-700">通用床位</span>
-                      <span class="text-[9px] bg-slate-200 text-slate-600 px-1 py-0.5 rounded font-mono font-bold">自动计算</span>
-                    </div>
-                    <p class="text-[11px] text-gray-400 mt-0.5" id="universal-bed-formula">公式：总数(5) - 已分配(5)</p>
-                    <p class="text-[9px] text-amber-500 font-semibold mt-0.5">※ 未添加的品类将共享通用床位</p>
-                  </div>
-                  <div class="text-right">
-                    <span id="universal-bed-value" class="text-lg font-black text-slate-700">0</span>
-                    <span class="text-xs text-gray-400">张</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- 开关 2：特定项目同段接待上限 -->
-              <div class="flex items-center justify-between py-2 border-t border-gray-50">
-                <div>
-                  <span class="text-sm font-semibold text-gray-700">特定项目同时段限流 <span class="text-xs text-blue-600 font-bold bg-blue-50 px-1.5 py-0.5 rounded ml-1">(防忙不过来)</span></span>
-                </div>
-                <button onclick="toggleProjectConfig()" id="project-toggle" class="w-12 h-6 rounded-full transition-colors duration-200 ease-in-out relative focus:outline-none bg-blue-600">
-                  <span id="project-toggle-dot" class="translate-x-7 ease-in-out duration-200 block w-4 h-4 rounded-full bg-white shadow transform ring-0 transition"></span>
-                </button>
-              </div>
-
-              <!-- 特定项目动态配置面板 -->
-              <div id="project-config-panel" class="space-y-3 transition-all duration-300">
-                <div class="flex justify-between items-center py-1 mb-1">
-                  <span class="text-[13px] font-bold text-gray-700">设置需要错峰预约的项目</span>
-                  <button onclick="addProject()" class="text-xs font-bold text-blue-600 bg-blue-50 px-2.5 py-1.5 rounded-lg hover:bg-blue-100 flex items-center space-x-1 transition-colors border border-blue-100">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" /></svg>
-                    <span>增加</span>
-                  </button>
-                </div>
-                
-                <!-- 动态项目限制卡片容器 -->
-                <div class="space-y-3" id="active-projects-list"></div>
-              </div>
-
-            </div>
-          </div>
+        <div id="date-picker-guide" class="px-4"><div class="border-t border-gray-100"></div></div>
+        <div class="p-4 bg-white" id="bed-config-container">
+          <div class="mb-3" id="bed-config-header" aria-live="polite" aria-atomic="true"></div>
+          <div id="daily-total-fields" class="bg-blue-50/50 px-3 rounded-xl border border-blue-100 divide-y divide-blue-100"></div>
         </div>
       </section>
 
-      <!-- 客户接待时长间隔模块 -->
-      <section class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 space-y-4">
-        <div class="space-y-3">
-          <span class="text-sm font-bold text-gray-800 block">客户接待时长间隔</span>
-          <div class="flex space-x-2.5">
-            <button id="btn-interval-60" onclick="selectInterval(60)" class="px-5 py-2 rounded-full text-xs font-semibold bg-gray-100 text-gray-500 hover:bg-gray-200 active:scale-95 transition-all duration-150">
-              60分钟
-            </button>
-            <button id="btn-interval-90" onclick="selectInterval(90)" class="px-5 py-2 rounded-full text-xs font-bold bg-blue-600 text-white shadow-md shadow-blue-100 active:scale-95 transition-all duration-150">
-              90分钟
-            </button>
-            <button id="btn-interval-120" onclick="selectInterval(120)" class="px-5 py-2 rounded-full text-xs font-semibold bg-gray-100 text-gray-500 hover:bg-gray-200 active:scale-95 transition-all duration-150">
-              120分钟
-            </button>
+      <!-- 专属床位是否开启由后台运营决定，门店只填写可用类型的数量。 -->
+      <section id="dedicated-bed-section" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+        <div id="bed-config-content-wrapper" class="space-y-3 transition-opacity duration-300">
+          <div>
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-3">
+                <h2 class="text-base font-bold text-gray-800">专属床位</h2>
+                <button type="button" role="switch" disabled aria-disabled="true" id="dept-toggle" aria-label="专属床位" aria-describedby="dept-policy-note" class="w-12 min-h-[44px] shrink-0 flex items-center justify-center cursor-not-allowed"></button>
+              </div>
+              <button type="button" id="add-bed-type" onclick="addBedTypeRow()" class="min-h-[44px] shrink-0 text-xs font-medium text-blue-600 disabled:text-gray-400 disabled:cursor-not-allowed">＋ 添加专属床位</button>
+            </div>
+            <p id="dept-policy-note" class="text-xs text-gray-400"></p>
           </div>
-        </div>
-
-        <!-- 生效周期输入控件 -->
-        <div class="pt-3 border-t border-dashed border-gray-100">
-          <div class="flex justify-between items-start mb-2">
-            <span class="text-[13px] font-bold text-gray-800">生效周期 <span class="text-red-500 ml-0.5">*</span></span>
-            <div class="text-right text-[11px] text-gray-400 leading-tight">
-              <p>上次截止</p>
-              <p>暂无</p>
+          <div id="dept-config-panel" class="space-y-3">
+            <div id="shared-bed-panel" class="hidden rounded-xl border border-transparent bg-blue-50/70 px-3 py-2" aria-label="新老客共享床位">
+              <div id="shared-depts-list"></div>
+            </div>
+            <div class="bg-gray-100 p-1 rounded-xl flex" role="tablist" aria-label="按客户类型设置专属床位">
+              <button type="button" role="tab" id="tab-new" aria-controls="guest-bed-panel" onclick="switchGuestTab('new')" onkeydown="handleGuestTabKey(event, 'new')" class="flex-1 min-h-[44px] text-sm font-bold rounded-lg text-blue-600 bg-white shadow-sm">新客床位</button>
+              <button type="button" role="tab" id="tab-old" aria-controls="guest-bed-panel" onclick="switchGuestTab('old')" onkeydown="handleGuestTabKey(event, 'old')" class="flex-1 min-h-[44px] text-sm font-medium rounded-lg text-gray-500">老客床位</button>
+            </div>
+            <div id="guest-bed-panel" role="tabpanel" aria-labelledby="tab-new" class="space-y-3">
+              <div id="active-depts-list"></div>
+              <p id="dedicated-empty" class="hidden rounded-xl bg-slate-50 px-3 py-4 text-xs text-gray-400">未添加专属床位</p>
             </div>
           </div>
-          <div class="flex items-center space-x-3">
-            <span class="text-sm text-gray-700">未来</span>
-            <input type="number" id="project-effective-days" value="7" min="1" oninput="configState.projectEffectiveDays = this.value" class="w-16 h-8 text-center border border-gray-200 rounded-md text-sm font-medium text-gray-800 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors shadow-sm bg-white" />
-            <span class="text-sm text-gray-700">天</span>
-          </div>
+          <div id="daily-general-summary" aria-live="polite" class="p-3 bg-slate-50 rounded-xl border border-dashed border-slate-200 divide-y divide-gray-200"></div>
         </div>
       </section>
 
     </main>
 
-    <!-- 底部常驻保存配置条 -->
-    <footer class="absolute bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-100 p-4 flex space-x-3">
-      <button onclick="resetCurrentConfig()" class="w-1/3 py-3 px-4 rounded-xl border border-gray-200 text-sm font-semibold text-gray-500 hover:bg-gray-50 transition-colors active:scale-[0.98]">
+    <!-- 单列手机布局：保留原按钮样式，底部操作固定在手机宽度及安全区内。 -->
+    <footer style="padding-bottom:max(1rem, env(safe-area-inset-bottom))" class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md z-40 bg-white/95 backdrop-blur-md border-t border-gray-100 p-4 flex space-x-3">
+      <button id="footer-back" onclick="returnToOverview()" class="hidden w-1/3 py-3 px-4 rounded-xl border border-gray-200 text-sm font-semibold text-gray-500 hover:bg-gray-50 transition-colors active:scale-[0.98]">
         返回
       </button>
-      <button onclick="saveReceptionConfig()" class="flex-1 py-3 px-6 rounded-xl bg-blue-600 text-sm font-semibold text-white shadow-lg shadow-blue-200 hover:bg-blue-700 active:bg-blue-800 active:scale-[0.98] transition-all flex items-center justify-center space-x-2">
-        <span>保存配置</span>
+      <button onclick="handlePrimaryAction()" class="flex-1 py-3 px-6 rounded-xl bg-blue-600 text-sm font-semibold text-white shadow-lg shadow-blue-200 hover:bg-blue-700 active:bg-blue-800 active:scale-[0.98] transition-all flex items-center justify-center space-x-2">
+        <span id="primary-label">批量设置床位</span>
       </button>
     </footer>
 
+
+    <!-- 床位类型在底部弹窗中选择，选中后直接回到当前编辑行。 -->
+    <div id="bed-type-layer" class="hidden fixed inset-0 z-[60] bg-black/30 flex items-end justify-center" role="dialog" aria-modal="true" aria-labelledby="bed-type-title" onclick="if (event.target === this) closeBedTypePicker()">
+      <div class="w-full max-w-md max-h-[85dvh] bg-white rounded-t-2xl shadow-xl flex flex-col" style="padding-bottom:max(1rem, env(safe-area-inset-bottom))">
+        <div class="flex items-center justify-between px-4 pt-3 pb-2 shrink-0">
+          <h2 id="bed-type-title" class="text-base font-bold text-gray-800">选择床位类型</h2>
+          <button type="button" onclick="closeBedTypePicker()" aria-label="关闭床位类型选择" class="w-11 h-11 flex items-center justify-center rounded-lg text-gray-400 active:bg-gray-100">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
+          </button>
+        </div>
+        <div id="bed-type-options" class="px-4 overflow-y-auto overscroll-contain no-scrollbar" role="group" aria-label="床位类型"></div>
+      </div>
+    </div>
+
+    <div id="confirm-layer" class="hidden fixed inset-0 z-[60] bg-black/30 flex items-end justify-center" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
+      <div class="w-full max-w-md bg-white rounded-t-2xl p-4 shadow-xl" style="padding-bottom:max(1rem, env(safe-area-inset-bottom))">
+        <h2 id="confirm-title" class="text-base font-bold text-gray-800"></h2>
+        <div id="confirm-content" class="my-4 text-xs text-gray-500 space-y-3 max-h-[60vh] overflow-y-auto"></div>
+        <div class="flex space-x-3">
+          <button id="confirm-cancel" onclick="closeConfirmation()" class="w-1/3 py-3 px-4 rounded-xl border border-gray-200 text-sm font-semibold text-gray-500">返回修改</button>
+          <button id="confirm-submit" onclick="acceptConfirmation()" class="flex-1 py-3 px-6 rounded-xl bg-blue-600 text-sm font-semibold text-white shadow-lg shadow-blue-200">确认保存</button>
+        </div>
+      </div>
+    </div>
+
     <!-- 页面操作提示框 (Toast) -->
-    <div id="toast" class="fixed top-16 left-1/2 -translate-x-1/2 z-50 bg-gray-900/95 text-white px-4 py-3 rounded-xl text-sm font-medium shadow-xl opacity-0 scale-90 pointer-events-none transition-all duration-300 flex items-center space-x-2">
+    <div id="toast" class="w-max max-w-[calc(100vw-32px)] fixed top-16 left-1/2 -translate-x-1/2 z-[70] bg-gray-900/95 text-white px-4 py-3 rounded-xl text-sm font-medium shadow-xl opacity-0 scale-90 pointer-events-none transition-all duration-300 flex items-center space-x-2">
       <span id="toast-icon"></span>
       <span id="toast-text">提示信息</span>
     </div>
@@ -284,560 +185,909 @@
   </div>
 
   <script>
-    // 1. 初始化数据模型
-    const today = new Date('2026-06-02'); 
+    // 日期按上海时区计算；手机与电脑预览使用相同的单列布局。
+    const todayKey = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Shanghai', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+    const today = new Date(`${todayKey}T00:00:00Z`);
     const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
-    
-    // 生成未来15天数据
-    const datesData = [];
-    for (let i = 0; i < 15; i++) {
-      const current = new Date(today);
-      current.setDate(today.getDate() + i);
-      const mm = String(current.getMonth() + 1).padStart(2, '0');
-      const dd = String(current.getDate()).padStart(2, '0');
-      const formattedDate = `${mm}-${dd}`;
-      
-      let hasConfig = false;
-      let badgeText = '';
-      if ([0, 1, 2, 4, 5, 7].includes(i)) {
-        hasConfig = true;
-        badgeText = i === 4 ? '新6·老6' : i === 5 ? '新5·老5' : '新3·老3';
-      }
+    const datesData = Array.from({ length: 15 }, (_, id) => {
+      const date = new Date(today.getTime() + (id + 1) * 86400000);
+      const key = date.toISOString().slice(0, 10);
+      return { id, key, dateStr: key.slice(5), weekday: weekdays[date.getUTCDay()], hasConfig: false, badgeText: '', config: null };
+    });
 
-      datesData.push({
-        id: i,
-        dateStr: formattedDate,
-        weekday: weekdays[current.getDay()],
-        hasConfig: hasConfig,
-        badgeText: badgeText,
-        selected: false
-      });
-    }
+    // 原型模拟后台运营下发的门店配置；接入时由接口提供，不能从日期记录或本地开关推断。
+    const storeOperationsConfig = { dedicatedBedsEnabled: true };
 
-    // 可选床位品类数据池
+    // 模拟 PC 后台下发的床位类型；shared 由后台决定，手机端不提供修改入口。
     const allBedCategories = {
-      yimei: { name: '医美床位', desc: '用于光电皮秒、注射等医学美容，可预约品类: s10 k10' },
-      shengmei: { name: '生美床位', desc: '用于基础SPA与水分充盈护理项目，可预约品类: s11 k12' },
-      wenxiu: { name: '纹绣床位', desc: '用于半永久纹眉、漂唇美睫等' },
-      meijia: { name: '美甲美睫', desc: '用于美睫修甲等快消特色品类' },
-      liliao: { name: '理疗按摩', desc: '用于艾灸推拿、肩颈修复按摩' },
-      zhifa: { name: '植发护发', desc: '用于毛囊种植检测及深层健发' }
+      x10: { name: 'X10床位', shared: true, bookable: 'X10N', desc: '新老客共享同一批床位' },
+      yimei: { name: '医美床位', bookable: 'S10、K10', desc: '用于光电皮秒、注射等医学美容，可预约品类: s10 k10' },
+      shengmei: { name: '生美床位', bookable: 'S11、K12', desc: '用于基础SPA与水分充盈护理项目，可预约品类: s11 k12' },
+      wenxiu: { name: '纹绣床位', bookable: '半永久纹眉、漂唇、美睫', desc: '用于半永久纹眉、漂唇美睫等' },
+      meijia: { name: '美甲美睫', bookable: '美睫、修甲', desc: '用于美睫修甲等快消特色品类' },
+      liliao: { name: '理疗按摩', bookable: '艾灸、推拿、肩颈修复按摩', desc: '用于艾灸推拿、肩颈修复按摩' },
+      zhifa: { name: '植发护发', bookable: '毛囊种植检测、深层健发', desc: '用于毛囊种植检测及深层健发' }
     };
 
-    // 可选特定项目数据池
-    const allProjectsPool = {
-      s10: 's10项目',
-      k10: 'k10项目',
-      z10: 'z10项目',
-      a10: 'a10项目'
-    };
-
-    // 全局配置状态
+    // 新老客分别保存数量；useDeptConfig 仅兼容旧记录，当前开启状态以后台配置为准。
     const configState = {
-      selectedDates: [], 
-      currentTab: 'new', 
-      selectedInterval: 90, 
-      projectEffectiveDays: 7,
-
+      selectedDates: [],
+      sharedBeds: {},
+      sharedTypes: [],
       newGuest: {
         totalLimit: 5,
-        useDeptConfig: true, 
-        useProjectConfig: true,
-        activeDepts: ['yimei', 'shengmei'], 
-        deptValues: { yimei: 0, shengmei: 5, wenxiu: 1, meijia: 0, liliao: 1, zhifa: 1 },
-        activeProjects: [
-          { key: 's10', limit: 2 },
-          { key: 'k10', limit: 1 }
-        ]
+        useDeptConfig: storeOperationsConfig.dedicatedBedsEnabled === true,
+        activeDepts: [],
+        deptValues: { yimei: 0, shengmei: 0, wenxiu: 0, meijia: 0, liliao: 0, zhifa: 0 },
+        pausedDepts: []
       },
       oldGuest: {
         totalLimit: 5,
-        useDeptConfig: true,
-        useProjectConfig: true,
-        activeDepts: ['yimei', 'shengmei'],
-        deptValues: { yimei: 0, shengmei: 5, wenxiu: 1, meijia: 0, liliao: 1, zhifa: 1 },
-        activeProjects: [
-          { key: 's10', limit: 2 },
-          { key: 'k10', limit: 1 }
-        ]
+        useDeptConfig: storeOperationsConfig.dedicatedBedsEnabled === true,
+        activeDepts: [],
+        deptValues: { yimei: 0, shengmei: 0, wenxiu: 0, meijia: 0, liliao: 0, zhifa: 0 },
+        pausedDepts: []
       }
     };
 
-    // 获取当前活动 Tab 的配置对象
-    function getActiveGuestData() {
-      return configState.currentTab === 'new' ? configState.newGuest : configState.oldGuest;
+    // 日期保存完整快照，共用床位只存一份数量。
+    const copy = value => JSON.parse(JSON.stringify(value));
+    const SCHEDULE_STORAGE = 'weidong-bed-schedule-original-ui-v1';
+    const defaultSnapshot = currentSnapshot();
+    let currentView = 'overview';
+    // Tab 只影响展示，不写入日期配置，也不触发未保存提示。
+    let currentGuestTab = 'new';
+    // 由入口决定是否展示日期选择；批量入口即使只选一天也保留选择器。
+    let singleDateId = null;
+    let sourceDateId = null;
+    let draftBaseline = '';
+    let overviewScrollTop = 0;
+    let pendingConfirmation = null;
+    let confirmationFocus = null;
+    let bedTypePicker = null;
+    let bedPickerBackground = [];
+    let bedPickerOverflow = '';
+    let scheduleStore = addOverviewExamples(readSchedule());
+    const INTERVAL_STORAGE = 'weidong-bed-reception-interval-v1';
+    let selectedReceptionInterval = readReceptionInterval();
+    scheduleStore.selectedInterval = selectedReceptionInterval;
+
+    function addOverviewExamples(saved) {
+      // 升级示例版本，让已缓存旧演示数据的浏览器也能看到两种未设置状态。
+      // 本轮只补齐一次；之后填写并保存这些日期时，正常保留操作结果。
+      if (saved.overviewExamplesVersion === 2) return saved;
+      const updated = copy(saved);
+      const generalDay = datesData[1];
+      const unsetDay = datesData[2];
+      updated.previousExampleDays = {
+        ...saved.previousExampleDays,
+        [generalDay.key]: copy(saved.days[generalDay.key] || null),
+        [unsetDay.key]: copy(saved.days[unsetDay.key] || null)
+      };
+
+      const generalConfig = copy(defaultSnapshot);
+      generalConfig.newGuest.totalLimit = 6;
+      generalConfig.oldGuest.totalLimit = 8;
+      generalConfig.newGuest.useDeptConfig = false;
+      generalConfig.oldGuest.useDeptConfig = false;
+      updated.days[generalDay.key] = generalConfig;
+      // 没有配置记录才是“未设置”；不能用已设置为0张的记录代替。
+      delete updated.days[unsetDay.key];
+      updated.overviewExamplesVersion = 2;
+      try { localStorage.setItem(SCHEDULE_STORAGE, JSON.stringify(updated)); }
+      catch (error) { /* 浏览器不允许存储时，仍可查看和操作当前示例。 */ }
+      return updated;
     }
 
-    // 切换接待时长间隔函数
-    function selectInterval(minutes) {
-      configState.selectedInterval = minutes;
-      const list = [60, 90, 120];
-      list.forEach(val => {
-        const btn = document.getElementById(`btn-interval-${val}`);
-        if (val === minutes) {
-          btn.className = "px-5 py-2 rounded-full text-xs font-bold bg-blue-600 text-white shadow-md shadow-blue-100 active:scale-95 transition-all duration-150";
-        } else {
-          btn.className = "px-5 py-2 rounded-full text-xs font-semibold bg-gray-100 text-gray-500 active:scale-95 transition-all duration-150 hover:bg-gray-200";
+    function bedGuestSnapshot(guest) {
+      return {
+        totalLimit: guest.totalLimit,
+        useDeptConfig: guest.useDeptConfig,
+        activeDepts: copy(guest.activeDepts),
+        deptValues: copy(guest.deptValues),
+        pausedDepts: copy(guest.pausedDepts || [])
+      };
+    }
+
+    function bedSnapshot(snapshot) {
+      return { newGuest: bedGuestSnapshot(snapshot.newGuest), oldGuest: bedGuestSnapshot(snapshot.oldGuest), sharedBeds: copy(snapshot.sharedBeds || {}), sharedTypes: copy(snapshot.sharedTypes || []), quantityControlsBooking: snapshot.quantityControlsBooking === true };
+    }
+
+    function applyDepartmentPolicy(snapshot) {
+      const normalized = bedSnapshot(snapshot);
+      const enabled = storeOperationsConfig.dedicatedBedsEnabled === true;
+      // 后台已开启、但某天原来未设置专属床位时，保持未添加状态，不复活历史隐藏分配。
+      if (enabled && !snapshot.newGuest.useDeptConfig) {
+        normalized.sharedTypes = [];
+        normalized.sharedBeds = {};
+      }
+      for (const key of ['newGuest', 'oldGuest']) {
+        const guest = normalized[key];
+        if (enabled && !guest.useDeptConfig) {
+          guest.activeDepts = [];
+          guest.pausedDepts = [];
         }
+        guest.useDeptConfig = enabled;
+        if (enabled) for (const type of guest.pausedDepts) {
+          if (!guest.activeDepts.includes(type)) guest.activeDepts.push(type);
+          guest.deptValues[type] = 0;
+        }
+      }
+      return ensureBedTotals(normalized);
+    }
+
+    function currentSnapshot() {
+      return applyDepartmentPolicy(configState);
+    }
+
+    // 共用床位包含在两类客户各自的总数中，实际床位仍只保留同一份数量。
+    function sharedBedCount(snapshot) {
+      if (!snapshot?.newGuest.useDeptConfig) return 0;
+      return (snapshot.sharedTypes || []).reduce((sum, key) => sum + (snapshot.sharedBeds[key] || 0), 0);
+    }
+
+    function allocatedBeds(guest, snapshot) {
+      if (!guest.useDeptConfig) return 0;
+      return guest.activeDepts.reduce((sum, key) => sum + (guest.deptValues[key] || 0), 0) + sharedBedCount(snapshot);
+    }
+
+    function ensureBedTotals(snapshot) {
+      for (const key of ['newGuest', 'oldGuest']) {
+        const guest = snapshot[key];
+        guest.totalLimit = Math.max(guest.totalLimit, allocatedBeds(guest, snapshot));
+      }
+      return snapshot;
+    }
+
+    function normalizeSchedule(saved) {
+      // 兼容旧的日期记录；门店接待间隔迁移为独立设置，不随单日配置切换。
+      const previousInterval = Object.entries(saved.days).sort(([a], [b]) => a.localeCompare(b))
+        .find(([, day]) => [60, 90].includes(day.selectedInterval))?.[1].selectedInterval;
+      const normalized = {
+        ...saved,
+        version: 6,
+        bookingPauses: copy(saved.bookingPauses || { new: {}, old: {} }),
+        selectedInterval: [60, 90].includes(saved.selectedInterval) ? saved.selectedInterval : previousInterval || 90,
+        // 旧记录保留已分配数量；若总数不足以包含共用床位，仅补足总数。
+        days: Object.fromEntries(Object.entries(saved.days).map(([key, day]) => [key,
+          migrateBedSnapshot(day, saved.version)]))
+      };
+      if (saved.previousExampleDays) {
+        normalized.previousExampleDays = Object.fromEntries(Object.entries(saved.previousExampleDays)
+          .map(([key, day]) => [key, day && validSnapshot(day, saved.version >= 3, saved.version >= 4)
+            ? migrateBedSnapshot(day, saved.version) : null]));
+      }
+      return normalized;
+    }
+
+    function migrateBedSnapshot(day, version) {
+      const snapshot = bedSnapshot(day);
+      if (version < 4) {
+        // activeDepts 表示历史明确配置过的类型；其中 0 张原本表示停约。
+        // 未分配过的类型即使界面补显为 0，也不能据此推断停约意图。
+        for (const group of ['newGuest', 'oldGuest']) {
+          const guest = snapshot[group];
+          guest.pausedDepts = guest.useDeptConfig ? guest.activeDepts.filter(key =>
+            !allBedCategories[key].shared && guest.deptValues[key] === 0) : [];
+          guest.pausedDepts.forEach(key => { guest.deptValues[key] = 0; });
+        }
+      }
+      // 4、5版未分配的零值曾表示可使用通用床位；仅明确暂停的类型保留为 0 张配置。
+      if (version >= 4 && version < 6) {
+        for (const group of ['newGuest', 'oldGuest']) {
+          const guest = snapshot[group];
+          guest.activeDepts = guest.activeDepts.filter(key => guest.deptValues[key] > 0 || guest.pausedDepts.includes(key));
+        }
+      }
+      return version < 3 ? ensureBedTotals(snapshot) : snapshot;
+    }
+
+    function validSnapshot(snapshot, includeShared = true, requireBookingState = true) {
+      return snapshot && (snapshot.sharedTypes === undefined || (Array.isArray(snapshot.sharedTypes)
+        && new Set(snapshot.sharedTypes).size === snapshot.sharedTypes.length
+        && snapshot.sharedTypes.every(key => allBedCategories[key]?.shared && Number.isSafeInteger(snapshot.sharedBeds?.[key]) && snapshot.sharedBeds[key] >= 0)))
+        && ['newGuest', 'oldGuest'].every(key => {
+        const guest = snapshot[key];
+        return guest && Number.isSafeInteger(guest.totalLimit) && guest.totalLimit >= 0
+          && typeof guest.useDeptConfig === 'boolean'
+          && Array.isArray(guest.activeDepts) && new Set(guest.activeDepts).size === guest.activeDepts.length
+          && guest.deptValues && guest.activeDepts.every(k => allBedCategories[k] && Number.isSafeInteger(guest.deptValues[k]) && guest.deptValues[k] >= 0)
+          && ((!requireBookingState && guest.pausedDepts === undefined) || (Array.isArray(guest.pausedDepts)
+            && new Set(guest.pausedDepts).size === guest.pausedDepts.length
+            && guest.pausedDepts.every(k => allBedCategories[k] && !allBedCategories[k].shared
+              && (!guest.activeDepts.includes(k) || guest.deptValues[k] === 0))))
+          && (!guest.useDeptConfig || guest.activeDepts.reduce((sum, k) => sum + guest.deptValues[k], 0)
+            + (includeShared ? sharedBedCount(snapshot) : 0) <= guest.totalLimit);
       });
-      showToast('success', `接待时长已设为 ${minutes} 分钟`);
+    }
+
+    function readSchedule() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(SCHEDULE_STORAGE));
+        if (saved && [1, 2, 3, 4, 5, 6].includes(saved.version) && saved.days && validBookingPauses(saved.bookingPauses)
+          && Object.values(saved.days).every(day => validSnapshot(day, saved.version >= 3, saved.version >= 4))) return normalizeSchedule(saved);
+        // 上一轮原型已经保存的试填数据继续保留，只转换结构，不修改旧存储。
+        const previous = JSON.parse(localStorage.getItem('weidong-bed-planning-v3'));
+        if (previous && previous.version === 3 && previous.plans && previous.rules) {
+          const migrated = { version: 3, selectedInterval: [60, 90].includes(previous.rules.interval) ? previous.rules.interval : 90, days: {} };
+          for (const [key, plan] of Object.entries(previous.plans)) {
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(key) || !plan.new || !plan.old || !Array.isArray(plan.categories)) continue;
+            const snapshot = copy(defaultSnapshot);
+            for (const [from, to] of [['new', 'newGuest'], ['old', 'oldGuest']]) {
+              const guest = snapshot[to];
+              guest.totalLimit = plan[from].total;
+              guest.useDeptConfig = typeof plan[from].dedicated === 'boolean' ? plan[from].dedicated : !!plan.dedicated;
+              guest.activeDepts = plan.categories.filter(k => allBedCategories[k]);
+              guest.deptValues = { ...guest.deptValues, ...plan[from].values };
+            }
+            if (validSnapshot(snapshot)) migrated.days[key] = snapshot;
+          }
+          if (Object.keys(migrated.days).length) return normalizeSchedule(migrated);
+        }
+      } catch (error) { /* 无可用本地数据时，载入演示数据。 */ }
+      const initial = { version: 6, bookingPauses: { new: {}, old: {} }, selectedInterval: 90, days: {} };
+      datesData.slice(0, 10).forEach(day => {
+        const snapshot = copy(defaultSnapshot);
+        snapshot.newGuest.activeDepts = ['yimei', 'shengmei'];
+        snapshot.oldGuest.activeDepts = ['yimei', 'shengmei'];
+        const weekend = ['周六', '周日'].includes(day.weekday);
+        snapshot.newGuest.totalLimit = weekend ? 8 : 6;
+        snapshot.newGuest.deptValues.yimei = weekend ? 3 : 2;
+        snapshot.newGuest.deptValues.shengmei = 2;
+        snapshot.oldGuest.totalLimit = weekend ? 10 : 8;
+        snapshot.oldGuest.deptValues.yimei = 3;
+        snapshot.oldGuest.deptValues.shengmei = weekend ? 4 : 3;
+        initial.days[day.key] = snapshot;
+      });
+      // 一个新客暂停示例；老客仍使用通用床位，便于看清两类客户各自的状态。
+      initial.days[datesData[0].key].newGuest.pausedDepts = ['wenxiu'];
+      return initial;
+    }
+
+    function persistSchedule() {
+      try { localStorage.setItem(SCHEDULE_STORAGE, JSON.stringify(scheduleStore)); return true; }
+      catch (error) { return false; }
+    }
+
+    function addCalendarDays(date, days) {
+      return new Date(Date.parse(`${date}T00:00:00Z`) + days * 86400000).toISOString().slice(0, 10);
+    }
+
+    function validBookingPauses(rules) {
+      if (rules === undefined) return true;
+      const validDate = date => typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date)
+        && Number.isFinite(Date.parse(`${date}T00:00:00Z`)) && addCalendarDays(date, 0) === date;
+      return rules && ['new', 'old'].every(group => rules[group] && !Array.isArray(rules[group])
+        && Object.entries(rules[group]).every(([key, rule]) => allBedCategories[key] && !allBedCategories[key].shared
+          && rule && validDate(rule.startDate) && (rule.endDate === null || validDate(rule.endDate) && rule.endDate >= rule.startDate)));
+    }
+
+    function editorDateKey() {
+      return datesData[Math.min(...configState.selectedDates)]?.key || todayKey;
+    }
+
+    function ruleCoversDate(rule, date) {
+      return !!rule && date >= rule.startDate && (rule.endDate === null || date <= rule.endDate);
+    }
+
+    function pauseRuleOnDate(key, group, date, store = scheduleStore) {
+      const rule = store.bookingPauses?.[group]?.[key];
+      return ruleCoversDate(rule, date) ? rule : null;
+    }
+
+    function isTypePaused(key, group, snapshot = configState, date = editorDateKey()) {
+      const guest = snapshot[`${group}Guest`];
+      return !!guest?.useDeptConfig && (guest.activeDepts.includes(key) && guest.deptValues[key] === 0
+        || (guest.pausedDepts || []).includes(key)
+        || !snapshot.quantityControlsBooking && !!pauseRuleOnDate(key, group, date));
+    }
+
+    // 旧版暂停范围继续保护未修改的日期；本版保存的日期改由已添加类型及数量决定能否预约。
+    function applyDateBookingPauses(snapshot, date, store = scheduleStore) {
+      const result = applyDepartmentPolicy(snapshot);
+      if (result.quantityControlsBooking) return result;
+      for (const group of ['new', 'old']) {
+        const guest = result[`${group}Guest`];
+        if (!guest.useDeptConfig) continue;
+        for (const [key, rule] of Object.entries(store.bookingPauses?.[group] || {})) {
+          if (!ruleCoversDate(rule, date)) continue;
+          if (!guest.activeDepts.includes(key)) guest.activeDepts.push(key);
+          if (!guest.pausedDepts.includes(key)) guest.pausedDepts.push(key);
+          guest.deptValues[key] = 0;
+        }
+      }
+      return result;
+    }
+
+    function syncDateData() {
+      datesData.forEach(day => {
+        const saved = scheduleStore.days[day.key];
+        day.config = saved ? applyDateBookingPauses(saved, day.key) : null;
+        day.hasConfig = !!day.config;
+        day.badgeText = day.config ? `新${day.config.newGuest.totalLimit}·老${day.config.oldGuest.totalLimit}` : '';
+      });
+    }
+
+    function guestSummary(guest, snapshot, includePaused = true) {
+      if (!guest.useDeptConfig) return ['未设置专属床位'];
+      const quantities = guest.activeDepts.filter(key => guest.deptValues[key] > 0)
+        .map(key => `${allBedCategories[key].name.replace(/床位$/, '')} ${guest.deptValues[key]}`);
+      const pauses = includePaused ? guest.activeDepts.filter(key => guest.deptValues[key] === 0).map(key => `${allBedCategories[key].name.replace(/床位$/, '')} 0（不可预约）`) : [];
+      return [...quantities, `通用 ${generalBeds(guest, snapshot)}`, ...pauses];
+    }
+
+    function sharedBedSummary(snapshot) {
+      if (!snapshot?.newGuest.useDeptConfig || !snapshot.sharedTypes?.length) return '';
+      return `<span class="block mt-3 pt-3 border-t border-gray-100 space-y-2">${snapshot.sharedTypes.map(key => `<span class="flex items-center justify-between gap-2"><span class="text-xs text-gray-600">${allBedCategories[key].name}<span class="ml-2 text-[10px] text-blue-600">新老客共享</span></span><span class="text-sm font-bold text-blue-600">${snapshot.sharedBeds[key]} <span class="text-[10px] font-normal text-gray-400">张</span></span></span>`).join('')}</span>`;
+    }
+
+    function commitBedSave(snapshot, ids) {
+      const nextSchedule = copy(scheduleStore);
+      const effectiveSnapshot = applyDepartmentPolicy(snapshot);
+      ids.forEach(id => { nextSchedule.days[datesData[id].key] = applyDateBookingPauses(effectiveSnapshot, datesData[id].key, nextSchedule); });
+      try { localStorage.setItem(SCHEDULE_STORAGE, JSON.stringify(nextSchedule)); }
+      catch (error) { showToast('error', '未能保存，填写内容已保留，请重试'); return; }
+      scheduleStore = nextSchedule;
+      syncDateData();
+      showOverview();
+      showToast('success', `已保存 ${ids.length} 天的完整配置`);
+    }
+
+    function renderOverview() {
+      document.getElementById('schedule-list').innerHTML = datesData.map(day => {
+        const detail = day.config;
+        return `<section class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"><button type="button" onclick="openSettings(${day.id})" class="block w-full text-left p-4 active:bg-gray-50 transition-colors">
+          <span class="flex items-center justify-between">
+            <span class="flex items-center space-x-2"><span class="text-sm font-bold text-gray-800">${day.dateStr}</span><span class="text-xs text-gray-400">${day.weekday}</span>${day.id < 2 ? `<span class="text-[10px] text-blue-600 bg-blue-50 rounded px-1.5 py-0.5">${day.id === 0 ? '明天' : '后天'}</span>` : ''}</span>
+            <span class="text-xs ${detail ? 'text-blue-600' : 'text-amber-600'} font-medium">${detail ? '查看 / 调整' : '去设置'} ›</span>
+          </span>
+          ${detail ? `<span class="grid grid-cols-2 gap-3 mt-3">${[['newGuest', '新客床位'], ['oldGuest', '老客床位']].map(([key, label]) => `<span class="block bg-slate-50/70 rounded-xl p-2.5"><span class="flex items-center justify-between"><span class="text-xs font-medium text-gray-500">${label}</span><span><span class="text-lg font-extrabold text-blue-600">${detail[key].totalLimit}</span><span class="text-[10px] text-gray-400 ml-1">张</span></span></span><span class="flex flex-wrap gap-x-2 gap-y-1 mt-1.5 text-[11px] text-gray-500">${guestSummary(detail[key], detail, false).map(text => `<span>${text}</span>`).join('')}</span></span>`).join('')}</span>` : `<span class="grid grid-cols-2 gap-3 mt-3">${['新客床位', '老客床位'].map(label => `<span class="block bg-slate-50/70 rounded-xl p-2.5"><span class="flex items-center justify-between"><span class="text-xs font-medium text-gray-500">${label}</span><span class="text-lg font-extrabold text-gray-400">—</span></span><span class="block mt-1.5 text-[11px] text-amber-600">总数量未设置</span></span>`).join('')}</span>`}
+          ${sharedBedSummary(detail)}
+        </button></section>`;
+      }).join('');
+    }
+
+    function setVisibility(id, visible) {
+      const element = document.getElementById(id);
+      element.classList.toggle('hidden', !visible);
+      element.hidden = !visible;
+    }
+
+    function showOverview() {
+      currentView = 'overview';
+      setVisibility('overview-page', true);
+      setVisibility('settings-page', false);
+      setVisibility('header-back', false);
+      setVisibility('footer-back', false);
+      setVisibility('reset-button', false);
+      document.getElementById('page-title').innerText = '床位安排';
+      document.getElementById('primary-label').innerText = '批量设置床位';
+      document.getElementById('footer-back').innerText = '返回';
+      renderOverview();
+      renderIntervalSelection(selectedReceptionInterval);
+      window.scrollTo(0, overviewScrollTop);
+    }
+
+    function applySnapshot(snapshot) {
+      const effectiveSnapshot = applyDateBookingPauses(snapshot, editorDateKey());
+      configState.newGuest = effectiveSnapshot.newGuest;
+      configState.oldGuest = effectiveSnapshot.oldGuest;
+      configState.sharedBeds = effectiveSnapshot.sharedBeds;
+      configState.sharedTypes = effectiveSnapshot.sharedTypes;
+      // 进入编辑时已展示旧暂停的 0 张；本次修改统一按数量解释，不再被隐藏的旧规则锁住。
+      configState.quantityControlsBooking = true;
+      renderDailyBedEditor();
+    }
+
+    function openSettings(id = null) {
+      bedTypePicker = null;
+      overviewScrollTop = window.scrollY;
+      currentView = 'settings';
+      currentGuestTab = 'new';
+      singleDateId = id;
+      if (id !== null) {
+        configState.selectedDates = [id];
+        sourceDateId = datesData[id].hasConfig ? id : null;
+        applySnapshot(datesData[id].config || defaultSnapshot);
+      } else {
+        const missing = datesData.filter(day => !day.hasConfig).map(day => day.id);
+        configState.selectedDates = missing.length ? missing : datesData.map(day => day.id);
+        sourceDateId = null;
+        applySnapshot(defaultSnapshot);
+      }
+      draftBaseline = JSON.stringify(currentSnapshot());
+      setVisibility('overview-page', false);
+      setVisibility('settings-page', true);
+      setVisibility('header-back', true);
+      setVisibility('footer-back', true);
+      setVisibility('reset-button', true);
+      setVisibility('date-picker', singleDateId === null);
+      setVisibility('date-picker-guide', singleDateId === null);
+      document.getElementById('page-title').innerText = singleDateId === null ? '批量设置床位' : '床位设置';
+      renderDateGrid();
+      window.scrollTo(0, 0);
+    }
+
+    function hasDraftChanges() {
+      return currentView === 'settings' && JSON.stringify(currentSnapshot()) !== draftBaseline;
+    }
+
+    function returnToOverview() {
+      if (hasDraftChanges()) showConfirmation('修改尚未保存', '<p>返回后，本次填写的内容不会生效。</p>', showOverview, '放弃修改', '继续填写');
+      else showOverview();
+    }
+
+    function handlePrimaryAction() {
+      if (currentView === 'overview') openSettings();
+      else saveReceptionConfig();
+    }
+
+    function showConfirmation(title, content, action, submitText, cancelText = '返回修改') {
+      confirmationFocus = document.activeElement;
+      pendingConfirmation = action;
+      document.getElementById('confirm-title').innerText = title;
+      document.getElementById('confirm-content').innerHTML = content;
+      document.getElementById('confirm-submit').innerText = submitText;
+      document.getElementById('confirm-cancel').innerText = cancelText || '';
+      setVisibility('confirm-cancel', !!cancelText);
+      document.getElementById('confirm-layer').classList.remove('hidden');
+      document.getElementById('confirm-content').scrollTop = 0;
+      document.body.style.overflow = 'hidden';
+      document.getElementById(cancelText ? 'confirm-cancel' : 'confirm-submit').focus();
+    }
+
+    function closeConfirmation() {
+      document.getElementById('confirm-layer').classList.add('hidden');
+      document.body.style.overflow = '';
+      pendingConfirmation = null;
+      confirmationFocus?.focus();
+    }
+
+    function acceptConfirmation() {
+      const action = pendingConfirmation;
+      closeConfirmation();
+      if (action) action();
+    }
+
+    document.addEventListener('keydown', event => {
+      const choosingBedType = !!bedTypePicker;
+      const layer = document.getElementById(choosingBedType ? 'bed-type-layer' : 'confirm-layer');
+      if (layer.classList.contains('hidden')) return;
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        choosingBedType ? closeBedTypePicker() : closeConfirmation();
+        return;
+      }
+      if (event.key === 'Tab') {
+        const controls = Array.from(layer.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), [tabindex="0"]'))
+          .filter(element => !element.hidden && element.tabIndex >= 0 && element.getClientRects().length);
+        const first = controls[0];
+        const last = controls[controls.length - 1];
+        if (first && (!controls.includes(document.activeElement) || (event.shiftKey ? document.activeElement === first : document.activeElement === last))) {
+          event.preventDefault();
+          (event.shiftKey ? last : first).focus();
+        }
+      }
+    });
+
+    function readReceptionInterval() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(INTERVAL_STORAGE));
+        if (saved?.version === 1 && [60, 90].includes(saved.minutes)) return saved.minutes;
+        // 仅沿用旧存储中的接待间隔，不再读取或应用旧的接待限制。
+        const previous = JSON.parse(localStorage.getItem('weidong-bed-capacity-rules-v1'));
+        if ([60, 90].includes(previous?.selectedInterval)) return previous.selectedInterval;
+      } catch (error) { /* 无可用独立设置时，沿用日期存储中的接待间隔。 */ }
+      return scheduleStore.selectedInterval;
+    }
+
+    // 首页直接切换接待间隔，保存成功后再更新显示；仅保留 60 / 90 分钟。
+    function selectInterval(minutes) {
+      if (![60, 90].includes(minutes)) return;
+      if (currentView === 'overview') {
+        try { localStorage.setItem(INTERVAL_STORAGE, JSON.stringify({ version: 1, minutes })); }
+        catch (error) { showToast('error', '未能保存接待间隔，请重试'); return; }
+        selectedReceptionInterval = minutes;
+        scheduleStore.selectedInterval = minutes;
+        showToast('success', '接待间隔已保存');
+      }
+      renderIntervalSelection(minutes);
+    }
+
+    function renderIntervalSelection(minutes) {
+      [60, 90].forEach(value => {
+        const button = document.getElementById(`btn-interval-${value}`);
+        button.setAttribute('aria-pressed', String(value === minutes));
+        button.className = 'min-h-[44px] px-0.5 text-xs font-semibold';
+        button.innerHTML = `<span class="block rounded-full px-2 py-1.5 ${value === minutes ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-500'}">${value}分钟</span>`;
+      });
     }
 
     // 渲染日期网格
     function renderDateGrid() {
       const grid = document.getElementById('date-grid');
       grid.innerHTML = '';
+      if (singleDateId !== null) {
+        updateBedConfigState();
+        return;
+      }
       datesData.forEach(item => {
         const isSelected = configState.selectedDates.includes(item.id);
-        const cardClass = isSelected 
-          ? 'bg-blue-50 border-2 border-blue-600 text-blue-900 shadow-xs scale-[0.98]' 
-          : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-300';
-        const badgeColor = isSelected ? 'bg-blue-200/60 text-blue-700' : 'bg-gray-100 text-gray-500';
+        const cardClass = isSelected
+          ? 'bg-blue-50 border-blue-200 text-blue-900'
+          : 'bg-white border-gray-200 text-gray-700 hover:border-gray-300';
+        const badgeColor = isSelected ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500';
+        const accessibleDate = `${item.dateStr} ${item.weekday}，${item.hasConfig ? `新客 ${item.config.newGuest.totalLimit} 张，老客 ${item.config.oldGuest.totalLimit} 张` : '未配置'}`;
 
         grid.innerHTML += `
-          <div onclick="toggleDateSelect(${item.id})" class="${cardClass} rounded-xl p-2.5 text-center cursor-pointer transition-all duration-150 relative flex flex-col justify-between h-18 select-none">
-            ${isSelected ? `
-              <span class="absolute top-1 right-1 w-3.5 h-3.5 bg-blue-600 rounded-full flex items-center justify-center text-white">
-                <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" /></svg>
-              </span>
-            ` : ''}
-            <div>
-              <span class="block text-[13px] font-bold ${isSelected ? 'text-blue-700' : 'text-gray-800'}">${item.dateStr}</span>
-              <span class="block text-[10px] text-gray-400 font-medium">${item.weekday}</span>
-            </div>
+          <button type="button" aria-label="${accessibleDate}" aria-pressed="${isSelected}" onclick="toggleDateSelect(${item.id})" class="${cardClass} border rounded-xl h-[60px] min-w-0 px-0.5 py-1 text-center cursor-pointer transition-colors duration-150 flex flex-col items-center justify-center gap-0.5 select-none">
+            <span class="block shrink-0 whitespace-nowrap text-xs leading-4 font-bold ${isSelected ? 'text-blue-700' : 'text-gray-800'}">${item.dateStr}</span>
+            <span class="block shrink-0 text-[10px] leading-3 text-gray-400 font-medium">${item.weekday}</span>
             ${item.hasConfig ? `
-              <span class="mt-1 text-[9px] px-1 py-0.5 rounded-sm scale-90 origin-center block truncate font-medium ${badgeColor}">${item.badgeText}</span>
+              <span title="${accessibleDate}" class="w-full text-[9px] leading-3 rounded-sm block truncate font-medium ${badgeColor}">${item.badgeText}</span>
             ` : `
-              <span class="mt-1 text-[9px] text-gray-300 scale-90 block">未配置</span>
+              <span class="text-[9px] leading-3 text-gray-400 block">未配置</span>
             `}
-          </div>
+          </button>
         `;
       });
       document.getElementById('selected-count-badge').innerText = `已选 ${configState.selectedDates.length} 天`;
       updateBedConfigState();
     }
 
+    function selectedDateSummary() {
+      // 连续日期合并为范围，分散日期逐段列出，避免 15 天占用过多高度。
+      const ranges = [];
+      [...configState.selectedDates].sort((a, b) => a - b).forEach(id => {
+        const previous = ranges[ranges.length - 1];
+        if (previous && id === previous[1] + 1) previous[1] = id;
+        else ranges.push([id, id]);
+      });
+      const label = id => `${datesData[id].dateStr} ${datesData[id].weekday}`;
+      return ranges.map(([start, end]) => start === end ? label(start) : `${label(start)} 至 ${label(end)}`).join('、');
+    }
+
     function updateBedConfigState() {
       const headerContainer = document.getElementById('bed-config-header');
       const contentWrapper = document.getElementById('bed-config-content-wrapper');
       const selectedCount = configState.selectedDates.length;
-
       if (selectedCount > 0) {
-        headerContainer.innerHTML = `
-          <div class="flex items-center space-x-1.5">
-            <span class="w-1.5 h-4 bg-blue-600 rounded-full"></span>
-            <h2 class="text-base font-bold text-gray-800">2. 设置这 <span class="text-blue-600 font-extrabold px-1 text-lg">${selectedCount}</span> 天的床位数</h2>
-          </div>
-          <p class="text-xs text-blue-500 font-medium mt-1">您正在统一调整选定日期的床位及项目规则</p>
-        `;
+        const title = singleDateId !== null ? '总床位数' : '';
+        const detail = `${singleDateId !== null ? '' : '已选日期：'}${selectedDateSummary()}`;
+        headerContainer.innerHTML = `${title ? `<h2 class="text-base font-bold text-gray-800">${title}</h2>` : ''}<p class="text-xs leading-relaxed text-blue-500 font-medium${title ? ' mt-1' : ''}">${detail}</p>`;
         contentWrapper.style.opacity = '1';
         contentWrapper.style.pointerEvents = 'auto';
       } else {
-        headerContainer.innerHTML = `
-          <div class="flex items-center space-x-2">
-            <span class="w-1.5 h-4 bg-gray-300 rounded-full"></span>
-            <h2 class="text-base font-bold text-gray-400">2. 配置接待床位数</h2>
-          </div>
-          <p class="text-xs text-amber-500 font-semibold mt-1.5 bg-amber-50 border border-amber-100 p-2 rounded-xl flex items-center space-x-1">
-            <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
-            <span>提示：请先在上方点击日期或“一键选下周”</span>
-          </p>
-        `;
+        headerContainer.innerHTML = '<p class="text-xs text-amber-500 font-semibold bg-amber-50 border border-amber-100 p-2 rounded-xl">提示：请先在上方点击日期或“一键选未来15天”</p>';
         contentWrapper.style.opacity = '0.35';
         contentWrapper.style.pointerEvents = 'none';
       }
+      setVisibility('bed-config-header', !!headerContainer.innerHTML);
+      for (const container of [contentWrapper, document.getElementById('daily-total-fields')]) {
+        container.style.opacity = selectedCount > 0 ? '1' : '0.35';
+        container.style.pointerEvents = selectedCount > 0 ? 'auto' : 'none';
+        container.inert = selectedCount === 0;
+      }
+      if (currentView === 'settings') document.getElementById('primary-label').innerText = '保存';
     }
 
     function toggleDateSelect(id) {
+      if (singleDateId !== null || !validateDailyInputs()) return;
+      const changed = hasDraftChanges();
       const index = configState.selectedDates.indexOf(id);
-      if (index > -1) {
-        configState.selectedDates.splice(index, 1);
-      } else {
-        configState.selectedDates.push(id);
-      }
+      if (index > -1) configState.selectedDates.splice(index, 1);
+      else configState.selectedDates.push(id);
+      configState.selectedDates.sort((a, b) => a - b);
+      // 仅选中一天且尚未改动表单时，直接读取这一天的完整配置。
+      if (configState.selectedDates.length === 1 && !changed) {
+        const day = datesData[configState.selectedDates[0]];
+        applySnapshot(day.config || defaultSnapshot);
+        sourceDateId = day.hasConfig ? day.id : null;
+        draftBaseline = JSON.stringify(currentSnapshot());
+      } else if (configState.selectedDates.length) applySnapshot(currentSnapshot());
       renderDateGrid();
     }
 
     function selectQuickDays(days) {
+      if (singleDateId !== null || !validateDailyInputs()) return;
       configState.selectedDates = [];
       for(let i = 0; i < days; i++) {
         configState.selectedDates.push(i);
       }
+      applySnapshot(currentSnapshot());
       renderDateGrid();
       showToast('success', `已为您一键选定未来 ${days} 天`);
     }
 
     function clearDateSelection() {
+      if (singleDateId !== null) return;
       configState.selectedDates = [];
       renderDateGrid();
       showToast('info', '已清除日期选择');
     }
 
-    function switchGuestTab(type) {
-      configState.currentTab = type;
-      const tabNew = document.getElementById('tab-new');
-      const tabOld = document.getElementById('tab-old');
-      
-      if (type === 'new') {
-        tabNew.className = 'flex-1 py-2.5 text-sm font-bold rounded-lg transition-all text-blue-600 bg-white shadow-sm';
-        tabOld.className = 'flex-1 py-2.5 text-sm font-medium rounded-lg transition-all text-gray-500 hover:text-gray-800';
-        document.getElementById('total-bed-title').innerText = '新客总接待上限';
-      } else {
-        tabOld.className = 'flex-1 py-2.5 text-sm font-bold rounded-lg transition-all text-blue-600 bg-white shadow-sm';
-        tabNew.className = 'flex-1 py-2.5 text-sm font-medium rounded-lg transition-all text-gray-500 hover:text-gray-800';
-        document.getElementById('total-bed-title').innerText = '老客总接待上限';
-      }
-
-      const activeData = type === 'new' ? configState.newGuest : configState.oldGuest;
-      document.getElementById('total-bed-value').innerText = activeData.totalLimit;
-      
-      syncDeptUI(activeData);
-      syncProjectUI(activeData); 
+    function dailyStepper(id, value, update, min = 0, showUnit = true) {
+      const inputValue = `Number(document.getElementById('${id}').value || 0)`;
+      const decrease = `Math.max(${min}, ${inputValue} - 1)`;
+      return `<div class="flex items-center shrink-0">
+        <button type="button" onclick="${update.replace('VALUE', decrease)}" aria-label="减少数量" class="w-11 h-11 text-lg text-blue-600 active:bg-blue-50 rounded-lg">−</button>
+        <input id="${id}" type="number" inputmode="numeric" required min="${min}" max="9007199254740991" step="1" value="${Number.isSafeInteger(value) ? value : ''}" oninput="${update.replace('VALUE', "this.value === '' ? null : Number(this.value)").replace(/\)$/, ", true)")}" class="${showUnit ? 'w-10' : 'w-8'} h-11 text-center text-base font-bold text-blue-600 bg-transparent rounded-lg outline-none focus:ring-1 focus:ring-blue-500" />
+        <button type="button" onclick="${update.replace('VALUE', 'Number(document.getElementById(\'' + id + '\').value || 0) + 1')}" aria-label="增加数量" class="w-11 h-11 text-lg text-blue-600 active:bg-blue-50 rounded-lg">＋</button>
+        ${showUnit ? '<span class="ml-1 text-xs text-gray-400">张</span>' : ''}
+      </div>`;
     }
 
-    // ================== 科室品类配置逻辑 ==================
-    function syncDeptUI(guestData) {
+    function validateDailyInputs(exceptId = null) {
+      const invalid = Array.from(document.querySelectorAll('#settings-page input')).find(input => input.id !== exceptId && input.getClientRects().length && !input.checkValidity());
+      if (!invalid) return true;
+      invalid.focus();
+      invalid.reportValidity();
+      showToast('error', '请填写有效的床位数量，总数不能少于专属与共用床位之和');
+      return false;
+    }
+
+    function switchGuestTab(group) {
+      if (!['new', 'old'].includes(group) || group === currentGuestTab || !validateDailyInputs()) return;
+      currentGuestTab = group;
+      bedTypePicker = null;
+      renderDailyBedEditor();
+    }
+
+    function handleGuestTabKey(event, group) {
+      if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+      event.preventDefault();
+      const next = event.key === 'Home' ? 'new' : event.key === 'End' ? 'old' : group === 'new' ? 'old' : 'new';
+      switchGuestTab(next);
+      if (currentGuestTab === next) document.getElementById(`tab-${next}`).focus();
+    }
+
+    // 原型的预约分配口径，不包含具体时段的占用计算。
+    // 暂停状态先于通用床位判断；X10 等共享类型始终只使用自己的共享数量。
+    function typeBedAllocation(key, group, snapshot = configState) {
+      const type = allBedCategories[key];
+      if (!type) return { mode: 'unavailable', count: 0 };
+      if (type.shared) return { mode: 'shared', count: snapshot.newGuest.useDeptConfig && snapshot.sharedTypes.includes(key) ? snapshot.sharedBeds[key] : 0 };
+      const guest = snapshot[`${group}Guest`];
+      if (!guest) return { mode: 'unavailable', count: 0 };
+      if (isTypePaused(key, group, snapshot)) return { mode: 'paused', count: 0 };
+      const dedicated = guest.useDeptConfig && guest.activeDepts.includes(key) ? guest.deptValues[key] : 0;
+      const general = generalBeds(guest, snapshot);
+      return { mode: dedicated > 0 ? 'dedicated' : 'general', count: dedicated + general, dedicated, general };
+    }
+
+    function typeStatusText(key, group) {
+      const allocation = typeBedAllocation(key, group);
+      if (allocation.mode === 'paused' || allocation.mode === 'shared' && allocation.count === 0) return '不可预约';
+      return '';
+    }
+
+    // 共享类型直接展示在 Tab 上方；添加操作只配置当前客群的普通专属类型。
+    function bedTypeOptionOrder() {
+      return Object.keys(allBedCategories).filter(key => !allBedCategories[key].shared);
+    }
+
+    function addBedTypeRow() {
+      if (!storeOperationsConfig.dedicatedBedsEnabled || !configState.selectedDates.length || !validateDailyInputs()) return;
+      const key = bedTypeOptionOrder().find(key => !configState[`${currentGuestTab}Guest`].activeDepts.includes(key));
+      if (!key) { showToast('info', '门店的床位类型已全部添加'); return; }
+      const group = currentGuestTab;
+      bedTypePicker = null;
+      setDailyCount(key, group, 1);
+      const selector = document.getElementById(`bed-select-${group}-${key}`);
+      selector.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      selector.focus({ preventScroll: true });
+    }
+
+    // 类型、数量和删除按钮同排；普通专属床位为0时显示红色禁约说明。
+    function dailyTypeCard(key, group) {
+      const type = allBedCategories[key];
+      const value = type.shared ? (configState.sharedBeds[key] ?? 0) : configState[`${group}Guest`].deptValues[key];
+      const id = `daily-${group}-${key}`;
+      const blocked = !!typeStatusText(key, group);
+      return `<div id="bed-row-${key}" class="bed-type-row relative ${type.shared ? 'py-2 first:pt-0' : 'py-3 first:pt-2'} last:pb-0">
+        <div class="flex items-center justify-between gap-2">
+          ${type.shared ? `<div class="min-w-0 flex-1 flex flex-wrap items-center gap-x-1.5 gap-y-1"><span id="daily-type-label-${key}" class="whitespace-nowrap text-sm font-semibold text-gray-800">${type.name}</span><span class="whitespace-nowrap rounded bg-slate-100 px-1.5 py-0.5 text-[10px] leading-4 text-slate-500">新老客共享</span></div>` : `<button type="button" id="bed-select-${group}-${key}" onclick="openBedTypePicker('${key}', '${group}')" aria-label="更换${type.name}类型" aria-haspopup="dialog" aria-expanded="false" aria-controls="bed-type-layer" class="min-w-0 flex-1 min-h-[44px] flex items-center justify-between gap-1 rounded-lg border border-gray-200 bg-white px-1.5 text-xs font-semibold text-gray-800 active:bg-slate-50">
+            <span id="daily-type-label-${key}" class="truncate">${type.name}</span><svg class="w-3 h-3 shrink-0 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 9 6 6 6-6"/></svg>
+          </button>`}
+          <div class="flex items-center shrink-0">
+            ${dailyStepper(id, value, `setDailyCount('${key}', '${group}', VALUE)`, 0, !!type.shared).replace('<input ', `<input aria-labelledby="daily-type-label-${key}" aria-describedby="bed-category-${key} daily-type-status-${key}" `)}
+            ${type.shared ? '' : `<button type="button" id="delete-${group}-${key}" onclick="removeBedType('${key}', '${group}')" aria-label="删除${type.name}" class="w-11 h-11 flex items-center justify-center rounded-lg text-gray-400 active:bg-gray-100 active:text-gray-600"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M9 6V4h6v2M5 6l1 14h12l1-14M10 10v6M14 10v6"/></svg></button>`}
+          </div>
+        </div>
+        <p id="bed-category-${key}" class="${blocked ? 'hidden ' : ''}${type.shared ? 'mt-0' : 'mt-1.5'} text-[11px] leading-5 text-gray-400">可约 ${type.bookable}</p>
+        <p id="daily-type-status-${key}" class="${blocked && !type.shared ? '' : 'hidden '}${type.shared ? 'mt-0' : 'mt-1.5'} text-[11px] font-medium leading-5 text-red-500">${bookingBlockedText(key, group)}</p>
+      </div>`;
+    }
+
+    function bookingBlockedText(key, group) {
+      if (allBedCategories[key].shared) return '';
+      return typeStatusText(key, group) ? `【${allBedCategories[key].name.replace(/床位$/, '')}】项目不可预约，通用床位也不能约。` : '';
+    }
+
+    function openBedTypePicker(key, group) {
+      if (!['new', 'old'].includes(group) || !allBedCategories[key] || allBedCategories[key].shared) return;
+      if (!storeOperationsConfig.dedicatedBedsEnabled || !configState.selectedDates.length || !validateDailyInputs()) return;
+      const token = key;
+      if (bedTypePicker?.group === group && bedTypePicker.key === token) { closeBedTypePicker(); return; }
+      bedTypePicker = { key, group };
+      renderBedTypePicker();
+      document.getElementById(`bed-option-${key}`)?.focus({ preventScroll: true });
+    }
+
+    function renderBedTypePicker() {
+      const layer = document.getElementById('bed-type-layer');
+      for (const selector of document.querySelectorAll('[id^="bed-select-"]')) selector.setAttribute('aria-expanded', 'false');
+      if (!bedTypePicker) {
+        layer.classList.add('hidden');
+        if (bedPickerBackground.length) {
+          for (const [element, wasInert] of bedPickerBackground) element.inert = wasInert;
+          bedPickerBackground = [];
+          document.body.style.overflow = bedPickerOverflow;
+        }
+        return;
+      }
+      const { key, group } = bedTypePicker;
+      const target = document.getElementById('bed-type-options');
+      const options = bedTypeOptionOrder();
+      const option = candidate => {
+        const type = allBedCategories[candidate];
+        const selected = candidate === key;
+        const added = type.shared ? configState.sharedTypes.includes(candidate) : configState[`${group}Guest`].activeDepts.includes(candidate);
+        return `<button type="button" id="bed-option-${candidate}" onclick="chooseBedType('${candidate}')" ${added && !selected ? 'disabled' : ''} aria-pressed="${selected}" class="w-full min-h-[48px] flex items-center justify-between gap-2 rounded-lg px-3 text-sm ${selected ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-gray-700'} disabled:text-gray-400 active:bg-blue-50"><span>${type.name}</span><span class="text-xs ${selected ? 'text-blue-600' : 'text-gray-400'}">${selected ? '✓' : added ? '已添加' : ''}</span></button>`;
+      };
+      target.innerHTML = options.map(option).join('');
+      layer.classList.remove('hidden');
+      target.scrollTop = 0;
+      if (!bedPickerBackground.length) {
+        bedPickerBackground = Array.from(document.querySelectorAll('header, main, footer')).map(element => [element, element.inert]);
+        bedPickerOverflow = document.body.style.overflow;
+        for (const [element] of bedPickerBackground) element.inert = true;
+        document.body.style.overflow = 'hidden';
+      }
+      document.getElementById(`bed-select-${group}-${key}`)?.setAttribute('aria-expanded', 'true');
+    }
+
+    function closeBedTypePicker(restoreFocus = true) {
+      const previous = bedTypePicker;
+      bedTypePicker = null;
+      renderBedTypePicker();
+      if (restoreFocus && previous) document.getElementById(`bed-select-${previous.group}-${previous.key}`)?.focus({ preventScroll: true });
+    }
+
+    function chooseBedType(key) {
+      if (!bedTypePicker || !allBedCategories[key] || allBedCategories[key].shared || !validateDailyInputs()) return;
+      const { key: previous, group } = bedTypePicker;
+      if (previous === key) { closeBedTypePicker(); return; }
+      const guest = configState[`${group}Guest`];
+      const active = guest.activeDepts;
+      if (active.includes(key)) return;
+      const count = guest.deptValues[previous];
+      if (!Number.isSafeInteger(count) || count < 0) return;
+      guest.activeDepts = active.map(item => item === previous ? key : item);
+      guest.deptValues[previous] = 0;
+      guest.pausedDepts = guest.pausedDepts.filter(item => item !== previous && item !== key);
+      guest.deptValues[key] = count;
+      bedTypePicker = null;
+      ensureBedTotals(configState);
+      renderDailyBedEditor();
+      const field = document.getElementById(`bed-select-${group}-${key}`);
+      field.scrollIntoView({ block: 'nearest' });
+      field.focus({ preventScroll: true });
+    }
+
+    function removeBedType(key, group) {
+      if (!storeOperationsConfig.dedicatedBedsEnabled || !allBedCategories[key] || !validateDailyInputs(`daily-${group}-${key}`)) return;
+      if (group === 'shared') {
+        configState.sharedTypes = configState.sharedTypes.filter(item => item !== key);
+        delete configState.sharedBeds[key];
+      } else {
+        const guest = configState[`${group}Guest`];
+        guest.activeDepts = guest.activeDepts.filter(item => item !== key);
+        guest.pausedDepts = guest.pausedDepts.filter(item => item !== key);
+        guest.deptValues[key] = 0;
+      }
+      bedTypePicker = null;
+      renderDailyBedEditor();
+      document.getElementById('add-bed-type').focus({ preventScroll: true });
+      showToast('info', group === 'shared' ? '已删除，保存后生效' : '已删除，保存后该类型可使用通用床位预约');
+    }
+
+    function renderDailyBedEditor() {
+      const group = currentGuestTab;
+      const enabled = storeOperationsConfig.dedicatedBedsEnabled === true;
+      const ordinaryTypes = configState[`${group}Guest`].activeDepts.filter(key => !allBedCategories[key].shared);
+      // 共享区域取后台门店类型，不以当天是否已添加数量作为显示条件。
+      const sharedTypes = Object.keys(allBedCategories).filter(key => allBedCategories[key].shared);
+      const shared = enabled && sharedTypes.length > 0;
+      for (const tab of ['new', 'old']) {
+        const button = document.getElementById(`tab-${tab}`);
+        button.className = `flex-1 min-h-[44px] text-sm rounded-lg transition-colors ${tab === group ? 'font-bold text-blue-600 bg-white shadow-sm' : 'font-medium text-gray-500 hover:text-gray-800'}`;
+        button.setAttribute('aria-selected', String(tab === group));
+        button.tabIndex = tab === group ? 0 : -1;
+      }
+      document.getElementById('guest-bed-panel').setAttribute('aria-labelledby', `tab-${group}`);
+      document.getElementById('daily-total-fields').innerHTML = ['new', 'old'].map(customer => {
+        const name = customer === 'new' ? '新客' : '老客';
+        return `<div class="flex items-center justify-between gap-1 min-h-[64px]"><label for="daily-total-${customer}" class="text-[13px] font-bold text-gray-800 whitespace-nowrap">${name}总床位数</label>${dailyStepper(`daily-total-${customer}`, configState[`${customer}Guest`].totalLimit, `setDailyTotal('${customer}', VALUE)`)}</div>`;
+      }).join('');
+      document.getElementById('add-bed-type').disabled = !enabled;
       const toggle = document.getElementById('dept-toggle');
-      const dot = document.getElementById('dept-toggle-dot');
-      const panel = document.getElementById('dept-config-panel');
-
-      if (guestData.useDeptConfig) {
-        toggle.className = 'w-12 h-6 rounded-full transition-colors duration-200 ease-in-out relative focus:outline-none bg-blue-600';
-        dot.className = 'translate-x-7 ease-in-out duration-200 block w-4 h-4 rounded-full bg-white shadow transform ring-0 transition';
-        panel.classList.remove('hidden');
-        renderActiveDepartments(guestData);
-      } else {
-        toggle.className = 'w-12 h-6 rounded-full transition-colors duration-200 ease-in-out relative focus:outline-none bg-gray-200';
-        dot.className = 'translate-x-1 ease-in-out duration-200 block w-4 h-4 rounded-full bg-white shadow transform ring-0 transition';
-        panel.classList.add('hidden');
-      }
+      toggle.setAttribute('aria-checked', String(enabled));
+      toggle.setAttribute('aria-label', enabled ? '专属床位已开启，门店无法关闭' : '专属床位未开启，请联系市场部管理员开启');
+      toggle.innerHTML = `<span aria-hidden="true" class="relative block w-12 h-6 rounded-full ${enabled ? 'bg-blue-200' : 'bg-gray-200'}"><span class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full ${enabled ? 'translate-x-6' : ''}"></span></span>`;
+      document.getElementById('dept-policy-note').textContent = enabled ? '' : '联系市场部管理员开启';
+      setVisibility('dept-policy-note', !enabled);
+      setVisibility('dept-config-panel', enabled);
+      document.getElementById('dept-config-panel').inert = !enabled;
+      setVisibility('shared-bed-panel', shared);
+      document.getElementById('active-depts-list').innerHTML = ordinaryTypes.map(key => dailyTypeCard(key, group)).join('');
+      const hasRows = ordinaryTypes.length > 0;
+      setVisibility('active-depts-list', hasRows);
+      setVisibility('dedicated-empty', !hasRows);
+      document.getElementById('shared-depts-list').innerHTML = sharedTypes.map(key => dailyTypeCard(key, 'shared')).join('');
+      renderBedTypePicker();
+      refreshDailyComputedFields();
     }
 
-    function renderActiveDepartments(guestData) {
-      const container = document.getElementById('active-depts-list');
-      container.innerHTML = '';
-
-      if (guestData.activeDepts.length === 0) {
-        container.innerHTML = `
-          <div class="py-8 text-center text-xs text-gray-400 bg-gray-50 rounded-xl border border-dashed border-gray-200 flex flex-col items-center justify-center">
-            <svg class="w-8 h-8 text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
-            <p>暂无专属科室品类</p>
-            <p class="mt-1">所有预约将共享通用床位</p>
-          </div>
-        `;
-        calculateUniversalBed(guestData);
-        return;
-      }
-
-      guestData.activeDepts.forEach((key, index) => {
-        const deptInfo = allBedCategories[key];
-        const val = guestData.deptValues[key] !== undefined ? guestData.deptValues[key] : 0;
-        const isZero = val === 0;
-
-        const availableOptions = Object.keys(allBedCategories).filter(k => !guestData.activeDepts.includes(k) || k === key);
-        const optionsHtml = availableOptions.map(k => `<option value="${k}" ${k === key ? 'selected' : ''}>${allBedCategories[k].name}</option>`).join('');
-        const cardBgClass = isZero ? 'bg-red-50/20 border-red-200' : 'bg-white border border-gray-200';
-        
-        container.innerHTML += `
-          <div class="p-3.5 rounded-2xl transition-all duration-200 ${cardBgClass} space-y-3">
-            <div class="flex items-center justify-between">
-              <div class="relative w-[130px]">
-                <select onchange="changeDepartment(${index}, this)" class="block w-full pl-3 pr-8 py-2 text-[13px] font-bold text-gray-800 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 shadow-sm cursor-pointer">
-                  ${optionsHtml}
-                </select>
-                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>
-                </div>
-              </div>
-
-              <div class="flex items-center space-x-3">
-                <div class="flex items-center space-x-2 bg-gray-50 px-2 py-1.5 rounded-xl border border-gray-200 shadow-2xs">
-                  <button onclick="adjustDeptBed('${key}', -1)" class="w-6 h-6 rounded-md bg-white hover:bg-gray-100 flex items-center justify-center text-gray-500 active:scale-90 transition-all border border-gray-200">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 12H4" /></svg>
-                  </button>
-                  <span class="text-sm font-extrabold w-6 text-center transition-all duration-150 ${isZero ? 'text-red-600 scale-110' : 'text-gray-800'}">${val}</span>
-                  <button onclick="adjustDeptBed('${key}', 1)" class="w-6 h-6 rounded-md bg-white hover:bg-gray-100 flex items-center justify-center text-gray-500 active:scale-90 transition-all border border-gray-200">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" /></svg>
-                  </button>
-                </div>
-                
-                <button onclick="removeDepartment(${index})" class="text-gray-300 hover:text-red-500 transition-colors p-1 active:scale-90">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                </button>
-              </div>
-            </div>
-
-            <div class="text-[11px] leading-relaxed pl-0.5">
-              ${isZero 
-                ? `
-                  <div class="flex items-start space-x-1.5 text-red-500 font-bold mb-1">
-                    <svg class="w-3.5 h-3.5 mt-[1px] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
-                    <span>通用床位同时禁止预约【${deptInfo.name}】项目。</span>
-                  </div>
-                  <p class="text-gray-400 pl-5">备注：${deptInfo.desc}</p>
-                ` 
-                : `<p class="text-gray-400">${deptInfo.desc}</p>`
-              }
-            </div>
-          </div>
-        `;
-      });
-
-      calculateUniversalBed(guestData);
-    }
-
-    function addDepartment() {
-      const activeData = getActiveGuestData();
-      const availableKey = Object.keys(allBedCategories).find(k => !activeData.activeDepts.includes(k));
-      if (!availableKey) {
-        showToast('info', '已添加所有可用分类！');
-        return;
-      }
-      activeData.activeDepts.push(availableKey);
-      if (activeData.deptValues[availableKey] === undefined) {
-        activeData.deptValues[availableKey] = 0;
-      }
-      renderActiveDepartments(activeData);
-    }
-
-    function removeDepartment(index) {
-      const activeData = getActiveGuestData();
-      activeData.activeDepts.splice(index, 1);
-      renderActiveDepartments(activeData);
-    }
-
-    function changeDepartment(index, selectElement) {
-      const newKey = selectElement.value;
-      const activeData = getActiveGuestData();
-      const oldKey = activeData.activeDepts[index];
-      if (oldKey === newKey) return;
-      if (activeData.deptValues[newKey] === undefined) {
-        activeData.deptValues[newKey] = 0;
-      }
-      activeData.activeDepts[index] = newKey;
-      renderActiveDepartments(activeData);
-    }
-
-    function calculateUniversalBed(guestData) {
-      let allocatedSum = 0;
-      guestData.activeDepts.forEach(key => {
-        allocatedSum += (guestData.deptValues[key] || 0);
-      });
-      let universalValue = guestData.totalLimit - allocatedSum;
-      if (universalValue < 0) {
-        guestData.totalLimit = allocatedSum; 
-        document.getElementById('total-bed-value').innerText = allocatedSum;
-        universalValue = 0;
-        showToast('info', '各品类分配已占满，总床位数已自动调大');
-      }
-      document.getElementById('universal-bed-value').innerText = universalValue;
-      document.getElementById('universal-bed-formula').innerText = `公式：总数(${guestData.totalLimit}) - 已分配专属(${allocatedSum}) = ${universalValue}张通用`;
-    }
-
-    function toggleDepartmentConfig() {
-      const activeData = getActiveGuestData();
-      activeData.useDeptConfig = !activeData.useDeptConfig;
-      syncDeptUI(activeData);
-    }
-
-    function adjustTotalBed(amount) {
-      const activeData = getActiveGuestData();
-      let currentVal = activeData.totalLimit;
-      currentVal += amount;
-      if (currentVal < 0) currentVal = 0;
-      if (activeData.useDeptConfig) {
-        let allocatedSum = 0;
-        activeData.activeDepts.forEach(key => {
-          allocatedSum += (activeData.deptValues[key] || 0);
-        });
-        if (currentVal < allocatedSum) {
-          showToast('error', `总床位数不能少于已分品类数总和 (${allocatedSum}张)`);
-          return;
+    function refreshDailyComputedFields() {
+      const group = currentGuestTab;
+      const guest = configState[`${group}Guest`];
+      for (const [key, type] of Object.entries(allBedCategories)) {
+        const status = document.getElementById(`daily-type-status-${key}`);
+        if (status) {
+          status.textContent = bookingBlockedText(key, type.shared ? 'shared' : group);
+          status.classList.toggle('hidden', !status.textContent);
+          document.getElementById(`bed-category-${key}`)?.classList.toggle('hidden', !!typeStatusText(key, type.shared ? 'shared' : group));
         }
       }
-      activeData.totalLimit = currentVal;
-      document.getElementById('total-bed-value').innerText = currentVal;
-      if (activeData.useDeptConfig) {
-        calculateUniversalBed(activeData);
+      for (const customer of ['new', 'old']) {
+        const data = configState[`${customer}Guest`];
+        const input = document.getElementById(`daily-total-${customer}`);
+        const canSync = input.checkValidity();
+        input.min = allocatedBeds(data, configState);
+        if (document.activeElement !== input && canSync) input.value = data.totalLimit;
       }
+      const generalGroups = guest.useDeptConfig ? [group] : ['new', 'old'];
+      document.getElementById('daily-general-summary').innerHTML = generalGroups.map(customer => `<div class="flex items-center justify-between gap-2 py-1"><div class="flex flex-wrap items-center gap-1.5"><span class="text-sm font-bold text-slate-700">${customer === 'new' ? '新客' : '老客'}通用床位</span><span class="text-[9px] font-bold bg-slate-200 text-slate-600 px-1 py-0.5 rounded">自动计算</span></div><div class="shrink-0"><span class="text-lg font-black text-slate-700">${generalBeds(configState[`${customer}Guest`])}</span><span class="ml-1 text-xs text-gray-400">张</span></div></div>`).join('');
     }
 
-    function adjustDeptBed(key, amount) {
-      const activeData = getActiveGuestData();
-      let val = activeData.deptValues[key] || 0;
-      val += amount;
-      if (val < 0) val = 0;
-      activeData.deptValues[key] = val;
-      renderActiveDepartments(activeData);
+    function generalBeds(guest, snapshot = configState) {
+      return Math.max(0, guest.totalLimit - allocatedBeds(guest, snapshot));
     }
 
-    // ================== STREAMING_CHUNK: 特定项目限流逻辑 ==================
-    function toggleProjectConfig() {
-      const activeData = getActiveGuestData();
-      activeData.useProjectConfig = !activeData.useProjectConfig;
-      syncProjectUI(activeData);
+    function setDailyTotal(group, value, preserveInput = false) {
+      const guest = configState[`${group}Guest`];
+      if (!guest || !Number.isSafeInteger(value) || value < 0) { if (!preserveInput) { showToast('error', '床位数量请填写 0 或正整数'); renderDailyBedEditor(); } return; }
+      const allocated = allocatedBeds(guest, configState);
+      if (value < allocated) { if (!preserveInput) { showToast('error', `总数不能少于已分配的 ${allocated} 张床位（含共用）`); renderDailyBedEditor(); } return; }
+      guest.totalLimit = value;
+      preserveInput ? refreshDailyComputedFields() : renderDailyBedEditor();
     }
 
-    function syncProjectUI(guestData) {
-      const toggle = document.getElementById('project-toggle');
-      const dot = document.getElementById('project-toggle-dot');
-      const panel = document.getElementById('project-config-panel');
-
-      if (guestData.useProjectConfig) {
-        toggle.className = 'w-12 h-6 rounded-full transition-colors duration-200 ease-in-out relative focus:outline-none bg-blue-600';
-        dot.className = 'translate-x-7 ease-in-out duration-200 block w-4 h-4 rounded-full bg-white shadow transform ring-0 transition';
-        panel.classList.remove('hidden');
-        renderActiveProjects(guestData);
-      } else {
-        toggle.className = 'w-12 h-6 rounded-full transition-colors duration-200 ease-in-out relative focus:outline-none bg-gray-200';
-        dot.className = 'translate-x-1 ease-in-out duration-200 block w-4 h-4 rounded-full bg-white shadow transform ring-0 transition';
-        panel.classList.add('hidden');
+    function setDailyCount(key, group, value, preserveInput = false) {
+      if (storeOperationsConfig.dedicatedBedsEnabled !== true) { showToast('info', '联系市场部管理员开启'); return; }
+      if (!allBedCategories[key] || !Number.isSafeInteger(value) || value < 0) { if (!preserveInput) { showToast('error', '床位数量请填写 0 或正整数'); renderDailyBedEditor(); } return; }
+      if (allBedCategories[key].shared && group === 'shared') {
+        if (!configState.sharedTypes.includes(key)) configState.sharedTypes.push(key);
+        configState.sharedBeds[key] = value;
       }
-    }
-
-    function renderActiveProjects(guestData) {
-      const container = document.getElementById('active-projects-list');
-      container.innerHTML = '';
-
-      if (guestData.activeProjects.length === 0) {
-        container.innerHTML = `
-          <div class="py-8 text-center text-xs text-gray-400 bg-gray-50 rounded-xl border border-dashed border-gray-200 flex flex-col items-center justify-center">
-            <svg class="w-8 h-8 text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
-            <p>暂无特定项目限制</p>
-          </div>
-        `;
-        return;
+      else if (!allBedCategories[key].shared && ['new', 'old'].includes(group)) {
+        const guest = configState[`${group}Guest`];
+        if (!guest.activeDepts.includes(key)) guest.activeDepts.push(key);
+        guest.pausedDepts = guest.pausedDepts.filter(item => item !== key);
+        guest.deptValues[key] = value;
       }
-
-      guestData.activeProjects.forEach((item, index) => {
-        const availableOptions = Object.keys(allProjectsPool).filter(k => !guestData.activeProjects.find(p => p.key === k) || k === item.key);
-        const optionsHtml = availableOptions.map(k => `<option value="${k}" ${k === item.key ? 'selected' : ''}>${allProjectsPool[k]}</option>`).join('');
-
-        container.innerHTML += `
-          <div class="p-3.5 rounded-2xl border border-gray-200 bg-white transition-all duration-200 shadow-3xs space-y-3">
-            <div class="flex items-center justify-between">
-              <!-- 左侧下拉选择框 -->
-              <div class="relative w-[130px]">
-                <select onchange="changeProject(${index}, this)" class="block w-full pl-3 pr-8 py-2 text-[13px] font-bold text-gray-800 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 shadow-sm cursor-pointer">
-                  ${optionsHtml}
-                </select>
-                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>
-                </div>
-              </div>
-
-              <!-- 右侧控制区及删除按钮 -->
-              <div class="flex items-center space-x-3">
-                <div class="flex items-center space-x-2 bg-gray-50 px-2 py-1.5 rounded-xl border border-gray-200 shadow-2xs">
-                  <button onclick="adjustProjectLimit(${index}, -1)" class="w-6 h-6 rounded-md bg-white hover:bg-gray-100 flex items-center justify-center text-gray-500 active:scale-90 transition-all border border-gray-200">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 12H4" /></svg>
-                  </button>
-                  <span class="text-sm font-extrabold w-6 text-center text-blue-600">${item.limit}</span>
-                  <button onclick="adjustProjectLimit(${index}, 1)" class="w-6 h-6 rounded-md bg-white hover:bg-gray-100 flex items-center justify-center text-gray-500 active:scale-90 transition-all border border-gray-200">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" /></svg>
-                  </button>
-                </div>
-                
-                <button onclick="removeProject(${index})" class="text-gray-300 hover:text-red-500 transition-colors p-1 active:scale-90">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                </button>
-              </div>
-            </div>
-
-            <!-- 下方极其微弱、轻量化的自然文字白话解释，去掉了高对比度的蓝色背景及灯泡图标 -->
-            <div class="text-[11px] text-gray-400 pl-0.5">
-              <span>同个时段最多接待 ${item.limit} 名 ${allProjectsPool[item.key]} 客户</span>
-            </div>
-          </div>
-        `;
-      });
-    }
-
-    function addProject() {
-      const activeData = getActiveGuestData();
-      const availableKey = Object.keys(allProjectsPool).find(k => !activeData.activeProjects.find(p => p.key === k));
-      if (!availableKey) {
-        showToast('info', '已添加所有可用特定项目限制！');
-        return;
-      }
-      activeData.activeProjects.push({ key: availableKey, limit: 1 });
-      renderActiveProjects(activeData);
-    }
-
-    function removeProject(index) {
-      const activeData = getActiveGuestData();
-      activeData.activeProjects.splice(index, 1);
-      renderActiveProjects(activeData);
-    }
-
-    function changeProject(index, selectElement) {
-      const newKey = selectElement.value;
-      const activeData = getActiveGuestData();
-      if (activeData.activeProjects[index].key === newKey) return;
-      activeData.activeProjects[index].key = newKey;
-      renderActiveProjects(activeData);
-    }
-
-    function adjustProjectLimit(index, amount) {
-      const activeData = getActiveGuestData();
-      let currentVal = activeData.activeProjects[index].limit;
-      currentVal += amount;
-      if (currentVal < 0) currentVal = 0;
-      activeData.activeProjects[index].limit = currentVal;
-      renderActiveProjects(activeData);
-    }
-
-    // ================== 重置与保存逻辑 ==================
-    function resetCurrentConfig() {
-      const activeData = getActiveGuestData();
-      activeData.totalLimit = 5;
-      activeData.useDeptConfig = true;
-      activeData.useProjectConfig = true;
-      activeData.activeDepts = ['yimei', 'shengmei'];
-      activeData.deptValues = { yimei: 0, shengmei: 5, wenxiu: 1, meijia: 0, liliao: 1, zhifa: 1 };
-      activeData.activeProjects = [
-        { key: 's10', limit: 2 },
-        { key: 'k10', limit: 1 }
-      ];
-      
-      document.getElementById('total-bed-value').innerText = 5;
-      syncDeptUI(activeData);
-      syncProjectUI(activeData);
-      showToast('info', '已重置当前配置数据');
+      ensureBedTotals(configState);
+      preserveInput ? refreshDailyComputedFields() : renderDailyBedEditor();
     }
 
     function resetAll() {
-      configState.selectedDates = [];
-      configState.currentTab = 'new';
-      configState.projectEffectiveDays = 7;
-      document.getElementById('project-effective-days').value = 7;
-
-      configState.newGuest = {
-        totalLimit: 5,
-        useDeptConfig: true,
-        useProjectConfig: true,
-        activeDepts: ['yimei', 'shengmei'],
-        deptValues: { yimei: 0, shengmei: 5, wenxiu: 1, meijia: 0, liliao: 1, zhifa: 1 },
-        activeProjects: [
-          { key: 's10', limit: 2 },
-          { key: 'k10', limit: 1 }
-        ]
-      };
-      configState.oldGuest = {
-        totalLimit: 5,
-        useDeptConfig: true,
-        useProjectConfig: true,
-        activeDepts: ['yimei', 'shengmei'],
-        deptValues: { yimei: 0, shengmei: 5, wenxiu: 1, meijia: 0, liliao: 1, zhifa: 1 },
-        activeProjects: [
-          { key: 's10', limit: 2 },
-          { key: 'k10', limit: 1 }
-        ]
-      };
-
-      switchGuestTab('new');
+      bedTypePicker = null;
+      sourceDateId = null;
+      configState.selectedDates = singleDateId === null ? [] : [singleDateId];
+      applySnapshot(defaultSnapshot);
       renderDateGrid();
-      showToast('info', '所有接待规则已被重置');
+      showToast('info', '本次床位配置已重置');
     }
 
     function showToast(type, text) {
@@ -871,29 +1121,30 @@
     }
 
     function saveReceptionConfig() {
-      if (configState.selectedDates.length === 0) {
-        showToast('error', '请先在上方勾选生效日期！');
+      if (!validateDailyInputs()) return;
+      if (!configState.selectedDates.length) { showToast('error', '请先选择生效日期'); return; }
+      const snapshot = currentSnapshot();
+      if (!validSnapshot(snapshot)) { showToast('error', '请检查床位数量与专属分配'); return; }
+      const ids = [...configState.selectedDates];
+      const overwriteCount = ids.filter(id => datesData[id].hasConfig).length;
+      const commit = () => commitBedSave(snapshot, ids);
+      const hasDedicatedType = snapshot.sharedTypes.length > 0
+        || snapshot.newGuest.activeDepts.length > 0 || snapshot.oldGuest.activeDepts.length > 0;
+      if (storeOperationsConfig.dedicatedBedsEnabled && !hasDedicatedType) {
+        const scope = ids.length > 1 ? `<p class="text-xs text-gray-400 leading-5">本次将保存 ${ids.length} 天的床位安排${overwriteCount ? `，其中 ${overwriteCount} 天已有配置将被覆盖` : ''}。</p>` : '';
+        showConfirmation('保存提示', `<p class="text-sm leading-6 text-gray-700">你未配置专属床位，会导致预约客户扎堆，确认要保存吗？</p>${scope}`, commit, '确认保存', '返回配置');
         return;
       }
-
-      const selectedDateStrings = configState.selectedDates.map(id => datesData[id].dateStr);
-      const effectiveDays = document.getElementById('project-effective-days').value || 7;
-
-      configState.selectedDates.forEach(id => {
-        datesData[id].hasConfig = true;
-        datesData[id].badgeText = `新${configState.newGuest.totalLimit}·老${configState.oldGuest.totalLimit}`;
-      });
-      
-      configState.selectedDates = [];
-      renderDateGrid();
-
-      showToast('success', `成功为 ${selectedDateStrings.length} 天保存床位规则，项目规则生效未来 ${effectiveDays} 天`);
+      if (!(ids.length > 1 && overwriteCount)) { commit(); return; }
+      const dates = ids.map(id => datesData[id].dateStr).join('、');
+      const bedSummary = `<div class="rounded-xl border border-blue-100 bg-blue-50/50 p-3 space-y-1 text-xs"><p class="font-semibold text-gray-700">新客 ${snapshot.newGuest.totalLimit} 张 · 老客 ${snapshot.oldGuest.totalLimit} 张</p><p>新客：${guestSummary(snapshot.newGuest, snapshot).join(' · ')}</p><p>老客：${guestSummary(snapshot.oldGuest, snapshot).join(' · ')}</p>${sharedBedSummary(snapshot)}</div>`;
+      showConfirmation('确认批量保存', `<p>将保存 <strong>${ids.length}</strong> 天的床位安排，其中 ${overwriteCount} 天已有配置。</p><p class="text-[11px] text-gray-400">${dates}</p>${bedSummary}`, commit, '确认并保存');
     }
 
     window.onload = function() {
-      renderDateGrid();
-      switchGuestTab('new');
-    }
+      syncDateData();
+      showOverview();
+    };
   </script>
 </body>
 </html>

@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>床位设置日志 · 微动管理后台</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <style>
+    :root{--blue:#3b82f6;--ink:#1e293b;--muted:#8591a3;--line:#edf0f4;--bg:#f5f7fa}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}button,input,select{font:inherit}button{cursor:pointer}a{color:inherit;text-decoration:none}button:disabled{cursor:default;opacity:.4}button,input,select{-webkit-tap-highlight-color:transparent}button:focus-visible,a:focus-visible{outline:2px solid #93c5fd;outline-offset:3px}[hidden]{display:none!important}h1,h2,p{margin:0}.numeric,time{font-variant-numeric:tabular-nums}.muted{color:var(--muted)}
+    .topbar{height:60px;background:#fff;border-bottom:1px solid var(--line)}.topbar-inner{max-width:1240px;margin:auto;height:100%;padding:0 32px;display:flex;align-items:center;justify-content:space-between}.brand{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:700}.brand-mark{display:grid;place-items:center;width:28px;height:28px;border-radius:8px;background:var(--blue);color:#fff;font-size:18px;font-weight:800}.brand span:last-child{font-size:12px;color:#94a3b8;font-weight:400;margin-left:9px;padding-left:18px;border-left:1px solid #e5eaf0}.demo{font-size:11px;color:#8893a3;background:#f5f7fa;border-radius:5px;padding:3px 8px}
+    main{max-width:1180px;margin:auto;padding:30px 32px 40px}.page-title{margin-bottom:22px}.page-title h1{font-size:24px;font-weight:650;letter-spacing:.2px}.page-title p{font-size:13px;color:var(--muted);margin-top:6px}.panel{background:white;border:1px solid var(--line);border-radius:20px;box-shadow:0 10px 25px -5px rgb(0 0 0/.03),0 8px 10px -6px rgb(0 0 0/.01);overflow:hidden}
+    .filters{display:flex;align-items:center;gap:24px;flex-wrap:wrap;padding:22px 26px;border-bottom:1px solid var(--line)}.field{display:flex;align-items:center;gap:12px}.field label{font-size:13px;color:#526176;white-space:nowrap}.field label small{font-size:11px;color:#8b96a6}.control{height:38px;width:196px;border:1px solid #dfe5ee;border-radius:6px;background:white;padding:0 11px;color:#334155;outline:none;font-size:13px;min-width:0}.control:focus{border-color:#93baff;box-shadow:0 0 0 3px #eff6ff}.date-input{width:168px}.btn{height:38px;border:1px solid #dfe5ee;border-radius:6px;background:white;padding:0 18px;font-size:13px;color:#526176;white-space:nowrap}.btn.primary{background:var(--blue);color:white;border-color:var(--blue)}.btn.primary:hover{background:#2563eb}.export{display:flex;align-items:center;gap:6px;background:none;border:0;color:#718096;font-size:12px;padding:5px 0}.export:hover{color:var(--blue)}
+    .history{padding:23px 26px 7px}.history-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-bottom:28px}.history-title{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}.history-title h2{font-size:15px;font-weight:650}.history-title span{font-size:12px;color:#96a0ae}.timeline{list-style:none;margin:0;padding:0}.event{display:grid;grid-template-columns:126px 24px minmax(0,1fr)}.event-time{padding-top:1px;font-size:12px;color:#8b96a6;display:flex;flex-direction:column;line-height:1.8}.event-time strong{color:#526176;font-size:15px;font-weight:600;letter-spacing:.3px}.track{position:relative}.track:before{content:"";position:absolute;left:5px;top:7px;bottom:-7px;width:1px;background:#e3e9f2}.track:after{content:"";position:absolute;top:7px;left:1px;width:9px;height:9px;border-radius:50%;border:2px solid #becbdd;background:#fff}.event:first-child .track:after{background:var(--blue);border-color:var(--blue);box-shadow:0 0 0 4px #eff6ff}.event:last-child .track:before{display:none}.event-content{min-width:0;padding:0 0 23px 11px;margin-bottom:22px;border-bottom:1px solid #f0f3f7}.event:last-child .event-content{border:0;margin-bottom:0;padding-bottom:18px}.event-meta{display:flex;align-items:center;gap:10px;min-height:24px;flex-wrap:wrap;margin-bottom:12px;font-size:12px;color:#7b8798}.operator{color:#3b4b60;font-size:13px;font-weight:600}.mode{background:#f2f5f9;color:#738297;border-radius:4px;font-size:11px;padding:1px 7px}.mode.batch{background:#eff5ff;color:#6486b7}.latest-tag{font-size:10px;color:#3b82f6}.initial-tag{font-size:11px;color:#8794a6}.empty{padding:45px 16px 65px;text-align:center;color:#94a3b8;font-size:12px}.empty strong{display:block;color:#64748b;font-size:15px;font-weight:500;margin-bottom:8px}.empty svg{display:block;margin:0 auto 16px;color:#bdcadd}.footnote{font-size:11px;color:#9aa4b2;padding:14px 3px 0}.end-note{text-align:center;font-size:11px;color:#a7b0be;padding:0 0 18px}.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:#334155;color:white;padding:10px 20px;border-radius:8px;font-size:13px;z-index:10}
+    /* 桌面时间列与内容并排；手机把时间移到记录顶部，保留连续时间轴。 */
+    @media(max-width:850px){.filters{gap:14px}.field{gap:8px}.control{width:168px}.date-input{width:155px}.field label small{display:none}.event{grid-template-columns:105px 20px minmax(0,1fr)}}
+    @media(max-width:620px){.topbar{height:52px}.topbar-inner{padding:0 16px}.brand span:last-child{display:none}main{padding:20px 16px 28px}.page-title{margin-bottom:16px}.page-title h1{font-size:21px}.page-title p{font-size:12px}.filters{padding:18px 16px;gap:13px}.field{width:100%;gap:10px}.field label{width:65px;flex-shrink:0}.field label small{display:none}.control,.date-input{flex:1;width:0;height:42px}.filters .btn{width:100%;height:42px}.history{padding:19px 16px 3px}.history-head{align-items:flex-start;padding-bottom:24px;gap:6px}.history-title{display:block}.history-title h2{font-size:14px}.history-title span{display:block;margin-top:4px;font-size:11px}.export{font-size:11px;flex-shrink:0}.event{grid-template-columns:19px minmax(0,1fr);grid-template-rows:auto auto}.track{grid-column:1;grid-row:1/3}.event-time{grid-column:2;grid-row:1;flex-direction:row;gap:10px;align-items:baseline;padding:0 0 9px 7px;font-size:11px}.event-time strong{font-size:13px;color:#526176}.event-content{grid-column:2;grid-row:2;padding-left:7px;padding-bottom:20px;margin-bottom:18px}.event-meta{margin-bottom:11px;gap:7px}.event-meta .role{display:none}.footnote{font-size:10px;line-height:1.8}.end-note{padding-bottom:18px}}
+
+    /* 门店是主列表，日志原位展开；不跳转页面、不使用详情弹窗。 */
+    .list-heading{display:flex;align-items:center;gap:14px;padding:19px 26px 17px;font-size:12px;color:#96a0ae}.list-heading strong{font-size:14px;color:#526176;font-weight:600}.store-columns,.store-row{display:grid;grid-template-columns:minmax(220px,1fr) 110px 120px 178px 80px;gap:16px;align-items:center;padding:0 26px}.store-columns{min-height:41px;background:#f8fafc;color:#8c98a8;font-size:11px;border-top:1px solid #f1f4f8;border-bottom:1px solid #f1f4f8}.store-row{width:100%;min-height:84px;border:0;background:white;text-align:left;color:#526176;font-size:12px}.store-row:hover{background:#fafcff}.store-section+.store-section{border-top:1px solid var(--line)}.store-name{display:flex;gap:12px;align-items:center;min-width:0}.store-name strong{font-size:14px;font-weight:600;display:block;color:#34445b}.store-name small{font-size:11px;color:#9aa4b2;display:block;margin-top:4px}.store-icon{width:34px;height:34px;border-radius:9px;background:#f1f5fb;color:#8fa5c5;display:grid;place-items:center;flex-shrink:0}.store-record-count{font-weight:600;font-size:14px;color:#65768c}.store-record-count small{font-size:11px;font-weight:400;color:#96a0af}.store-time{font-size:11px;color:#8794a6}.store-action{font-size:12px;color:#3b82f6;display:flex;align-items:center;justify-content:flex-end;gap:5px}.store-logs{padding:0 26px 0 38px;border-top:1px solid #eff3f9;background:#fcfdff}.expanded>.store-row{background:#f4f8ff}.expanded .chevron{transform:rotate(180deg)}.log-context{display:flex;justify-content:space-between;align-items:center;gap:12px;color:#8f9bab;font-size:11px;padding:18px 0 24px}.event{grid-template-columns:116px 24px minmax(0,1fr)}.effective-label{font-size:11px;color:#9aa5b4;margin-bottom:12px;display:flex;gap:7px;flex-wrap:wrap;align-items:baseline}.effective-label strong{font-size:12px;color:#6d7e93;font-weight:500}.effective-label .initial-tag{margin-left:6px}.record-group+.record-group{border-top:1px solid #e8eef5;margin-top:17px;padding-top:17px}.event-meta{margin-bottom:7px}.clear-date{border:0;background:none;color:#8794a6;font-size:11px;padding:0;white-space:nowrap}.clear-date:hover{color:#3b82f6}.end-note{padding:2px 0 22px}
+    @media(max-width:1020px){.store-columns,.store-row{grid-template-columns:minmax(170px,1fr) 90px 90px 145px 72px;gap:10px}.store-logs{padding-left:26px}}
+    @media(max-width:760px){.store-columns,.store-row{grid-template-columns:minmax(140px,1fr) 80px 72px;gap:8px;padding-left:18px;padding-right:18px}.store-person,.store-time,.store-columns>span:nth-child(3),.store-columns>span:nth-child(4){display:none}.store-name{gap:8px}.store-icon{display:none}.store-name strong{font-size:13px}.store-name small{font-size:10px}.list-heading{padding-left:18px}.store-logs{padding:0 18px}}
+    @media(max-width:620px){.event{grid-template-columns:19px minmax(0,1fr)}.store-row{min-height:78px}.store-record-count{font-size:13px}.store-action{font-size:11px}.store-logs{padding:0 13px}.log-context{font-size:10px;gap:5px;padding-top:15px;padding-bottom:20px}.log-context .export{font-size:10px}.effective-label{gap:3px;margin-bottom:10px}.effective-label strong{font-size:11px}.filters .field:has(.date-input){flex-wrap:wrap}.clear-date{padding-left:75px}.store-columns{font-size:10px}.list-heading{gap:9px;font-size:11px}.list-heading strong{font-size:13px}.store-record-count small{font-size:10px}}
+    /* 所有数量使用固定列对齐；客群合并单元格，初始配置与变更记录分别使用两种表头。 */
+    .comparison-block{max-width:760px}.comparison-caption{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:12px;color:#526176;padding:0 1px 9px}.comparison-caption>span{font-weight:550}.comparison-caption small{font-size:10px;color:#98a3b2}.comparison-frame{border:1px solid #e7edf4;border-radius:9px;overflow:hidden;background:#fff}.comparison-table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:12px;line-height:1.5}.comparison-table .audience-col{width:13%}.comparison-table .bed-col{width:39%}.comparison-table .count-col{width:16%}.comparison-table.initial-table .bed-col{width:64%}.comparison-table.initial-table .initial-count-col{width:23%}.comparison-table thead th{padding:9px 15px;background:#f6f8fb;color:#8b96a6;font-size:11px;font-weight:400;text-align:left;white-space:nowrap}.comparison-table thead th.number-heading{text-align:right}.comparison-table tbody th,.comparison-table tbody td{border-top:1px solid #eef2f6;padding:10px 15px;vertical-align:middle}.comparison-table tbody+tbody tr:first-child>*{border-top-color:#dfe7f1}.comparison-table .audience{background:#fafbfd;font-size:12px;font-weight:550;color:#63748b;text-align:left;vertical-align:top;padding-top:12px;border-right:1px solid #eef2f6}.audience small{display:block;font-weight:400;font-size:10px;color:#97a3b4;margin-top:3px}.comparison-table .bed-label{font-weight:400;text-align:left;color:#526176}.comparison-table .total-row .bed-label{font-weight:600;color:#34455e}.number-cell{text-align:right;font-size:13px;font-weight:550}.prior-value{color:#92a0b2;font-weight:400}.current-value{color:#2f6ecc}.initial-value{color:#526782}.total-row .initial-value{font-size:15px;font-weight:650;color:#263b59}.number-cell.text-value{font-size:11px;font-weight:400}.comparison-table .computed-row .bed-label,.comparison-table .computed-row .number-cell{color:#98a3b2;font-weight:400}.computed-label{display:inline-block;font-size:10px;font-weight:400;color:#a3adbb;margin-left:7px}.amount-up{color:#329780}.amount-down{color:#bb8851}.amount-neutral{color:#8996a8;font-size:11px;font-weight:400}.computed-row .change-cell span{color:#98a3b2;font-weight:400}.change-cell{font-size:12px}.zero-note{display:block;color:#bf7b6e;font-size:10px;font-weight:400;margin-top:3px}.current-value.zero-value{color:#bd7362}.effective-label{margin-bottom:13px}.effective-label strong{color:#526782;font-weight:550}.event-meta{margin-bottom:10px}.record-group+.record-group{border:0;margin-top:20px;padding-top:0}.event-content{padding-bottom:25px;margin-bottom:24px;border-bottom:0}.event:last-child .event-content{padding-bottom:18px}.comparison-table .total-row th:not(.audience),.comparison-table .total-row td{background:#fcfdff}
+    /* 窄屏缩小留白，保持对比列与分组，不产生横向滚动。 */
+    @media(max-width:850px){.comparison-table .audience-col{width:13%}.comparison-table .bed-col{width:36%}.comparison-table .count-col{width:17%}.comparison-table thead th,.comparison-table tbody th,.comparison-table tbody td{padding-left:10px;padding-right:10px}.computed-label{display:block;margin:2px 0 0}.comparison-table.initial-table .bed-col{width:61%}.comparison-table.initial-table .initial-count-col{width:26%}}
+    @media(max-width:620px){.comparison-table{font-size:11px}.comparison-table .audience-col{width:14%}.comparison-table .bed-col{width:32%}.comparison-table .count-col{width:18%}.comparison-table.initial-table .bed-col{width:56%}.comparison-table.initial-table .initial-count-col{width:30%}.comparison-table thead th{font-size:10px;padding:8px 6px}.comparison-table tbody th,.comparison-table tbody td{padding:9px 6px}.comparison-table .audience{font-size:11px;padding-top:11px}.audience small{font-size:9px}.number-cell{font-size:12px}.number-cell.text-value,.amount-neutral{font-size:10px;word-break:keep-all}.change-cell{font-size:11px}.comparison-caption{font-size:11px}.comparison-caption small{font-size:9px}.computed-label,.zero-note{font-size:9px}.comparison-frame{border-radius:7px}.comparison-table .total-row .initial-value{font-size:13px}}
+    /* 后台使用整个工作区；数量和操作信息按列排列，窄屏保留全部数量。 */
+    main{max-width:none;width:100%;padding:28px 28px 36px}.topbar-inner{max-width:none;padding:0 28px}.comparison-block{width:100%;max-width:840px;margin-right:auto}.store-columns,.store-row{grid-template-columns:minmax(190px,1.6fr) minmax(150px,1fr) minmax(150px,1fr) 88px minmax(160px,1fr) 76px;gap:18px}.store-row{min-height:98px}.store-columns{min-height:44px}.store-columns>span{display:block!important}.store-beds,.store-shared{display:flex;flex-direction:column;gap:4px;align-items:flex-start}.total-count{display:flex;align-items:baseline;gap:5px}.total-count strong,.store-shared strong{font-size:20px;font-weight:650;line-height:1.4;color:#334b6d}.total-count small{font-size:11px;color:#8f9bac}.dedicated-count{font-size:11px;color:#8794a6}.dedicated-count b{font-weight:550;font-size:12px;color:#607594;margin:0 2px}.store-shared small{font-size:11px;color:#94a0b0}.store-last-operation{display:flex;flex-direction:column;gap:5px;font-size:12px;color:#60718a}.store-last-operation small{font-size:11px;color:#94a0b0}.mobile-cell-label{display:none}.missing-count{font-size:18px!important;color:#aab4c2!important;font-weight:400!important}.store-beds>small:not(.mobile-cell-label){font-size:10px;color:#9aa6b6}.list-heading{flex-wrap:wrap;gap:8px 14px}.bed-count-note{margin-left:auto;font-size:11px;color:#9ca6b5}.comparison-table .unchanged-row .current-value{color:#72839a;font-weight:500}.unchanged-row .change-cell{color:#9aa6b6}.comparison-table .audience{white-space:nowrap}
+    @media(min-width:1600px){main{padding-left:36px;padding-right:36px}.topbar-inner{padding-left:36px;padding-right:36px}.store-columns,.store-row{grid-template-columns:minmax(240px,1.8fr) minmax(170px,1fr) minmax(170px,1fr) 100px minmax(170px,1fr) 84px}}
+    @media(max-width:1100px){.store-columns,.store-row{grid-template-columns:minmax(160px,1.4fr) minmax(123px,1fr) minmax(123px,1fr) 72px 145px 65px;gap:12px;padding-left:20px;padding-right:20px}.store-icon{display:none}.store-name small{font-size:10px}.bed-count-note{flex-basis:100%;margin-left:0}.total-count strong,.store-shared strong{font-size:18px}}
+    @media(max-width:900px){main{padding:24px 20px}.store-columns,.store-row{grid-template-columns:minmax(145px,1.5fr) minmax(123px,1fr) minmax(123px,1fr) 64px 66px;gap:12px}.store-last-operation,.store-columns>.last-operation-heading{display:none!important}.store-record-count{font-size:12px}.store-record-count small{font-size:10px}.store-action{font-size:11px}}
+    @media(max-width:700px){main{padding:20px 16px 28px}.topbar-inner{padding:0 16px}.store-columns{display:none}.store-row{grid-template-columns:1fr 1fr 1fr;gap:14px 10px;padding:17px 18px;min-height:0}.store-name{grid-column:1/3;grid-row:1}.store-action{grid-column:3;grid-row:1}.store-beds.new{grid-column:1;grid-row:2}.store-beds.old{grid-column:2;grid-row:2}.store-shared{grid-column:3;grid-row:2}.mobile-cell-label{display:block;font-size:10px!important;color:#92a0b1!important;margin-bottom:3px}.total-count small:first-child{display:none}.store-shared .shared-subtitle{display:none}.store-record-count{grid-column:1;grid-row:3;font-size:11px}.store-last-operation{display:flex!important;grid-column:2/4;grid-row:3;flex-direction:row;align-items:center;justify-content:flex-end;gap:7px;font-size:10px}.store-last-operation small{font-size:9px}.total-count strong,.store-shared strong{font-size:19px}.store-beds,.store-shared{gap:3px}.list-heading{padding:17px 18px 14px;align-items:baseline;font-size:10px}.list-heading #date-context{flex-basis:100%}.bed-count-note{font-size:9px}.comparison-table .audience{white-space:normal}}
+    @media(max-width:380px){main{padding-left:10px;padding-right:10px}.store-row{padding-left:13px;padding-right:13px;gap:12px 6px}.store-last-operation small{font-size:8px}.store-logs{padding-left:9px;padding-right:9px}.comparison-table thead th,.comparison-table tbody th,.comparison-table tbody td{padding-left:4px;padding-right:4px}.filters{padding-left:13px;padding-right:13px}}
+    .board-type{display:inline-flex;align-items:center;gap:2px;color:#8795a8;font-size:11px;padding-left:10px;border-left:1px solid #e0e7f0;white-space:nowrap}.board-type b{font-weight:550;color:#526b90}.board-type.old b{color:#7d889b}.shared-row-label{display:inline-block;margin-left:7px;font-size:10px;font-weight:400;color:#8da0b7}.shared-table-note{font-size:10px;color:#9aa6b5;margin:8px 1px 0;line-height:1.7}.comparison-table .bed-label .shared-row-label{white-space:nowrap}
+    @media(max-width:850px){.shared-row-label{display:block;margin:2px 0 0}}
+    @media(max-width:620px){.board-type{font-size:10px;padding-left:7px}.shared-row-label,.shared-table-note{font-size:9px}.event-meta{gap:7px}}
+    .store-logs>.timeline{padding-top:22px}
+    @media(max-width:620px){.store-logs>.timeline{padding-top:18px}}
+    .bed-breakdown{display:flex;align-items:baseline;gap:8px;white-space:nowrap;font-size:11px;color:#8794a6}.bed-breakdown i{font-size:10px;color:#c1c9d4;font-style:normal}.bed-breakdown b{font-size:12px;color:#607594;font-weight:550;margin:0 2px}.count-empty{font-size:10px;color:#9aa6b6}.event-meta,.effective-label{max-width:840px}
+    @media(max-width:700px){.store-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.store-name{grid-column:1;grid-row:1}.store-action{grid-column:2;grid-row:1}.store-beds.new{grid-column:1;grid-row:2}.store-beds.old{grid-column:2;grid-row:2}.store-record-count{grid-column:1;grid-row:3}.store-last-operation{grid-column:2;grid-row:3;flex-wrap:wrap;gap:1px 5px;min-width:0}.bed-breakdown{gap:5px;font-size:10px}.bed-breakdown .dedicated-count{font-size:10px}.bed-breakdown b{font-size:11px;margin:0 1px}.total-count small:first-child{display:inline}}
+    @media(max-width:380px){.bed-breakdown{gap:4px}.store-name strong{font-size:12px}.store-name small{font-size:9px}}
+    .bed-headline{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}.bed-headline .general-count{font-size:11px;color:#8794a6;white-space:nowrap}.bed-headline .general-count b{font-size:12px;font-weight:550;color:#607594;margin-left:2px}.bed-types{display:flex;align-items:baseline;flex-wrap:wrap;gap:3px 12px;margin-top:2px;line-height:1.7;max-width:100%}.bed-type-count{font-size:11px;color:#8794a6;white-space:nowrap}.bed-type-count b{font-size:12px;color:#607594;font-weight:550;margin-left:2px}.store-beds{min-width:0}
+    @media(max-width:1100px){.bed-headline{gap:8px}.bed-types{gap:3px 9px}}
+    @media(max-width:700px){.bed-headline{gap:8px}.bed-headline .general-count,.bed-type-count{font-size:10px}.bed-headline .general-count b,.bed-type-count b{font-size:11px}.bed-types{gap:2px 9px}.store-beds{align-self:start}}
+    @media(max-width:380px){.bed-headline{gap:5px}.bed-headline .total-count{gap:3px}.bed-headline .total-count small{font-size:10px}.bed-types{gap:2px 7px}}
+    /* 输入框内搜索，候选门店在当前字段下方展开。 */
+    .store-picker{position:relative;width:220px;min-width:0}.store-picker .control{width:100%;padding-right:33px}.store-picker-toggle{position:absolute;right:1px;top:1px;width:31px;height:36px;border:0;background:transparent;color:#9aa8b9;display:grid;place-items:center}.store-picker-toggle svg{transition:transform .15s}.store-picker.is-open .store-picker-toggle svg{transform:rotate(180deg)}.store-picker.is-open .control{border-color:#8db5f6;box-shadow:0 0 0 2px #eff6ff}.store-dropdown{position:absolute;top:calc(100% + 7px);left:0;right:0;z-index:30;background:white;border:1px solid #e7ecf3;border-radius:7px;padding:5px 0;box-shadow:0 6px 20px #1e293b12}.store-dropdown ul{list-style:none;margin:0;padding:0;max-height:256px;overflow-y:auto}.store-option{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:36px;padding:8px 12px;font-size:12px;color:#617085;cursor:pointer}.store-option:hover,.store-option.active{background:#f2f7ff;color:#3278d5}.store-option[aria-selected=true]{color:#3b82f6;font-weight:550}.store-option-all{color:#9aa5b4;font-size:11px;border-bottom:1px solid #f0f3f7;margin-bottom:3px}.store-option-check{font-size:12px;color:#3b82f6}.store-option-empty{font-size:12px;color:#a0aaba;padding:15px 12px;text-align:center}.panel:has(.store-picker.is-open){overflow:visible}
+    @media(max-width:620px){.store-picker{width:0;flex:1}.store-picker .control{width:100%}.store-picker-toggle{height:40px}.store-option{min-height:44px;padding:11px 12px}}
+    .backend-bed-types{display:inline-flex;align-items:baseline;flex-wrap:wrap;gap:3px 9px;font-size:11px;color:#8795a8;min-width:0}.backend-types-label{white-space:nowrap}.backend-bed-type{white-space:nowrap;color:#72839a}.backend-bed-type b{font-weight:550;color:#526b90;margin-left:2px}.backend-config-empty{color:#9aa6b6;font-size:10px}
+    @media(max-width:620px){.backend-bed-types{order:1;flex-basis:100%;font-size:10px;gap:3px 8px;margin-top:1px}.backend-config-empty{font-size:10px}}
+  </style>
+</head>
+<body>
+  <header class="topbar"><div class="topbar-inner"><div class="brand"><span class="brand-mark">W</span>微动<span>门店管理 / 床位设置日志</span></div><span class="demo">示例数据</span></div></header>
+  <main>
+    <div class="page-title"><h1>床位设置日志</h1><p>按门店查看床位调整记录，点击门店展开日志。</p></div>
+    <section class="panel" aria-label="床位变更记录">
+      <form id="query-form" class="filters">
+        <div class="field"><label for="store-search">门店</label><div class="store-picker" id="store-picker"><input class="control" id="store-search" type="text" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="store-options" autocomplete="off" placeholder="请选择或搜索门店"><button class="store-picker-toggle" id="store-picker-toggle" type="button" aria-label="展开门店列表" tabindex="-1"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><div class="store-dropdown" id="store-dropdown" hidden><ul id="store-options" role="listbox" aria-label="门店搜索结果"></ul><p class="store-option-empty" id="store-option-empty" hidden>没有找到相关门店</p></div></div></div>
+        <div class="field"><label for="effective-date">排客日期 <small>（生效日期）</small></label><input class="control date-input" id="effective-date" type="date" min="2000-01-01" max="2100-12-31" aria-describedby="date-context"><button type="button" id="clear-date" class="clear-date" hidden>清空</button></div>
+        <button class="btn primary" type="submit">查询</button>
+      </form>
+      <div class="list-heading" aria-live="polite"><strong id="result-count"></strong><span id="date-context"></span><span class="bed-count-note">共享床位分别计入新客、老客总数</span></div>
+      <div class="store-columns" aria-hidden="true"><span>门店</span><span>新客床位</span><span>老客床位</span><span>日志数</span><span class="last-operation-heading">最近操作</span><span></span></div>
+      <div id="store-list"></div>
+      <div class="empty" id="empty" hidden><strong>没有找到相关门店</strong><p>请更换门店名称或编号后查询。</p></div>
+    </section>
+    <p class="footnote">排客日期为床位配置生效的日期，时间轴按实际操作时间排列 · 时间均为北京时间</p>
+  </main>
+  <div id="toast" class="toast" role="status" hidden></div>
+  <script>
+    // 独立演示数据，不读取或修改移动端页面的本地配置。真实接入时以服务端保存成功的前后快照生成日志。
+    const stores=[{id:'SH001',name:'上海徐汇店',area:'上海 · 徐汇区',person:'林悦',staff:'WD1028'},{id:'SH002',name:'上海静安店',area:'上海 · 静安区',person:'陈敏',staff:'WD1036'},{id:'SH003',name:'上海浦东店',area:'上海 · 浦东新区',person:'赵宁',staff:'WD1052'},{id:'HZ001',name:'杭州西湖店',area:'杭州 · 西湖区',person:'周晴',staff:'WD2016'},{id:'SZ001',name:'苏州园区店',area:'苏州 · 工业园区',person:'沈佳',staff:'WD3012'},{id:'NJ001',name:'南京新街口店',area:'南京 · 秦淮区',person:'许岚',staff:'WD4018'}];
+    const types={yimei:'医美床位',shengmei:'生美床位',wenxiu:'纹绣床位',meijia:'美甲美睫',liliao:'理疗按摩',zhifa:'植发护发',x10:'X10床位'};
+    const ordinary=Object.keys(types).filter(k=>k!=='x10');
+    const groupNames={new:'新客',old:'老客',shared:'共享',store:'门店'};
+    const modeNames={single:'单次',batch:'批量',interval:'间隔调整'};
+    const boardTypeNames={new:'新版',old:'旧版'};
+    const boardTypeLabel=op=>boardTypeNames[op.boardType]||'未记录';
+    const $=id=>document.getElementById(id),clone=v=>JSON.parse(JSON.stringify(v)),esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const dayLabel=date=>['周日','周一','周二','周三','周四','周五','周六'][new Date(date+'T12:00:00+08:00').getUTCDay()];
+    const addDays=(date,n)=>new Date(Date.parse(date+'T00:00:00Z')+n*86400000).toISOString().slice(0,10);
+    const dateRange=(start,count)=>Array.from({length:count},(_,i)=>addDays(start,i));
+    function snapshot(n=8,o=10,shared=2,enabled=true){return {enabled,new:{total:n,types:enabled?{yimei:2,shengmei:2}:{}},old:{total:o,types:enabled?{yimei:2,shengmei:3}:{}},shared:{x10:enabled?shared:0}};}
+    function general(s,g){return s[g].total-(s.enabled?Object.values(s[g].types).reduce((a,b)=>a+b,0)+s.shared.x10:0);}
+    function validateSnapshot(s){return ['new','old'].every(g=>Number.isSafeInteger(s[g].total)&&s[g].total>=0&&general(s,g)>=0&&Object.values(s[g].types).every(n=>Number.isSafeInteger(n)&&n>=0))&&Number.isSafeInteger(s.shared.x10)&&s.shared.x10>=0;}
+    // 缺失类型与 0 张分别记录，避免把移除类型误读成禁止预约。
+    function fieldsFor(before,after){
+      const fields=[];
+      const push=(group,key,name,beforeValue,afterValue,category,derived=false)=>fields.push({group,key,name,before:beforeValue,after:afterValue,category,derived,changed:beforeValue!==afterValue&&!(beforeValue===null&&afterValue==='未添加'),delta:typeof beforeValue==='number'&&typeof afterValue==='number'?afterValue-beforeValue:null,unit:'张'});
+      const count=(s,g,k)=>s.enabled&&Object.prototype.hasOwnProperty.call(s[g].types,k)?s[g].types[k]:'未添加';
+      for(const g of ['new','old']){push(g,'total','总床位',before?before[g].total:null,after[g].total,'total');if(before?.enabled||after.enabled)for(const k of ordinary)push(g,k,types[k],before?count(before,g,k):null,count(after,g,k),'dedicated');push(g,'general','通用床位',before?general(before,g):null,general(after,g),'general',true);}
+      if(before?.enabled||after.enabled)push('shared','x10','X10床位',before?before.shared.x10:null,after.shared.x10,'shared');return fields;
+    }
+    // 后台可配范围的独立演示配置；每次保存拷贝一份，不从门店已分配数量推断。
+    const backendBedConfigurations={
+      SH001:{enabled:true,types:[{name:'X10',count:3,enabled:true},{name:'S10',count:2,enabled:true},{name:'S11',count:5,enabled:true}]},
+      SH002:{enabled:true,types:[{name:'X10',count:2,enabled:true},{name:'S10',count:3,enabled:true},{name:'S11',count:4,enabled:true}]},
+      SH003:{enabled:true,types:[{name:'X10',count:2,enabled:true},{name:'S10',count:2,enabled:true},{name:'S11',count:3,enabled:true}]},
+      HZ001:{enabled:true,types:[{name:'X10',count:2,enabled:true},{name:'S10',count:2,enabled:true},{name:'S11',count:4,enabled:true}]},
+      SZ001:{enabled:true,types:[{name:'X10',count:2,enabled:true},{name:'S10',count:2,enabled:true},{name:'S11',count:3,enabled:true}]},
+      NJ001:{enabled:false,types:[]}
+    };
+    function snapshotBackendConfig(config){return config==null?null:clone(config);}
+    function backendTypeText(op){
+      const config=op.backendConfig;
+      if(!config)return '未记录';
+      if(!config.enabled)return '未开启专属床位';
+      const available=config.types.filter(type=>type.enabled);
+      return available.length?available.map(type=>`${type.name} ${type.count}`).join('、'):'未开放床位类型';
+    }
+    function backendTypeHTML(op){
+      const config=op.backendConfig,available=config?.enabled?config.types.filter(type=>type.enabled):[];
+      return `<span class="backend-bed-types" title="本次操作时后台开放的专属床位类型及数量"><span class="backend-types-label">可配床位类型：</span>${available.length?available.map(type=>`<span class="backend-bed-type">${esc(type.name)} <b>${type.count}</b></span>`).join(''):`<span class="backend-config-empty">${backendTypeText(op)}</span>`}</span>`;
+    }
+    const operations=[],latest=new Map();
+    function addOperation(storeId,stamp,mode,days,change,boardType,backendConfig=backendBedConfigurations[storeId]){
+      const store=stores.find(s=>s.id===storeId),id='BW'+stamp.replace(/[- :]/g,'').slice(2)+'-'+String(operations.length+1).padStart(2,'0');
+      const op={id,store,stamp,mode,boardType,backendConfig:snapshotBackendConfig(backendConfig),operator:store.person,staff:store.staff,role:'店长',source:'移动端',records:[],selectedCount:days.length};
+      days.forEach((date,index)=>{const key=storeId+'|'+date,before=latest.has(key)?clone(latest.get(key)):null,after=change(before?clone(before):null,date,index);if(!validateSnapshot(after))throw Error('示例床位配置不合法：'+key);const fields=fieldsFor(before,after),changed=fields.filter(f=>f.changed);if(!changed.length)return;const record={id:id+'|'+date,op,date,before,after,fields,changes:changed,explicit:changed.filter(f=>!f.derived),initial:!before};op.records.push(record);latest.set(key,clone(after));});
+      if(op.records.length)operations.push(op);
+    }
+    function addInterval(storeId,stamp,before,after,boardType,backendConfig=backendBedConfigurations[storeId]){const store=stores.find(s=>s.id===storeId),id='BW'+stamp.replace(/[- :]/g,'').slice(2)+'-'+String(operations.length+1).padStart(2,'0'),op={id,store,stamp,mode:'interval',boardType,backendConfig:snapshotBackendConfig(backendConfig),operator:store.person,staff:store.staff,role:'店长',source:'移动端',selectedCount:0,records:[]};const field={group:'store',key:'interval',name:'客户接待时长间隔',before,after,category:'interval',derived:false,changed:true,delta:after-before,unit:'分钟'};op.records=[{id:id+'|interval',op,date:null,before,after,fields:[field],changes:[field],explicit:[field],initial:false}];operations.push(op);}
+    addOperation('HZ001','2026-10-10 10:20:18','batch',dateRange('2026-10-14',7),()=>snapshot(8,10,2),'old');
+    addOperation('SZ001','2026-10-11 08:45:09','batch',dateRange('2026-10-14',7),()=>snapshot(8,10,2),'old');
+    addOperation('SH001','2026-10-01 09:10:32','batch',dateRange('2026-10-14',15),()=>snapshot(8,12,3),'old');
+    addOperation('SH002','2026-10-11 09:36:41','batch',dateRange('2026-10-14',15),()=>{const s=snapshot(8,10,2);s.new.types.yimei=3;return s;},'old');
+    addOperation('SH003','2026-10-12 08:55:26','batch',dateRange('2026-10-14',10),()=>snapshot(8,10,2),'old');
+    addOperation('SH001','2026-10-12 09:20:18','batch',['2026-10-17','2026-10-18'],b=>{b.new.total=10;return b;},'old');
+    addOperation('NJ001','2026-10-12 09:40:17','batch',dateRange('2026-10-14',8),()=>snapshot(6,8,0,false),'old');
+    addInterval('SH001','2026-10-12 11:18:07',90,60,'old');
+    addOperation('SH001','2026-10-12 15:10:46','batch',['2026-10-16','2026-10-17','2026-10-18'],()=>{const s=snapshot(9,12,3);s.new.types.shengmei=3;return s;},'new');
+    addOperation('SH002','2026-10-13 08:20:06','batch',dateRange('2026-10-17',7),()=>{const s=snapshot(10,12,2);s.new.types.shengmei=4;return s;},'new');
+    addOperation('SH002','2026-10-13 08:45:12','single',['2026-10-15'],b=>{b.new.types.yimei=2;b.new.types.shengmei=3;return b;},'new');
+    addOperation('SZ001','2026-10-13 09:06:35','single',['2026-10-16'],b=>{b.new.total=6;b.new.types.shengmei=1;return b;},'new');
+    addOperation('SH001','2026-10-13 09:42:08','single',['2026-10-15'],b=>{b.shared.x10=2;return b;},'new');
+    addOperation('HZ001','2026-10-13 10:08:22','single',['2026-10-17'],b=>{b.new.total+=2;b.new.types.shengmei+=2;return b;},'new');
+    addInterval('NJ001','2026-10-13 10:22:31',60,90,'new');
+    addOperation('SH003','2026-10-13 10:36:14','single',['2026-10-18'],b=>{b.old.total-=2;b.old.types.shengmei-=2;return b;},'new');
+    addOperation('SH001','2026-10-13 11:16:43','single',['2026-10-17'],b=>{b.new.total=11;b.new.types.shengmei=5;return b;},'new');
+    addOperation('NJ001','2026-10-13 13:02:19','single',['2026-10-16'],b=>{b.new.total=8;return b;},'new');
+    addOperation('SH001','2026-10-13 12:10:25','single',['2026-10-17'],b=>{b.new.types.yimei=0;return b;},'old');
+    addOperation('SH001','2026-10-13 12:35:10','single',['2026-10-17'],b=>{delete b.old.types.yimei;return b;},'new');
+
+    // 首页按门店归集；门店展开后按操作时间倒序。批量操作只合并完全相同的前后配置。
+    let selectedDate='2026-10-17',storeKeyword='',expandedStore=null,toastTimer;
+    const records=operations.flatMap(op=>op.records);
+    const entriesFor=storeId=>operations.filter(op=>op.store.id===storeId).map(op=>({op,records:op.records.filter(r=>!selectedDate||r.date===selectedDate)})).filter(e=>e.records.length).sort((a,b)=>b.op.stamp.localeCompare(a.op.stamp));
+    function tableValue(value){return esc(value===null?'未设置':value);}
+    function changeAmount(f){
+      if(f.after==='未添加')return '<span class="amount-neutral">移除</span>';
+      if(f.before==='未添加')return '<span class="amount-up">新增</span>';
+      if(f.changed===false)return '<span class="amount-neutral">未变</span>';
+      if(f.delta===null)return '<span class="amount-neutral">—</span>';
+      return `<span class="${f.delta>0?'amount-up':f.delta<0?'amount-down':'amount-neutral'}">${f.delta>0?'+':f.delta<0?'−':''}${Math.abs(f.delta)}</span>`;
+    }
+    function comparisonHTML(record){
+      const initial=record.initial,unit=record.op.mode==='interval'?'分钟':'张';
+      // 同一份 X10 共享数量在两类客群内分别展示，不修改底层共享池或重复扣减。
+      let groups;
+      if(record.op.mode==='interval'){
+        groups=[{group:'store',fields:record.changes}];
+      }else{
+        const shared=record.fields.find(f=>f.group==='shared')||{key:'x10',name:'X10床位',before:record.before?record.before.shared.x10:null,after:record.after.shared.x10,category:'shared',derived:false,changed:record.initial,delta:record.initial?null:0,unit:'张'};
+        groups=['new','old'].map(group=>({group,fields:[
+          ...record.changes.filter(f=>f.group===group&&f.key!=='general'),
+          {...shared,group,name:'X10床位',sharedDisplay:true},
+          record.fields.find(f=>f.group===group&&f.key==='general')
+        ].filter(Boolean)}));
+      }
+      const header=initial?'<th scope="col" class="number-heading">初始数量</th>':'<th scope="col" class="number-heading">调整前</th><th scope="col" class="number-heading">调整后</th><th scope="col" class="number-heading">变化</th>';
+      return `<div class="comparison-block"><div class="comparison-caption"><span>${initial?'初始床位配置':'床位数量对比'}</span><small>单位：${unit}</small></div><div class="comparison-frame"><table class="comparison-table ${initial?'initial-table':''} numeric" aria-label="${initial?'按客群分组的初始数量':'按客群分组的床位数量前后对比'}"><colgroup><col class="audience-col"><col class="bed-col">${initial?'<col class="initial-count-col">':'<col class="count-col"><col class="count-col"><col class="count-col">'}</colgroup><thead><tr><th scope="col">客群</th><th scope="col">${record.op.mode==='interval'?'设置项':'床位类型'}</th>${header}</tr></thead>${groups.map(({group,fields})=>`<tbody class="audience-group" data-group="${group}">${fields.map((f,index)=>`<tr class="${f.derived?'computed-row':f.key==='total'?'total-row':''} ${f.changed===false?'unchanged-row':''}" data-key="${f.key}">${index===0?`<th class="audience" scope="rowgroup" rowspan="${fields.length}"><span>${groupNames[group]}</span></th>`:''}<th scope="row" class="bed-label">${esc(f.name)}${f.sharedDisplay?'<small class="shared-row-label">新老客共享</small>':''}${f.derived?'<small class="computed-label">自动计算</small>':''}${f.category==='dedicated'&&f.after===0?'<small class="zero-note">该类项目不可约</small>':''}</th>${initial?`<td class="number-cell initial-value">${tableValue(f.after)}</td>`:`<td class="number-cell prior-value ${typeof f.before==='number'?'':'text-value'}">${tableValue(f.before)}</td><td class="number-cell current-value ${typeof f.after==='number'?'':'text-value'} ${f.category==='dedicated'&&f.after===0?'zero-value':''}">${tableValue(f.after==='未添加'?'已移除':f.after)}</td><td class="number-cell change-cell">${changeAmount(f)}</td>`}</tr>`).join('')}</tbody>`).join('')}</table></div>${record.op.mode==='interval'?'':'<p class="shared-table-note">两行 X10 为同一份共享床位，分别计入新客、老客总数。</p>'}</div>`;
+    }
+    function datesLabel(dates){
+      const sorted=[...new Set(dates)].sort(),runs=[];
+      for(const date of sorted){const last=runs[runs.length-1];if(last&&addDays(last[last.length-1],1)===date)last.push(date);else runs.push([date]);}
+      return runs.map(run=>run.length===1?run[0]:`${run[0]} 至 ${run[run.length-1]}`).join('、');
+    }
+    function recordGroups(entry){
+      const groups=new Map();
+      for(const r of entry.records){const key=JSON.stringify([r.before,r.after]);if(!groups.has(key))groups.set(key,[]);groups.get(key).push(r);}
+      return [...groups.values()].sort((a,b)=>(a[0].date||'').localeCompare(b[0].date||''));
+    }
+    function groupHTML(group){
+      const r=group[0],isInterval=r.op.mode==='interval';
+      return `<div class="record-group"><div class="effective-label">${isInterval?'门店设置 · 保存后生效':`排客日期 <strong>${esc(datesLabel(group.map(r=>r.date)))}</strong>`}${r.initial?'<span class="initial-tag">首次配置</span>':''}</div>${comparisonHTML(r)}</div>`;
+    }
+    function eventHTML(entry,index){
+      const op=entry.op;
+      return `<li class="event" data-operation-id="${esc(op.id)}"><time class="event-time" datetime="${op.stamp.replace(' ','T')}+08:00"><span>${op.stamp.slice(0,10)}</span><strong>${op.stamp.slice(11)}</strong></time><div class="track" aria-hidden="true"></div><article class="event-content" aria-label="${esc(op.stamp)} ${esc(op.operator)}的调整"><div class="event-meta"><span class="operator">${esc(op.operator)}</span><span class="role">${esc(op.role)}</span><span class="mode ${op.mode}">${modeNames[op.mode]}${op.mode==='interval'?'':'设置'}${op.mode==='batch'?` · ${op.selectedCount} 天`:''}</span><span class="board-type ${esc(op.boardType||'unknown')}">床位看板：<b>${boardTypeLabel(op)}</b></span>${backendTypeHTML(op)}${index===0?'<span class="latest-tag">最新</span>':''}</div>${recordGroups(entry).map(groupHTML).join('')}</article></li>`;
+    }
+    // 列表数量取所选排客日最后一次保存的完整快照，不累加日志中的变化量。
+    function finalRecordFor(storeId,date){
+      if(!date)return null;
+      return records.filter(r=>r.date===date&&r.op.store.id===storeId).sort((a,b)=>b.op.stamp.localeCompare(a.op.stamp))[0]||null;
+    }
+    function finalCountHTML(record,group){
+      const label=groupNames[group],s=record?.after;
+      const total=s?s[group].total:'—',available=s?general(s,group):'—';
+      // 类型明细保留已配置的 0；X10 使用同一个共享池，分别展示在新客、老客中。
+      const typeCounts=s?.enabled?[...Object.entries(s[group].types),['x10',s.shared.x10]]:[];
+      const typeName=key=>types[key].replace(/床位$/,'');
+      const typeDescription=typeCounts.map(([key,value])=>`${typeName(key)}${value}张`).join('、');
+      return `<span class="store-beds ${group}" aria-label="${label}总床位${total}张，通用床位${available}张${typeDescription?'，专属：'+typeDescription:''}"><small class="mobile-cell-label">${label}床位</small><span class="bed-headline"><span class="total-count"><small>总数</small><strong class="${s?'':'missing-count'}">${total}</strong><small>张</small></span><span class="general-count">通用 <b>${available}</b></span></span><span class="bed-types" aria-label="${label}专属床位类型明细">${typeCounts.length?typeCounts.map(([key,value])=>`<span class="bed-type-count" data-bed-type="${key}" ${key==='x10'?'title="新老客共享，已计入两类总数"':''}>${esc(typeName(key))} <b>${value}</b></span>`).join(''):`<small class="count-empty">${s?'未配置专属床位':selectedDate?'未设置':'请选排客日期'}</small>`}</span></span>`;
+    }
+    function render(){
+      const matching=stores.filter(s=>(s.name+' '+s.id+' '+s.area).toLowerCase().includes(storeKeyword.toLowerCase()));
+      $('result-count').textContent=`${matching.length} 家门店`;
+      $('date-context').textContent=selectedDate?`排客日期：${selectedDate} ${dayLabel(selectedDate)} · 数量为该日最终配置`:'全部排客日期 · 选择日期后可查看最终床位数';
+      $('store-list').innerHTML=matching.map(s=>{
+        const entries=entriesFor(s.id),newest=entries[0]?.op,open=expandedStore===s.id,finalRecord=finalRecordFor(s.id,selectedDate);
+        return `<section class="store-section ${open?'expanded':''}" data-store="${s.id}"><button type="button" class="store-row" data-toggle-store="${s.id}" aria-expanded="${open}" aria-controls="logs-${s.id}"><span class="store-name"><span class="store-icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m3 10 2-6h14l2 6M4 10v10h16V10M3 10c0 4 6 4 6 0 0 4 6 4 6 0 0 4 6 4 6 0M9 20v-6h6v6"/></svg></span><span><strong>${esc(s.name)}</strong><small>${s.id} · ${esc(s.area)}</small></span></span>${finalCountHTML(finalRecord,'new')}${finalCountHTML(finalRecord,'old')}<span class="store-record-count">${entries.length}<small> 条记录</small></span><span class="store-last-operation">${newest?`<span>${esc(newest.operator)}</span><small class="numeric">${newest.stamp}</small>`:'—'}</span><span class="store-action">${open?'收起':'查看日志'}<svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m8 10 4 4 4-4"/></svg></span></button><div id="logs-${s.id}" class="store-logs" ${open?'':'hidden'}>${open?`${entries.length?`<ol class="timeline" aria-label="${esc(s.name)}的操作日志">${entries.map(eventHTML).join('')}</ol><div class="end-note">已显示${selectedDate?'该排客日期':'该门店'}的全部记录</div>`:'<div class="empty"><strong>该排客日期暂无床位设置记录</strong><p>可清空排客日期，查看这家门店的全部日志。未设置不代表床位数为 0。</p></div>'}`:''}</div></section>`;
+      }).join('');
+      $('empty').hidden=matching.length>0;
+      $('clear-date').hidden=!$('effective-date').value;
+    }
+    function toast(message){clearTimeout(toastTimer);$('toast').textContent=message;$('toast').hidden=false;toastTimer=setTimeout(()=>$('toast').hidden=true,2600);}
+    let storeMenuOpen=false,activeStoreOption=-1,storeOptions=[];
+    function renderStoreOptions(){
+      const query=$('store-search').value.trim().toLowerCase();
+      storeOptions=[{id:'',name:'全部门店'},...stores.filter(s=>(s.name+' '+s.id+' '+s.area).toLowerCase().includes(query))];
+      $('store-options').innerHTML=storeOptions.map((s,index)=>`<li id="store-option-${index}" class="store-option ${index===0?'store-option-all':''} ${index===activeStoreOption?'active':''}" role="option" aria-selected="${s.id?$('store-search').value===s.name:!query}" data-store-option="${index}"><span>${esc(s.name)}</span>${s.id&&$('store-search').value===s.name?'<span class="store-option-check" aria-hidden="true">✓</span>':''}</li>`).join('');
+      $('store-option-empty').hidden=storeOptions.length>1;
+      if(activeStoreOption>=0)$('store-search').setAttribute('aria-activedescendant','store-option-'+activeStoreOption);else $('store-search').removeAttribute('aria-activedescendant');
+    }
+    function setStoreMenu(open){
+      storeMenuOpen=open;$('store-dropdown').hidden=!open;$('store-picker').classList.toggle('is-open',open);$('store-search').setAttribute('aria-expanded',String(open));$('store-picker-toggle').setAttribute('aria-label',open?'收起门店列表':'展开门店列表');activeStoreOption=-1;
+      if(open)renderStoreOptions();else $('store-search').removeAttribute('aria-activedescendant');
+    }
+    function chooseStore(index){const option=storeOptions[index];if(!option)return;$('store-search').value=option.id?option.name:'';$('store-search').focus();setStoreMenu(false);}
+    $('store-search').addEventListener('focus',()=>setStoreMenu(true));
+    $('store-search').addEventListener('click',()=>{if(!storeMenuOpen)setStoreMenu(true);});
+    $('store-search').addEventListener('input',()=>setStoreMenu(true));
+    $('store-picker-toggle').addEventListener('mousedown',event=>event.preventDefault());
+    $('store-picker-toggle').addEventListener('click',()=>setStoreMenu(!storeMenuOpen));
+    $('store-options').addEventListener('mousedown',event=>event.preventDefault());
+    $('store-options').addEventListener('click',event=>{const option=event.target.closest('[data-store-option]');if(option)chooseStore(Number(option.dataset.storeOption));});
+    $('store-search').addEventListener('keydown',event=>{
+      if(event.key==='Escape'){setStoreMenu(false);return;}
+      if(event.key==='Tab'){setStoreMenu(false);return;}
+      if(event.key==='ArrowDown'||event.key==='ArrowUp'){
+        event.preventDefault();if(!storeMenuOpen)setStoreMenu(true);
+        const step=event.key==='ArrowDown'?1:-1;activeStoreOption=activeStoreOption<0?(step>0?0:storeOptions.length-1):(activeStoreOption+step+storeOptions.length)%storeOptions.length;renderStoreOptions();$('store-option-'+activeStoreOption)?.scrollIntoView({block:'nearest'});return;
+      }
+      if(event.key==='Enter'&&storeMenuOpen&&activeStoreOption>=0){event.preventDefault();chooseStore(activeStoreOption);}
+    });
+    document.addEventListener('click',event=>{if(!$('store-picker').contains(event.target))setStoreMenu(false);});
+    $('effective-date').value=selectedDate;
+    $('query-form').addEventListener('submit',event=>{event.preventDefault();if(!$('query-form').reportValidity())return;selectedDate=$('effective-date').value;storeKeyword=$('store-search').value.trim();setStoreMenu(false);render();});
+    $('effective-date').addEventListener('input',()=>$('clear-date').hidden=!$('effective-date').value);
+    $('clear-date').addEventListener('click',()=>{$('effective-date').value='';selectedDate='';render();});
+    $('store-list').addEventListener('click',event=>{
+      const toggle=event.target.closest('[data-toggle-store]');
+      if(toggle){const id=toggle.dataset.toggleStore;expandedStore=expandedStore===id?null:id;render();document.querySelector(`[data-toggle-store="${id}"]`).focus({preventScroll:true});return;}
+      const download=event.target.closest('[data-export-store]');if(download)exportStore(download.dataset.exportStore);
+    });
+    function exportStore(storeId){
+      const entries=entriesFor(storeId);if(!entries.length)return;
+      const rows=[['门店','排客日期（生效日期）','操作时间（北京时间）','操作人','操作方式','床位看板类型','操作时后台可配床位类型','本次选中日期数','客群','床位类型','变更前','变更后','变化量','单位','自动计算','保存后新客总床位','保存后老客总床位','保存后共享X10']];
+      entries.forEach(({records})=>records.forEach(r=>r.changes.forEach(f=>rows.push([r.op.store.name,r.date||'保存后生效',r.op.stamp,r.op.operator,modeNames[r.op.mode],boardTypeLabel(r.op),backendTypeText(r.op),r.op.selectedCount,groupNames[f.group],f.name,f.before===null?'未设置':f.before,f.after,f.delta===null?'':f.delta,f.unit,f.derived?'是':'否',r.after?.new?.total??'',r.after?.old?.total??'',r.after?.shared?.x10??'']))));
+      const csv='\uFEFF'+rows.map(row=>row.map(value=>'"'+String(value).replace(/"/g,'""')+'"').join(',')).join('\r\n');
+      const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'})),a=document.createElement('a');a.href=url;a.download=`床位设置日志_${entries[0].op.store.name}_${selectedDate||'全部日期'}.csv`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('已导出该门店日志');
+    }
+    render();
+
+  </script>
+</body>
+</html>

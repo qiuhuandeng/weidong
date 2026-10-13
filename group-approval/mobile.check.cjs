@@ -1,0 +1,98 @@
+'use strict';
+const {chromium}=require('playwright');
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const base=process.env.GROUP_APPROVAL_BASE_URL||'http://127.0.0.1:8769';
+const out='/tmp/group-approval-qa';
+fs.mkdirSync(out,{recursive:true});
+(async()=>{
+ const browser=await chromium.launch({headless:true,executablePath:process.env.CHROME_BIN||'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'});
+ const context=await browser.newContext({viewport:{width:390,height:844},timezoneId:'Asia/Shanghai'});
+ const p=await context.newPage(),errors=[];
+ p.on('pageerror',e=>errors.push(e.message));
+ const go=async route=>{await p.goto(base+'/group-approval/index.html?view=h5#'+route);await p.waitForFunction(()=>window.GA?.state&&GA.actor==='admin');await p.waitForFunction(route=>GA.route.join('/')===route,route);};
+ const button=(name,where=p)=>where.getByRole('button',{name,exact:true});
+ const dialog=()=>p.getByRole('dialog');
+ const count=()=>p.locator('.ga-mobile-card').count();
+ const filter=()=>p.getByRole('button',{name:/^筛选审批/}).click();
+ const shot=name=>p.screenshot({path:out+'/'+name+'.png'});
+ try{
+  await go('list/all');
+  await p.getByLabel('搜索审批',{exact:true}).fill('华东');
+  await filter();
+  await dialog().getByLabel('审批类型',{exact:true}).selectOption('expense');
+  await button('确定筛选',dialog()).click();
+  await dialog().waitFor({state:'hidden'});
+  assert.equal(await count(),1,'search text is retained when applying additional filters');
+  assert.match(await p.locator('.ga-mobile-card').innerText(),/华东巡店差旅报销/);
+  await filter();
+  assert.equal(await dialog().getByLabel('审批类型',{exact:true}).inputValue(),'expense');
+  await dialog().getByLabel('审批状态',{exact:true}).selectOption('approved');
+  await button('取消',dialog()).click();
+  assert.equal(await count(),1,'cancel does not change applied filters');
+  await filter();
+  assert.equal(await dialog().getByLabel('审批状态',{exact:true}).inputValue(),'');
+  await dialog().getByLabel('开始日期',{exact:true}).fill('2026-10-30');
+  await dialog().getByLabel('结束日期',{exact:true}).fill('2026-10-01');
+  await button('确定筛选',dialog()).click();
+  await p.locator('#modal-error').filter({hasText:'开始日期不能晚于结束日期'}).waitFor();
+  await button('重置',dialog()).click();
+  for(const label of ['审批类型','审批状态','所属公司','开始日期','结束日期'])assert.equal(await dialog().getByLabel(label,{exact:true}).inputValue(),'');
+  await button('确定筛选',dialog()).click();
+  await dialog().waitFor({state:'hidden'});
+  assert.equal(await p.getByLabel('搜索审批',{exact:true}).inputValue(),'');
+  assert.equal(await count(),10);
+  await button('下一页').click();
+  assert.equal(await p.locator('.page-index').innerText(),'2');
+  await p.getByLabel('搜索审批',{exact:true}).fill('不存在的申请');
+  await button('搜索',{getByRole:(...args)=>p.locator('#mobile-list-search').getByRole(...args)}).click();
+  await p.getByRole('heading',{name:'未找到相关审批',exact:true}).waitFor();
+  assert.equal(await p.locator('.ga-pagination').count(),0,'empty results have no inactive pager');
+  await button('清空筛选').first().click();
+  assert.equal(await count(),10);
+  await filter();
+  await dialog().getByLabel('所属公司',{exact:true}).selectOption('nj');
+  await dialog().getByLabel('审批类型',{exact:true}).selectOption('purchase');
+  await button('确定筛选',dialog()).click();
+  await dialog().waitFor({state:'hidden'});
+  assert((await count())>0);
+  for(const text of await p.locator('.ga-mobile-card').allTextContents())assert.match(text,/南京公司/);
+  await button('待我处理').click();
+  await p.locator('.tabs button.active').filter({hasText:'待我处理'}).waitFor();
+  assert.equal(await p.locator('.ga-filter-button > span').count(),0,'switching tabs clears the previous tab filters');
+  console.log('PASS mobile search, combined filters, cancel, date validation, reset, empty state, pagination and tab changes');
+
+  const detailId=await p.evaluate(()=>GA.state.requests.find(r=>r.status==='pending').id);
+  for(const width of [320,390,430]){
+   await p.setViewportSize({width,height:844});
+   for(const route of ['workbench','catalog','list/all','apply/purchase','detail/'+detailId,'notifications','profile']){
+    await go(route);
+    assert(await p.locator('body').evaluate(e=>e.scrollWidth<=e.clientWidth+1),'overflow '+route+' at '+width);
+    assert.equal(await p.locator('.page-heading p').count(),0,'mobile page subtitles removed');
+    assert.equal(await p.locator('.ga-context,#actor-select,[data-action=next-actor]').count(),0,'identity controls removed');
+    assert.equal(await p.evaluate(()=>GA.actor),'admin');
+    const geometry=await p.locator('.ga-mobile').evaluate(e=>({width:e.getBoundingClientRect().width,border:getComputedStyle(e).borderLeftWidth,bg:getComputedStyle(e).backgroundColor}));
+    assert(geometry.width<=width);
+    assert.equal(geometry.border,'1px');
+    assert.equal(geometry.bg,'rgb(245, 247, 250)');
+    if(width===390)await shot('mobile-refined-'+route.split('/')[0]);
+   }
+   await go('list/all');await filter();
+   assert(await dialog().evaluate(e=>{const r=e.getBoundingClientRect();return r.left>=0&&r.right<=innerWidth+1&&r.bottom<=innerHeight+1;}),'filter sheet fits '+width);
+   for(const label of ['审批状态','所属公司','审批类型','开始日期','结束日期'])assert((await dialog().getByLabel(label,{exact:true}).boundingBox()).width>=120,'readable filters at '+width);
+   if(width===390)await shot('mobile-refined-filter');
+   await button('取消',dialog()).click();
+   await p.getByLabel('搜索审批',{exact:true}).fill('不存在的审批');
+   await p.locator('#mobile-list-search').getByRole('button',{name:'搜索',exact:true}).click();
+   await p.getByRole('heading',{name:'未找到相关审批',exact:true}).waitFor();
+   assert.equal(await p.locator('.ga-empty').evaluate(e=>getComputedStyle(e).backgroundColor),'rgb(255, 255, 255)');
+   if(width===390)await shot('mobile-refined-empty');
+   await button('清空筛选').first().click();
+  }
+  await p.setViewportSize({width:1280,height:900});await go('list/all');
+  assert.equal(Math.round((await p.locator('.ga-mobile').boundingBox()).width),430);
+  await shot('mobile-refined-frame');
+  assert.deepEqual(errors,[]);
+  console.log('PASS all H5 pages and sheets at 320/390/430, desktop preview boundary, concise headings and no JS errors');
+ }finally{await browser.close();}
+})().catch(e=>{console.error(e);process.exitCode=1;});
