@@ -11,7 +11,7 @@ const handle=(s,t,a,result,content='门店已与客户沟通本次处理事项',
 test('one store submission records communication and closes without prior follow-up or a solution',()=>{
  const {s,t,a}=fixture(),deadline=t.deadline,count=t.logs.length;
  handle(s,t,a,'resolved','客户已理解服务安排，安抚后问题解决');
- assert.equal(t.state,'已结案');assert.equal(t.storeIntake.result,'resolved');assert.equal(t.closure.note,'客户已理解服务安排，安抚后问题解决');assert.equal(t.proposal,null);assert.equal(t.owner,'');assert.equal(t.deadline,deadline);assert(t.firstContact);assert.deepEqual(E.taskPeople(s,t),[]);
+ assert.equal(t.state,'已结案');assert.equal(t.storeIntake.result,'resolved');assert.equal(t.closure.note,'客户已理解服务安排，安抚后问题解决');assert.equal(t.proposal,null);assert.equal(t.owner,'aftercare');assert.equal(t.deadline,deadline);assert(t.firstContact);assert.deepEqual(E.taskPeople(s,t),[]);
  assert.equal(t.logs.length,count+2);assert.equal(t.logs[0].title,'门店处理：已解决并结案');assert.equal(E.nodeTiming(t).endedAt,t.closed);
  const before=E.clone(s);assert.throws(()=>handle(s,t,a,'resolved'));assert.deepEqual(E.clone(s),before);
 });
@@ -53,7 +53,7 @@ test('non-assignee, suspended, pending and invalid route failures do not leave p
  }
 });
 test('missing aftercare staffing retains the submitted handoff for dispatch instead of leaving store work open',()=>{
- const {s,t,a}=fixture();delete t.flow.assignment.nodes.contact; // Simulate unavailable downstream configuration.
+ const {s,t,a}=fixture();s.configuration.organization.appointments.find(p=>p.personId===t.owner).active=false; // The existing owner must not be silently replaced.
  handle(s,t,a,'unresolved');assert.equal(t.storeIntake.result,'unresolved');assert(!E.isStoreIntake(t));assert.equal(t.pendingAssignment.mode,'configuration');assert.equal(t.currentAssignee,'manager');assert(t.logs.some(x=>x.title==='门店处理：未解决，已转售后'));
 });
 

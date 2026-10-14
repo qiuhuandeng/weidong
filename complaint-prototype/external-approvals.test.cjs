@@ -36,7 +36,7 @@ test('after-payment procurement refusal locks financial records and resumes only
  assert.equal(E.currentFlowNode(t).templateId,'approval-purchase');const r=E.externalApprovalRecord(s,t);assert.equal(r.round,2);assert(r.snapshot.fields.find(f=>f.id==='reason').value.includes('更换缺货商品'));
  E.applyApprovalEvent(s,event(s,t));assert.equal(E.currentFlowNode(t).kind,'procurement');
  assert.throws(()=>E.pay(s,t,'finance',{result:'成功'}),/办理人/);
- E.finishProcurement(s,t,E.taskPeople(s,t)[0],{method:'总部发货',items:E.procurementItems(t).filter(x=>x.remaining>0).map(x=>({lineIndex:x.lineIndex,quantity:x.remaining})),trackingNumber:'SF-TEST',note:'商品已发出'});E.closeTicket(s,t,t.owner,{completed:true,note:'已核实到账及交付'});assert.equal(t.state,'已结案');assert.equal(JSON.stringify(t.payments),payment);assert.equal(JSON.stringify(order),balance);
+ E.finishProcurement(s,t,E.taskPeople(s,t)[0],{method:'总部发货',items:E.procurementItems(t).filter(x=>x.remaining>0).map(x=>({lineIndex:x.lineIndex,quantity:x.remaining})),trackingNumber:'SF-TEST',note:'商品已发出'});E.closeTicket(s,t,t.owner,{aftercareType:'顾客自身',completed:true,note:'已核实到账及交付'});assert.equal(t.state,'已结案');assert.equal(JSON.stringify(t.payments),payment);assert.equal(JSON.stringify(order),balance);
 });
 test('launch failure retains confirmed solution and deadline without falling back to local approvals',()=>{
  const s=fixture(),t=ticket(s,'D06'),r=E.externalApprovalRecord(s,t),before=JSON.stringify(s);

@@ -13,9 +13,9 @@ test('same-department handoff moves ownership and task without changing deadline
  const {s,t}=setup(),before=snapshot(t),config=E.clone(s.configuration),cursors=E.clone(s.assignmentCursors),count=s.tickets.length;
  E.transferAftercare(s,t,t.owner,'chen','同事已线下确认接手');assert.equal(t.owner,'chen');assert.equal(t.currentAssignee,'chen');assert.deepEqual(E.taskPeople(s,t),['chen']);assert.equal(E.isPending(s,t,'aftercare'),false);assert.equal(E.canHandle(s,t,'aftercare'),false);assert(E.canView(s,t,'aftercare'));assert.deepEqual(snapshot(t),{...before,owner:'chen'});assert.deepEqual(s.configuration,config);assert.deepEqual(s.assignmentCursors,cursors);assert.equal(s.tickets.length,count);assert.equal(t.handoffs[0].from,'aftercare');assert.equal(t.handoffs[0].to,'chen');
 });
-test('handoff candidates exclude self, other departments, unrelated roles and inactive people',()=>{
+test('handoff candidates include active department colleagues and exclude self, other departments and inactive people',()=>{
  const {s,t}=setup();s.configuration.organization.appointments.find(p=>p.personId==='zhou').departmentId='finance';s.configuration.organization.appointments.find(p=>p.personId==='chen').active=false;
- const ids=E.transferCandidates(s,t).map(p=>p.id);for(const id of ['aftercare','zhou','chen','finance','sun','store2','gu','callback','intake'])assert(!ids.includes(id));assert(ids.includes('manager'));
+ const ids=E.transferCandidates(s,t).map(p=>p.id);for(const id of ['aftercare','zhou','chen','finance','sun','store2','gu'])assert(!ids.includes(id));assert(ids.includes('manager'));assert(ids.includes('callback'));assert(ids.includes('intake'));
  const before=E.clone(s);for(const id of ['aftercare','zhou','chen','finance','store2'])assert.throws(()=>E.transferAftercare(s,t,t.owner,id,'转交'),/同部门其他有效/);assert.throws(()=>E.transferAftercare(s,t,t.owner,'manager',' '),/原因/);assert.deepEqual(E.clone(s),before);
 });
 test('handoff requires the current owner or a same-department aftercare manager',()=>{
@@ -23,20 +23,24 @@ test('handoff requires the current owner or a same-department aftercare manager'
 });
 test('node action switches are enforced in both dedicated operations and the old assign entry',()=>{
  const {s,t}=setup();Object.assign(t.flow.config.ticketFlow.nodes.find(n=>n.kind==='sales').actions,{transfer:false,store:false,suspend:false});assert.deepEqual(E.aftercarePermissions(s,t,t.owner),{transfer:false,store:false,suspend:false});
- assert.throws(()=>E.transferAftercare(s,t,t.owner,'chen','交接'),/未允许/);assert.throws(()=>E.assign(s,t,'manager','chen','绕过设置'),/未允许/);assert.throws(()=>E.requestStoreAssistance(s,t,t.owner,{note:'协助核实'}),/已取消/);assert.throws(()=>E.suspendTicket(s,t,t.owner,{...pauseData(t),note:'等资料'}),/未允许/);
+ assert.throws(()=>E.transferAftercare(s,t,t.owner,'chen','交接'),/未允许/);assert.throws(()=>E.assign(s,t,'manager','chen','绕过设置'),/未允许/);assert.throws(()=>E.requestStoreAssistance(s,t,t.owner,{note:'协助核实'}),/未允许/);assert.throws(()=>E.suspendTicket(s,t,t.owner,{...pauseData(t),note:'等资料'}),/未允许/);
 });
 test('saved action switches apply to new tickets while old ticket permissions keep their snapshot',()=>{
  const {s,t}=setup(),scene=P.prepare(s.configuration,C.Rules.sceneList(s.configuration).find(r=>r.level===2));scene.config.ticketFlow.nodes[0].actions={transfer:false,store:false,suspend:false};s.configuration=C.Rules.saveScene(s.configuration,'manager',scene,s.configuration.sceneRevision,Date.now());
- const fresh=E.create(s,'chen',base);assert.equal(E.aftercarePermissions(s,fresh,fresh.owner).store,false);assert.equal(E.aftercarePermissions(s,t,t.owner).store,false);
+ const fresh=E.create(s,'chen',base);assert.equal(E.aftercarePermissions(s,fresh,fresh.owner).store,false);assert.equal(E.aftercarePermissions(s,t,t.owner).store,true);
 });
 test('handoff before first contact keeps the original first-contact deadline and the new owner continues handling',()=>{
  const {s,t}=setup(true),deadline=t.taskDeadline,assigned=t.assignedAt;E.transferAftercare(s,t,t.owner,'zhou','换人联系');assert.equal(t.phase,'待首联');assert.equal(t.taskDeadline,deadline);assert.equal(t.assignedAt,assigned);E.follow(s,t,'zhou',{connected:true,content:'已联系客户'});assert.equal(t.phase,'处理中');assert.equal(t.currentAssignee,'zhou');assert.equal(t.owner,'zhou');
 });
-test('retired assistance APIs cannot alter tickets even when old node snapshots allow it',()=>{
- const {s,t}=setup(),before=E.clone(s);for(const action of ['requestStoreAssistance','finishStoreAssistance','cancelStoreAssistance'])assert.throws(()=>E[action](s,t,t.owner,{note:'旧入口'}),/已取消/);assert.deepEqual(E.clone(s),before);
+test('store transfers require a valid store, its active recipient and a reason',()=>{
+ const {s,t}=setup(),before=E.clone(s);
+ for(const data of [{note:'核实'},{store:'不存在',person:'store2',note:'核实'},{store:t.store,person:'store1',note:'核实'},{store:t.store,person:'store2',note:' '}])assert.throws(()=>E.requestStoreAssistance(s,t,t.owner,data));
+ assert.throws(()=>E.finishStoreAssistance(s,t,'store2',{note:'尚未转派'}));assert.deepEqual(E.clone(s),before);
 });
-test('old active assistance returns to aftercare once, preserving evidence, owner and deadlines',()=>{
- const {s,t}=setup(),before=snapshot(t);t.storeAssistance={id:'OLD',returnState:t.phase,assignee:'store2',instructions:'核实服务记录',files:[{name:'附件'}],at:Date.now()};t.phase='待门店协同';t.currentAssignee='store2';E.prepareTickets(s);assert.deepEqual(snapshot(t),before);assert.equal(t.storeAssistance,undefined);assert.equal(t.storeAssistanceHistory[0].files[0].name,'附件');const loaded=E.clone(s);E.prepareTickets(s);assert.deepEqual(s,loaded);
+test('active store handling survives reload without returning prematurely or changing the owner',()=>{
+ const {s,t}=setup();E.requestStoreAssistance(s,t,t.owner,{store:t.store,person:'store2',note:'核实服务记录'});const before=E.clone(t);
+ E.prepareTickets(s);assert.deepEqual(E.clone(t),before);assert.equal(t.currentAssignee,'store2');assert.equal(t.owner,'aftercare');
+ E.finishStoreAssistance(s,t,'store2',{note:'已核实'});assert.equal(t.currentAssignee,t.owner);assert.equal(t.phase,'处理中');assert.equal(t.storeAssistance,undefined);assert.equal(t.storeAssistanceHistory.length,1);
 });
 test('suspension cannot be bypassed through workflow actions or early closure',()=>{
  const {s,t}=setup();E.suspendTicket(s,t,t.owner,{...pauseData(t),note:'等待资料'});const before=E.clone(s);for(const action of [()=>E.confirmSolution(s,t,t.owner,noFunds),()=>E.follow(s,t,t.owner,{content:'越过',connected:true}),()=>E.closeEarly(s,t,t.owner,{note:'越过',completed:true})])assert.throws(action,/挂起|待办事项/);assert.deepEqual(E.clone(s),before);

@@ -7,11 +7,15 @@ const STAFF=[
  {id:'manager',name:'林岚',role:'售后主管',store:'*'},
  {id:'store1',name:'王敏',role:'门店店长',store:'南京浦口店'},
  {id:'store2',name:'周妍',role:'门店店长',store:'上海徐汇店'},
+ {id:'advisor1',name:'林薇',role:'顾问',store:'南京浦口店'},
+ {id:'advisor2',name:'陈蓉',role:'顾问',store:'上海徐汇店'},
  {id:'aftercare',name:'许宁',role:'售后专员',store:'*'},
  {id:'callback',name:'赵晴',role:'400回访',store:'*'},
  {id:'quality',name:'沈青',role:'品控复核',store:'*'},
  {id:'finance',name:'陆清',role:'财务审核',store:'*'},
+ {id:'finance2',name:'许敏',role:'财务审核',store:'*'},
  {id:'procurement',name:'顾欣',role:'采购专员',store:'*'},
+ {id:'procurement2',name:'何宁',role:'采购专员',store:'*'},
  {id:'director',name:'陈卓',role:'审批主管',store:'*'},
  {id:'chen',name:'陈悦',role:'售后专员',store:'*'},
  {id:'zhou',name:'周宁',role:'售后专员',store:'*'},
@@ -62,7 +66,13 @@ function ensureRuleSetup(state){
  c.ruleSetupVersion=1;c.sceneRevision=(c.sceneRevision||0)+1;c.revision=(c.revision||0)+1;return true;
 }
 function upgrade(state){
- const c=state.configuration;if(!c||c.procurementConfigVersion>=1)return false;
+ const c=state.configuration;if(!c)return false;let changed=false;
+ if(!c.storeTransferVersion){
+  const org=Rules.Flow.organization(c);
+  for(const id of ['advisor1','advisor2','procurement2','finance2']){const p=STAFF.find(p=>p.id===id),department=org.departments.find(d=>p.role==='采购专员'?d.id==='procurement':p.role==='财务审核'?d.id==='finance':d.store===p.store);if(department&&!org.appointments.some(a=>a.personId===id))org.appointments.push({personId:id,departmentId:department.id,managerId:department.leaders?.[0]||'manager',active:true});}
+  c.organization=org;c.storeTransferVersion=1;changed=true;
+ }
+ if(c.procurementConfigVersion>=1)return changed;
  const assignment=Assignment.get(c);if(!assignment.positions.some(p=>p.id==='procurement'))assignment.positions.push({id:'procurement',name:'商品采购岗',members:['procurement']});c.nodeAssignmentRules=assignment;
  const org=Rules.Flow.organization(c);if(!org.departments.some(d=>d.id==='procurement'))org.departments.push({id:'procurement',name:'采购部',parent:'company',leaders:['procurement']});
  if(!org.appointments.some(a=>a.personId==='procurement'))org.appointments.push({personId:'procurement',departmentId:'procurement',managerId:'director',active:true});

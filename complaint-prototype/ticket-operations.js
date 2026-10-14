@@ -9,6 +9,12 @@ function createTicketOperations(E,C,P){
  const isStore=t=>!!t.storeIntake&&!t.storeIntake.completedAt&&t.phase!=='已结案';
  const sync=t=>{t.state=E.ticketStatus(t);};
  function transact(t,fn){const before=copy(t.nodeTiming||E.initialNodeClock(t));const result=fn();E.trackNodeClock(t,before);sync(t);return result;}
+ function ensureStoreOwner(s,t){
+  if(t.owner)return false;
+  let allocation;try{allocation=C.allocate(s,t,'contact');}catch{}
+  const owner=[allocation?.person,allocation?.dispatcher,'manager'].find(id=>C.STAFF.some(p=>p.id===id&&['售后专员','售后主管'].includes(p.role))&&C.active(s,id));
+  assert(owner,'请先配置有效的工单负责人');t.owner=owner;t.nodeOwners??={};t.nodeOwners.contact=owner;t.participants=[...new Set([...t.participants,owner])];return true;
+ }
  function storePerson(s,t,node){
   const o=s.orders.find(o=>o.id===t.order),customers=[...(s.customers||[]),...(s.configuration.customers||[])];
   const customer=customers.find(c=>t.customerId&&c.id===t.customerId||t.member&&c.member===t.member);
@@ -21,7 +27,7 @@ function createTicketOperations(E,C,P){
   if(t.flow?.config?.ticketFlow?.schema!==2)return false;
   const steps=P.entryPath({level:t.level,config:t.flow.config},{source:source(t)}),node=steps.slice(0,steps.findIndex(n=>n.kind==='sales')<0?steps.length:steps.findIndex(n=>n.kind==='sales')).find(n=>n.kind==='store');
   if(!node)return false;
-  t.storeIntake??={node:copy(node),startedAt:Date.now(),source:source(t)};t.owner='';t.activeNode=node.id;t.taskDeadline=null;
+  ensureStoreOwner(s,t);t.storeIntake??={node:copy(node),startedAt:Date.now(),source:source(t)};t.activeNode=node.id;t.taskDeadline=null;
   try{const who=storePerson(s,t,node);delete t.pendingAssignment;t.currentAssignee=who;t.phase='待门店首联';t.assignedAt=Date.now();t.taskDeadline=t.assignedAt+t.flow.doc.stage.first*E.H;t.participants=[...new Set([...t.participants,who])];E.log(t,'系统','进入门店办理',E.user(who).name+'；按工单来源匹配');}
   catch(error){t.phase='待分派';t.currentAssignee='manager';t.pendingAssignment={mode:'entry-node',node:node.id,dispatcher:'manager',reason:error.message};t.participants=[...new Set([...t.participants,'manager'])];E.log(t,'系统','门店办理人待匹配',error.message);}
   return true;
@@ -53,8 +59,8 @@ function createTicketOperations(E,C,P){
   requireStore(s,t,a);assert(t.storeIntake.contactedAt,'请先记录与客户的有效沟通');assert(data.note?.trim(),'请填写未解决原因及交接说明');
   const route=P.entryPath({level:t.level,config:t.flow.config},{source:source(t),storeResult:'unresolved'});assert(route.some(n=>n.kind==='sales'),'当前规则未配置未解决转售后的路径，请先核对流程');
   t.storeIntake.completedAt=Date.now();t.storeIntake.result='unresolved';t.storeIntake.note=data.note.trim();t.storeIntake.by=a;t.attachments.push(...copy(data.files||[]));E.log(t,a,'门店处理：未解决，已转售后',data.note.trim());
-  t.phase='待首联';t.currentAssignee='';t.owner='';delete t.pendingAssignment;
-  try{C.activate(s,t,'contact');if(t.owner){t.taskDeadline=Date.now()+t.flow.doc.stage.process*E.H;}}
+  t.phase='待首联';t.currentAssignee='';delete t.pendingAssignment;
+  try{ensureStoreOwner(s,t);assert(C.active(s,t.owner),'工单负责人已失效，请维护人员配置');t.activeNode='contact';t.nodeOwners??={};t.nodeOwners.contact=t.owner;t.currentAssignee=t.owner;t.assignedAt=Date.now();t.taskDeadline=t.assignedAt+t.flow.doc.stage.process*E.H;}
   catch(error){t.phase='待分派';t.pendingAssignment={mode:'configuration',dispatcher:'manager',reason:error.message};t.currentAssignee='manager';t.taskDeadline=null;}
  }
  function canCloseEarly(s,t,a){
@@ -119,8 +125,7 @@ function createTicketOperations(E,C,P){
   if(E.solutionIncludes.exchange(k)){assert(data.exchangeItems?.length,'请选择置换商品');detail.exchangeItems=data.exchangeItems.map(row=>{const product=products.find(p=>p.id===row.productId);assert(product,'请选择有效的置换商品');assert(String(row.remark||'').length<=500,'商品备注最多 500 字');return {...product,productId:product.id,quantity:row.quantity,remark:String(row.remark||'').trim()};});}
   return detail;
  }
- function prepareTickets(s){let changed=old.prepareTickets(s);for(const t of s.tickets){if(t.storeAssistance){const row=t.storeAssistance;t.storeAssistanceHistory??=[];t.storeAssistanceHistory.push({...copy(row),status:'已结束',completedAt:Date.now(),note:'门店协同入口已取消，恢复原售后办理，保留原时限。'});t.phase=row.returnState;t.currentAssignee=t.owner;delete t.storeAssistance;E.log(t,'系统','恢复售后办理','保留原记录及办理时限');sync(t);changed=true;}}return changed;}
- const retired=()=>{throw Error('转门店协同已取消，门店办理由工单来源和流程配置决定');};
+ function prepareTickets(s){let changed=old.prepareTickets(s);for(const t of s.tickets){if(isStore(t)&&!t.owner){ensureStoreOwner(copy(s),t);changed=true;}}return changed;}
  return {PRODUCTS:products,orderItems,refundBalance,refundStaff,validateDelivery,validateFinancialDetails,routeStoreEntry,isStoreIntake:isStore,handleStoreIntake,finishStoreIntake,canCloseEarly,closeEarly,assignmentCandidates,canAssignPending,assign,follow,prepareTickets,
   taskPeople:(s,t)=>isStore(t)?[t.pendingAssignment?.dispatcher||t.currentAssignee].filter(Boolean):old.taskPeople(s,t),
   canHandle:(s,t,a)=>isStore(t)?!t.pendingAssignment&&t.currentAssignee===a&&C.active(s,a):old.canHandle(s,t,a),
@@ -128,7 +133,7 @@ function createTicketOperations(E,C,P){
   canView:(s,t,a)=>old.canView(s,t,a)||isStore(t)&&E.taskPeople(s,t).includes(a),
   confirmSolution:(s,t,a,d)=>{assert(!isStore(t),'请先完成门店办理');assert(!t.storeIntake||t.aftercareContactAt,'请售后先记录与客户的有效沟通');return old.confirmSolution(s,t,a,d);},
   retryStoreEntry:(s,t,a)=>transact(t,()=>{assert(t.pendingAssignment?.mode==='entry-node'&&E.canConfirmGrading(s,t,a),'请由售后经理重新匹配门店办理人');routeStoreEntry(s,t);}),
-  aftercarePermissions:(s,t,a)=>{const p=old.aftercarePermissions(s,t,a);if('store' in p)p.store=false;return p;},requestStoreAssistance:retired,finishStoreAssistance:retired,cancelStoreAssistance:retired};
+  aftercarePermissions:old.aftercarePermissions};
 }
 if(typeof module!=='undefined'&&module.exports)module.exports=createTicketOperations;else root.createTicketOperations=createTicketOperations;
 })(typeof window!=='undefined'?window:globalThis);

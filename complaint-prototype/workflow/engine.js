@@ -7,7 +7,7 @@ const CHANNELS=Sources.channels;
 const STATES=['待处理','处理中','审批中','付款办理','采购办理','待结案','已挂起','已结案'];
 const STORES=['杭州湖滨店','上海徐汇店','南京新街口店','成都春熙店'];
 const Configuration=typeof module!=='undefined'&&module.exports?require('../configuration.js'):root.ComplaintConfiguration;
-for(const p of Configuration.STAFF)if(!USERS.some(u=>u.id===p.id))USERS.push({id:p.id,name:p.name,title:p.role,role:({'售后主管':'lead','审批主管':'lead','财务审核':'finance','采购专员':'procurement','门店店长':'store','系统管理员':'admin','业务员':'sales'})[p.role]||'agent',...(p.store!=='*'?{store:p.store}:{})});
+for(const p of Configuration.STAFF)if(!USERS.some(u=>u.id===p.id))USERS.push({id:p.id,name:p.name,title:p.role,role:({'售后主管':'lead','审批主管':'lead','财务审核':'finance','采购专员':'procurement','门店店长':'store','系统管理员':'admin','业务员':'sales','顾问':'sales'})[p.role]||'agent',...(p.store!=='*'?{store:p.store}:{})});
 const FIELDS={level:'投诉等级',repeat:'重复投诉',channel:'来源渠道',store:'所属门店',type:'方案类型',refund:'退款金额',compensation:'赔偿金额',total:'申请总额'};
 const id=()=>Math.random().toString(36).slice(2,10), clone=o=>JSON.parse(JSON.stringify(o));
 function user(uid){return USERS.find(u=>u.id===uid)}

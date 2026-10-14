@@ -45,7 +45,7 @@ function createTicketLifecycle(E,C,P){
   if(key==='ended')return t.mergedInto?'已并入主工单':'流程结束';
   if(key==='sales')return t.approvalAmendment?'售后办理 · 采购调整':'售后办理';
   if(E.currentFlowNode(t)?.provider==='dingtalk')return E.currentFlowNode(t).title+(['发起失败','状态待确认'].includes(t.approval?.status)?' · '+t.approval.status:'');
-  return ({grading:'定级确认',assistance:'门店协同',exception:'流程待处理'})[key]||E.currentFlowNode(t)?.title||({approval:'部门审批',store:'门店办理',procurement:'采购办理',payment:'付款办理',close:'售后结案'})[key];
+  return ({grading:'定级确认',assistance:'门店办理',exception:'流程待处理'})[key]||E.currentFlowNode(t)?.title||({approval:'部门审批',store:'门店办理',procurement:'采购办理',payment:'付款办理',close:'售后结案'})[key];
  }
  function task(t){
   if(t.approvalAmendment)return '调整采购商品并重新发起审批';
@@ -57,7 +57,7 @@ function createTicketLifecycle(E,C,P){
   if(t.pendingAssignment?.mode==='configuration')return '重新匹配规则';
   if(t.pendingAssignment?.mode==='flow-node')return '重新匹配办理人';
   if(t.phase==='待首联')return '首次联系客户';
-  const key=stageKey(t);return ({grading:'确认客诉等级',assignment:'分派工单',sales:'跟进并确认方案',assistance:'反馈协同结果',approval:'处理审批意见',store:'填写门店处理结果',procurement:'采购发货',payment:'登记付款结果',close:'确认结案',ended:'办理已结束'})[key]||stage(t);
+  const key=stageKey(t);return ({grading:'确认客诉等级',assignment:'分派工单',sales:'跟进并确认方案',assistance:'完成门店办理',approval:'处理审批意见',store:'填写门店处理结果',procurement:'采购发货',payment:'登记付款结果',close:'确认结案',ended:'办理已结束'})[key]||stage(t);
  }
  function findOwner(s,t,sales){
   if(aftercare(t.owner))return t.owner;
@@ -131,7 +131,7 @@ function createTicketLifecycle(E,C,P){
  api.taskPeople=(s,t)=>t.workflowIssue?[C.STAFF.find(p=>p.role==='售后主管'&&C.active(s,p.id))?.id||'manager']:old.taskPeople(s,t);
  api.isPending=(s,t,a)=>t.workflowIssue?api.taskPeople(s,t).includes(a):old.isPending(s,t,a);
  api.canHandle=(s,t,a)=>!t.workflowIssue&&old.canHandle(s,t,a);
- const mutations=['create','follow','assign','confirmGrading','retryIntake','confirmSolution','approve','pay','finishStore','finishProcurement','closeTicket','retryFlowNode','transferAftercare','requestStoreAssistance','finishStoreAssistance','cancelStoreAssistance','suspendTicket','resumeTicket','extendSuspension','invalidateSuspension'];
+ const mutations=['create','follow','assign','confirmGrading','retryIntake','confirmSolution','approve','pay','finishStore','finishProcurement','closeTicket','retryFlowNode','transferAftercare','transferHandling','transferStoreHandling','requestStoreAssistance','finishStoreAssistance','cancelStoreAssistance','suspendTicket','resumeTicket','extendSuspension','invalidateSuspension'];
  for(const name of mutations)api[name]=(s,...args)=>{
   const t=name==='create'?null:args[0],before=t?.id?copy(t.nodeTiming||E.initialNodeClock(t)):null;
   assert(!t?.workflowIssue,'请先核对流程并重新匹配');assert(!legacyPhases.includes(t?.phase),'请先将原办理记录衔接至当前流程');

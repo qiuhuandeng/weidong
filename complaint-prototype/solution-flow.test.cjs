@@ -20,10 +20,26 @@ test('invalid zero, hidden, fractional and exchange amounts fail before mutating
 test('a funded path with no approval nodes reaches payment then explicit aftercare closure',()=>{
  const s=seed();configure(s,(nodes,scene)=>nodes.splice(1,nodes.length-2,P.node('payment',s.configuration,scene)));
  const t=create(s),owner=t.owner;confirm(s,t);assert.equal(t.phase,'待付款');assert.equal(t.approval,null);assert.equal(t.owner,owner);assert.equal(actor(s,t),'finance');
- assert.throws(()=>E.closeTicket(s,t,owner,{note:'跳过付款',completed:true}),/当前节点/);pay(s,t);assert.equal(t.phase,'待结案');assert.equal(actor(s,t),owner);assert.throws(()=>E.closeTicket(s,t,owner,{note:'处理完成'}),/确认/);E.closeTicket(s,t,owner,{note:'线下确认完成',completed:true});assert.equal(t.phase,'已结案');assert.deepEqual(E.taskPeople(s,t),[]);
+ assert.throws(()=>E.closeTicket(s,t,owner,{aftercareType:'顾客自身',note:'跳过付款',completed:true}),/当前节点/);pay(s,t);assert.equal(t.phase,'待结案');assert.equal(actor(s,t),owner);assert.throws(()=>E.closeTicket(s,t,owner,{aftercareType:'顾客自身',note:'处理完成'}),/确认/);E.closeTicket(s,t,owner,{aftercareType:'顾客自身',note:'线下确认完成',completed:true});assert.equal(t.phase,'已结案');assert.deepEqual(E.taskPeople(s,t),[]);
 });
 test('a solution without funds may still visit an explicitly configured payment node',()=>{
  const s=seed();configure(s,(nodes,scene)=>nodes.splice(1,nodes.length-2,P.node('payment',s.configuration,scene)));const t=create(s);confirm(s,t,proposal('exchange'));assert.equal(t.phase,'待付款');assert.throws(()=>E.pay(s,t,actor(s,t),{result:'成功',amount:0}),/无退款或赔偿/);E.pay(s,t,actor(s,t),{result:'无需付款',reason:'仅置换商品，无资金事项'});assert.equal(t.phase,'待结案');assert.equal(t.payments.length,0);
+});
+test('closure rejects missing or invalid aftercare types without changing the ticket',()=>{
+ const s=seed(),t=create(s);confirm(s,t,proposal('service'));const before=E.clone(s);
+ for(const aftercareType of [undefined,'',' ','其他',[],{}]){
+  assert.throws(()=>E.closeTicket(s,t,t.owner,{aftercareType,note:'处理完成',completed:true}),/请选择售后类型/);
+  assert.deepEqual(E.clone(s),before);
+ }
+});
+test('all seven aftercare types are retained in the closed ticket and closure log',()=>{
+ for(const aftercareType of ['闭店','咨询报价','前端话术','门店环境','门店多收','祛斑反黑','顾客自身']){
+  const s=seed(),t=create(s);confirm(s,t,proposal('service'));
+  E.closeTicket(s,t,t.owner,{aftercareType,note:'  处理完成  ',completed:true});
+  assert.equal(t.state,'已结案');assert.equal(t.aftercareType,aftercareType);
+  assert.equal(t.logs.find(row=>row.title==='工单结案').body,'售后类型：'+aftercareType+'\n处理完成');
+  const reloaded=E.clone(s);E.prepareTickets(reloaded);assert.equal(reloaded.tickets.find(row=>row.id===t.id).aftercareType,aftercareType);
+ }
 });
 test('store nodes use the ticket store, retain the aftercare owner and require a result',()=>{
  const s=seed();configure(s,(nodes,scene)=>nodes.splice(1,nodes.length-2,P.node('store',s.configuration,scene)));const t=create(s),owner=t.owner;confirm(s,t,proposal('exchange'));assert.equal(t.phase,'待门店办理');assert.equal(actor(s,t),'store2');assert.equal(t.owner,owner);assert.throws(()=>E.finishStore(s,t,owner,{note:'越权'}),/当前节点/);assert.throws(()=>E.finishStore(s,t,'store2',{note:' '}),/处理结果/);E.finishStore(s,t,'store2',{note:'已完成商品交付',files:[{name:'签收记录'}]});assert.equal(t.phase,'待结案');assert.equal(actor(s,t),owner);assert.equal(t.handlingRecords[0].files[0].name,'签收记录');
@@ -62,5 +78,5 @@ test('legacy actions cannot bypass a current handling node or close it by record
 });
 test('saving the editable source tree preserves existing aftercare solution, approval and closure execution',()=>{
  const s=seed(),scene=P.prepare(s.configuration,C.Rules.sceneList(s.configuration).find(x=>x.level===2));P.prepareEntry(s.configuration,scene);const sales=scene.config.ticketFlow.nodes.find(n=>n.kind==='sales');sales.source='person';sales.personId='chen';scene.config.timing.firstContactHours=1;sales.hours=13;P.validate(scene,s.configuration);s.configuration=C.Rules.saveScene(s.configuration,'manager',scene,s.configuration.sceneRevision,Date.now());
- const t=E.create(s,'chen',{...base,channel:'门店H5 / A3'});E.follow(s,t,t.currentAssignee,{connected:true,content:'售后已核实'});assert.equal(t.owner,'chen');assert.equal(t.flow.doc.stage.process,13);confirm(s,t);assert.equal(t.execution.steps[0].kind,'sales');assert(!t.execution.steps.some(n=>n.entryRole==='store'||n.type==='end'));voteAll(s,t);pay(s,t);assert.equal(t.phase,'待结案');E.closeTicket(s,t,t.owner,{note:'处理完成',completed:true});assert.equal(t.phase,'已结案');
+ const t=E.create(s,'chen',{...base,channel:'门店H5 / A3'});E.follow(s,t,t.currentAssignee,{connected:true,content:'售后已核实'});assert.equal(t.owner,'chen');assert.equal(t.flow.doc.stage.process,13);confirm(s,t);assert.equal(t.execution.steps[0].kind,'sales');assert(!t.execution.steps.some(n=>n.entryRole==='store'||n.type==='end'));voteAll(s,t);pay(s,t);assert.equal(t.phase,'待结案');E.closeTicket(s,t,t.owner,{aftercareType:'顾客自身',note:'处理完成',completed:true});assert.equal(t.phase,'已结案');
 });

@@ -53,7 +53,7 @@ test('department approval and payment return to the aftercare owner for explicit
  const s=seed(),t=intake(s);contact(s,t);E.startApproval(s,t,t.currentAssignee,{...proposal});
  while(t.phase==='待部门审批')E.approve(s,t,E.taskPeople(s,t)[0],true,'同意');assert.equal(t.phase,'待付款');assert.deepEqual(E.taskPeople(s,t),['finance']);
  E.pay(s,t,'finance',{result:'成功',amount:10000,reference:'UNIFIED-TEST',proof:[{name:'凭证'}]});assert.equal(t.phase,'待结案');assert.deepEqual(E.taskPeople(s,t),['aftercare']);assert.equal(t.owner,'aftercare');
- assert.throws(()=>E.review(s,t,'aftercare',{result:'认可',note:'旧回访接口'}),/已取消/);E.closeTicket(s,t,'aftercare',{completed:true,note:'已核实处理完成'});assert.equal(t.phase,'已结案');
+ assert.throws(()=>E.review(s,t,'aftercare',{result:'认可',note:'旧回访接口'}),/已取消/);E.closeTicket(s,t,'aftercare',{aftercareType:'顾客自身',completed:true,note:'已核实处理完成'});assert.equal(t.phase,'已结案');
 });
 test('plain service skips funded nodes and waits for aftercare closure',()=>{
  const s=seed(),t=intake(s,1);contact(s,t);E.completeNormal(s,t,t.currentAssignee,'已完成预约协调');assert.equal(t.phase,'待结案');assert.equal(t.approval,null);assert.deepEqual(E.taskPeople(s,t),['aftercare']);
@@ -64,7 +64,7 @@ test('new configuration takes precedence over the retired intake assignment sett
 test('retired callback assignment cannot make finance close the ticket',()=>{
  const s=seed(),c=C.Assignment.get(s.configuration);c.nodes.callback.source='inherit';c.nodes.callback.from='execution';s.configuration=C.Assignment.save(s.configuration,'manager',c,c.version);
  const t=intake(s);contact(s,t);E.startApproval(s,t,t.currentAssignee,{...proposal});while(t.phase==='待部门审批')E.approve(s,t,E.taskPeople(s,t)[0],true,'同意');
- E.pay(s,t,'finance',{result:'成功',amount:10000,reference:'INHERIT-TEST',proof:[{name:'凭证'}]});assert.deepEqual(E.taskPeople(s,t),['aftercare']);assert.throws(()=>E.closeTicket(s,t,'finance',{completed:true,note:'尝试代结案'}),/当前节点/);E.closeTicket(s,t,'aftercare',{completed:true,note:'到账已核实'});assert.equal(t.phase,'已结案');
+ E.pay(s,t,'finance',{result:'成功',amount:10000,reference:'INHERIT-TEST',proof:[{name:'凭证'}]});assert.deepEqual(E.taskPeople(s,t),['aftercare']);assert.throws(()=>E.closeTicket(s,t,'finance',{aftercareType:'顾客自身',completed:true,note:'尝试代结案'}),/当前节点/);E.closeTicket(s,t,'aftercare',{aftercareType:'顾客自身',completed:true,note:'到账已核实'});assert.equal(t.phase,'已结案');
 });
 test('disabled or ambiguous grade rules cannot silently fall back to unrelated rules',()=>{
  const s=seed();s.configuration.ruleScenes.find(x=>x.level===2).enabled=false;const pending=intake(s);assert.equal(pending.phase,'待分派');assert.equal(pending.pendingAssignment.mode,'configuration');assert.match(pending.pendingAssignment.reason,/没有启用/);assert.equal(pending.flow,undefined);
@@ -72,7 +72,7 @@ test('disabled or ambiguous grade rules cannot silently fall back to unrelated r
 });
 test('missing personnel uses the configured fallback, never an invented successful approval',()=>{
  const s=seed();s.configuration.organization.appointments.find(p=>p.personId==='aftercare').active=false;const t=intake(s);assert.equal(t.owner,'manager');
- contact(s,t);const finance=s.configuration.organization.appointments.find(p=>p.personId==='finance');finance.active=false;E.confirmSolution(s,t,t.currentAssignee,{...proposal});assert.equal(t.pendingAssignment.mode,'flow-node');assert.match(t.pendingAssignment.reason,/有效|人员|任职/);assert.equal(t.state,'审批中');
+ contact(s,t);for(const person of s.configuration.organization.appointments.filter(p=>p.departmentId==='finance'))person.active=false;E.confirmSolution(s,t,t.currentAssignee,{...proposal});assert.equal(t.pendingAssignment.mode,'flow-node');assert.match(t.pendingAssignment.reason,/有效|人员|任职/);assert.equal(t.state,'审批中');
 });
 test('storage migrates both existing datasets once, preserving raw legacy records and keys',()=>{
  const mem=memory(),old=E.seed(),legacy={schema:1,sequence:9,revision:2,cases:[{id:'case-old',records:[{body:'原始证据'}]}],customers:[],rules:C.Rules.defaults()};

@@ -46,7 +46,7 @@ test('triple-method solution completes external approval, one combined payment, 
   if(node.provider==='dingtalk'){const r=E.externalApprovalRecord(s,t);assert.equal(r.snapshot.fields.find(f=>f.id==='plan').value,p.handlingMethods.map(k=>M.labels[k]).join('+'));E.applyApprovalEvent(s,{id:'triple-event-'+i,instanceId:r.instanceId,scope:'instance',type:'finish',result:'agree',at:Math.max(Date.now(),r.at)+i,actor:'审批人'});}
   else if(node.kind==='payment')E.pay(s,t,E.taskPeople(s,t)[0],{result:'成功',amount:12000,reference:'TRIPLE-PAY',proof:[{name:'凭证'}]});
   else if(node.kind==='procurement')E.finishProcurement(s,t,E.taskPeople(s,t)[0],{method:'总部发货',items:[{lineIndex:0,quantity:1}],trackingNumber:'SF-TRIPLE',note:'按确认地址发货'});
-  else E.closeTicket(s,t,t.owner,{note:'款项到账，商品签收',completed:true});
+  else E.closeTicket(s,t,t.owner,{aftercareType:'顾客自身',note:'款项到账，商品签收',completed:true});
  }
  assert.equal(t.payments.length,1);assert(visited.indexOf('payment')<visited.indexOf('procurement'));
  store.save(s);const loaded=store.load().tickets.find(x=>x.id===t.id);assert.deepEqual(loaded.proposal,t.proposal);assert.equal(loaded.state,'已结案');

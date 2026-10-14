@@ -20,7 +20,7 @@ test('payment and purchase handling start only after their preceding approvals c
  approve();assert.equal(E.currentFlowNode(t).kind,'procurement');const deadline=t.taskDeadline;
  E.finishProcurement(s,t,actor(s,t),{method:'总部发货',items:[{lineIndex:0,quantity:1}]});assert.equal(t.state,'采购办理');assert.equal(t.taskDeadline,deadline);
  E.finishProcurement(s,t,actor(s,t),{method:'门店发货',items:E.procurementItems(t).filter(x=>x.remaining>0).map(x=>({lineIndex:x.lineIndex,quantity:x.remaining}))});states.push(t.state);
- E.closeTicket(s,t,t.owner,{note:'款项与商品均已收到',completed:true});states.push(t.state);
+ E.closeTicket(s,t,t.owner,{aftercareType:'顾客自身',note:'款项与商品均已收到',completed:true});states.push(t.state);
  assert.deepEqual(states,['审批中','付款办理','审批中','采购办理','待结案','已结案']);store.save(s);assert.deepEqual(store.load().tickets.find(x=>x.id===t.id),t);
 });
 test('existing six-state tickets refresh only their status labels, preserving all progress and evidence',()=>{
@@ -32,7 +32,7 @@ test('existing six-state tickets refresh only their status labels, preserving al
  for(const suffix of ['D08','D14','D17','D18'])assert.equal(find(next,suffix).state,'采购办理');assert.equal(find(next,'D02').state,'付款办理');assert.equal(find(next,'D03').state,'审批中');assert.equal(find(next,'P10').state,'处理中');assert.deepEqual(store.load(),next);
 });
 test('grading stays pending; aftercare starts handling and a direct solution waits for manual closure',()=>{
- const s=fixture(),t=find(s,'W04');t.channel='门店H5 / A3';E.confirmGrading(s,t,'manager',1,'已核实为普通服务反馈');assert.equal(t.state,'待处理');assert.equal(t.phase,'待首联');E.follow(s,t,actor(s,t),{connected:true,content:'已联系并核实'});assert.equal(t.state,'处理中');E.confirmSolution(s,t,actor(s,t),{typeKey:'service',content:'线下协调处理完成',refund:0,compensation:0});assert.equal(t.state,'待结案');assert.equal(E.ticketStageKey(t),'close');E.closeTicket(s,t,actor(s,t),{note:'处理完成已核实',completed:true});assert.equal(t.state,'已结案');
+ const s=fixture(),t=find(s,'W04');t.channel='门店H5 / A3';E.confirmGrading(s,t,'manager',1,'已核实为普通服务反馈');assert.equal(t.state,'待处理');assert.equal(t.phase,'待首联');E.follow(s,t,actor(s,t),{connected:true,content:'已联系并核实'});assert.equal(t.state,'处理中');E.confirmSolution(s,t,actor(s,t),{typeKey:'service',content:'线下协调处理完成',refund:0,compensation:0});assert.equal(t.state,'待结案');assert.equal(E.ticketStageKey(t),'close');E.closeTicket(s,t,actor(s,t),{aftercareType:'顾客自身',note:'处理完成已核实',completed:true});assert.equal(t.state,'已结案');
 });
 test('63 cases cover every state, all seven solution types and approval modes',()=>{
  const s=fixture();assert.equal(E.WORKFLOW_EXAMPLES.length,63);
@@ -60,7 +60,7 @@ test('all active handling, downstream, closure and suspended cases can reach clo
    if(n.kind==='procurement'){E.finishProcurement(s,t,a,{method:'总部发货',items:E.procurementItems(t).filter(x=>x.remaining>0).map(x=>({lineIndex:x.lineIndex,quantity:x.remaining})),trackingNumber:'SF-TEST',note:'商品已发出'});continue;}
    if(n.kind==='store'){E.finishStore(s,t,a,{note:'商品已交付，门店处理完成'});continue;}
    if(n.kind==='payment'){const amount=t.proposal.refund+t.proposal.compensation;E.pay(s,t,a,amount?{result:'成功',amount,reference:'CHECK-'+t.id,proof:[{name:'付款凭证'}]}:{result:'无需付款',reason:'无退赔，仅服务协调'});continue;}
-   assert.equal(n.kind,'close');E.closeTicket(s,t,a,{note:'已核实各项处理完成',completed:true});
+   assert.equal(n.kind,'close');E.closeTicket(s,t,a,{aftercareType:'顾客自身',note:'已核实各项处理完成',completed:true});
   }
   if(!t.closure?.early)assert.equal(t.owner,E.currentFlowNode(t).people[0],entry.id);assert.deepEqual(E.taskPeople(s,t),[]);
  }
@@ -74,8 +74,8 @@ test('legacy running approvals, payments and callbacks migrate once without losi
  assert(E.prepareTickets(s));assert(!s.tickets.some(t=>['待方案审批','待打款','待回访'].includes(t.phase)));
  for(const old of original){const t=s.tickets.find(t=>t.id===old.id);assert.equal(t.deadline,old.deadline);assert.deepEqual(t.payments,old.payments);for(const log of old.logs)assert(t.logs.some(row=>JSON.stringify(row)===JSON.stringify(log)));if(['待方案审批','待打款','待回访'].includes(old.phase)){assert.equal(t.legacyWorkflow.phase,old.phase);assert.equal(t.taskDeadline,old.taskDeadline);}}
  const snapshot=E.clone(s);assert.equal(E.prepareTickets(s),false);assert.deepEqual(s,snapshot);
- const t=s.tickets.find(t=>t.phase==='待部门审批');while(t.phase==='待部门审批')E.approve(s,t,actor(s,t),true,'继续办理');assert.equal(t.phase,'待付款');E.pay(s,t,actor(s,t),{result:'成功',amount:t.proposal.refund+t.proposal.compensation,reference:'CONTINUED',proof:[{name:'凭证'}]});assert.equal(t.state,'待结案');assert.equal(t.phase,'待结案');E.closeTicket(s,t,t.owner,{note:'线下已核实完成',completed:true});assert.equal(t.state,'已结案');
- const callback=s.tickets.find(t=>t.legacyWorkflow?.phase==='待回访');assert.equal(callback.proposal,null);E.closeTicket(s,callback,callback.owner,{note:'原处理事项已确认完成',completed:true});assert.equal(callback.state,'已结案');
+ const t=s.tickets.find(t=>t.phase==='待部门审批');while(t.phase==='待部门审批')E.approve(s,t,actor(s,t),true,'继续办理');assert.equal(t.phase,'待付款');E.pay(s,t,actor(s,t),{result:'成功',amount:t.proposal.refund+t.proposal.compensation,reference:'CONTINUED',proof:[{name:'凭证'}]});assert.equal(t.state,'待结案');assert.equal(t.phase,'待结案');E.closeTicket(s,t,t.owner,{aftercareType:'顾客自身',note:'线下已核实完成',completed:true});assert.equal(t.state,'已结案');
+ const callback=s.tickets.find(t=>t.legacyWorkflow?.phase==='待回访');assert.equal(callback.proposal,null);E.closeTicket(s,callback,callback.owner,{aftercareType:'顾客自身',note:'原处理事项已确认完成',completed:true});assert.equal(callback.state,'已结案');
 });
 test('retired callbacks and risk approval cannot close tickets, and keywords do not silently replace grading or flow',()=>{
  const s=fixture(),t=find(s,'P01'),level=t.level,flow=E.clone(t.flow);E.follow(s,t,t.owner,{connected:true,content:'客户提到12315，请核实相关信息'});assert.equal(t.level,level);assert.deepEqual(t.flow,flow);assert.equal(E.needsRiskReview(t),false);
@@ -105,7 +105,7 @@ test('approval completion enters payment handling; returns go back to aftercare 
  const s=fixture(),a=find(s,'P06');E.approve(s,a,actor(s,a),true,'会签事项已核实');assert.equal(a.phase,'待付款');assert.equal(a.state,'付款办理');
  E.pay(s,a,actor(s,a),{result:'失败',reason:'渠道异常'});assert.equal(a.state,'付款办理');E.pay(s,a,actor(s,a),{result:'退回',reason:'请核实收款账户'});assert.equal(a.state,'处理中');assert.equal(E.ticketStageKey(a),'sales');
  E.confirmSolution(s,a,a.owner,{typeKey:'refund',content:'账户已线下核实',refund:50000,compensation:0,account:'原渠道'});assert.equal(a.state,'审批中');E.approve(s,a,actor(s,a),false,'补充退款依据');assert.equal(a.state,'处理中');
- const t=find(s,'P10');E.finishStore(s,t,actor(s,t),{note:'商品已交付'});assert.equal(t.state,'待结案');assert.equal(t.currentAssignee,t.owner);assert.equal(t.closed,undefined);E.closeTicket(s,t,t.owner,{completed:true,note:'已核实客户签收'});assert.equal(t.state,'已结案');
+ const t=find(s,'P10');E.finishStore(s,t,actor(s,t),{note:'商品已交付'});assert.equal(t.state,'待结案');assert.equal(t.currentAssignee,t.owner);assert.equal(t.closed,undefined);E.closeTicket(s,t,t.owner,{aftercareType:'顾客自身',completed:true,note:'已核实客户签收'});assert.equal(t.state,'已结案');
  const pendingClose=find(s,'P11');s.configuration.organization.appointments.find(p=>p.personId===pendingClose.owner).active=false;
  E.pay(s,pendingClose,actor(s,pendingClose),{result:'成功',amount:50000,reference:'CLOSE-NO-OWNER',proof:[{name:'凭证'}]});assert.equal(pendingClose.pendingAssignment.mode,'flow-node');assert.equal(pendingClose.state,'待结案');
 });
@@ -116,7 +116,7 @@ test('all seven solution types have completed evidence while waiting for the aft
 });
 test('existing four-state data upgrades without rewriting evidence or resetting completed examples',()=>{
  const original=fixture(),removed=E.WORKFLOW_EXAMPLES.filter(row=>/^P2[2-7]$/.test(row.suffix));original.tickets=original.tickets.filter(t=>!removed.some(row=>row.id===t.id));original.orders=original.orders.filter(o=>!removed.some(row=>'ORDER-'+row.suffix===o.id));original.workflowExamplesVersion=2;
- const closed=find(original,'P14');E.closeTicket(original,closed,closed.owner,{completed:true,note:'此前已经验收并结案'});
+ const closed=find(original,'P14');E.closeTicket(original,closed,closed.owner,{aftercareType:'顾客自身',completed:true,note:'此前已经验收并结案'});
  for(const t of original.tickets)if(['审批中','待结案'].includes(t.state))t.state='处理中';original._revision=17;
  const mem=memory();mem.setItem(Store.KEY,JSON.stringify(original));const store=Store.createStore(mem,E,C),s=store.load();assert.equal(s._revision,18);assert.equal(s.workflowExamplesVersion,8);assert.equal(s.tickets.length,77+E.EXTERNAL_APPROVAL_EXAMPLES.length);assert.equal(find(s,'P14').state,'已结案');assert.equal(find(s,'P06').state,'审批中');assert.equal(find(s,'P15').state,'待结案');
  for(const t of original.tickets){const {state:before,proposal:oldPlan,...old}=t,{state:after,proposal:currentPlan,...current}=s.approvalPresentationBackup?.tickets[t.id]||s.externalApprovalSampleBackup?.find(row=>row.id===t.id)||s.tickets.find(row=>row.id===t.id);assert.deepEqual(current,old);assert.deepEqual(s.solutionDetailsBackup?.proposals[t.id]||currentPlan,oldPlan);}

@@ -83,7 +83,7 @@ function create(E,C,P){
       if(kind.startsWith('shipment-')){
        const partial=['shipment-partial','shipment-pending'].includes(kind),items=E.procurementItems(t).filter(x=>x.remaining>0).map(x=>({lineIndex:x.lineIndex,quantity:partial?1:x.remaining}));
        E.finishProcurement(s,t,t.currentAssignee,{method:partial?'总部发货':kind==='shipment-store'?'门店发货':'其他',items:partial?items.slice(0,1):items,trackingNumber:kind==='shipment-store'?'JD202610071502':'SF20261007'+suffix,note:partial?'修护霜先发 1 件，其余商品到货后继续发出。':kind==='shipment-store'?'门店核对商品数量后寄出。':'供应商直接发货，已核实商品明细。'});
-       if(kind==='shipment-other')E.closeTicket(s,t,t.owner,{note:'客户已收到全部置换商品，款项已到账，确认结案。',completed:true});
+       if(kind==='shipment-other')E.closeTicket(s,t,t.owner,{aftercareType:'顾客自身',note:'客户已收到全部置换商品，款项已到账，确认结案。',completed:true});
       }
      }
     }else if(kind==='refused')result(r,'refuse','退款项目依据不足，请补充已使用与未使用项目的说明。');

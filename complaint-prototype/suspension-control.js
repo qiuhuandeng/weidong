@@ -13,7 +13,7 @@ function createSuspensionControl(E,C){
  function usage(t,now=Date.now()){const rows=records(t);return {count:rows.length,duration:rows.reduce((n,r)=>n+(r.duration??elapsed(r,now)),0),near:rows.filter(r=>r.nearDeadline).length,invalid:rows.filter(r=>r.invalidated).length};}
  function permissions(s,t,a){const p=old.aftercarePermissions(s,t,a);if(t.suspension)return {...p,resume:p.resume||manager(s,t,a),extend:manager(s,t,a),invalidate:manager(s,t,a)};return p;}
  function note(v,message){assert(typeof v==='string'&&v.trim(),message);assert(v.trim().length<=2000,'说明最多 2000 字');return v.trim();}
- const evidenceRows=t=>(t.logs||[]).filter(r=>['有效联系 / 跟进','联系尝试','首次联系','添加跟进','门店协同反馈','受理工单'].includes(r.title));
+ const evidenceRows=t=>(t.logs||[]).filter(r=>['有效联系 / 跟进','联系尝试','首次联系','添加跟进','门店协同反馈','门店办理完成','受理工单'].includes(r.title));
  function validate(s,t,a,data){
   const reason=note(data.note,'请填写挂起原因'),now=Date.now(),expectedAt=data.expectedAt?new Date(data.expectedAt).getTime():NaN;
   assert(Object.hasOwn(reasons,data.reasonType),'请选择有效的挂起原因类型');assert(Number.isFinite(expectedAt)&&expectedAt>now,'预计恢复时间必填，且须晚于当前时间');

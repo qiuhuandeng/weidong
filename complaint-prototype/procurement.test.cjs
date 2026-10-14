@@ -24,7 +24,7 @@ test('procurement shipping requires the assigned staff, records approved goods a
   assert.throws(()=>E.finishProcurement(s,t,owner,data),/当前节点/);assert.throws(()=>E.finishProcurement(s,t,'procurement',{items:data.items}),/发货方式/);assert.throws(()=>E.finishProcurement(s,t,'procurement',{method:'总部发货'}),/商品及数量/);assert.deepEqual(t,before);
   E.finishProcurement(s,t,'procurement',data);const r=t.handlingRecords.at(-1);assert.equal(r.version,t.proposal.version);assert.equal(r.items[0].quantity,2);assert.equal(r.trackingNumber,'SF-'+suffix);assert.equal(r.method,'总部发货');assert.equal(t.owner,owner);
   if(suffix!=='P31')assert(t.payments.some(row=>row.result==='成功'));
-  assert.equal(t.state,'待结案');assert.equal(t.currentAssignee,owner);assert.throws(()=>E.finishProcurement(s,t,'procurement',data),/当前节点/);E.closeTicket(s,t,owner,{note:'已核实全部完成',completed:true});assert.equal(t.state,'已结案');
+  assert.equal(t.state,'待结案');assert.equal(t.currentAssignee,owner);assert.throws(()=>E.finishProcurement(s,t,'procurement',data),/当前节点/);E.closeTicket(s,t,owner,{aftercareType:'顾客自身',note:'已核实全部完成',completed:true});assert.equal(t.state,'已结案');
  }
 });
 test('procurement assignment filters roles and preserves confirmed solution when the staff is unavailable',()=>{

@@ -5,6 +5,7 @@ function createSolutionFlow(E,C,P){
  const F=C.Rules.Flow,types=F.planTypes,assert=(v,m)=>{if(!v)throw Error(m);},copy=E.clone;
  const old=Object.fromEntries(['taskPeople','canHandle','canView','isPending','needsRiskReview','follow','approve','pay','review','withdraw','assign','escalate','startApproval','completeNormal'].map(k=>[k,E[k]]));
  const Methods=F.Methods,keyOf=Methods.keyOf;
+ const aftercareTypes=Object.freeze(['闭店','咨询报价','前端话术','门店环境','门店多收','祛斑反黑','顾客自身']);
  const includesRefund=k=>Methods.includes(k,'refund'),includesCompensation=k=>Methods.includes(k,'compensation'),includesExchange=k=>Methods.includes(k,'exchange');
  const current=t=>t.execution?.steps[t.execution.index];
  function taskPeople(s,t){
@@ -132,14 +133,14 @@ function createSolutionFlow(E,C,P){
   return record;
  }
  function closeTicket(s,t,a,data){
-  requireTask(s,t,a,'close');assert(data.note?.trim(),'请填写结案说明');assert(data.completed===true||data.completed==='yes','请确认相关部门及方案事项已处理完成');
+  requireTask(s,t,a,'close');assert(aftercareTypes.includes(data.aftercareType),'请选择售后类型');assert(data.note?.trim(),'请填写结案说明');assert(data.completed===true||data.completed==='yes','请确认相关部门及方案事项已处理完成');
   const payment=t.execution.steps.find(n=>n.kind==='payment');if((t.proposal?.refund||0)+(t.proposal?.compensation||0)>0)assert(t.payments.some(p=>p.result==='成功'&&p.version===t.proposal.version),'付款尚未完成，不能结案');
-  const step=current(t);step.done=true;step.completedAt=Date.now();step.completedBy=a;step.result=data.note.trim();t.phase='已结案';t.closed=Date.now();t.taskDeadline=null;t.currentAssignee='';t.execution.completedAt=t.closed;E.log(t,a,'工单结案',data.note.trim());
+  const step=current(t);step.done=true;step.completedAt=Date.now();step.completedBy=a;step.result=data.note.trim();t.aftercareType=data.aftercareType;t.phase='已结案';t.closed=Date.now();t.taskDeadline=null;t.currentAssignee='';t.execution.completedAt=t.closed;E.log(t,a,'工单结案','售后类型：'+t.aftercareType+'\n'+data.note.trim());
  }
  function retryFlowNode(s,t,a){assert(t.pendingAssignment?.mode==='flow-node','当前节点无需重试');assert(C.STAFF.some(p=>p.id===a&&p.role==='售后主管')&&C.active(s,a),'请由售后经理重新匹配办理人');enter(s,t);}
  function follow(s,t,a,data){if(!t.execution)return old.follow(s,t,a,data);assert(t.phase!=='已结案'&&(taskPeople(s,t).includes(a)||t.owner===a)&&C.active(s,a),'当前人员不可添加跟进');assert(data.content?.trim(),'请填写沟通内容');E.log(t,a,'添加跟进',data.content.trim());t.nextFollow=data.next||'';if(data.files)t.attachments.push(...data.files);}
  function rejectLegacyAction(name,s,t,...args){assert(!t.execution,'请使用当前流程节点的办理操作');return old[name](s,t,...args);}
- return {enterFlowNode:enter,advanceFlowNode:advance,returnFlowToSales:returnToSales,SOLUTION_TYPES:types,solutionMethods:Methods,SHIPMENT_METHODS:shipmentMethods,procurementItems,solutionKey:keyOf,solutionIncludes:{refund:includesRefund,compensation:includesCompensation,exchange:includesExchange},currentFlowNode:current,validateSolution,confirmSolution,finishStore,finishProcurement,closeTicket,retryFlowNode,taskPeople,canView,canHandle,isPending,follow,approve,pay,
+ return {enterFlowNode:enter,advanceFlowNode:advance,returnFlowToSales:returnToSales,SOLUTION_TYPES:types,AFTERCARE_TYPES:aftercareTypes,solutionMethods:Methods,SHIPMENT_METHODS:shipmentMethods,procurementItems,solutionKey:keyOf,solutionIncludes:{refund:includesRefund,compensation:includesCompensation,exchange:includesExchange},currentFlowNode:current,validateSolution,confirmSolution,finishStore,finishProcurement,closeTicket,retryFlowNode,taskPeople,canView,canHandle,isPending,follow,approve,pay,
   needsRiskReview:t=>t.execution?false:old.needsRiskReview(t),
   startApproval:(s,t,a,p)=>t.execution?confirmSolution(s,t,a,p):old.startApproval(s,t,a,p),
   completeNormal:(s,t,a,note)=>t.execution?confirmSolution(s,t,a,{type:'无退赔',content:note}):old.completeNormal(s,t,a,note),

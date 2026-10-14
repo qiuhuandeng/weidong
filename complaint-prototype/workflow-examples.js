@@ -89,7 +89,7 @@ function createWorkflowExamples(E,C,P){
     if(E.currentFlowNode(t).kind==='procurement')procure();
     if(E.currentFlowNode(t).kind==='store')E.finishStore(x,t,actor(),{note:'置换商品已交付客户并签收。',files:proof('商品签收记录.txt')});
     if(E.currentFlowNode(t).kind==='payment')pay();
-    E.closeTicket(x,t,owner(),{note:'已线下确认相关部门处理完成'+(exchange?'、商品已签收':'')+(funded?'、款项已到账':'')+'，客服确认结案。',completed:true});
+    E.closeTicket(x,t,owner(),{aftercareType:'顾客自身',note:'已线下确认相关部门处理完成'+(exchange?'、商品已签收':'')+(funded?'、款项已到账':'')+'，客服确认结案。',completed:true});
    }
   }
   if(kind.startsWith('suspended_')||['resumed','auto_resumed','invalidated','quota_used'].includes(kind)){

@@ -545,3 +545,18 @@ body:not(.embedded)>#workspace-tools{padding:12px 24px;border-bottom:1px solid v
 
 .proposal-surface.form-drawer .proposal-type-row .method-select{max-width:480px}
 .proposal-surface.form-drawer select{appearance:none;-webkit-appearance:none;min-height:38px;font-size:13px;padding:8px 32px 8px 12px;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath d='m4 6 4 4 4-4' fill='none' stroke='%238597ad' stroke-width='1.4' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 10px center}
+
+/* Shared handoff drawer: the same fields are used on PC and mobile. */
+.transfer-form-fields{display:grid;gap:18px}
+.transfer-form-fields [hidden]{display:none!important}
+.transfer-form-fields .field{margin:0}
+@media(max-width:359px){.mobile-shell .mobile-detail-actions>button{min-width:58px;white-space:nowrap}.mobile-shell .mobile-detail-actions>button.primary{min-width:90px}}
+
+.transfer-recipient{position:relative}
+.transfer-recipient>input[role=combobox]{width:100%;padding-right:32px;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath d='m4 6 4 4 4-4' fill='none' stroke='%238597ad' stroke-width='1.4' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 10px center}
+.transfer-recipient-list{position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:20;max-height:min(240px,36vh);overflow-y:auto;overscroll-behavior:contain;padding:4px;background:#fff;border:1px solid #dce4ef;border-radius:8px;box-shadow:0 6px 20px #20304b1a}
+.transfer-recipient-list>[role=option]{display:block;width:100%;min-height:38px;padding:9px 12px;border:0;border-radius:5px;background:#fff;color:#34445c;text-align:left;font-size:13px;line-height:20px;white-space:normal;overflow-wrap:anywhere}
+.transfer-recipient-list>[role=option]:hover,.transfer-recipient-list>[role=option].is-active,.transfer-recipient-list>[role=option][aria-selected=true]{background:#edf5ff;color:#1677ff}
+.transfer-recipient-list>[data-transfer-empty]{margin:0;padding:12px}
+.transfer-recipient-list.opens-up{top:auto;bottom:calc(100% + 4px)}
+.mobile-action-page .transfer-recipient-list>[role=option]{min-height:44px;font-size:14px}

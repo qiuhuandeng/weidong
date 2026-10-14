@@ -5,13 +5,14 @@ function createAftercareActions(E,C,P){
  const assert=(value,message)=>{if(!value)throw Error(message);},copy=E.clone;
  const methods=['taskPeople','canView','canHandle','isPending','needsRiskReview','ruleTasks','follow','confirmSolution','startApproval','completeNormal','approve','pay','review','withdraw','assign','escalate','repeat','riskAck','finishStore','closeTicket','retryFlowNode','confirmGrading','retryIntake'];
  const old=Object.fromEntries(methods.map(key=>[key,E[key]]));
- const staff=id=>C.STAFF.find(p=>p.id===id),isAftercare=id=>['售后专员','售后主管'].includes(staff(id)?.role);
+ const staff=id=>C.STAFF.find(p=>p.id===id);
  const organization=s=>C.Rules.Flow.organization(s.configuration),department=(s,id)=>organization(s).appointments.find(a=>a.personId===id)?.departmentId;
  const sameDepartment=(s,a,b)=>!!department(s,a)&&department(s,a)===department(s,b);
  const manager=(s,t,a)=>staff(a)?.role==='售后主管'&&C.active(s,a)&&sameDepartment(s,a,t.owner);
- const ownerOrManager=(s,t,a)=>C.active(s,a)&&((a===t.owner&&isAftercare(a))||manager(s,t,a));
+ const ownerOrManager=(s,t,a)=>C.active(s,a)&&(a===t.owner||manager(s,t,a));
  const special=t=>!!(t.suspension||t.storeAssistance);
- function salesStage(s,t){return !special(t)&&!t.pendingAssignment&&['待首联','处理中'].includes(t.phase)&&isAftercare(t.owner)&&(!t.execution||E.currentFlowNode(t)?.kind==='sales');}
+ function salesStage(s,t){return !special(t)&&!t.pendingAssignment&&!E.isStoreIntake?.(t)&&['待首联','处理中'].includes(t.phase)&&!!t.owner&&(!t.execution||E.currentFlowNode(t)?.kind==='sales');}
+ function aftercareTransferStage(s,t){return !special(t)&&!t.pendingAssignment&&!t.workflowIssue&&!t.mergedInto&&!['已结案','已合并'].includes(t.phase)&&!E.isStoreIntake?.(t)&&!!t.owner&&(t.execution?['sales','manager','close'].includes(E.currentFlowNode(t)?.kind):['待首联','处理中'].includes(t.phase));}
  function salesNode(s,t){
   if(t.execution)return E.currentFlowNode(t);
   const saved=t.flow?.config?{id:t.flow.id,name:t.flow.name,level:t.level,config:t.flow.config}:C.scene(s,t.level);
@@ -20,14 +21,48 @@ function createAftercareActions(E,C,P){
  function permissions(s,t,a){
   const activeOwner=ownerOrManager(s,t,a);
   if(t.suspension)return {resume:activeOwner};
-  if(t.storeAssistance)return {feedback:t.storeAssistance.assignee===a&&C.active(s,a),cancelAssistance:activeOwner};
-  if(!salesStage(s,t)||!activeOwner)return {};
+  if(t.storeAssistance)return {feedback:t.storeAssistance.assignee===a&&C.active(s,a),transferStore:canTransferStore(s,t,a)};
+  if(!aftercareTransferStage(s,t)||!activeOwner)return {};
+  if(!salesStage(s,t))return {transfer:true,store:true};
   let actions;try{actions=salesNode(s,t).actions||{};}catch{return {};}
-  return {transfer:actions.transfer===true,store:actions.store===true,suspend:actions.suspend===true};
+  return {transfer:actions.transfer===true,store:actions.transfer===true,suspend:actions.suspend===true};
  }
  function requirePermission(s,t,a,key){assert(permissions(s,t,a)[key],({transfer:'当前售后节点未允许转派，或你没有转派权限',store:'当前售后节点未允许门店协同，或你没有操作权限',suspend:'当前售后节点未允许挂起，或你没有挂起权限',resume:'请由售后主负责人或同部门售后经理恢复办理',feedback:'请由当前门店协同办理人反馈结果',cancelAssistance:'请由售后主负责人或同部门售后经理撤回协同'})[key]);}
- function transferCandidates(s,t){return C.STAFF.filter(p=>p.id!==t.owner&&isAftercare(p.id)&&C.active(s,p.id)&&sameDepartment(s,p.id,t.owner));}
- function storeCandidates(s,t){const org=organization(s),store=org.departments.find(d=>d.store===t.store);return [...new Set(store?.leaders||[])].map(staff).filter(p=>p&&C.active(s,p.id)&&(p.store==='*'||p.store===t.store));}
+ function transferCandidates(s,t){return C.STAFF.filter(p=>p.id!==t.owner&&C.active(s,p.id)&&sameDepartment(s,p.id,t.owner));}
+ function storeOptions(s){return [...new Set(organization(s).departments.map(d=>d.store).filter(Boolean))];}
+ function storeCandidates(s,t,store=t.store){
+  const org=organization(s);if(!storeOptions(s).includes(store))return [];
+  const inStore=id=>{const seen=new Set();let d=org.departments.find(d=>d.id===id);while(d&&!seen.has(d.id)){if(d.store)return d.store===store;seen.add(d.id);d=org.departments.find(row=>row.id===d.parent);}return false;};
+  return C.STAFF.filter(p=>org.appointments.some(a=>a.personId===p.id&&a.active&&inStore(a.departmentId)));
+ }
+ function handlingStore(t){return t.storeAssistance?.store||t.store;}
+ function canTransferStore(s,t,a){
+  if(t.suspension||t.pendingAssignment||t.workflowIssue||t.mergedInto||['已结案','已合并'].includes(t.phase)||t.currentAssignee!==a||!C.active(s,a))return false;
+  const storeStage=t.storeAssistance||E.isStoreIntake?.(t)||t.execution&&E.currentFlowNode(t)?.kind==='store';
+  return !!storeStage&&storeCandidates(s,t,handlingStore(t)).some(p=>p.id===a);
+ }
+ function storeTransferCandidates(s,t){return storeCandidates(s,t,handlingStore(t)).filter(p=>p.id!==t.currentAssignee);}
+ function allStoreCandidates(s,t,store=''){return (store?[store]:storeOptions(s)).flatMap(value=>storeCandidates(s,t,value).map(p=>({...p,handlingStore:value})));}
+ function canTransferHandling(s,t,a){
+  if(canTransferStore(s,t,a))return true;
+  return !special(t)&&!t.pendingAssignment&&!t.workflowIssue&&!t.mergedInto&&!['已结案','已合并'].includes(t.phase)&&t.currentAssignee===a&&C.active(s,a)&&['payment','procurement','store_close'].includes(E.currentFlowNode(t)?.kind)&&!!department(s,a);
+ }
+ function handlingTransferCandidates(s,t){return t.storeAssistance||E.isStoreIntake?.(t)||E.currentFlowNode(t)?.kind==='store'?storeTransferCandidates(s,t):C.STAFF.filter(p=>p.id!==t.currentAssignee&&C.active(s,p.id)&&sameDepartment(s,p.id,t.currentAssignee));}
+ function transferHandling(s,t,a,person,note){
+  assert(canTransferHandling(s,t,a),'请由当前节点办理人转派');note=reason(note,'请填写转派原因');assert(handlingTransferCandidates(s,t).some(p=>p.id===person),'请选择本部门其他有效成员');
+  if(canTransferStore(s,t,a))return transferStoreHandling(s,t,a,person,note);
+  const node=E.currentFlowNode(t),record={id:E.id(),at:Date.now(),by:a,from:a,to:person,reason:note,nodeId:node.id,owner:t.owner,deadline:t.taskDeadline};
+  t.currentAssignee=person;node.people=[person];t.nodeOwners??={};t.nodeOwners[node.id]=person;t.participants=[...new Set([...t.participants,person])];t.handlingHandoffs??=[];t.handlingHandoffs.push(record);
+  E.log(t,a,'节点办理转派',node.title+'：'+E.user(a).name+' → '+E.user(person).name+'；'+note+'\n工单负责人保持不变：'+E.user(t.owner).name);return t;
+ }
+ function transferStoreHandling(s,t,a,person,note){
+  assert(canTransferStore(s,t,a),'请由当前门店办理人转派');note=reason(note,'请填写转派原因');assert(storeTransferCandidates(s,t).some(p=>p.id===person),'请选择本门店组织架构内其他有效人员');
+  const record={id:E.id(),at:Date.now(),by:a,from:t.currentAssignee,to:person,store:handlingStore(t),reason:note,owner:t.owner,deadline:t.taskDeadline};
+  t.currentAssignee=person;t.participants=[...new Set([...t.participants,person])];t.storeHandoffs??=[];t.storeHandoffs.push(record);
+  if(t.storeAssistance){t.storeAssistance.assignee=person;t.storeAssistance.handoffs??=[];t.storeAssistance.handoffs.push(copy(record));}
+  else{const node=E.isStoreIntake?.(t)?t.storeIntake.node:E.currentFlowNode(t);t.nodeOwners??={};t.nodeOwners[node.id]=person;if(t.execution&&!E.isStoreIntake?.(t))node.people=[person];}
+  E.log(t,a,'门店内部转派',E.user(record.from).name+' → '+E.user(person).name+'；'+note+'\n工单负责人保持不变：'+E.user(t.owner).name);return t;
+ }
  function reason(value,message){assert(typeof value==='string'&&value.trim(),message);assert(value.trim().length<=2000,'说明最多 2000 字');return value.trim();}
  function transferAftercare(s,t,a,person,note){
   requirePermission(s,t,a,'transfer');note=reason(note,'请填写转派原因');assert(transferCandidates(s,t).some(p=>p.id===person),'请选择同部门其他有效售后人员');
@@ -37,17 +72,17 @@ function createAftercareActions(E,C,P){
   E.log(t,a,'售后转派',E.user(previous).name+' → '+E.user(person).name+'；'+note+'\n原办理期限保留');return t;
  }
  function requestStoreAssistance(s,t,a,data){
-  requirePermission(s,t,a,'store');const instructions=reason(data.note,'请填写门店协同事项'),people=storeCandidates(s,t);assert(people.length,'工单所属门店没有有效负责人，请先维护门店任职');
-  const key='store-assistance:'+t.store,cursor=s.assistanceCursors?.[key]||0,assignee=people[cursor%people.length].id;
-  t.storeAssistance={id:E.id(),store:t.store,assignee,requestedBy:a,at:Date.now(),instructions,files:copy(data.files||[]),returnState:t.phase,returnAssignee:t.currentAssignee||t.owner,nodeId:t.activeNode||'contact',owner:t.owner,deadline:t.taskDeadline};
-  s.assistanceCursors??={};s.assistanceCursors[key]=cursor+1;t.phase='待门店协同';t.currentAssignee=assignee;t.participants=[...new Set([...t.participants,a,assignee])];
-  E.log(t,a,'发起门店协同',t.store+' · '+E.user(assignee).name+'\n'+instructions);return t;
+  requirePermission(s,t,a,'store');const instructions=reason(data.note,'请填写转派原因'),store=data.store,assignee=data.person;
+  assert(storeOptions(s).includes(store),'请选择接收门店');assert(storeCandidates(s,t,store).some(p=>p.id===assignee),'请选择接收门店组织架构内的有效办理人');
+  t.storeAssistance={id:E.id(),store,assignee,initialAssignee:assignee,requestedBy:a,at:Date.now(),instructions,files:copy(data.files||[]),returnState:t.phase,returnAssignee:t.owner,nodeId:t.activeNode||'contact',owner:t.owner,deadline:t.taskDeadline};
+  t.phase='待门店协同';t.currentAssignee=assignee;t.participants=[...new Set([...t.participants,a,assignee])];
+  E.log(t,a,'转给门店',store+' · '+E.user(assignee).name+'\n'+instructions+'\n工单负责人保持不变：'+E.user(t.owner).name);return t;
  }
  function returnFromAssistance(t){const row=t.storeAssistance;t.phase=row.returnState;t.currentAssignee=t.owner;delete t.storeAssistance;return row;}
  function finishStoreAssistance(s,t,a,data){
-  requirePermission(s,t,a,'feedback');const note=reason(data.note,'请填写门店反馈结果');assert(['已完成协同事项','需售后继续协调'].includes(data.result),'请选择协同结果');
-  const files=copy(data.files||[]),row=returnFromAssistance(t);t.storeAssistanceHistory??=[];t.storeAssistanceHistory.push({...row,status:'已反馈',completedAt:Date.now(),completedBy:a,result:data.result,note,resultFiles:files});
-  t.attachments.push(...files);E.log(t,a,'门店协同反馈',data.result+'；'+note+'\n返回售后：'+E.user(t.owner).name);return t;
+  requirePermission(s,t,a,'feedback');const note=reason(data.note,'请填写门店办理结果');
+  const files=copy(data.files||[]),row=returnFromAssistance(t);t.storeAssistanceHistory??=[];t.storeAssistanceHistory.push({...row,status:'已完成',completedAt:Date.now(),completedBy:a,result:'门店办理完成',note,resultFiles:files});
+  t.attachments.push(...files);E.log(t,a,'门店办理完成',note+'\n自动回到工单负责人：'+E.user(t.owner).name);return t;
  }
  function cancelStoreAssistance(s,t,a,note){
   requirePermission(s,t,a,'cancelAssistance');note=reason(note,'请填写撤回原因');const row=returnFromAssistance(t);t.storeAssistanceHistory??=[];t.storeAssistanceHistory.push({...row,status:'已撤回',completedAt:Date.now(),completedBy:a,note});E.log(t,a,'撤回门店协同',note+'\n返回售后：'+E.user(t.owner).name);return t;
@@ -75,10 +110,10 @@ function createAftercareActions(E,C,P){
  function canView(s,t,a){return old.canView(s,t,a)||taskPeople(s,t).includes(a);}
  function canHandle(s,t,a){if(special(t))return false;if(salesStage(s,t))return ownerOrManager(s,t,a);return old.canHandle(s,t,a);}
  function guarded(key,s,t,a,...args){assert(!t.suspension,'工单已挂起，请先恢复办理');assert(!t.storeAssistance,'请先完成或撤回门店协同，再继续售后办理');if(['follow','confirmSolution','startApproval','completeNormal'].includes(key)&&salesStage(s,t))assert(canHandle(s,t,a),'请由售后主负责人或同部门售后经理办理');return old[key](s,t,a,...args);}
- function follow(s,t,a,data){const retainedOwner=t.handoffs?.length&&salesStage(s,t)?t.owner:null;const result=guarded('follow',s,t,a,data);if(retainedOwner&&t.phase==='处理中'){t.currentAssignee=retainedOwner;t.nodeOwners??={};t.nodeOwners.proposal=retainedOwner;}return result;}
+ function follow(s,t,a,data){const retainedOwner=(t.handoffs?.length||t.storeAssistanceHistory?.length||t.storeIntake?.completedAt)&&salesStage(s,t)?t.owner:null;const result=guarded('follow',s,t,a,data);if(retainedOwner&&t.phase==='处理中'){t.currentAssignee=retainedOwner;t.nodeOwners??={};t.nodeOwners.proposal=retainedOwner;}return result;}
  function assign(s,t,a,person,note){if(salesStage(s,t))return transferAftercare(s,t,a,person,note);return guarded('assign',s,t,a,person,note);}
  function ruleTasks(s,t){const rows=old.ruleTasks(s,t);if(!special(t)&&!t.execution)return rows;const title=t.suspension?'跟进挂起工单':t.storeAssistance?'门店协同反馈':E.currentFlowNode(t)?.title||t.phase,people=taskPeople(s,t);return rows.map(row=>row.key===t.id+':task'?{...row,title,people}:row.key===t.id+':node'?{...row,people:[...new Set([...people,...(row.title==='节点超时'?[s.rules.reminders.escalation]:[])])]}:row);}
- const api={aftercarePermissions:permissions,isAftercareStage:salesStage,transferCandidates,storeAssistanceCandidates:storeCandidates,transferAftercare,requestStoreAssistance,finishStoreAssistance,cancelStoreAssistance,suspendTicket,resumeTicket,suspensionClockLabel:clockLabel,taskPeople,canView,canHandle,follow,assign,ruleTasks,isPending:(s,t,a)=>special(t)||salesStage(s,t)?taskPeople(s,t).includes(a):old.isPending(s,t,a),needsRiskReview:t=>special(t)?false:old.needsRiskReview(t)};
+ const api={aftercarePermissions:permissions,isAftercareStage:salesStage,transferCandidates,storeAssistanceCandidates:storeCandidates,allStoreCandidates,storeTransferOptions:storeOptions,handlingStore,canTransferStore,storeTransferCandidates,transferStoreHandling,canTransferHandling,handlingTransferCandidates,transferHandling,transferAftercare,requestStoreAssistance,finishStoreAssistance,cancelStoreAssistance,suspendTicket,resumeTicket,suspensionClockLabel:clockLabel,taskPeople,canView,canHandle,follow,assign,ruleTasks,isPending:(s,t,a)=>special(t)||salesStage(s,t)?taskPeople(s,t).includes(a):old.isPending(s,t,a),needsRiskReview:t=>special(t)?false:old.needsRiskReview(t)};
  for(const key of methods.filter(key=>!Object.hasOwn(api,key)))api[key]=(s,t,a,...args)=>guarded(key,s,t,a,...args);
  return api;
 }
