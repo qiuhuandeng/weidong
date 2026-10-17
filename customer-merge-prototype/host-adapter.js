@@ -1,0 +1,6 @@
+(function(){
+'use strict';
+const base=new URL('./',document.currentScript.src);
+if(window.GA){const original=GA.afterRender;GA.afterRender=function(){original?.();const container=document.querySelector('.ga-mobile-content,.page-body');if(!container||document.getElementById('cm-approval-link'))return;const card=document.createElement('section');card.id='cm-approval-link';card.className='panel';card.style.cssText='padding:18px;margin-bottom:18px';card.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap"><div><strong>客户档案合并与纠错</strong><p style="font-size:12px;color:#75839b;margin:6px 0 0">查看业务工单、风险审批与调整单处理记录</p></div><a class="btn" href="'+new URL('pc.html?actor=admin#P-EC-01',base).href+'">进入业务工单</a><a class="btn" href="'+new URL('demo.html',base).href+'">功能演示入口</a></div>';container.prepend(card)};GA.afterRender();return}
+const grid=document.querySelector('#pageHome .toolbox-grid,.toolbox-grid');if(grid&&!document.getElementById('cm-store-entry')){const entry=document.createElement('a');entry.id='cm-store-entry';entry.className='tool-item';entry.href=new URL('store.html?actor=manager#E-MB-06',base).href;entry.style.cssText='text-decoration:none;color:inherit';entry.innerHTML='<div class="tool-icon t1">⇄</div><div class="tool-name">客户合并纠错</div>';grid.prepend(entry)}
+})();
