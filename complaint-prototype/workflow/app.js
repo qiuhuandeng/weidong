@@ -1,0 +1,764 @@
+'use strict';
+const E=Engine,Store=window.ComplaintStore,KEY=Store.KEY;let S=Store.load();
+const UI={demoMode:sessionStorage.getItem('meiye.complaint.reference.demo-mode')||'auto',view:'all',page:1,filters:{q:'',state:'',level:'',store:'',owner:'',channel:'',risk:'',task:'',suspensionReason:'',suspensionRisk:'',from:'',to:'',sort:'risk'},drawer:null,tab:new URLSearchParams(location.search).get('tab')==='fund'?'fund':'info',ruleTab:'scenes',settingsTab:'routing',editor:null,editorTab:'basic',node:null,more:false};
+const $=q=>document.querySelector(q),$$=q=>[...document.querySelectorAll(q)],esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),money=n=>'¥'+((n||0)/100).toLocaleString('zh-CN',{minimumFractionDigits:2}),date=n=>n?new Date(n).toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).replaceAll('/','-'):'—',name=u=>E.user(u)?.name||'待分派',actor=()=>E.user(S.actor),ticket=id=>S.tickets.find(t=>t.id===id),mobile=()=>location.hash.startsWith('#/mobile'),mask=p=>p?p.slice(0,3)+'****'+p.slice(-4):'—';
+const paths={ticket:'M6 3h12v18H6z M9 8h6 M9 12h6 M9 16h4',settings:'M4 7h16 M4 17h16 M8 4v6 M16 14v6',phone:'M5 3h4l2 5-3 2c2 3 3 4 6 6l2-3 5 2v4c-1 5-18-9-16-16',mobile:'M7 2h10v20H7z M11 18h2',plus:'M12 4v16 M4 12h16',search:'M20 20l-5-5 M17 10a7 7 0 1 0-14 0 7 7 0 0 0 14 0',close:'M6 6l12 12 M6 18 18 6',arrow:'m9 5 7 7-7 7',back:'m15 5-7 7 7 7',filter:'M3 5h18l-7 8v6l-4 2v-8z',clock:'M12 8v5l3 2 M21 12a9 9 0 1 0-18 0 9 9 0 0 0 18 0',refresh:'M20 7V3l-3 3a8 8 0 1 0 3 11 M20 3h-5',check:'m5 12 4 4 10-10',shield:'M12 3 3 7v5c0 5 9 9 9 9s9-4 9-9V7z M12 8v5 M12 16v1',flow:'M8 3h8v5H8z M3 16h6v5H3z M15 16h6v5h-6z M12 8v4H6v4 M12 12h6v4',more:'M5 12h1 M11 12h1 M17 12h1',download:'M12 3v12 m-5-5 5 5 5-5 M4 16v5h16v-5',logout:'M8 3H3v18h5 M10 12h11 m-4-4 4 4-4 4'};
+const I=k=>`<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="${paths[k]||paths.ticket}"/></svg>`;
+function btn(label,act,id='',cls='',extra=''){return `<button type="button" class="${cls}" data-action="${act}" data-id="${esc(id)}" ${extra}>${label}</button>`}
+function options(values,chosen,blank){return(blank!==undefined?`<option value="">${esc(blank)}</option>`:'')+values.map(v=>{let[a,b]=Array.isArray(v)?v:[v,v];return`<option value="${esc(a)}" ${String(a)===String(chosen)?'selected':''}>${esc(b)}</option>`}).join('')}
+function field(label,control,full=false){return`<div class="field ${full?'full':''}"><label>${label}</label>${control}</div>`}
+function inp(n,v='',type='text',req=false,extra=''){return`<input name="${n}" aria-label="${n}" type="${type}" value="${esc(v)}" ${req?'required':''} ${extra}>`}
+function select(n,vals,v='',blank){return`<select name="${n}" aria-label="${n}">${options(vals,v,blank)}</select>`}
+function txt(n,v='',required=true){return`<textarea name="${n}" aria-label="${n}" ${required?'required':''}>${esc(v)}</textarea>`}
+function toast(t){$('#toast').textContent=t;$('#toast').style.display='block';clearTimeout(UI.toast);UI.toast=setTimeout(()=>$('#toast').style.display='none',3500)}
+function save(){Store.save(S)}
+async function mutate(fn){return Store.exclusive(()=>{Store.assertVersion(S);const previous=E.clone(S);try{const r=fn();save();return r}catch(e){S=previous;throw e}})}
+function badges(t){return`<span class="pill ${t.level?'l'+t.level:'outline'}">${['待定级','一级','二级','三级','四级','五级'][t.level||0]}</span>${t.repeat?'<span class="pill red">重复投诉</span>':''}`}
+function stateTag(t){return `<span class="pill ${({'待处理':'blue','处理中':'blue','审批中':'amber','付款办理':'blue','采购办理':'blue','待结案':'blue','已挂起':'amber','已结案':'green'})[t.state]}">${esc(t.state)}</span>`}
+function due(t){if(['已结案','已合并'].includes(t.state))return`<span class="sub">${date(t.closed||t.updated)}</span>`;const times=[t.deadline,t.taskDeadline].filter(x=>x>0);if(!times.length)return'<span class="sub">'+(t.suspension?'节点计时已暂停':'时限待设定')+'</span>';const d=(Math.min(...times)-Date.now())/E.H,a=Math.abs(d),v=a>=24?Math.floor(a/24)+'天'+Math.floor(a%24)+'小时':a>=1?Math.floor(a)+'小时'+Math.floor(a%1*60)+'分':Math.max(1,Math.floor(a*60))+'分钟';return`<span class="${d<0?'red-text':d<S.rules.warn?'amber-text':'teal-text'}">${t.suspension?'整单':''}${d<0?'已超时':'剩余'} ${v}</span>`}
+function shownTaskPeople(t){if(t.pendingAssignment?.mode==='schedule')return [];return E.taskPeople(S,t)}
+function shownTaskNames(t){const r=E.currentFlowNode(t)?.provider==='dingtalk'?E.externalApprovalRecord(S,t):null;return r?(r.people.join('、')||(r.status==='running'?'等待钉钉分配':'待恢复审批')):shownTaskPeople(t).map(name).join('、');}
+function taskLabel(t){return E.ticketTask(t)}
+const stageOptions=[['grading','定级确认'],['assignment','规则匹配 / 派单'],['sales','售后办理'],['approval','部门审批'],['store','门店办理'],['procurement','采购办理'],['payment','付款办理'],['close','售后结案']];
+function roleSelect(){return `<a class="demo-return" href="#/demo" aria-label="返回演示入口">${I('flow')} 演示入口</a>`}
+function canCreate(){return['agent','lead','store','sales'].includes(actor().role)}
+function canConfig(){return['admin','lead'].includes(actor().role)}
+function filterValues(){return mobile()?Object.fromEntries(['q','state','level','store','channel','sort'].map(key=>[key,UI.filters[key]])):UI.filters;}
+function filtered(){const f=filterValues();return S.tickets.filter(t=>E.canView(S,t,S.actor)).filter(t=>UI.view==='mine'?E.isPending(S,t,S.actor):UI.view==='created'?t.creator===S.actor:UI.view==='involved'?t.owner===S.actor||t.creator===S.actor||t.participants.includes(S.actor):true).filter(t=>{const q=f.q.trim().toLowerCase();return suspensionMatches(t,f)&&(!q||[t.id,t.name,t.phone,t.member,t.title].join(' ').toLowerCase().includes(q))&&(!f.state||t.state===f.state)&&(!f.level||t.level===+f.level)&&(!f.store||t.store===f.store)&&(!f.owner||t.owner===f.owner)&&(!f.channel||t.channel===f.channel)&&(!f.task||E.ticketStageKey(t)===f.task)&&(!f.risk||(f.risk==='repeat'?t.repeat:f.risk==='high'?t.level>=4:f.risk==='overdue'?(t.suspension?.overdueAtStart||((t.suspension?t.deadline:t.taskDeadline)&&(t.suspension?t.deadline:t.taskDeadline)<Date.now()))&&!['已结案','已合并'].includes(t.state):(t.suspension?t.deadline:t.taskDeadline)>=Date.now()&&(t.suspension?t.deadline:t.taskDeadline)-Date.now()<S.rules.warn*E.H&&!['已结案','已合并'].includes(t.state)))&&(!f.from||t.created>=new Date(f.from).getTime())&&(!f.to||t.created<new Date(f.to).getTime()+24*E.H)}).sort((a,b)=>f.sort==='new'?b.created-a.created:f.sort==='due'?(a.taskDeadline||a.deadline||Infinity)-(b.taskDeadline||b.deadline||Infinity):((b.level>=4?100:0)+(b.repeat?50:0))-((a.level>=4?100:0)+(a.repeat?50:0))||(a.taskDeadline||a.deadline||Infinity)-(b.taskDeadline||b.deadline||Infinity))}
+function filterControls(){const f=UI.filters;return`<form id="filter-form" class="filters ${UI.more?'expanded':''}"><input class="search" name="q" aria-label="搜索工单" placeholder="搜索工单号、客户、手机号 / 会员号" value="${esc(f.q)}">${select('state',E.STATES,f.state,'全部状态')}${select('level',[[1,'一级'],[2,'二级'],[3,'三级'],[4,'四级'],[5,'五级']],f.level,'全部等级')}${select('store',E.STORES,f.store,'全部门店')}<button class="primary" type="submit">查询</button>${btn('重置','resetFilters','','ghost')}${btn(I('filter')+' 更多筛选','moreFilters','','ghost')}<div class="filter-more">${select('owner',E.USERS.filter(u=>['agent','lead','store'].includes(u.role)).map(u=>[u.id,u.name]),f.owner,'全部负责人')}${select('channel',E.CHANNELS,f.channel,'全部来源')}${select('risk',[['high','高风险工单'],['repeat','重复投诉'],['overdue','已超时'],['soon','即将超时']],f.risk,'风险 / 时效')}${select('task',stageOptions,f.task,'全部环节')}${suspensionFilters(f)}${inp('from',f.from,'date',false,'title="开始日期"')}${inp('to',f.to,'date',false,'title="结束日期"')}${select('sort',[['risk','风险优先'],['new','最近受理'],['due','最近截止']],f.sort)}</div></form>`}
+function tabs(){return`<div class="tabs">${[['mine','待我处理'],['created','我发起的'],['involved','我参与的'],['all','全部工单']].map(([v,l])=>btn(l,'view',v,'tab '+(UI.view===v?'active':''),'aria-pressed="'+(UI.view===v)+'"')).join('')}</div>`}
+function pager(total){const pages=Math.max(1,Math.ceil(total/8));UI.page=Math.min(UI.page,pages);return`<div class="pager"><span>共 ${total} 条工单</span><div class="row">${btn('上一页','page',UI.page-1,'small',UI.page===1?'disabled':'')}${Array.from({length:pages},(_,i)=>btn(i+1,'page',i+1,'small '+(i+1===UI.page?'selected':''))).join('')}${btn('下一页','page',UI.page+1,'small',UI.page===pages?'disabled':'')}</div></div>`}
+function empty(text='暂无符合条件的工单'){return`<div class="empty">${I('ticket')}<p>${text}</p>${btn('重置筛选','resetFilters','','link')}</div>`}
+function listPage(){const list=filtered(),pagination=pager(list.length),rows=list.slice((UI.page-1)*8,UI.page*8);return`<div class="page-head"><h1>工单列表</h1><div class="row">${btn(I('refresh'),'refresh','','iconbtn','aria-label="刷新列表"')}${canCreate()?btn(I('plus')+' 新增工单','create','','primary'):''}</div></div><div class="panel tickets-query-panel">${tabs()}${filterControls()}</div><div class="panel tickets-results-panel">${rows.length?`<div class="table-wrap"><table class="tickets-table"><thead><tr><th>工单 / 来源</th><th>客户</th><th>门店</th><th>等级 / 风险</th><th>状态 / 当前环节</th><th>责任人</th><th>处理时效</th><th>操作</th></tr></thead><tbody>${rows.map(t=>`<tr class="${t.level>=4||t.repeat?'risky':''}"><td><div class="ticket-no">${t.id}</div><a href="#/tickets/${t.id}" class="ticket-title">${esc(t.title)}</a><span class="sub">${esc(t.channel)}</span></td><td class="nowrap">${esc(t.name)}<div class="sub">${mask(t.phone)}</div></td><td class="nowrap">${esc(t.store)}</td><td>${badges(t)}</td><td>${stateTag(t)}<div class="sub">${esc(E.ticketStage(t))}</div>${suspensionListNote(t)}</td><td class="nowrap">${shownTaskNames(t)||name(t.owner)}<div class="sub">主责 · ${name(t.owner)}</div></td><td class="nowrap">${due(t)}<div class="sub">整单 ${t.deadline?date(t.deadline):'待设定'}</div></td><td class="nowrap">${btn('查看详情','detail',t.id,'link')}</td></tr>`).join('')}</tbody></table></div>`:empty()}${pagination}</div>`}
+function render(){if(window.CRMCustomerView?.isOpen()){CRMCustomerView.updateState(S);return;}UI.mobileListObserver?.disconnect();UI.mobileListObserver=null;UI.mobileListCleanup?.();UI.mobileListCleanup=null;let route=location.hash||'#/demo';if(route.startsWith('#/rules')){location.replace('../index.html?view=pc&actor=manager&page=rules#rules');return;}if(route.startsWith('#/archive/')){renderArchive(route.split('/')[2]);return;}if(route==='#/demo'||route==='#/demo/'){demoPortal();return}if(route.startsWith('#/demo/')){openDemo(route.split('/')[2]);return}syncDemoActor(route);document.body.classList.toggle('is-mobile',mobile());rememberPcDetailView();$('#drawer-root').innerHTML='';if(mobile()){renderMobile();return}const rules=route.startsWith('#/rules');$('#app').innerHTML=`<div class="shell"><aside class="sidebar"><div class="brand"><div class="brand-mark">✓</div><div><strong>悦服</strong><small>客诉管理</small></div></div><nav>${actor().role!=='admin'?`<a class="nav-item ${!rules?'active':''}" href="#/tickets">${I('ticket')}工单列表</a>`:''}<a class="nav-item ${rules?'active':''}" href="#/rules">${I('settings')}规则配置</a><a class="nav-item" href="../schedule.html">${I('clock')}售后排班</a><a class="nav-item" href="../approvals.html">${I('settings')}审批管理</a></nav><div class="side-bottom"><a href="#/demo">${I('flow')} 演示入口</a></div></aside><main class="main"><header class="topbar"><div class="crumb">客诉管理 <b>/ ${rules?'规则配置':'工单列表'}</b></div><div class="top-right"><a class="mini-link" href="#/mobile">${I('mobile')} 移动端</a>${btn(I('more'),'utilities','','iconbtn','aria-label="演示工具"')}${roleSelect()}</div></header><section class="content">${listPage()}</section></main></div>`;const rid=route.split('/')[2];if(!rules&&rid){UI.drawer=rid;renderDrawer(rid)}else if(!rules&&UI.drawer)renderDrawer(UI.drawer)}
+function dataRows(rows){return`<dl class="data">${rows.map(([a,b])=>`<dt>${a}</dt><dd>${b}</dd>`).join('')}</dl>`}
+function filesView(files){return`<div class="files">${files.map(f=>`<a class="file" href="${f.data||'#'}" ${f.data?'download="'+esc(f.name)+'"':''}>${esc(f.name)}</a>`).join('')}</div>`}
+function timelineEvents(t){return`<div class="card record-timeline-card"><div class="section-title"><h3>${mobile()?'操作记录':'处理记录'}</h3><span class="sub">${t.logs.length} 条记录</span></div><div class="timeline">${t.logs.map(l=>`<div class="event"><h3>${esc(l.title)} <span class="muted">· ${esc(l.actor)}</span></h3><div class="sub">${date(l.at)}</div><div class="text">${esc(l.body)}</div></div>`).join('')}</div></div>`}
+function timeline(t){return timelineEvents(t)+aftercareHistory(t)+planRecords(t)}
+function approvalView(a){if(a.provider==='dingtalk'){const r=E.externalRecord(S,a.recordId);return r?`<div class="approval-line"><div class="grow"><strong>${esc(r.name)}</strong><div class="sub">${esc(r.templateName)} · 第 ${r.round} 次 · ${esc(ApprovalTemplates.STATUS[r.status])}</div></div>${btn('查看审批','externalApproval',r.id,'link')}</div>`:'';}return`<div class="section-title"><h3>审批情况</h3><span class="pill blue">V${a.version} · ${esc(a.status)}</span></div><p class="approval-scene-name">${esc(a.scene)}</p>${a.steps.map((n,i)=>`<div class="approval-line"><div class="node-dot ${n.done?'done':i===a.index&&a.status==='审批中'?'current':''}">${n.done?'✓':i+1}</div><div class="grow"><div>${esc(n.name)}</div><div class="sub">${n.people.map(name).join('、')} · ${n.type==='cc'?'抄送':n.mode==='all'?'全部同意':'任一同意'}</div></div><span class="sub">${n.done?'已完成':i===a.index&&a.status==='审批中'?'待审批':'未执行'}</span></div>`).join('')}`}
+function solutionReadSection(title,body,extra=''){return `<section class="plan-read-section"><div class="plan-read-heading"><h3>${title}</h3>${extra}</div>${body}</section>`;}
+function solutionReason(label,value){return `<div class="plan-reason"><span>${label}</span><p>${esc(value||'未记录')}</p></div>`;}
+function deliveryDetails(p){const d=p.delivery||{};return `<div class="plan-delivery"><h4>收货信息</h4>${dataRows([['收货姓名',esc(d.name||'未记录')],['收货电话',esc(d.phone||'未记录')],['收货地址',esc(d.address||'未记录')]])}</div>`;}
+function refundDetails(p){
+ const meta=`<div class="plan-order-id">${I('ticket')}<span>${esc(p.refundOrderNo||S.orders.find(o=>o.id===p.refundOrderId)?.external||'原记录未关联订单明细')}</span></div><div class="plan-attribution"><span>退款门店 <b>${esc(p.refundStore||'未记录')}</b></span><span>业绩归属 <b>${p.performanceName?esc(p.performanceName):p.performanceId?esc(name(p.performanceId)):'未记录'}</b></span></div>`;
+ const rows=p.refundItems||[];
+ const items=rows.length?mobile()?`<div class="plan-mobile-lines">${rows.map(row=>`<div class="plan-mobile-line"><div><strong>${esc(row.name)}</strong><span>数量 ${row.quantity??'—'} · 实付 ${money(row.paid)}</span></div><div class="plan-line-amount"><small>本次退款</small><b>${money(row.amount)}</b></div></div>`).join('')}</div>`:`<div class="solution-table-wrap"><table class="solution-edit-table plan-read-table"><thead><tr><th>项目名称</th><th class="numeric">数量</th><th class="numeric">项目实付</th><th class="numeric">本次退款</th></tr></thead><tbody>${rows.map(row=>`<tr><td>${esc(row.name)}</td><td class="numeric">${row.quantity??'—'}</td><td class="numeric">${money(row.paid)}</td><td class="numeric"><b>${money(row.amount)}</b></td></tr>`).join('')}</tbody></table></div>`:`<p class="plan-legacy-note">原方案未记录项目拆分明细，退款金额以已保存的方案为准。</p>`;
+ return solutionReadSection('订单退款',meta+items+`<div class="plan-section-total"><span>${rows.length?'共 '+rows.length+' 个退款项目':'退款合计'}</span><b>${money(p.refund)}</b></div>`+solutionReason('退款原因备注',p.refundReason),rows.length?`<span class="plan-count">${rows.length} 项</span>`:'');
+}
+function exchangeDetails(p){
+ const items=p.exchangeItems||[];
+ const content=mobile()?`<div class="plan-mobile-lines">${items.map(x=>`<div class="plan-mobile-line"><div><strong>${esc(x.name)}</strong><span>${money(x.unitPrice)} × ${x.quantity} 件</span>${x.remark?`<span>${esc(x.remark)}</span>`:''}</div><b>${money(x.value??x.unitPrice*x.quantity)}</b></div>`).join('')}</div>`:`<div class="solution-table-wrap"><table class="solution-edit-table plan-read-table"><thead><tr><th>商品名称</th><th class="numeric">单价</th><th class="numeric">数量</th><th class="numeric">商品价值</th></tr></thead><tbody>${items.map(x=>`<tr><td>${esc(x.name)}${x.remark?`<span class="sub">${esc(x.remark)}</span>`:''}</td><td class="numeric">${money(x.unitPrice)}</td><td class="numeric">${x.quantity}</td><td class="numeric"><b>${money(x.value??x.unitPrice*x.quantity)}</b></td></tr>`).join('')}</tbody></table></div>`;
+ return solutionReadSection('置换商品',content+`<div class="plan-section-total"><span>${items.length} 种商品 · ${items.reduce((sum,x)=>sum+Number(x.quantity),0)} 件</span><b>${money(p.exchangeValue)}</b></div>`+deliveryDetails(p),`<span class="plan-count">${items.length} 种</span>`);
+}
+function funding(t,{progress=true,compact=false}={}){
+ const p=t.proposal;if(!p)return t.closure?.early?`<div class="card plan-detail"><div class="plan-detail-title"><h3>${t.closure.kind==='store'?'门店处理结果':'售后处理结果'}</h3><span class="pill green">已结案</span></div><p class="plan-description">${esc(t.closure.note)}</p><div class="plan-confirmation">${esc(name(t.closure.by))} · ${date(t.closure.at)}</div></div>`:`<div class="card"><div class="empty">暂无处理方案</div></div>${progress?solutionProgress(t):''}`;
+ const key=E.solutionKey(p),refund=E.solutionIncludes.refund(key)||p.refund>0,comp=E.solutionIncludes.compensation(key)||p.compensation>0,exchange=E.solutionIncludes.exchange(key)||p.exchangeItems?.length,funded=refund||comp;
+ const metrics=[...(refund?[['订单退款',p.refund]]:[]),...(comp?[['额外赔偿',p.compensation]]:[]),...(exchange?[['置换商品价值',p.exchangeValue]]:[])];
+ const payout=p.payout?dataRows([['收款方式',({bank:'银行卡',alipay:'支付宝',wechat:'微信'})[p.payout.method]||p.payout.method],[p.payout.method==='bank'?'开户姓名':'收款人',esc(p.payout.name)],['收款账号',`<span class="plan-account">${esc(p.payout.account)}</span>`],...(p.payout.bank?[['开户银行',esc(p.payout.bank)]]:[])]):`<p class="plan-description">${esc(p.account||'原记录未填写收款信息')}</p>`;
+ return `<div class="card plan-detail"><div class="plan-detail-title"><div><span class="plan-eyebrow">处理方案 · V${p.version}</span><h3>${esc(p.type)}</h3></div><span class="pill outline">${esc(p.status||'已记录')}</span></div>${compact?`<div class="pc-solution-totals">${metrics.map(([label,amount])=>`<div><span>${label}</span><strong>${money(amount)}</strong></div>`).join('')}${funded?`<div class="pc-solution-payable"><span>应付款合计</span><strong>${money(p.refund+p.compensation)}</strong></div>`:''}</div>`:`${metrics.length?`<div class="plan-metrics">${metrics.map(([label,amount])=>`<div><span>${label}</span><strong>${money(amount)}</strong></div>`).join('')}</div>`:''}${funded?`<div class="plan-payable"><span>应付款合计</span><b>${money(p.refund+p.compensation)}</b></div>`:''}` }${refund?refundDetails(p):''}${comp?solutionReadSection('额外赔偿',`<div class="plan-compensation"><span>订单退款之外的额外支付</span><b>${money(p.compensation)}</b></div>`+solutionReason('赔偿原因备注',p.compensationReason)):''}${exchange?exchangeDetails(p)+shipmentDetails(t):''}${funded?solutionReadSection('收款信息',payout):''}${p.content||p.procurementNote?solutionReadSection('处理方案与依据',`<p class="plan-description">${esc(p.content)}</p>${p.procurementNote?`<p class="plan-description">采购调整：${esc(p.procurementNote)}</p>`:''}`):''}${p.attachments?.length?solutionReadSection('附件说明',filesView(p.attachments)):''}<div class="plan-confirmation">${p.confirmedBy?esc(name(p.confirmedBy))+' 确认 · '+date(p.confirmedAt):'已有处理记录'}</div></div>${progress?solutionProgress(t):''}`;
+}
+function solutionProgress(t){return mobile()?mobileProcessProgress(t):pcProcessProgress(t);}
+function shipmentDetails(t){
+ const records=(t.handlingRecords||[]).filter(r=>r.kind==='procurement'&&r.version===t.proposal?.version);if(!records.length)return '';
+ return solutionReadSection('采购发货',`<div class="shipment-records">${records.slice().reverse().map(r=>`<article class="shipment-record"><div class="shipment-record-heading"><strong>${esc(r.method||'采购办理记录')}</strong><span>${esc(name(r.actor||r.by))} · ${date(r.at)}</span></div><div class="shipment-record-items">${(r.items||[]).map(x=>`<div><span>${esc(x.name)}</span><b>× ${x.quantity}</b></div>`).join('')}</div>${r.trackingNumber?`<div class="shipment-tracking"><span>物流单号</span><b>${esc(r.trackingNumber)}</b></div>`:r.action==='shipment'?'<div class="shipment-tracking"><span>物流单号</span><span>未填写</span></div>':r.reference?`<div class="shipment-tracking"><span>交付单据号</span><b>${esc(r.reference)}</b></div>`:''}${r.note?`<p class="shipment-note">${esc(r.note)}</p>`:''}</article>`).join('')}</div>`);
+}
+function procurementShipmentForm(t){
+ const items=E.procurementItems(t),pending=items.reduce((sum,x)=>sum+x.remaining,0);
+ const amount=x=>`<input name="shipmentQuantity" type="number" min="0" max="${x.remaining}" step="1" inputmode="numeric" required value="${x.remaining}" aria-label="${esc(x.name)}本次发货数量" ${x.remaining?'':'disabled'}>`;
+ const lines=mobile()?`<div class="shipment-mobile-items">${items.map(x=>`<div class="shipment-item" data-shipment-line="${x.lineIndex}"><strong>${esc(x.name)}</strong><div class="shipment-item-meta"><span>应发 ${x.quantity} 件</span><span>已发 ${x.shipped} 件</span></div><div class="shipment-item-quantity"><span>本次发货</span><div class="quantity-stepper">${btn('−','shipmentQuantity','-1','','aria-label="减少发货数量"'+(x.remaining?'':' disabled'))}${amount(x)}${btn('+','shipmentQuantity','1','','aria-label="增加发货数量"'+(x.remaining?'':' disabled'))}</div></div></div>`).join('')}</div>`:`<div class="solution-table-wrap"><table class="solution-edit-table shipment-table"><thead><tr><th>商品名称</th><th class="numeric">应发数量</th><th class="numeric">已发数量</th><th>本次发货</th></tr></thead><tbody>${items.map(x=>`<tr data-shipment-line="${x.lineIndex}"><td><strong>${esc(x.name)}</strong></td><td class="numeric">${x.quantity}</td><td class="numeric">${x.shipped}</td><td>${amount(x)}</td></tr>`).join('')}</tbody></table></div>`;
+ modal('采购发货',`<div class="proposal-composer shipment-composer">${t.proposal.delivery?`<section class="solution-section shipment-recipient">${deliveryDetails(t.proposal)}</section>`:''}<section class="solution-section shipment-method-section">${field('发货方式 *','<select name="method" aria-label="发货方式" required>'+options(E.SHIPMENT_METHODS,'','请选择发货方式')+'</select>')}</section><section class="solution-section"><div class="proposal-section-heading"><h3>发货商品明细</h3><span class="sub">待发 ${pending} 件</span></div>${lines}</section><section class="solution-section shipment-delivery-fields">${field('物流单号',inp('trackingNumber','','text',false,'maxlength="100" placeholder="填写物流单号"'))}${field('备注',txt('note','',false).replace('<textarea','<textarea maxlength="1000" placeholder="填写发货补充信息"'))}</section></div>`,{form:'finishProcurement',id:t.id,submit:'确认发货'});
+ const form=$('[data-form=finishProcurement]');form.closest('.form-drawer,.mobile-action-page').classList.add('shipment-surface');
+}
+document.addEventListener('click',event=>{const b=event.target.closest('[data-action=shipmentQuantity]');if(!b)return;const input=b.closest('[data-shipment-line]').querySelector('[name=shipmentQuantity]');input.value=Math.max(0,Math.min(Number(input.max),Number(input.value||0)+Number(b.dataset.id)));input.dispatchEvent(new Event('input',{bubbles:true}));});
+document.addEventListener('input',event=>event.target.closest('[data-form=finishProcurement]')?.querySelector('.error-slot')?.replaceChildren());
+function solutionActions(t){
+ if(t.state==='已结案')return '';
+ if(t.pendingAssignment?.mode==='flow-node')return E.canConfirmGrading(S,t,S.actor)?btn('重新匹配办理人','retryFlowNode',t.id,'primary'):'';
+ const n=E.currentFlowNode(t);if(n?.provider==='dingtalk')return btn('查看审批','externalApproval',t.approval.recordId,'primary');const mine=E.taskPeople(S,t).includes(S.actor);if(!mine)return '';if(t.approvalAmendment)return btn('添加跟进','follow',t.id)+btn('调整采购事项','amendProcurement',t.id,'primary');
+ if(n.type==='approval')return '';
+ if(n.kind==='sales')return btn('联系跟进','follow',t.id)+btn('填写方案','proposal',t.id,'primary');
+ if(n.kind==='procurement')return btn('采购发货','finishProcurement',t.id,'primary');
+ if(n.kind==='store')return btn('填写处理结果','finishStore',t.id,'primary');
+ if(n.kind==='payment')return btn('退回补正','payReturn',t.id)+btn(t.proposal.refund+t.proposal.compensation>0?'登记付款结果':'确认无需付款',t.proposal.refund+t.proposal.compensation>0?'pay':'noPayment',t.id,'primary');
+ if(n.kind==='close')return btn('确认结案','closeTicket',t.id,'primary');return '';
+}
+function followForm(t){
+ const store=E.isStoreIntake(t),aftercare=!store&&E.isAftercareStage(S,t),outcomes=store?[['resolved','已解决'],['unresolved','未解决，转售后'],['continue','需继续跟进']]:[['resolved','沟通已解决，直接结案'],['plan','需继续跟进，填写方案']];
+ modal('联系与跟进',`<div class="form-grid" ${store?'data-store-follow':aftercare?'data-aftercare-follow':''}>
+  ${field('联系方式',select('method',['电话','企微','门店面谈','其他'],'电话'))}
+  ${field('联系结果',select('connected',[['yes','已接通 / 有效沟通'],['no','未接通']],'yes'))}
+  ${field('沟通内容 *',txt('content'),true)}
+  ${store||aftercare?field(aftercare?'本次处理结果 *':'处理结果 *',select('result',outcomes,'','请选择处理结果').replace('<select ','<select required '),true):''}
+ </div>`,{form:'follow',id:t.id,submit:store||aftercare?'提交处理结果':'保存记录'});
+}
+function solutionNodeForm(act,t){
+ if(act==='amendProcurement'){procurementAmendmentForm(t);return true;}
+ else if(act==='retryStoreEntry')modal('重新匹配门店办理人',`<div class="banner">${esc(t.pendingAssignment.reason)}</div>`,{form:act,id:t.id,submit:'重新匹配'});
+ else if(act==='finishStore')modal('门店办理',`<div class="banner">${esc(E.currentFlowNode(t).title)}</div><div class="gap"></div><div class="form-grid">${field('门店处理结果 *',txt('note'),true)}${field('附件','<input type="file" name="files" multiple>',true)}</div>`,{form:act,id:t.id,submit:'完成门店办理'});
+ else if(act==='finishProcurement')procurementShipmentForm(t);
+ else if(act==='closeTicket')modal('确认结案',`<div class="banner">${esc(t.proposal?.type||'处理事项')} · ${esc(t.proposal?.content||'请核实已有办理记录，确认相关事项完成后结案')}</div><div class="gap"></div><div class="form-grid">${field('售后类型 *',`<select name="aftercareType" aria-label="售后类型" required>${options(E.AFTERCARE_TYPES,'','请选择售后类型')}</select>`,true)}${field('结案说明 *',txt('note'),true)}<label class="solution-completion"><input type="checkbox" name="completed" value="yes" required><span>已线下确认相关部门及方案事项全部处理完成${t.proposal?.exchangeItems?.length?'，包含商品置换':''}</span></label></div>`,{form:act,id:t.id,submit:'确认结案'});
+ else if(act==='noPayment')modal('确认无需付款',field('办理说明 *',txt('reason')),{form:act,id:t.id,submit:'完成付款办理'});
+ else if(act==='retryFlowNode')modal('重新匹配办理人',`<div class="banner">${esc(t.pendingAssignment.reason)}</div><div class="gap"></div><p class="text">维护当前节点的岗位人员后重试，已完成的节点和方案保持不变。</p>`,{form:act,id:t.id,submit:'重新匹配办理人'});
+ else return false;return true;
+}
+function planRecords(t){return`${t.payments.length?`<div class="card"><h3>付款记录</h3>${t.payments.map(x=>`<div class="approval-line"><div class="grow"><b class="${x.result==='失败'?'red-text':'teal-text'}">${esc(x.result)}</b> · ${money(x.amount)}<div class="sub">${date(x.at)} · ${esc(x.actor)}</div><div class="text">${esc(x.reference||x.reason||'')}</div>${x.proof?filesView(x.proof):''}</div></div>`).join('')}</div>`:''}${t.approvalHistory?.length?`<div class="card"><details><summary>历史审批 · ${t.approvalHistory.length} 次</summary><div class="gap"></div>${t.approvalHistory.map(a=>approvalView(a)).join('<div class="gap"></div>')}</details></div>`:''}`}
+function actionButtons(t){
+ if(t.mergedInto)return btn('查看主工单','detail',t.mergedInto,'primary');
+ if(t.state==='已结案')return '';
+ if(t.workflowIssue)return E.canConfirmGrading(S,t,S.actor)?btn('重新匹配办理流程','retryWorkflowUpgrade',t.id,'primary'):'';
+ if(t.pendingAssignment?.mode==='entry-node')return E.canConfirmGrading(S,t,S.actor)?btn('重新匹配门店办理人','retryStoreEntry',t.id,'primary'):'';
+ if(E.isStoreIntake(t))return !t.suspension&&E.canHandle(S,t,S.actor)?btn('联系跟进','follow',t.id,'primary'):'';
+ const extra=aftercareActionButtons(t);if(extra!==null)return extra;
+ if(t.execution)return solutionActions(t);
+ const intake=intakeActions(t);if(intake!==null)return intake;
+ if(t.pendingAssignment)return E.canAssignPending(S,t,S.actor)?btn('分派工单','assign',t.id,'primary'):'';
+ if(!E.canHandle(S,t,S.actor))return '';
+ if(['待首联','处理中'].includes(t.phase))return btn('联系跟进','follow',t.id)+btn('填写方案','proposal',t.id,'primary');
+ return '';
+}
+function moreActions(t){
+ const p=E.aftercarePermissions(S,t,S.actor);
+ if(t.suspension)return `${p.extend?btn('延长挂起','extendSuspension',t.id):''}${p.invalidate?btn('纠正挂起','invalidateSuspension',t.id):''}`;
+ if(t.workflowIssue||t.mergedInto)return '';
+ if(p.suspend)return btn('挂起工单','suspendTicket',t.id);
+ if(E.isStoreIntake(t))return '';
+ return t.state==='已结案'&&canCreate()?btn('登记再次投诉','repeat',t.id):'';
+}
+function aftercareActionButtons(t){
+ const p=E.aftercarePermissions(S,t,S.actor);
+ if(t.suspension)return p.resume?btn('恢复办理','resumeTicket',t.id,'primary'):'';
+ if(t.storeAssistance)return p.feedback?btn('完成门店办理','finishStoreAssistance',t.id,'primary'):'';
+ return null;
+}
+function aftercareContext(t){
+ if(!t.suspension&&!t.storeAssistance&&t.suspensionNotice)return `<div class="banner suspension-notice">${esc(t.suspensionNotice.title)}；原节点继续计时。</div>`;
+ if(t.suspension)return suspensionContext(t);
+ if(t.storeAssistance){const row=t.storeAssistance;return `<section class="card aftercare-context"><div class="section-title"><h3>门店办理</h3><span class="pill">办理中</span></div>${dataRows([['工单负责人',esc(name(t.owner))],['办理门店',esc(row.store)],['当前办理人',esc(name(row.assignee))]])}<p class="text">${esc(row.instructions)}</p>${filesView(row.files||[])}<p class="sub">门店办理完成后，自动回到工单负责人。</p></section>`;}
+ return '';
+}
+function aftercareHistory(t){
+ const rows=t.storeAssistanceHistory||[];return rows.length?`<div class="card"><details><summary>历史门店处理记录 · ${rows.length} 次</summary>${[...rows].reverse().map(r=>`<div class="aftercare-history-row"><div class="section-title"><b>${esc(r.store)} · ${esc(r.status)}</b><span class="sub">${date(r.completedAt)}</span></div><p class="sub">发起：${esc(name(r.requestedBy))} → ${esc(name(r.assignee))}</p><p class="text">${esc(r.instructions)}</p>${filesView(r.files||[])}<p class="text">${esc(r.result||'撤回原因')}：${esc(r.note)}</p>${filesView(r.resultFiles||[])}</div>`).join('')}</details></div>`:'';
+}
+function aftercareForm(act,t){
+ if(controlledSuspensionForm(act,t))return true;
+ if(act==='finishStoreAssistance'){
+  if(!E.aftercarePermissions(S,t,S.actor).feedback)throw Error('请由当前门店办理人提交结果');
+  modal('完成门店办理',`<div class="banner">工单负责人：${esc(name(t.owner))}。提交后自动返回负责人继续办理。</div><div class="gap"></div><div class="form-grid">${field('门店办理结果 *',txt('note'),true)}${field('附件','<input type="file" name="files" multiple>',true)}</div>`,{form:act,id:t.id,submit:'完成并返回负责人'});return true;
+ }
+ if(!['transferAftercare','transferHandling'].includes(act))return false;
+ const aftercare=act==='transferAftercare';if(!(aftercare?E.aftercarePermissions(S,t,S.actor).transfer:E.canTransferHandling(S,t,S.actor)))throw Error('请由当前节点办理人转派');
+ const requiredSelect=(n,label,values,chosen='',blank)=>`<select name="${n}" aria-label="${label}" required>${options(values,chosen,blank)}</select>`;
+ const modes=aftercare?field('转派方式 *',requiredSelect('transferTarget','转派方式',[['aftercare','转售后其他人'],['store','转给门店']],'aftercare'),true):'';
+ const storeFilter=aftercare?`<div data-transfer-store hidden>${field('接收门店',`<select name="store" aria-label="接收门店">${options(E.storeTransferOptions(S),'','所有门店')}</select>`,true)}</div>`:'';
+ const recipient=`<div class="transfer-recipient"><input name="recipientSearch" type="text" role="combobox" aria-label="接收人" aria-autocomplete="list" aria-expanded="false" aria-controls="transfer-recipient-options" autocomplete="off" placeholder="输入姓名搜索并选择接收人" required><input type="hidden" name="person"><div class="transfer-recipient-list" id="transfer-recipient-options" role="listbox" aria-label="接收人候选" hidden></div></div>`;
+ modal('转派办理',`<div class="banner">工单负责人：${esc(name(t.owner))}<div data-transfer-hint></div></div><div class="gap"></div><div class="transfer-form-fields">${modes}${storeFilter}${field('接收人 *',recipient,true)}${field('转派原因 *',txt('note'),true)}</div>`,{form:act,id:t.id,submit:'确认转派'});
+ syncTransferForm($('[data-form='+act+']'));return true;
+}
+function transferRecipients(form){
+ const t=ticket(form.dataset.id),aftercare=form.dataset.form==='transferAftercare',store=aftercare&&form.elements.transferTarget.value==='store';
+ return store?E.allStoreCandidates(S,t,form.elements.store.value):aftercare?E.transferCandidates(S,t):E.handlingTransferCandidates(S,t);
+}
+function recipientLabel(person){return person.name+' · '+(person.handlingStore?person.handlingStore+' · ':'')+person.role;}
+function positionTransferRecipients(form){
+ const list=form.querySelector('.transfer-recipient-list');if(list.hidden)return;
+ const input=form.elements.recipientSearch.getBoundingClientRect(),footer=form.querySelector('.drawer-footer,.mobile-action-footer')?.getBoundingClientRect(),header=form.closest('.form-drawer,.mobile-action-page')?.querySelector('header')?.getBoundingClientRect();
+ const viewport=window.visualViewport,bottom=Math.min(footer?.top??innerHeight,viewport?viewport.offsetTop+viewport.height:innerHeight),below=bottom-input.bottom-8,above=input.top-(header?.bottom||0)-8,up=below<160&&above>below;
+ list.classList.toggle('opens-up',up);list.style.maxHeight=Math.max(80,Math.min(240,up?above:below))+'px';
+}
+function renderTransferRecipients(form,open=true){
+ const input=form.elements.recipientSearch,list=form.querySelector('.transfer-recipient-list'),query=form.elements.person.value?'':input.value.trim().toLocaleLowerCase();
+ const matches=transferRecipients(form).filter(p=>p.name.toLocaleLowerCase().includes(query));
+ list.innerHTML=matches.length?matches.map((p,i)=>`<button type="button" role="option" id="transfer-recipient-${i}" data-transfer-person="${esc(p.id)}" tabindex="-1" aria-selected="${p.id===form.elements.person.value}">${esc(recipientLabel(p))}</button>`).join(''):`<p class="sub" role="status" data-transfer-empty>${query?'没有匹配的人员，请调整姓名。':'暂无可转派人员，请维护本部门或门店组织架构。'}</p>`;
+ list.hidden=!open;input.setAttribute('aria-expanded',String(open));input.removeAttribute('aria-activedescendant');form.recipientActiveIndex=-1;
+ input.setCustomValidity(form.elements.person.value?'':'请从搜索结果中选择接收人');
+ if(open)positionTransferRecipients(form);
+}
+function closeTransferRecipients(form){if(!form)return;form.querySelector('.transfer-recipient-list').hidden=true;form.elements.recipientSearch.setAttribute('aria-expanded','false');form.elements.recipientSearch.removeAttribute('aria-activedescendant');}
+function chooseTransferRecipient(form,id){
+ const person=transferRecipients(form).find(p=>p.id===id);if(!person)return;
+ form.elements.person.value=id;form.elements.recipientSearch.value=recipientLabel(person);form.elements.recipientSearch.setCustomValidity('');UI.modalDirty=true;
+ form.querySelector('.error-slot')?.replaceChildren();form.elements.recipientSearch.focus({preventScroll:true});closeTransferRecipients(form);
+}
+function syncTransferForm(form){
+ const t=ticket(form.dataset.id),aftercare=form.dataset.form==='transferAftercare',store=aftercare&&form.elements.transferTarget.value==='store',filter=form.querySelector('[data-transfer-store]');
+ if(filter){filter.hidden=!store;form.elements.store.disabled=!store;}
+ form.querySelector('[data-transfer-hint]').textContent=store?'仅转移当前办理任务，工单负责人不变；门店办完自动返回负责人。':aftercare?'转派后由接收人担任工单负责人，继续当前办理环节。':'仅可转给本部门其他成员，工单负责人保持不变。';
+ renderTransferRecipients(form,document.activeElement===form.elements.recipientSearch);
+}
+document.addEventListener('input',event=>{const form=event.target.closest('[data-form=transferAftercare],[data-form=transferHandling]');if(form&&event.target.name==='recipientSearch'){form.elements.person.value='';renderTransferRecipients(form);}});
+document.addEventListener('focusin',event=>{const form=event.target.closest('[data-form=transferAftercare],[data-form=transferHandling]');if(form&&event.target.name==='recipientSearch'){renderTransferRecipients(form);if(form.elements.person.value)event.target.select();}});
+document.addEventListener('click',event=>{const option=event.target.closest('[data-transfer-person]'),form=event.target.closest('[data-form=transferAftercare],[data-form=transferHandling]');if(option){chooseTransferRecipient(form,option.dataset.transferPerson);return;}if(form&&event.target.name==='recipientSearch')renderTransferRecipients(form);});
+document.addEventListener('pointerdown',event=>{const form=$('[data-form=transferAftercare],[data-form=transferHandling]');if(form&&!event.target.closest('.transfer-recipient'))closeTransferRecipients(form);});
+document.addEventListener('focusout',event=>{const form=event.target.closest('[data-form=transferAftercare],[data-form=transferHandling]');if(form&&!event.relatedTarget?.closest('.transfer-recipient'))closeTransferRecipients(form);});
+document.addEventListener('keydown',event=>{
+ const form=event.target.closest('[data-form=transferAftercare],[data-form=transferHandling]');if(!form||event.target.name!=='recipientSearch'||event.isComposing)return;
+ const input=event.target,list=form.querySelector('.transfer-recipient-list');
+ if(event.key==='Escape'&&!list.hidden){event.preventDefault();event.stopImmediatePropagation();closeTransferRecipients(form);return;}
+ if(['ArrowDown','ArrowUp'].includes(event.key)){
+  event.preventDefault();if(list.hidden)renderTransferRecipients(form);const options=[...list.querySelectorAll('[role=option]')];if(!options.length)return;
+  const index=form.recipientActiveIndex??-1;form.recipientActiveIndex=event.key==='ArrowDown'?(index+1)%options.length:(index<=0?options.length:index)-1;
+  options.forEach((option,i)=>option.classList.toggle('is-active',i===form.recipientActiveIndex));const active=options[form.recipientActiveIndex];input.setAttribute('aria-activedescendant',active.id);active.scrollIntoView({block:'nearest'});
+ }else if(event.key==='Enter'&&!list.hidden){event.preventDefault();const options=list.querySelectorAll('[role=option]'),active=options[form.recipientActiveIndex<0?0:form.recipientActiveIndex];if(active)chooseTransferRecipient(form,active.dataset.transferPerson);}
+});
+document.addEventListener('change',event=>{const form=event.target.closest('[data-form=transferAftercare]');if(form&&['transferTarget','store'].includes(event.target.name)){form.elements.person.value='';form.elements.recipientSearch.value='';syncTransferForm(form);}});
+const repositionTransferRecipients=()=>{const form=$('[data-form=transferAftercare],[data-form=transferHandling]');if(form)positionTransferRecipients(form);};
+window.addEventListener('resize',repositionTransferRecipients);window.visualViewport?.addEventListener('resize',repositionTransferRecipients);
+function intakeActions(t){
+ if(t.phase==='待定级')return E.canConfirmGrading(S,t,S.actor)?btn('确认客诉等级','confirmGrading',t.id,'primary'):'';
+ if(t.pendingAssignment?.mode==='configuration')return E.canConfirmGrading(S,t,S.actor)?btn('重新匹配规则','retryIntake',t.id,'primary'):'';
+ return null;
+}
+function intakeForm(act,t){
+ if(!['confirmGrading','retryIntake'].includes(act))return false;
+ if(!E.canConfirmGrading(S,t,S.actor))throw Error('只有售后经理可以处理定级及匹配异常');
+ if(act==='confirmGrading')modal('确认客诉等级',`<div class="banner">${esc(t.grading.reason)}</div><div class="gap"></div><p class="text">${esc(t.description)}</p><div class="gap"></div><div class="form-grid">${field('客诉等级 *',select('level',[[1,'一级'],[2,'二级'],[3,'三级'],[4,'四级'],[5,'五级']],'','请选择等级'),true)}${field('定级依据 *',txt('note'),true)}</div>`,{form:act,id:t.id,submit:'确认等级并匹配规则'});
+ else modal('重新匹配规则',`<div class="banner">${esc(t.pendingAssignment.reason)}</div><div class="gap"></div><p class="text">请先在规则配置中处理上述问题，再重新匹配。工单内容和已确认等级将保留。</p>`,{form:act,id:t.id,submit:'重新匹配规则'});
+ return true;
+}
+for(const event of ['input','change'])document.addEventListener(event,e=>{const form=e.target.closest('[data-form=create],[data-form=confirmGrading],[data-form=transferAftercare],[data-form=transferHandling],[data-form=finishStoreAssistance],[data-form=follow],[data-form=suspendTicket],[data-form=resumeTicket]');form?.querySelector('.error-slot')?.replaceChildren();});
+function transferButton(t){if(E.aftercarePermissions(S,t,S.actor).transfer)return btn('转派','transferAftercare',t.id);if(E.canTransferHandling(S,t,S.actor))return btn('转派','transferHandling',t.id);return '';}
+function standaloneTransferButton(t){return moreActions(t)?'':transferButton(t);}
+function moreMenu(t){const actions=moreActions(t);return actions?`<details class="ticket-more-menu"><summary>更多</summary><div class="ticket-more-items">${transferButton(t)}${actions}</div></details>`:''}
+function pcTicketOverview(t){
+ const ended=['已结案','已合并'].includes(t.state),people=(t.pendingAssignment?'':shownTaskNames(t))||'待分派',closeBy=t.closure?.by||t.execution?.steps.findLast(n=>n.completedBy)?.completedBy||t.owner;
+ const closePerson=closeBy?name(closeBy):t.logs.find(row=>/结案|合并/.test(row.title))?.actor||'未记录';
+ const deadline=t.taskDeadline,remaining=deadline-Date.now(),first=['待首联','待门店首联'].includes(t.phase);
+ const nodeTime=ended?date(t.closed||t.updated):t.suspension?'节点计时已暂停':deadline?date(deadline):t.phase==='待定级'?'定级后开始':t.pendingAssignment?.mode==='configuration'?'匹配规则后开始':'分派后开始';
+ const clockNote=ended?'办理已结束':t.suspension?'预计恢复 '+date(t.suspension.expectedAt):deadline?`${remaining<0?'已超时':'剩余'} ${processDuration(remaining)}`:'尚未开始计时';
+ const issue=t.workflowIssue?.reason||t.pendingAssignment?.reason||(t.phase==='待定级'?'请售后经理确认客诉等级并填写定级依据。':t.suspension?.reason||(!ended&&(t.level>=4||t.repeat)?(t.level>=5?'五级紧急工单':t.level===4?'四级风险工单':'重复投诉工单')+(t.level>=4&&t.repeat?' · 重复投诉':''):t.suspensionNotice?.title||''));
+ const facts=[[ended?'办理结果':'当前环节',esc(ended?(t.mergedInto?'已并入主工单':'工单已结案'):E.ticketStage(t)),esc(ended?(t.closure?.early?'直接结案':'流程已结束'):taskLabel(t))],[ended?'结案人':t.phase==='待定级'?'待确认人':'当前办理人',esc(ended?closePerson:people),''],[ended?'结案时间':first?'首次联系截止':'当前节点截止',nodeTime,`<span class="${!ended&&!t.suspension&&deadline&&remaining<0?'red-text':''}">${clockNote}</span>`],['整单截止',t.deadline?date(t.deadline):'待匹配规则',t.deadline&&((ended?t.closed||t.updated:Date.now())>t.deadline)?'<span class="red-text">整单已超时</span>':'']];
+ return `<section class="pc-ticket-overview" aria-label="工单概况"><div class="pc-ticket-meta"><div class="pc-ticket-origin"><span class="ticket-no">${esc(t.id)}</span><span>${esc(t.channel)}</span><span>创建于 ${date(t.created)}</span></div><div class="pc-ticket-badges">${stateTag(t)}${badges(t)}</div></div><h3>${esc(t.title)}</h3><dl class="pc-ticket-facts">${facts.map(([label,value,note])=>`<div><dt>${label}</dt><dd>${value}${note?`<small>${note}</small>`:''}</dd></div>`).join('')}</dl>${issue?`<p class="pc-overview-notice">${I(t.suspension?'clock':'shield')}<span>${esc(issue)}</span></p>`:''}</section>`;
+}
+function pcTicketInfo(t){
+ const o=S.orders.find(o=>o.id===t.order),description=t.description||'';
+ const grid=rows=>`<dl class="pc-information-grid">${rows.map(([label,value])=>`<div><dt>${label}</dt><dd>${value}</dd></div>`).join('')}</dl>`;
+ const extra=(title,body)=>`<section class="pc-information-section"><h4>${title}</h4>${body}</section>`;
+ return `<div class="section-title"><h3>工单信息</h3></div>${grid([['客户姓名',esc(t.name)+`<span class="pc-customer-type">${esc(t.isNew)||'—'}</span>`+' '+btn('客户资料','customerProfile',t.id,'link')],['联系电话',mask(t.phone)],['所属门店',esc(t.store)],['工单负责人',t.owner?esc(name(t.owner)):'尚未分派售后'],['会员号',esc(t.member)||'—'],['接待人员',esc(t.staff)||'—'],...(t.nextFollow?[['下次跟进',esc(t.nextFollow)]]:[])])}<div class="pc-complaint-summary"><span>投诉内容</span><p>${esc(description)||'—'}</p></div>${t.attachments.length?`<div class="pc-information-files"><span>相关附件</span>${filesView(t.attachments)}</div>`:''}<div class="pc-order-facts">${grid([['消费订单',esc(o?.external)||'待核实'],['消费项目',esc(t.project)||'—'],['实付金额',money(o?.paid||t.amount)],['可退余额',o?money(o.paid-o.refunded):'待核实']])}${!o&&E.canHandle(S,t,S.actor)?btn('关联订单','bindOrder',t.id,'link'):''}</div>${t.related.length?extra('关联工单',t.related.map(id=>btn(id,'detail',id,'link')).join('')):''}`;
+}
+function pcProcessProgress(t){
+ const rows=processSteps(t),ended=['已结案','已合并'].includes(t.state),blocked=t.workflowIssue?.reason||(t.phase==='待定级'?'确认客诉等级后匹配办理流程。':t.pendingAssignment?.mode==='configuration'?'尚未匹配到适用规则，匹配后进入办理流程。':'');
+ return `<section class="card pc-process-card" aria-label="处理流程"><div class="section-title"><h3>处理流程</h3><span class="sub">${ended?'流程已结束':rows.length?'已完成 '+rows.filter(n=>n.status==='done').length+' / '+rows.length:'待进入流程'}</span></div>${blocked?`<p class="process-blocked">${I('clock')}<span>${esc(blocked)}</span></p>`:''}${rows.length?`<div class="pc-process-columns" aria-hidden="true"><span>办理节点</span><span>处理人</span><span>状态</span><span>办理时间</span></div><ol class="pc-process-list">${rows.map((n,index)=>{
+  const label=externalNodeStatus(n)||({done:'已完成',current:'办理中',future:'未开始',waiting:'待分派',paused:'已挂起',returned:'已退回',skipped:'已跳过'})[n.status],people=n.people.map(name).join('、')||n.personLabel||(n.knownOwner?name(n.knownOwner):n.status==='waiting'?'待分派':n.status==='future'?'到达后分派':'未记录');
+  const at=n.status==='done'?(n.completedAt?'完成于 '+date(n.completedAt):'完成时间未记录'):n.status==='returned'?'退回于 '+date(n.returnedAt):n.status==='future'?'到达后开始计时':n.status==='skipped'?'无需办理':'';
+  const note=n.current&&n.external?.error?n.external.error:n.status==='returned'?n.returnReason:n.id===t.storeIntake?.node.id?n.result:n.current&&t.pendingAssignment?.reason?t.pendingAssignment.reason:n.current&&t.proposal?.status==='待调整'?'请根据退回意见调整方案':'';
+  const members=n.approvalPeople||[],mode=({all:'会签 · 全部同意',any:'或签 · 任一同意',sequential:'依次审批'})[n.mode]||'审批人员进度';
+  return `<li class="pc-process-node is-${n.status}" data-node-id="${esc(n.id)}" ${n.current?'aria-current="step"':''}><div class="pc-process-title"><span class="process-marker" aria-hidden="true">${n.status==='done'?I('check'):n.current?I('clock'):index+1}</span><strong>${esc(n.title)}${externalNodeLink(n)}</strong></div><div class="pc-process-assignee">${esc(people)}</div><span class="pc-process-status">${label}</span><div class="pc-process-time">${at?`<span>${at}</span>`:processTiming(t,n)}</div>${members.length>1?`<details class="pc-process-members" ${n.current?'open':''}><summary>${mode}${I('arrow')}</summary>${members.map(p=>`<div class="pc-process-member is-${p.tone}"><span>${esc(name(p.id))}</span><span>${p.status}</span><time>${p.at?date(p.at):'—'}</time></div>`).join('')}</details>`:''}${note?`<p class="pc-process-note">${esc(note)}</p>`:''}</li>`;
+ }).join('')}</ol>`:''}</section>`;
+}
+function pcOperationRecords(t){return `<section class="card pc-operation-card"><div class="section-title"><h3>操作记录</h3><span class="sub">最新操作在前</span></div><ol class="pc-operation-list">${t.logs.map(log=>`<li class="pc-operation-event"><strong>${esc(log.title)}</strong><span class="pc-operation-actor">${esc(log.actor)}</span><time>${date(log.at)}</time><p>${esc(log.body)}</p></li>`).join('')}</ol></section>${aftercareHistory(t)}${planRecords(t)}`;}
+function pcTimingPanel(t){
+ const ended=['已结案','已合并'].includes(t.state),now=ended?t.closed||t.updated:Date.now(),clock=E.nodeTiming(t,now),usage=E.suspensionUsage(t),overdue=t.deadline&&now>t.deadline;
+ return `<section class="card pc-time-summary"><div class="section-title"><h3>办理时效</h3><span class="pill ${overdue?'red':ended?'green':'blue'}">${overdue?'整单已超时':ended?'已完成':'计时中'}</span></div><div class="pc-time-metrics"><div><span>整单${ended?'耗时':'已用时'}</span><strong>${elapsedLabel(Math.max(0,now-t.created))}</strong></div><div><span>${ended?'末节点':'当前节点'}有效办理</span><strong>${clock?elapsedLabel(clock.net):'待开始'}</strong></div><div><span>整单累计挂起</span><strong>${elapsedLabel(usage.duration)}</strong><small>${usage.count} 次</small></div></div>${dataRows([['创建时间',date(t.created)],['整单截止',t.deadline?date(t.deadline):'待匹配规则'],['首次有效联系',t.firstContact?date(t.firstContact):'尚未有效联系'],[ended?'结案时间':'节点截止',ended?date(t.closed||t.updated):t.suspension?'已暂停，恢复后继续':t.taskDeadline?date(t.taskDeadline):'待开始计时']])}</section>${aftercareContext(t)}${suspensionMetrics(t,{expanded:true,title:'节点计时与挂起记录'})||'<section class="card pc-time-waiting">当前节点尚未开始计时，分派后按规则启动办理时限。</section>'}`;
+}
+const pcDetailSections=[['info','工单信息'],['fund','处理方案'],['process','处理流程'],['logs','操作记录'],['timing','办理时效']];
+function rememberPcDetailView(){const el=$('#drawer-root .ticket-drawer'),body=el?.querySelector('.pc-detail-layout');if(!body)return;UI.pcDetailView={id:el.dataset.ticketId,tab:el.dataset.detailTab,scroll:body.scrollTop,opened:[...el.querySelectorAll('[data-info-section][open]')].map(row=>row.dataset.infoSection)};}
+function renderDrawer(id){
+ if(!pcDetailSections.some(([key])=>key===UI.tab))UI.tab='info';
+ rememberPcDetailView();const view=UI.pcDetailView?.id===id?UI.pcDetailView:null,opened=view?.opened,t=ticket(id);
+ if(!t||!E.canView(S,t,S.actor)){UI.drawer=null;$('#drawer-root').innerHTML='';toast('工单不存在或没有访问权限');return;}
+ const ended=['已结案','已合并'].includes(t.state),actions=actionButtons(t),more=moreMenu(t);
+ UI.drawer=id;
+ $('#drawer-root').innerHTML=`<div class="drawer-backdrop" data-action="closeDrawer"><section class="drawer ticket-drawer" data-ticket-id="${esc(id)}" data-detail-tab="${UI.tab}" role="dialog" aria-modal="true" aria-label="工单详情" data-stop>
+   <header class="drawer-header"><h2>工单详情</h2>${btn(I('close'),'closeDrawer','','iconbtn','aria-label="关闭详情"')}</header>
+
+   <div class="drawer-body pc-detail-layout">${pcTicketOverview(t)}<nav class="pc-detail-nav" aria-label="工单详情导航">${pcDetailSections.map(([key,label])=>btn(label,'detailTab',key,'pc-section-link '+(UI.tab===key?'active':''),`id="pc-nav-${key}" aria-controls="pc-section-${key}" ${UI.tab===key?'aria-current="location"':''}`)).join('')}</nav><div class="pc-detail-main pc-ticket-content">
+   <section id="pc-section-info" class="pc-detail-section pc-ticket-information" aria-label="工单信息">${pcTicketInfo(t)}</section>
+   <section id="pc-section-fund" class="pc-detail-section" aria-label="处理方案">${!t.proposal&&!t.closure?.early?'<div class="section-title"><h3>处理方案</h3></div>':''}${funding(t,{progress:false,compact:true})}</section>
+   <section id="pc-section-process" class="pc-detail-section" aria-label="处理流程">${pcProcessProgress(t)}</section>
+   <section id="pc-section-logs" class="pc-detail-section" aria-label="操作记录">${pcOperationRecords(t)}</section>
+   <section id="pc-section-timing" class="pc-detail-section" aria-label="办理时效">${pcTimingPanel(t)}</section></div>
+   </div>
+   <footer class="drawer-footer"><span class="pc-footer-context">${ended?'工单办理已结束':`${esc(E.ticketStage(t))}<span>·</span>${esc((t.pendingAssignment?'':shownTaskNames(t))||'待分派')}`}</span><div class="pc-footer-actions">${standaloneTransferButton(t)}${more}${actions?`<div class="action-buttons">${actions}</div>`:''}</div></footer>
+ </section></div>`;
+ if(opened)$('#drawer-root').querySelectorAll('[data-info-section]').forEach(el=>el.open=opened.includes(el.dataset.infoSection));
+ const body=$('#drawer-root .pc-detail-layout');body.scrollTop=view?.scroll||0;setupPcDetailNavigation();if(!view&&UI.tab!=='info')selectPcDetailTab(UI.tab);
+}
+function setPcDetailSection(key){UI.tab=key;const drawer=$('.ticket-drawer');if(!drawer)return;drawer.dataset.detailTab=key;drawer.querySelectorAll('.pc-section-link').forEach(el=>{const active=el.dataset.id===key;el.classList.toggle('active',active);if(active)el.setAttribute('aria-current','location');else el.removeAttribute('aria-current');});}
+function selectPcDetailTab(key){if(!pcDetailSections.some(([id])=>id===key))return;const body=$('.pc-detail-layout'),nav=$('.pc-detail-nav'),section=$('#pc-section-'+key);if(!body||!section)return;const top=body.scrollTop+section.getBoundingClientRect().top-body.getBoundingClientRect().top-nav.offsetHeight;body.scrollTo({top,behavior:'instant'});setPcDetailSection(key);$('#pc-nav-'+key)?.focus({preventScroll:true});}
+function setupPcDetailNavigation(){UI.pcDetailScrollCleanup?.();const body=$('.pc-detail-layout'),nav=$('.pc-detail-nav'),sections=$$('.pc-detail-section');let frame=0;const sync=()=>{frame=0;const edge=nav.getBoundingClientRect().bottom+24,atBottom=body.scrollTop+body.clientHeight>=body.scrollHeight-2;const active=atBottom?sections.at(-1):sections.findLast(el=>el.getBoundingClientRect().top<=edge)||sections[0];if(active)setPcDetailSection(active.id.replace('pc-section-',''));};const scroll=()=>{if(!frame)frame=requestAnimationFrame(sync);};body.addEventListener('scroll',scroll,{passive:true});UI.pcDetailScrollCleanup=()=>{body.removeEventListener('scroll',scroll);cancelAnimationFrame(frame);};}
+document.addEventListener('keydown',event=>{if(!event.target.matches('.pc-section-link'))return;const keys=pcDetailSections.map(([id])=>id),index=keys.indexOf(event.target.dataset.id),next=({ArrowRight:keys[(index+1)%keys.length],ArrowLeft:keys[(index+keys.length-1)%keys.length],Home:keys[0],End:keys.at(-1)})[event.key];if(next){event.preventDefault();selectPcDetailTab(next);}});
+function modal(title,body,{form='',id='',wide=false,drawer=!!form,submit='保存',danger=false}={}){
+ UI.returnFocus=document.activeElement;UI.modalDirty=false;
+ const actions=`${btn('取消','closeModal')}<button type="submit" class="${danger?'danger':'primary'}">${submit}</button>`;
+ if(mobile()){
+   if(!UI.mobileSurfaceOpen){UI.mobileSurfaceOpen=true;UI.mobileOverflow=document.body.style.overflow;UI.mobilePreviousState=history.state;UI.mobileHistoryToken='mobile-form-'+Date.now()+'-'+Math.random();history.pushState({...history.state,complaintMobileForm:UI.mobileHistoryToken},'',location.href);}
+   document.body.style.overflow='hidden';document.body.classList.add('mobile-action-open');$('#app').inert=true;
+   const content=form?`<form data-form="${form}" data-id="${esc(id)}"><div class="mobile-action-body">${body}</div><footer class="mobile-action-footer"><div class="error-slot" role="alert"></div><div class="form-actions">${actions}</div></footer></form>`:`<div class="mobile-action-body">${body}</div>`;
+   $('#modal-root').innerHTML=`<div class="mobile-action-surface"><section class="mobile-action-page" role="region" aria-label="${esc(title)}" tabindex="-1"><header class="mobile-action-header">${btn(I('back')+'返回','closeModal','','mobile-action-back','aria-label="返回上一页"')}<h2>${esc(title)}</h2><span aria-hidden="true"></span></header>${content}</section></div>`;
+   prepareMobileFields();syncMobileFields();$('#modal-root .mobile-action-back')?.focus({preventScroll:true});return;
+ }
+ $('#modal-root').innerHTML=drawer?`<div class="drawer-backdrop form-drawer-backdrop" data-action="closeModal"><section class="drawer form-drawer" role="dialog" aria-modal="true" aria-label="${esc(title)}" data-stop><header class="drawer-header spread"><h2>${title}</h2>${btn(I('close'),'closeModal','','iconbtn','aria-label="关闭抽屉"')}</header>${form?`<form data-form="${form}" data-id="${esc(id)}"><div class="drawer-body">${body}</div><footer class="drawer-footer"><div class="error-slot" role="alert"></div><div class="form-actions">${actions}</div></footer></form>`:`<div class="drawer-body">${body}</div><footer class="drawer-footer">${btn("关闭","closeModal")}</footer>`}</section></div>`:`<div class="modal-backdrop"><section class="modal ${wide?'wide':''}" role="dialog" aria-modal="true" aria-label="${esc(title)}"><div class="modal-head"><h2>${title}</h2>${btn(I('close'),'closeModal','','iconbtn','aria-label="关闭弹窗"')}</div>${form?`<form data-form="${form}" data-id="${esc(id)}">${body}<div class="error-slot" role="alert"></div><div class="form-actions">${actions}</div></form>`:body}</section></div>`;
+ syncMobileFields();$('#modal-root input:not([disabled]), #modal-root textarea, #modal-root select, #modal-root button')?.focus({preventScroll:true});
+}
+function prepareMobileFields(){
+ const page=$('#modal-root .mobile-action-page');if(!page)return;
+ page.querySelectorAll('.field').forEach((field,index)=>{const label=field.querySelector('label'),input=field.querySelector('input,select,textarea');if(!label||!input)return;const text=label.textContent.replace(/\s*\*\s*$/,'').trim();input.id='mobile-field-'+index;label.htmlFor=input.id;input.setAttribute('aria-label',text);if(!label.dataset.requiredLabel)label.dataset.requiredLabel=String(/\*\s*$/.test(label.textContent));label.textContent=text;if(input.required||label.dataset.requiredLabel==='true'){const mark=document.createElement('span');mark.className='mobile-required';mark.setAttribute('aria-hidden','true');mark.textContent=' *';label.append(mark);}if(input.type==='number')input.inputMode='decimal';if(input.type==='tel')input.autocomplete='tel';});
+}
+function syncMobileFields(){
+ const form=$('#modal-root form');if(!form)return;
+ const show=(name,visible)=>{const input=form.elements[name];if(!input)return;input.closest('.field').hidden=!visible;input.disabled=!visible;};
+ if(form.dataset.form==='proposal'){const selected=[...form.querySelectorAll('[name=handlingMethod]:checked')].map(el=>el.value),type=selected.length?E.solutionMethods.keyOf(selected):'';form.elements.type.value=type;for(const [cls,visible] of [['refund',E.solutionIncludes.refund(type)],['compensation',E.solutionIncludes.compensation(type)],['exchange',E.solutionIncludes.exchange(type)],['payout',E.solutionIncludes.refund(type)||E.solutionIncludes.compensation(type)]]){const section=form.querySelector('.'+cls+'-editor');section.hidden=!visible;section.querySelectorAll('input,select,textarea,button').forEach(input=>input.disabled=!visible);}show('payoutBank',!form.querySelector('.payout-editor').hidden&&form.elements.payoutMethod.value==='bank');syncPayoutName(form);syncRefundSelection(form);updateProposalTotal(form);}
+ if(form.dataset.form==='follow'&&form.querySelector('[data-store-follow]')){
+  const result=form.elements.result,connected=form.elements.connected.value==='yes',submit=form.querySelector('[type=submit]');
+  for(const option of result.options)option.disabled=!connected&&['resolved','unresolved'].includes(option.value);
+  if(!connected&&['resolved','unresolved'].includes(result.value))result.value='';
+  submit.textContent=({resolved:'确认结案',unresolved:'提交并转售后',continue:'保存，继续处理'})[result.value]||'提交处理结果';submit.disabled=!result.value;
+ }
+ if(form.dataset.form==='follow'&&form.querySelector('[data-aftercare-follow]')){
+  const result=form.elements.result,connected=form.elements.connected.value==='yes',t=ticket(form.dataset.id),submit=form.querySelector('[type=submit]');
+  const canClose=connected&&E.canCloseEarly(S,{...t,firstContact:t.firstContact||Date.now(),aftercareContactAt:t.aftercareContactAt||Date.now()},S.actor);
+  result.querySelector('[value=resolved]').disabled=!canClose;if(!canClose&&result.value==='resolved')result.value='';
+  submit.textContent=({resolved:'保存并结案',plan:'保存并填写方案'})[result.value]||'提交处理结果';submit.disabled=!result.value;
+ }
+ if(form.dataset.form==='pay'){const success=form.elements.result.value==='成功';for(const name of ['amount','reference','proof'])show(name,success);show('reason',!success);form.elements.reason.required=!success;form.elements.reference.required=success;form.elements.proof.required=success;}
+ prepareMobileFields();
+}
+document.addEventListener('change',event=>{if(event.target.closest('#modal-root form')&&['type','result','connected'].includes(event.target.name))syncMobileFields();});
+document.addEventListener('focusin',event=>{if(event.target.closest('.mobile-action-page')&&event.target.type==='number'&&event.target.value==='0')event.target.select();});
+function closeModal(force=false){
+ if(UI.productPicker)closeProductPicker(false);
+ const mobileOpen=UI.mobileSurfaceOpen,ownsHistory=mobileOpen&&history.state?.complaintMobileForm===UI.mobileHistoryToken;
+ $('#modal-root').innerHTML='';UI.modalDirty=false;
+ if(mobileOpen){UI.mobileSurfaceOpen=false;document.body.style.overflow=UI.mobileOverflow||'';document.body.classList.remove('mobile-action-open');$('#app').inert=false;if(ownsHistory){if(force)history.replaceState(UI.mobilePreviousState,'',location.href);else history.back();}UI.mobileHistoryToken=null;}
+ UI.returnFocus?.isConnected&&UI.returnFocus.focus();
+}
+window.addEventListener('popstate',()=>{if(UI.productPicker&&!history.state?.complaintProductPicker){closeProductPicker(false);return;}if(UI.mobileSurfaceOpen&&history.state?.complaintMobileForm!==UI.mobileHistoryToken)closeModal(true);});
+function createForm(){
+ UI.duplicates=[];const u=actor();
+ modal('新增工单',`<div class="form-section"><h3>受理信息</h3><div class="form-grid">
+ ${field('来源渠道',select('channel',E.CHANNELS,['store','sales'].includes(u.role)?'微动':E.CHANNELS[0]))}
+ ${field('客户类型',select('isNew',['新客','老客','待核实'],'待核实'))}</div></div>
+ <div class="form-section"><h3>客户与订单</h3><div class="form-grid">
+ ${field('客户姓名 *',inp('name','','text',true))}${field('手机号 *',inp('phone','','tel',true,'pattern="1[0-9]{10}" maxlength="11"'))}
+ ${field('会员号',inp('member'))}${field('所属门店 *',select('store',u.store?[u.store]:E.STORES,u.store||E.STORES[0]))}
+ ${field('关联订单',select('order',S.orders.filter(o=>!u.store||o.store===u.store).map(o=>[o.id,o.external+' · '+o.name+' · '+o.system]),'','暂未关联'),true)}
+ </div><div id="duplicate-candidates"></div></div>
+ <div class="form-section"><h3>投诉内容</h3><div class="form-grid">
+ ${field('投诉摘要 *',inp('title','','text',true,'maxlength="60"'),true)}${field('投诉描述 *',txt('description'),true)}
+ ${field('附件','<input name="files" type="file" multiple aria-label="投诉附件">',true)}
+ </div><p class="sub">提交后系统将根据投诉内容自动定级，并匹配处理规则。</p></div>`,{form:'create',drawer:true,submit:'提交工单'});
+}
+function duplicateCandidates(){
+ const f=$('[data-form="create"]');if(!f)return;
+ const phone=f.elements.phone.value.trim(),member=f.elements.member.value.trim(),order=f.elements.order.value;
+ const hits=S.tickets.filter(t=>E.canView(S,t,S.actor)&&!t.mergedInto&&(order?t.order===order:((phone&&t.phone===phone)||(member&&t.member===member)))).sort((a,b)=>b.created-a.created||b.id.localeCompare(a.id));
+ const t=hits[0];UI.duplicates=t?[t.id]:[];
+ $('#duplicate-candidates').innerHTML=t?`<section class="related-ticket-notice" aria-label="关联工单提示"><div class="related-ticket-notice-heading"><strong>${order?'该订单已有工单':'该客户已有工单'}</strong><span>最近受理</span></div><div class="related-ticket-preview"><div class="related-ticket-meta"><span class="ticket-no">${esc(t.id)}</span>${stateTag(t)}</div><p class="related-ticket-title">${esc(t.title)}</p><div class="related-ticket-actions">${t.state!=='已结案'?btn('补充原工单','appendExisting',t.id,'small'):''}${btn('登记再次投诉','repeatExisting',t.id,'small')}</div></div><label class="related-ticket-distinct"><input type="checkbox" name="distinct"><span>不同事件，继续新建</span></label></section>`:'';
+}
+async function readFiles(list){const files=[...(list||[])];if(files.some(f=>f.size>500*1024)||files.reduce((n,f)=>n+f.size,0)>1024*1024)throw Error('本地附件每个不超过500KB，单次总计不超过1MB');return Promise.all(files.map(f=>new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve({name:f.name,type:f.type,size:f.size,data:r.result});r.onerror=()=>reject(Error('附件读取失败'));r.readAsDataURL(f)})))}
+async function actionForm(act,id){const t=ticket(id);if(!t||!E.canView(S,t,S.actor))throw Error('没有工单访问权限');const base={id};if(act==='retryWorkflowUpgrade'){modal('重新匹配办理流程',`<div class="banner">${esc(t.workflowIssue.reason)}</div>`,{form:act,id:t.id,submit:'重新匹配'});return;}if(intakeForm(act,t)||solutionNodeForm(act,t)||aftercareForm(act,t))return;if(act==='follow')followForm(t);
+ else if(act==='assign')modal('分派工单',`<div class="form-grid">${field('负责人 *',select('owner',E.assignmentCandidates(S,t).map(u=>[u.id,u.name+' · '+u.role]),t.owner),true)}${field('原因 *',txt('reason'),true)}</div>`,{...base,form:'assign',submit:'确认分派'});
+ else if(act==='proposal')proposalForm(t);
+ else if(act==='pay')modal('登记付款结果',`<div class="banner">方案金额 <b>${money(t.proposal.refund+t.proposal.compensation)}</b> · ${esc(t.proposal.account)}</div><div class="form-grid">${field('付款结果',select('result',['成功','失败'],'成功'))}${field('实际金额（元）',inp('amount',(t.proposal.refund+t.proposal.compensation)/100,'number',true,'step="0.01" min="0"'))}${field('交易流水号',inp('reference'),true)}${field('付款凭证','<input name="proof" type="file" multiple>',true)}${field('失败原因',txt('reason','',false),true)}</div>`,{...base,form:'pay',submit:'保存付款结果'});
+ else if(act==='payReturn')modal('退回补正',field('原因 *',txt('reason')),{...base,form:act,submit:'确认退回',danger:true});
+ else if(act==='repeat')modal('登记再次投诉',field('客户再次投诉内容 *',txt('note')),{...base,form:'repeat',submit:'保存并标红'});
+ else if(act==='bindOrder')modal('关联订单',field('客户订单',select('order',S.orders.filter(o=>o.phone===t.phone).map(o=>[o.id,o.external+' · '+o.project]),'','请选择')),{...base,form:'bindOrder',submit:'确认关联'});
+ else if(act==='call')modal('联系客户',`<div class="spread"><div><h2>${esc(t.name)}</h2><p class="muted">${mask(t.phone)}</p></div>${I('phone')}</div><div class="gap"></div><div class="action-buttons">${btn('记录未接通','follow',t.id)}${btn('记录联系结果','follow',t.id,'primary')}</div>`);
+
+}
+function productChoice(product){return `${inp('exchangeProduct',product?.id||'','hidden')}<button type="button" class="product-choice ${product?'':'is-empty'}" data-action="chooseProduct"><span data-product-name>${esc(product?.name||'搜索并选择商品')}</span>${I('arrow')}</button>`;}
+function exchangeRow(item={}){
+ const product=E.PRODUCTS.find(p=>p.id===item.productId||p.name===item.name),quantity=item.quantity||1;
+ if(mobile())return `<div class="exchange-row mobile-product-card"><div class="mobile-product-heading">${productChoice(product)}${btn('删除','removeExchange','','link')}</div><div class="mobile-product-controls"><div><span class="sub">单价</span><strong data-unit-price>${product?money(product.unitPrice):'—'}</strong></div><div class="quantity-control"><span class="sub">数量</span><div class="quantity-stepper">${btn('−','productQuantity','-1','','aria-label="减少数量"')}${inp('exchangeQuantity',quantity,'number',true,'min="1" max="9999" step="1" inputmode="numeric"')}${btn('+','productQuantity','1','','aria-label="增加数量"')}</div></div></div><div class="mobile-product-total"><span>小计</span><b data-item-value>${money((product?.unitPrice||0)*quantity)}</b></div></div>`;
+ return `<tr class="exchange-row"><td>${productChoice(product)}</td><td class="numeric"><span data-unit-price>${product?money(product.unitPrice):'—'}</span></td><td>${inp('exchangeQuantity',quantity,'number',true,'min="1" max="9999" step="1"')}</td><td class="numeric"><b data-item-value>${money((product?.unitPrice||0)*quantity)}</b></td><td class="row-operation">${btn('删除','removeExchange','','link')}</td></tr>`;
+}
+function exchangeEditor(items){const rows=(items||[]).map(exchangeRow).join('');return mobile()?`<div class="exchange-rows mobile-product-list">${rows}</div><div class="exchange-empty" ${rows?'hidden':''}>搜索并添加需要置换的商品</div>`:`<div class="solution-table-wrap"><table class="solution-edit-table exchange-table"><colgroup><col class="product-name-col"><col class="product-price-col"><col class="product-quantity-col"><col class="product-subtotal-col"><col class="product-operation-col"></colgroup><thead><tr><th scope="col">商品名称</th><th scope="col" class="numeric">单价</th><th scope="col">数量</th><th scope="col" class="numeric">小计</th><th scope="col" class="row-operation">操作</th></tr></thead><tbody class="exchange-rows">${rows}</tbody></table></div><div class="exchange-empty" ${rows?'hidden':''}>搜索并添加需要置换的商品</div>`;}
+function productPickerResults(query=''){const text=query.trim().toLocaleLowerCase(),items=E.PRODUCTS.filter(p=>p.name.toLocaleLowerCase().includes(text));return items.length?items.map(p=>`<button type="button" class="product-option" data-action="selectProduct" data-id="${esc(p.id)}"><span><strong>${esc(p.name)}</strong><small>单价 ${money(p.unitPrice)}</small></span>${I('plus')}</button>`).join(''):'<div class="product-picker-empty">未找到匹配商品，请调整搜索关键词</div>';}
+function openProductPicker(row,rows){
+ if(!row&&rows.children.length>=20){toast('置换商品最多 20 项');return;}
+ UI.productPicker={row,rows:rows||row.parentElement,returnFocus:document.activeElement,surface:$('#modal-root .mobile-action-page, #modal-root .drawer')};
+ UI.productPicker.surface.inert=true;
+ $('#modal-root').insertAdjacentHTML('beforeend',`<div class="product-picker-backdrop ${mobile()?'is-mobile-picker':''}"><section class="product-picker" role="dialog" aria-modal="true" aria-labelledby="product-picker-title"><header><h3 id="product-picker-title">选择置换商品</h3>${btn(I('close'),'closeProductPicker','','iconbtn','aria-label="关闭商品选择"')}</header><div class="product-picker-search">${I('search')}<input type="search" name="productSearch" aria-label="搜索商品名称" placeholder="搜索商品名称" autocomplete="off"></div><div class="product-picker-results" aria-live="polite">${productPickerResults()}</div></section></div>`);
+ if(mobile())history.pushState({...history.state,complaintProductPicker:true},'',location.href);
+ $('#modal-root [name=productSearch]').focus();
+}
+function closeProductPicker(navigate=true){const state=UI.productPicker;if(!state)return;$('#modal-root .product-picker-backdrop')?.remove();state.surface.inert=false;UI.productPicker=null;if(navigate&&history.state?.complaintProductPicker)history.back();if(state.returnFocus?.isConnected)state.returnFocus.focus();}
+function selectProduct(id){const product=E.PRODUCTS.find(p=>p.id===id),picker=UI.productPicker;if(!product||!picker)return;
+ if(picker.row){picker.row.querySelector('[name=exchangeProduct]').value=id;picker.row.querySelector('[data-product-name]').textContent=product.name;picker.row.querySelector('.product-choice').classList.remove('is-empty');}
+ else picker.rows.insertAdjacentHTML('beforeend',exchangeRow({productId:id,quantity:1}));
+ UI.modalDirty=true;const form=picker.rows.closest('form');updateProposalTotal(form);closeProductPicker();prepareMobileFields();form.querySelector('.error-slot')?.replaceChildren();
+}
+document.addEventListener('input',event=>{if(event.target.name==='productSearch')$('#modal-root .product-picker-results').innerHTML=productPickerResults(event.target.value);});
+document.addEventListener('click',event=>{if(event.target.classList.contains('product-picker-backdrop'))closeProductPicker();});
+function refundItemFields(t,orderId,proposal={}){
+ const order=S.orders.find(o=>o.id===orderId&&o.phone===t.phone);if(!order)return '<div class="solution-table-empty">选择订单后显示可退款项目</div>';
+ const items=E.orderItems(order),available=E.refundBalance(S,t,order),summary=`<div class="refund-order-summary"><span>${esc(order.store)} · ${items.length} 个项目</span><span>订单可退 <b>${money(available)}</b></span></div>`;
+ const checkbox=(item,checked,balance)=>`<input type="checkbox" name="refundSelected" aria-label="选择${esc(item.name)}退款" ${checked?'checked':''} ${balance<=0?'disabled':''}>`;
+ const amount=(item,row,balance)=>inp('itemRefund',row?row.amount/100:'','number',false,`aria-label="${esc(item.name)}本次退款（元）" min="0.01" max="${balance/100}" step="0.01" inputmode="decimal" placeholder="0.00" ${row?'':'disabled'}`);
+ if(mobile())return summary+`<div class="mobile-refund-list">${items.map(item=>{const row=proposal.refundItems?.find(r=>r.itemId===item.id),balance=E.refundBalance(S,t,order,item);return `<div class="refund-item mobile-refund-card ${row?'is-selected':''}" data-item-id="${esc(item.id)}"><label class="refund-select-heading">${checkbox(item,!!row,balance)}<span><strong>${esc(item.name)}</strong><small>数量 ${item.quantity} · 实付 ${money(item.paid)}</small></span><span class="refund-available"><small>可退金额</small><b>${money(balance)}</b></span></label><div class="mobile-refund-entry" ${row?'':'hidden'}><label>本次退款（元）</label><div>${amount(item,row,balance)}${btn('全额','fillRefund',item.id,'link')}</div></div></div>`;}).join('')}</div>`;
+ return summary+`<div class="solution-table-wrap"><table class="solution-edit-table refund-items"><colgroup><col style="width:40px"><col style="width:29%"><col style="width:19%"><col style="width:20%"><col></colgroup><thead><tr><th><input type="checkbox" name="refundSelectAll" aria-label="选择全部可退款项目"></th><th scope="col">项目名称</th><th scope="col" class="numeric">实付金额</th><th scope="col" class="numeric">可退金额</th><th scope="col" class="numeric">本次退款（元）</th></tr></thead><tbody>${items.map(item=>{const row=proposal.refundItems?.find(r=>r.itemId===item.id),balance=E.refundBalance(S,t,order,item);return `<tr class="refund-item ${row?'is-selected':''}" data-item-id="${esc(item.id)}"><td>${checkbox(item,!!row,balance)}</td><td><strong>${esc(item.name)}</strong><span class="sub">数量 ${item.quantity}</span></td><td class="numeric">${money(item.paid)}${item.refunded?`<span class="sub">已退 ${money(item.refunded)}</span>`:''}</td><td class="numeric">${money(balance)}</td><td><div class="refund-amount-cell">${amount(item,row,balance)}${btn('全额','fillRefund',item.id,'link',row?'':'disabled')}</div></td></tr>`;}).join('')}</tbody></table></div>`;
+}
+function syncRefundSelection(form){
+ const visible=!form.querySelector('.refund-editor').hidden,rows=[...form.querySelectorAll('.refund-item')];
+ for(const row of rows){const check=row.querySelector('[name=refundSelected]');check.disabled=!visible||Number(row.querySelector('[name=itemRefund]').max)<=0&&!check.checked;const selected=check.checked;row.classList.toggle('is-selected',selected);row.querySelector('[name=itemRefund]').disabled=!visible||!selected;row.querySelector('[data-action=fillRefund]').disabled=!visible||!selected;const entry=row.querySelector('.mobile-refund-entry');if(entry)entry.hidden=!selected;}
+ const choices=rows.map(row=>row.querySelector('[name=refundSelected]')).filter(input=>!input.disabled),all=form.querySelector('[name=refundSelectAll]');if(all){all.checked=choices.length>0&&choices.every(input=>input.checked);all.indeterminate=choices.some(input=>input.checked)&&!all.checked;}
+}
+function solutionReasonField(name,label,value){return field(label+' *',txt(name,value||'').replace('<textarea',`<textarea class="solution-reason-input" maxlength="1000" rows="3" placeholder="填写${label}"`).replace(`aria-label="${name}"`,`aria-label="${label}"`));}
+function deliveryFields(value){const d=value||{};return `<div class="solution-recipient"><h4>收货信息</h4><div class="form-grid">${field('收货姓名 *',inp('deliveryName',d.name||'','text',true,'maxlength="50" placeholder="填写收货姓名"').replace('aria-label="deliveryName"','aria-label="收货姓名"'))}${field('收货电话 *',inp('deliveryPhone',d.phone||'','tel',true,'maxlength="30" placeholder="填写收货电话"').replace('aria-label="deliveryPhone"','aria-label="收货电话"'))}${field('收货地址 *',txt('deliveryAddress',d.address||'').replace('<textarea','<textarea rows="2" maxlength="300" placeholder="填写详细收货地址"').replace('aria-label="deliveryAddress"','aria-label="收货地址"'),true)}</div></div>`;}
+function proposalForm(t){
+ if(t.approvalAmendment){procurementAmendmentForm(t);return;}
+ const p=t.proposal||{},type=E.solutionKey(p)||'',orderId=p.refundOrderId||t.order,store=p.refundStore||S.orders.find(o=>o.id===orderId)?.store||t.store,payout=p.payout||{};
+ const heading=(title,description='',action='')=>`<div class="proposal-section-heading"><div><h3>${title}</h3>${description?`<p>${description}</p>`:''}</div>${action}</div>`;
+ modal('确认解决方案',`<div class="proposal-composer"><section class="proposal-type-row"><div><h3 id="proposal-methods-title">处理方式 <span class="proposal-required">*</span></h3></div><input type="hidden" name="type" value="${esc(type)}">${MethodSelect.render({name:'handlingMethod',labels:E.solutionMethods.labels,selected:E.solutionMethods.methodsOf(type),exclusive:true})}</section><div class="form-grid solution-form-grid">
+ <section class="solution-section refund-editor">${heading('订单退款')}${field('退款订单',select('refundOrderId',S.orders.filter(o=>o.phone===t.phone).map(o=>[o.id,o.external+' · '+o.project]),orderId,'请选择客户订单'))}<div data-refund-items>${refundItemFields(t,orderId,p)}</div><div class="refund-selection-total"><span>已选 <b data-refund-count>0</b> 个项目</span><span>退款合计 <b data-refund-total>¥0.00</b></span></div><div class="form-grid refund-attribution">${field('退款所属门店 *',select('refundStore',E.STORES,store))}${field('退款业绩归属人员 *',select('performanceId',E.refundStaff(S,store).map(x=>[x.id,x.name]),p.performanceId||'','请选择归属人员'))}</div>${solutionReasonField('refundReason','退款原因备注',p.refundReason)}</section>
+ <section class="solution-section compensation-editor">${heading('额外赔偿','订单退款之外额外支付给客户的金额')}<div class="compensation-input">${field('赔偿金额（元） *',inp('compensation',p.compensation?p.compensation/100:'','number',true,'min="0.01" step="0.01" inputmode="decimal" placeholder="0.00"'))}</div>${solutionReasonField('compensationReason','赔偿原因备注',p.compensationReason)}</section>
+ <section class="solution-section exchange-editor">${heading('置换商品','',btn(I('plus')+' 添加商品','addExchange','','link'))}${exchangeEditor(p.exchangeItems)}<div class="exchange-total"><span>商品总价值 <small>不计入应付款</small></span><b data-exchange-total>¥0.00</b></div>${deliveryFields(p.delivery)}</section>
+ <div class="proposal-support"><section class="solution-section payout-editor">${heading('收款信息')}<fieldset class="payout-methods" aria-label="收款方式"><div class="payout-method-options">${[['bank','银行卡'],['alipay','支付宝'],['wechat','微信']].map(([key,label])=>`<label><input type="radio" name="payoutMethod" value="${key}" ${key===(payout.method||'bank')?'checked':''}><span>${label}</span></label>`).join('')}</div></fieldset><div class="form-grid">${field('收款人姓名 *',inp('payoutName',payout.name||'','text',true,'autocomplete="off"'))}${field('收款账号 *',inp('payoutAccount',payout.account||'','text',true,'autocomplete="off" placeholder="填写对应的收款账号"'))}${field('开户银行 *',inp('payoutBank',payout.bank||'','text',true,'placeholder="银行名称及支行"'),true)}</div></section>
+ <section class="solution-section proposal-attachments">${heading('附件说明')}<label class="proposal-upload">${I('plus')}<span>上传附件</span><input type="file" name="solutionFiles" multiple aria-label="上传方案附件"></label><div class="proposal-file-list" data-proposal-files aria-live="polite"></div></section></div></div></div>`,{form:'proposal',id:t.id,wide:true,submit:'确认方案'});
+ const form=$('#modal-root [data-form=proposal]');form.proposalFiles=(p.attachments||[]).map(saved=>({saved:E.clone(saved),name:saved.name}));renderProposalFiles(form);form.noValidate=true;form.closest('.form-drawer, .mobile-action-page').classList.add('proposal-surface');form.querySelector('footer').classList.add('proposal-footer');
+ const actions=form.querySelector('.form-actions');if(mobile())actions.querySelector('[data-action=closeModal]').remove();else setupDesktopProposal(form);actions.insertAdjacentHTML('afterbegin',`<div class="proposal-footer-total"><span data-footer-label>应付款合计</span><strong data-payment-total>¥0.00</strong><small data-footer-detail></small></div>`);syncMobileFields();
+}
+function setupDesktopProposal(form){
+ const surface=form.closest('.form-drawer');surface.classList.add('pc-proposal');
+ const composer=form.querySelector('.proposal-composer');
+ // Keep existing controls and event targets; only reorganize the desktop presentation.
+ for(const section of composer.querySelectorAll('.refund-editor,.compensation-editor,.exchange-editor,.payout-editor,.proposal-attachments')){
+  section.classList.add('pc-solution-block');
+  const heading=section.querySelector('.proposal-section-heading'),body=document.createElement('div');body.className='pc-solution-body';
+  for(const child of [...section.children])if(child!==heading)body.appendChild(child);
+  section.appendChild(body);
+ }
+ const refund=form.querySelector('.refund-editor'),refundBody=refund.querySelector('.pc-solution-body');
+ refundBody.querySelector(':scope>.field').classList.add('pc-refund-order');
+ const refundLines=document.createElement('div');refundLines.className='pc-refund-lines';const items=refund.querySelector('[data-refund-items]');items.before(refundLines);refundLines.append(items,refund.querySelector('.refund-selection-total'));
+ const exchange=form.querySelector('.exchange-editor'),exchangeBody=exchange.querySelector('.pc-solution-body'),exchangeLines=document.createElement('div');exchangeLines.className='pc-exchange-lines';
+ exchangeBody.prepend(exchangeLines);for(const child of [...exchangeBody.children])if(child.matches('.solution-table-wrap,.exchange-empty,.exchange-total'))exchangeLines.appendChild(child);
+ const address=exchange.querySelector('[name=deliveryAddress]');address.rows=1;
+ const payout=form.querySelector('.payout-editor');payout.querySelector('.proposal-section-heading').appendChild(payout.querySelector('.payout-methods'));
+ form.querySelectorAll('.field').forEach((field,index)=>{const label=field.querySelector(':scope>label'),control=field.querySelector('input,select,textarea');if(!label||!control)return;const required=/\*\s*$/.test(label.textContent)||control.required,title=label.textContent.replace(/\s*\*\s*$/,'').trim();control.id='pc-proposal-field-'+index;label.htmlFor=control.id;label.innerHTML=esc(title)+(required?' <span class="proposal-required">*</span>':'');control.setAttribute('aria-label',title);});
+}
+function syncPayoutName(form){
+ const bank=form.elements.payoutMethod.value==='bank',input=form.elements.payoutName,label=input.closest('.field').querySelector('label'),title=bank?'开户姓名':'收款人姓名';
+ label.innerHTML=title+' <span class="proposal-required">*</span>';input.setAttribute('aria-label',title);input.placeholder=bank?'填写与银行卡一致的开户姓名':'填写收款人姓名';
+}
+function renderProposalFiles(form){
+ form.querySelector('[data-proposal-files]').innerHTML=(form.proposalFiles||[]).map((item,index)=>`<div class="proposal-file-row"><span title="${esc(item.name)}">${I('ticket')}${esc(item.name)}</span>${btn('删除','removeProposalFile',index,'link',`aria-label="删除附件 ${esc(item.name)}"`)}</div>`).join('');
+}
+async function proposalAttachments(form){
+ const entries=form.proposalFiles||[];
+ if(entries.reduce((total,item)=>total+Number((item.file||item.saved).size||0),0)>1024*1024)throw Error('方案附件总计不超过1MB');
+ const added=await readFiles(entries.filter(item=>item.file).map(item=>item.file));let index=0;
+ return entries.map(item=>item.saved?E.clone(item.saved):added[index++]);
+}
+function formCents(value){const text=String(value??'').trim();if(!text)return 0;return /^\d+(?:\.\d{1,2})?$/.test(text)?Math.round(Number(text)*100):NaN;}
+function updateExchangeTotal(form){let total=0;form.querySelectorAll('.exchange-row').forEach(row=>{const product=E.PRODUCTS.find(p=>p.id===row.querySelector('[name=exchangeProduct]').value),quantity=Number(row.querySelector('[name=exchangeQuantity]').value),price=product?.unitPrice||0,value=quantity*price;row.querySelectorAll('[data-unit-price]').forEach(label=>label.textContent=product?money(price)+(label.classList.contains('mobile-unit')?' / 件':''):'—');total+=Number.isFinite(value)?value:0;row.querySelector('[data-item-value]').textContent=money(Number.isFinite(value)?value:0);});const label=form.querySelector('[data-exchange-total]');if(label)label.textContent=money(total);const empty=form.querySelector('.exchange-empty');if(empty)empty.hidden=form.querySelectorAll('.exchange-row').length>0;}
+function updateProposalTotal(form){
+ if(form.dataset.form==='amendProcurement'){updateExchangeTotal(form);return;}
+ const k=form.elements.type.value,selected=E.solutionIncludes.refund(k)?[...form.querySelectorAll('.refund-item')].filter(row=>row.querySelector('[name=refundSelected]').checked):[],refund=selected.reduce((sum,row)=>sum+(formCents(row.querySelector('[name=itemRefund]').value)||0),0),comp=E.solutionIncludes.compensation(k)?formCents(form.elements.compensation.value)||0:0;
+ for(const [attr,value] of [['refund-total',refund],['payment-total',refund+comp]]){const node=form.querySelector(`[data-${attr}]`);if(node)node.textContent=money(value);}
+ form.querySelector('[data-refund-count]').textContent=selected.length;updateExchangeTotal(form);
+ if(!form.querySelector('[data-footer-label]'))return;
+ const funded=E.solutionIncludes.refund(k)||E.solutionIncludes.compensation(k),exchange=E.solutionIncludes.exchange(k),value=form.querySelector('[data-exchange-total]').textContent;
+ form.querySelector('.proposal-footer-total').classList.toggle('is-text',!funded&&!exchange);
+ form.querySelector('[data-footer-label]').textContent=funded?'应付款合计':exchange?'商品总价值':'处理方式';form.querySelector('[data-payment-total]').textContent=funded?money(refund+comp):exchange?value:k?'无需退赔或置换':'请选择处理方式';
+ form.querySelector('[data-footer-detail]').textContent=funded?[E.solutionIncludes.refund(k)&&E.solutionIncludes.compensation(k)?'退款 '+money(refund)+' + 赔偿 '+money(comp):E.solutionIncludes.refund(k)?selected.length+' 个退款项目':'额外赔偿',exchange?'另含置换商品 '+value:''].filter(Boolean).join(' · '):exchange?'无现金支付':'';
+}
+function proposalFromForm(f){const d=Object.fromEntries(new FormData(f)),handlingMethods=E.solutionMethods.selection(new FormData(f).getAll('handlingMethod')),rf=E.solutionIncludes.refund(d.type),refundItems=rf?[...f.querySelectorAll('.refund-item')].filter(row=>row.querySelector('[name=refundSelected]').checked).map(row=>({itemId:row.dataset.itemId,amount:formCents(row.querySelector('[name=itemRefund]').value)})):[],exchangeItems=E.solutionIncludes.exchange(d.type)?[...f.querySelectorAll('.exchange-row')].map(row=>({productId:row.querySelector('[name=exchangeProduct]').value,quantity:Number(row.querySelector('[name=exchangeQuantity]').value)})):[];return {detailsVersion:2,handlingMethods,typeKey:d.type,refund:refundItems.reduce((sum,row)=>sum+row.amount,0),refundOrderId:d.refundOrderId,refundItems,refundStore:d.refundStore,performanceId:d.performanceId,compensation:E.solutionIncludes.compensation(d.type)?formCents(d.compensation):0,content:ticket(f.dataset.id)?.proposal?.content||'',refundReason:rf?d.refundReason:'',compensationReason:E.solutionIncludes.compensation(d.type)?d.compensationReason:'',delivery:E.solutionIncludes.exchange(d.type)?{name:d.deliveryName,phone:d.deliveryPhone,address:d.deliveryAddress}:undefined,payout:{method:d.payoutMethod,name:d.payoutName,account:d.payoutAccount,bank:d.payoutBank},exchangeItems};}
+document.addEventListener('methodselectchange',event=>{const form=event.target.closest('[data-form=proposal]');if(!form)return;UI.modalDirty=true;form.querySelector('.error-slot')?.replaceChildren();syncMobileFields();});
+document.addEventListener('input',event=>{const form=event.target.closest('[data-form=proposal], [data-form=amendProcurement]');if(form){form.querySelector('.error-slot')?.replaceChildren();updateProposalTotal(form);}});
+document.addEventListener('change',event=>{const form=event.target.closest('[data-form=proposal], [data-form=amendProcurement]');if(!form)return;form.querySelector('.error-slot')?.replaceChildren();if(event.target.name==='handlingMethod'&&event.target.checked){form.querySelectorAll('[name=handlingMethod]').forEach(input=>{if(event.target.value==='service'?input.value!=='service':input.value==='service')input.checked=false;});}const t=ticket(form.dataset.id);if(event.target.name==='solutionFiles'){form.proposalFiles.push(...Array.from(event.target.files||[],file=>({file,name:file.name})));event.target.value='';UI.modalDirty=true;renderProposalFiles(form);}if(event.target.name==='refundSelectAll')form.querySelectorAll('[name=refundSelected]:not(:disabled)').forEach(input=>input.checked=event.target.checked);if(event.target.name==='refundOrderId'){form.querySelector('[data-refund-items]').innerHTML=refundItemFields(t,event.target.value);const order=S.orders.find(o=>o.id===event.target.value);if(order)form.elements.refundStore.value=order.store;}if(['refundStore','refundOrderId'].includes(event.target.name))form.elements.performanceId.innerHTML=options(E.refundStaff(S,form.elements.refundStore.value).map(p=>[p.id,p.name]),'','请选择归属人员');syncMobileFields();});
+function mobileState(t){
+ const tone=({'待处理':'neutral','处理中':'blue','审批中':'amber','付款办理':'blue','采购办理':'blue','待结案':'blue','已挂起':'amber','已结案':'green'})[t.state]||'neutral';
+ return `<span class="mobile-state ${tone}">${esc(t.state)}</span>`;
+}
+function mobileTiming(t){
+ const ended=['已结案','已合并'].includes(t.state);
+ return `<span class="mobile-timing ${ended?'is-ended':''}">${ended?'<span>结束于</span>':I('clock')}${due(t)}</span>`;
+}
+function mobileLoadStatus(total){
+ return total?`<div class="mobile-load-status" role="status" aria-live="polite">${Math.min(UI.page*8,total)<total?'继续上滑加载更多':'已显示全部工单'}</div>`:'';
+}
+function observeMobileList(){
+ const sentinel=$('.mobile-load-status');if(!sentinel)return;
+ const load=()=>{
+   if(!sentinel.isConnected||!mobile()||location.hash.split('/')[2])return;
+   const all=filtered(),start=UI.page*8;
+   if(start>=all.length)return;
+   UI.page++;
+   $('.mobile-ticket-list').insertAdjacentHTML('beforeend',all.slice(start,UI.page*8).map(mobileTicket).join(''));
+   const more=UI.page*8<all.length;
+   sentinel.textContent=more?'继续上滑加载更多':'已显示全部工单';
+   UI.mobileListObserver?.unobserve(sentinel);
+   if(more)UI.mobileListObserver?.observe(sentinel);
+ };
+ if('IntersectionObserver' in window){
+   UI.mobileListObserver=new IntersectionObserver(entries=>{if(entries.some(entry=>entry.isIntersecting))load()},{rootMargin:'0px 0px 120px 0px'});
+   UI.mobileListObserver.observe(sentinel);
+ }else{
+   const check=()=>{const rect=sentinel.getBoundingClientRect();if(rect.top<=window.innerHeight+120&&rect.bottom>=0)load();};
+   document.addEventListener('scroll',check,{passive:true,capture:true});window.addEventListener('resize',check);
+   UI.mobileListCleanup=()=>{document.removeEventListener('scroll',check,true);window.removeEventListener('resize',check);};
+   check();
+ }
+}
+function mobileTicket(t){
+ const ended=['已结案','已合并'].includes(t.state),people=shownTaskNames(t)||name(t.owner);
+ return `<a class="mobile-ticket ${!ended&&(t.level>=4||t.repeat)?'risky':''} ${ended?'is-ended':''}" href="#/mobile/${t.id}">
+   <div class="mobile-ticket-heading"><span class="ticket-no">${esc(t.id)}</span>${mobileState(t)}</div>
+   <h2 class="ticket-title">${esc(t.title)}</h2>
+   <div class="mobile-customer"><span>${esc(t.name)}</span><span>${esc(t.store)}</span></div>
+   <div class="mobile-ticket-meta"><span class="mobile-badges">${badges(t)}</span>${!ended?`<span class="mobile-node">${esc(E.ticketStage(t))}</span>`:''}</div>
+   ${suspensionListNote(t)}<div class="mobile-ticket-footer"><span class="mobile-assignee"><span>${ended?'负责人':'办理人'}</span><b>${esc(people)}</b></span>${mobileTiming(t)}</div>
+ </a>`;
+}
+// The process reads executed nodes; operation records remain the separate, unmodified audit log.
+function processDuration(ms){const minutes=Math.max(1,Math.ceil(Math.abs(ms)/60000)),hours=Math.floor(minutes/60);return hours?hours+'小时'+(minutes%60?minutes%60+'分钟':''):minutes+'分钟';}
+function processNodeApproval(t,n){return [t.approval,...(t.approvalHistory||[]).slice().reverse()].find(a=>a&&(a.proposalVersion===undefined||a.proposalVersion===t.execution?.proposalVersion)&&(n.id==='continued-approval-'+a.id||(a.steps||[]).some(step=>step.nodeId===n.id)));}
+function processApprovalPeople(t,n,current){
+ if(n.provider==='dingtalk')return [];const a=processNodeApproval(t,n);if(!a)return [];
+ return a.steps.filter(step=>step.type!=='cc').flatMap(step=>step.people.map(id=>{
+  const voted=step.votes?.includes(id),rejected=n.returnedBy===id&&!n.done,active=current&&a.status==='审批中'&&a.steps[a.index]===step&&!voted;
+  const status=voted?'已同意':rejected?'已退回':step.done?'无需审批':active?'办理中':a.status==='已驳回'?'已中止':'未开始';
+  const normalized=value=>String(value||'').replaceAll('方案','部门');
+  const record=voted?(t.logs||[]).find(log=>log.at>=a.at&&(!n.completedAt||log.at<=n.completedAt)&&log.actor===name(id)&&/审批同意/.test(log.title)&&normalized(log.body).startsWith(normalized(step.name))):null;
+  return {id,status,at:rejected?n.returnedAt:record?.at,tone:voted?'done':rejected?'returned':active?'current':'future'};
+ }));
+}
+function processSteps(t){
+ const ended=['已结案','已合并'].includes(t.state),rows=[],intake=t.storeIntake;
+ const status=current=>current?(t.pendingAssignment?'waiting':t.suspension?'paused':'current'):'future';
+ const currentPeople=()=>t.pendingAssignment?[]:E.taskPeople(S,t);
+ if(intake){const done=!!intake.completedAt,current=!done&&!ended;rows.push({...intake.node,title:'门店办理',done,current,status:done?'done':status(current),people:done?[intake.by].filter(Boolean):currentPeople(),completedAt:intake.completedAt,result:done?(intake.result==='resolved'?'门店已解决':intake.result==='unresolved'?'门店未解决，继续售后办理':''):intake.lastResult==='continue'?'待继续处理':''});}
+ if(t.execution){
+  t.execution.steps.forEach((n,index)=>{
+   if(!['handling','approval'].includes(n.type)||n.id===intake?.node.id)return;
+   const current=!ended&&!t.workflowIssue&&!t.storeAssistance&&index===t.execution.index,returned=!!n.returnedAt&&!n.done&&!current;
+   const state=n.skipped?'skipped':n.done?'done':returned?'returned':status(current);
+   const approvalPeople=n.type==='approval'?processApprovalPeople(t,n,current&&!t.pendingAssignment):[];
+   const records=[...(t.handlingRecords||[]),...(t.payments||[])].filter(row=>row.nodeId===n.id&&(row.version===undefined||row.version===t.execution.proposalVersion));
+   const record=records.find(row=>row.result==='成功')||records.at(-1);
+   const completedAt=n.done?(n.completedAt||record?.at||(n.kind==='sales'?t.proposal?.confirmedAt:null)||(n.kind==='close'?t.closed:null)):null;
+   const recordedPeople=n.people?.length?n.people:[n.completedBy||(n.kind==='sales'?t.proposal?.confirmedBy:null)].filter(Boolean);
+   const people=current?currentPeople():recordedPeople;
+   const external=n.provider==='dingtalk'?E.externalRecord(S,n.approvalRecordId):null;
+   rows.push({...n,external,current,status:state,completedAt,approvalPeople,people,personLabel:external?(external.people.join('、')||(external.status==='running'?'等待钉钉分配':external.status==='failed'||external.status==='uncertain'?'待恢复审批':external.events.filter(e=>e.actor!=='系统').at(-1)?.actor||'钉钉')):'',knownOwner:!people.length&&n.kind==='close'?t.owner:null});
+  });
+ }else if(!intake||intake.completedAt){
+  const blocked=t.workflowIssue||t.phase==='待定级'||t.pendingAssignment?.mode==='configuration',closedInStore=t.closure?.kind==='store';
+  if(!blocked&&!closedInStore&&(!ended||t.closure?.kind==='sales'||t.proposal)){
+   const current=!ended&&!t.storeAssistance;rows.push({id:'initial-sales',type:'handling',kind:'sales',title:'售后办理',current,status:ended?'done':status(current),people:current?currentPeople():[t.proposal?.confirmedBy||t.closure?.by||t.owner].filter(Boolean),completedAt:ended?(t.proposal?.confirmedAt||t.closure?.at):null});
+  }
+ }
+ if(ended&&!t.mergedInto&&!rows.some(n=>n.kind==='close'&&n.done)){
+  const last=(t.logs||[]).find(log=>/结案/.test(log.title));
+  rows.push({id:'ticket-closure',kind:'close',title:t.closure?.kind==='store'?'门店结案':'售后结案',status:'done',people:[t.closure?.by].filter(Boolean),personLabel:t.closure?.by?'':last?.actor||'',completedAt:t.closed||t.closure?.at});
+ }
+ const assistance=[...(t.storeAssistanceHistory||[]),...(t.storeAssistance?[t.storeAssistance]:[])];
+ for(const row of assistance){const current=row===t.storeAssistance&&!ended;rows.push({id:row.id,kind:'store',title:'临时门店办理 · '+row.store,status:current?'current':'done',current,people:[row.completedBy||row.assignee].filter(Boolean),completedAt:row.completedAt,result:row.note||row.instructions});}
+ return rows;
+}
+function processTiming(t,n){
+ if(n.status==='waiting')return `<div class="process-time is-waiting">等待分派办理人</div><div class="process-meta">分派后开始计时</div>`;
+ if(n.status==='paused'){
+  const r=t.suspension,remaining=r.taskDeadline?r.taskDeadline-r.at:null;
+  return `<div class="process-time is-paused">${I('clock')}节点计时已暂停</div><div class="process-meta">预计恢复 ${date(r.expectedAt)}</div>${remaining!==null?`<div class="process-meta ${remaining<0?'is-overdue':''}">${remaining<0?'挂起前已超时':'恢复后剩余'} ${processDuration(remaining)}</div>`:''}`;
+ }
+ if(n.status!=='current')return '';
+ const deadline=t.taskDeadline,contact=['待首联','待门店首联'].includes(t.phase),remaining=deadline-Date.now();
+ if(!deadline)return '<div class="process-meta">办理时限待确认</div>';
+ return `<div class="process-time ${remaining<0?'is-overdue':''}">${I('clock')}${contact?'首次联系 · ':''}${remaining<0?'已超时 '+processDuration(remaining):'预计 '+processDuration(remaining)+(contact?'内联系':'内完成')}</div><div class="process-meta">${contact?'首联截止':'预计完成'} ${date(deadline)}</div>`;
+}
+function mobileProcessProgress(t){
+ const rows=processSteps(t),completed=rows.filter(n=>n.status==='done').length,ended=['已结案','已合并'].includes(t.state);
+ const blocked=t.workflowIssue?.reason||(t.phase==='待定级'?'待售后经理确认客诉等级，确认后匹配办理流程。':t.pendingAssignment?.mode==='configuration'?'尚未匹配到适用规则，匹配后进入办理流程。':'');
+ return `<section class="card mobile-process-card" aria-label="处理流程"><div class="process-heading"><h3>处理流程</h3><span>${ended?'流程已结束':rows.length?'已完成 '+completed+' / '+rows.length:'待进入流程'}</span></div>${blocked?`<p class="process-blocked">${I('clock')}<span>${esc(blocked)}</span></p>`:''}${rows.length?`<ol class="mobile-process-list">${rows.map((n,index)=>{
+  const label=externalNodeStatus(n)||({done:'已完成',current:'办理中',future:'未开始',waiting:'待分派',paused:'已挂起',returned:'已退回',skipped:'已跳过'})[n.status],people=n.people.map(name).join('、')||n.personLabel||(n.knownOwner?name(n.knownOwner):n.status==='waiting'?'待分派':n.status==='future'?'到达后分派':'未记录');
+  const at=n.status==='done'?`完成于 ${date(n.completedAt)}`:n.status==='returned'?`退回于 ${date(n.returnedAt)}`:'';
+  const members=n.approvalPeople||[],mode=members.length>1?({all:'会签 · 全部同意',any:'或签 · 任一同意',sequential:'依次审批'})[n.mode]||'审批人员进度':'';
+  return `<li class="mobile-process-node is-${n.status}" data-node-id="${esc(n.id)}" ${n.current?'aria-current="step"':''}><span class="process-marker" aria-hidden="true">${n.status==='done'?I('check'):n.current?I('clock'):index+1}</span><div class="process-node-content"><div class="process-node-heading"><h4>${esc(n.title)}</h4><span class="process-status">${label}</span></div>${externalNodeLink(n)}<div class="process-assignee"><span>${n.current?'当前办理人':'处理人'}</span><b>${esc(people)}</b></div>${at?`<div class="process-meta">${n.status==='done'&&!n.completedAt?'完成时间未记录':at}</div>`:''}${processTiming(t,n)}${members.length?`<div class="process-members">${mode?`<div class="process-mode">${mode}</div>`:''}${members.map(p=>`<div class="process-member is-${p.tone}"><span>${esc(name(p.id))}</span><div><b>${p.status}</b>${p.at?`<time>${date(p.at)}</time>`:''}</div></div>`).join('')}</div>`:''}${n.status==='returned'?`<p class="process-note">${esc(n.returnReason)}</p>`:n.id===t.storeIntake?.node.id&&n.result?`<p class="process-note">${esc(n.result)}</p>`:''}${n.current&&n.external?.error?`<p class="process-note">${esc(n.external.error)}</p>`:''}${n.current&&t.pendingAssignment?.reason?`<p class="process-note">${esc(t.pendingAssignment.reason)}</p>`:''}${n.current&&t.proposal?.status==='待调整'?'<p class="process-note">请根据退回意见调整方案</p>':''}</div></li>`;
+ }).join('')}</ol>`:''}</section>`;
+}
+function refreshMobileProcess(){if(document.hidden||!mobile())return;const card=$('.mobile-process-card'),t=ticket(location.hash.split('/')[2]);if(card&&t&&!card.closest('[hidden]'))card.outerHTML=mobileProcessProgress(t);}
+function refreshDetailProgress(){
+ if(document.hidden)return;if(mobile()){refreshMobileProcess();return;}
+ const t=ticket(UI.drawer),overview=$('.ticket-drawer .pc-ticket-overview'),flow=$('.pc-process-card');if(!t||!overview)return;
+ overview.outerHTML=pcTicketOverview(t);
+ if(flow){const open=[...flow.querySelectorAll('.pc-process-members[open]')].map(el=>el.closest('[data-node-id]').dataset.nodeId);flow.outerHTML=pcProcessProgress(t);$$('.pc-process-members').forEach(el=>el.open=open.includes(el.closest('[data-node-id]').dataset.nodeId));}
+}
+setInterval(refreshDetailProgress,60000);
+document.addEventListener('visibilitychange',refreshDetailProgress);
+function mobileTicketInformation(t){
+ const ended=['已结案','已合并'].includes(t.state),o=S.orders.find(o=>o.id===t.order),people=(t.pendingAssignment?'':shownTaskNames(t)),description=t.description||'',long=description.length>100;
+ const issue=t.workflowIssue?.reason||t.pendingAssignment?.reason||(t.phase==='待定级'?t.grading?.reason:'');
+ const note=t.suspension?'节点计时暂停 · '+date(t.suspension.expectedAt)+' 自动恢复':!ended&&(t.level>=4||t.repeat)?(t.level>=5?'五级紧急工单':t.level===4?'四级风险工单':'重复投诉，请关注历史处理记录'):t.suspensionNotice?.title||'';
+ const details=dataRows([['会员号',esc(t.member)||'—'],['客户类型',esc(t.isNew)||'—'],['接待人员',esc(t.staff)||'—'],['工单负责人',esc(name(t.owner))],['创建时间',date(t.created)],['工单来源',esc(t.channel)]]);
+ return `<section class="mobile-overview mobile-ticket-information" aria-labelledby="mobile-info-title"><div class="mobile-info-heading"><h2 id="mobile-info-title">工单信息</h2>${mobileState(t)}</div>
+  <h1 class="mobile-detail-title">${esc(t.title)}</h1><div class="mobile-info-identifiers"><span class="ticket-no">${esc(t.id)}</span><span class="mobile-badges">${badges(t)}</span></div>
+  <div class="mobile-current-task ${ended?'is-ended':''}"><div class="mobile-current-task-row"><div><span>${ended?'办理结果':'当前环节'}</span><strong>${esc(ended?(t.mergedInto?'已并入主工单':'工单已结案'):E.ticketStage(t))}</strong></div><div><span>${ended?'结案人':'当前办理人'}</span><b>${esc(ended?name(t.closure?.by||t.owner||t.creator):people||'待分派')}</b></div></div><div class="mobile-current-task-foot"><span>${esc(ended?(t.closure?.early?'直接结案':'办理已完成'):taskLabel(t))}</span>${mobileTiming(t)}</div></div>
+  ${issue?`<p class="mobile-info-alert">${I('shield')}<span>${esc(issue)}</span></p>`:note?`<p class="mobile-info-alert ${t.suspension?'':'is-subtle'}">${I(t.suspension?'clock':'shield')}<span>${esc(note)}</span></p>`:''}
+  <dl class="mobile-info-primary"><dt>客户</dt><dd><strong>${esc(t.name)}</strong><span>${mask(t.phone)}</span>${btn('客户资料','customerProfile',t.id,'link')}</dd><dt>所属门店</dt><dd>${esc(t.store)}</dd></dl>
+  <div class="mobile-complaint-preview"><span>投诉内容</span><p>${esc(long?description.slice(0,100)+'…':description)}</p></div>
+  <details class="mobile-info-more"><summary>更多工单信息</summary><div>${details}${long?`<section><h3>完整投诉内容</h3><p class="text">${esc(description)}</p></section>`:''}<section><div class="section-title"><h3>消费订单</h3>${!o&&E.canHandle(S,t,S.actor)?btn('关联订单','bindOrder',t.id,'link'):''}</div>${dataRows([['订单编号',esc(o?.external)||'待核实'],['订单来源',esc(o?.system)||'—'],['消费项目',esc(t.project)||'—'],['订单金额',money(o?.paid||t.amount)],['可退余额',o?money(o.paid-o.refunded):'待核实']])}</section>${t.attachments.length?`<section><h3>相关附件</h3>${filesView(t.attachments)}</section>`:''}${t.related.length?`<section><h3>关联工单</h3>${t.related.map(id=>btn(id,'detail',id,'link')).join('')}</section>`:''}</div></details>
+ </section>`;
+}
+function mobileTimingPanel(t){
+ const ended=['已结案','已合并'].includes(t.state),now=ended?t.closed||t.updated:Date.now(),clock=E.nodeTiming(t,now),total=Math.max(0,now-t.created),overdue=t.deadline&&now>t.deadline;
+ return `<div class="card mobile-time-summary"><div class="section-title"><h3>整单时效</h3><span class="pill ${overdue?'red':ended?'green':'blue'}">${overdue?'已超时':ended?'已完成':'计时中'}</span></div><div class="mobile-time-values"><div><span>整单${ended?'耗时':'已用时'}</span><strong>${elapsedLabel(total)}</strong></div><div><span>${t.suspension?'本节点有效办理':ended?'末节点有效办理':'本节点有效办理'}</span><strong>${clock?elapsedLabel(clock.net):'待开始'}</strong></div></div>${dataRows([['创建时间',date(t.created)],['整单截止',t.deadline?date(t.deadline):'待匹配规则'],['首次联系',t.firstContact?date(t.firstContact):'尚未有效联系'],...(ended?[['结案时间',date(t.closed||t.updated)]]:[])])}</div>${aftercareContext(t)}${suspensionMetrics(t,{expanded:true,title:'节点计时与挂起记录'})||'<div class="card mobile-node-waiting">当前节点尚未开始计时，分派后按规则启动办理时限。</div>'}`;
+}
+const mobileDetailTabs=[['plan','处理方案'],['records','操作记录'],['timing','办理时效']];
+function mobileDetailWorkspace(t){
+ if(UI.mobileDetailTicket!==t.id){UI.mobileDetailTicket=t.id;UI.mobileDetailTab='plan';}
+ const selected=UI.mobileDetailTab||'plan';
+ const panels={plan:`<div class="mobile-plan-details">${funding(t,{progress:false})}${mobileProcessProgress(t)}</div>`,records:`<div class="mobile-records"><div class="mobile-records-heading"><h3>操作记录</h3></div>${timeline(t)}</div>`,timing:mobileTimingPanel(t)};
+ return `<section class="mobile-detail-workspace"><div class="mobile-detail-tabs" role="tablist" aria-label="工单详情内容">${mobileDetailTabs.map(([key,label])=>btn(label,'mobileDetailTab',key,key===selected?'active':'',`id="mobile-tab-${key}" role="tab" aria-label="${label}" aria-selected="${key===selected}" aria-controls="mobile-panel-${key}" tabindex="${key===selected?0:-1}"`)).join('')}</div>${mobileDetailTabs.map(([key])=>`<div id="mobile-panel-${key}" class="mobile-detail-panel" role="tabpanel" aria-labelledby="mobile-tab-${key}" tabindex="0" ${key===selected?'':'hidden'}>${panels[key]}</div>`).join('')}</section>`;
+}
+function selectMobileDetailTab(key){
+ if(!mobileDetailTabs.some(([id])=>id===key))return;
+ const tabs=$('.mobile-detail-tabs'),workspace=$('.mobile-detail-workspace'),header=$('.mobile-detail-shell>.mobile-top');if(!tabs)return;
+ const pinned=tabs.getBoundingClientRect().top<=header.getBoundingClientRect().bottom+1,targetY=window.scrollY+workspace.getBoundingClientRect().top-header.offsetHeight;
+ UI.mobileDetailTab=key;
+ tabs.querySelectorAll('[role=tab]').forEach(tab=>{const active=tab.dataset.id===key;tab.classList.toggle('active',active);tab.setAttribute('aria-selected',String(active));tab.tabIndex=active?0:-1;});
+ workspace.querySelectorAll('[role=tabpanel]').forEach(panel=>panel.hidden=panel.id!=='mobile-panel-'+key);
+ if(key==='plan')refreshMobileProcess();
+ $('#mobile-tab-'+key).focus({preventScroll:true});if(pinned)window.scrollTo({top:Math.max(0,targetY),behavior:'instant'});
+}
+document.addEventListener('keydown',event=>{if(!event.target.matches('.mobile-detail-tabs [role=tab]'))return;const keys=mobileDetailTabs.map(([id])=>id),index=keys.indexOf(event.target.dataset.id),next=({ArrowRight:keys[(index+1)%keys.length],ArrowLeft:keys[(index+keys.length-1)%keys.length],Home:keys[0],End:keys.at(-1)})[event.key];if(next){event.preventDefault();selectMobileDetailTab(next);}});
+function renderMobile(){
+ const rid=location.hash.split('/')[2],t=ticket(rid);
+ if(rid){
+   if(!t||!E.canView(S,t,S.actor)){$('#app').innerHTML=`<div class="mobile-shell"><header class="mobile-top"><a href="#/mobile" aria-label="返回工单列表">${I('back')}<span>返回</span></a><strong>工单详情</strong><span aria-hidden="true"></span></header><div class="empty">${I('ticket')}<p>工单不存在或没有访问权限</p><a class="link" href="#/mobile">返回工单列表</a></div></div>`;return;}
+   const ended=['已结案','已合并'].includes(t.state),actions=actionButtons(t);
+   $('#app').innerHTML=`<div class="mobile-shell mobile-detail-shell ${ended?'is-ended':''}">
+     <header class="mobile-top"><a href="#/mobile" aria-label="返回工单列表">${I('back')}<span>返回</span></a><strong>工单详情</strong><span aria-hidden="true"></span></header>
+     <div class="mobile-content mobile-detail-content">${mobileTicketInformation(t)}${mobileDetailWorkspace(t)}</div>
+     <footer class="mobile-footer mobile-detail-footer">${moreMenu(t).replace('<summary>更多</summary>','<summary>'+I('more')+'<span>更多</span></summary>')}<div class="mobile-detail-actions">${standaloneTransferButton(t)}${actions||`<span class="mobile-footer-note">${ended?'工单办理已结束':'当前暂无需要你办理的操作'}</span>`}</div></footer>
+   </div>`;
+   $('.mobile-detail-shell').style.setProperty('--detail-header-height',$('.mobile-detail-shell>.mobile-top').offsetHeight+'px');
+   return;
+ }
+ const all=filtered();UI.page=Math.max(1,Math.min(UI.page,Math.ceil(all.length/8)||1));const rows=all.slice(0,UI.page*8);
+ const count=Object.entries(filterValues()).filter(([key,value])=>key!=='q'&&key!=='sort'&&value).length;
+ const narrowed=count>0||UI.filters.q.trim(),sortLabel=({'risk':'风险优先','new':'最近受理','due':'最近截止'})[UI.filters.sort];
+ $('#app').innerHTML=`<div class="mobile-shell mobile-list-shell ${canCreate()?'has-floating-create':''}">
+   <header class="mobile-top">${document.body.classList.contains('embedded')?`<a href="../demo.html?v=20260930-directory" data-demo-return="true" aria-label="返回演示入口">${I('back')}返回</a>`:'<span aria-hidden="true"></span>'}<strong>工单列表</strong><span aria-hidden="true"></span></header>
+   <div class="tickets-query-panel">${tabs()}<form class="mobile-search" data-form="mobileSearch"><div class="mobile-search-box"><button type="submit" aria-label="查询工单">${I('search')}</button><input name="q" type="search" enterkeyhint="search" aria-label="搜索工单" placeholder="工单号、客户或手机号" value="${esc(UI.filters.q)}"></div>${btn(I('filter')+`<span>筛选${count?' · '+count:''}</span>`,'mobileFilter','','mobile-filter-button '+(count?'is-active':''),'aria-label="筛选工单'+(count?'，已选 '+count+' 项':'')+'"')}</form></div>
+   <div class="mobile-content mobile-list-content"><div class="mobile-list-meta"><span role="status" aria-live="polite">${narrowed?'筛选结果':'共'} <b>${all.length}</b> 条工单</span>${narrowed?btn('清空筛选','resetFilters','','link'):`<span>${sortLabel}</span>`}</div><div class="mobile-ticket-list">${rows.length?rows.map(mobileTicket).join(''):empty()}</div>${mobileLoadStatus(all.length)}</div>
+   ${canCreate()?btn(I('plus'),'create','','mobile-create-fab','aria-label="新增工单" title="新增工单"'):''}
+ </div>`;
+ observeMobileList();
+}
+async function legacyOnAction(act,id,el){
+ if(act==='removeProposalFile'){const form=el.closest('[data-form=proposal]');form.proposalFiles.splice(Number(id),1);UI.modalDirty=true;renderProposalFiles(form);return;}
+ if(act==='fillRefund'){const row=el.closest('.refund-item'),input=row.querySelector('[name=itemRefund]');input.value=input.max;UI.modalDirty=true;updateProposalTotal(row.closest('form'));return;}
+ if(act==='addExchange'){openProductPicker(null,$('#modal-root .exchange-rows'));return;}
+ if(act==='chooseProduct'){openProductPicker(el.closest('.exchange-row'));return;}
+ if(act==='selectProduct'){selectProduct(id);return;}
+ if(act==='closeProductPicker'){closeProductPicker();return;}
+ if(act==='productQuantity'){const row=el.closest('.exchange-row'),input=row.querySelector('[name=exchangeQuantity]');input.value=Math.max(1,Math.min(9999,(Number(input.value)||1)+Number(id)));UI.modalDirty=true;updateProposalTotal(row.closest('form'));return;}
+ if(act==='removeExchange'){const row=el.closest('.exchange-row'),rows=row.parentElement;row.remove();UI.modalDirty=true;updateProposalTotal(rows.closest('form'));return;}
+ if(act==='closeModal')return closeModal();if(act==='discardModal')return closeModal(true);
+ if(act==='closeDrawer'){window.CRMCustomerView?.dismiss({restore:false});UI.pcDetailScrollCleanup?.();UI.pcDetailScrollCleanup=null;UI.drawer=null;UI.pcDetailView=null;UI.tab='info';$('#drawer-root').innerHTML='';history.replaceState(null,'','#/tickets');render();return}
+ if(act==='detail'||act==='handle'){closeModal(true);UI.drawer=id;UI.tab=act==='handle'&&['payment','approval'].includes(E.ticketStageKey(ticket(id)))?'fund':'info';location.hash=(mobile()?'#/mobile/':'#/tickets/')+id;if(!mobile())renderDrawer(id);return}
+ if(act==='customerProfile'){const t=ticket(id);if(!t||!E.canView(S,t,S.actor))throw Error('当前人员无法查看客户资料');const revision=S._revision,tab=UI.tab;rememberPcDetailView();UI.pcDetailScrollCleanup?.();CRMCustomerView.open({state:S,ticket:t,mobile:mobile(),onReturn:()=>{if(!mobile()){setPcDetailSection(tab);setupPcDetailNavigation();}if(S._revision!==revision)render();}});return;}
+ if(act==='detailTab'){selectPcDetailTab(id);return}
+ if(act==='mobileDetailTab'){selectMobileDetailTab(id);return;}
+ if(act==='view'){UI.view=id;UI.page=1;render();return}
+ if(act==='page'){UI.page=+id;render();return}
+ if(act==='refresh'){await window.AftercareDispatch?.run();S=Store.load();render();toast('已刷新');return}
+ if(act==='resetFilters'){Object.keys(UI.filters).forEach(k=>UI.filters[k]=k==='sort'?'risk':'');UI.page=1;render();return}
+ if(act==='externalApproval')return externalApprovalDetail(id);
+ if(act==='approvalTicketDetail'){closeModal(true);UI.tab='fund';render();return;}
+ if(act==='approvalSync'){await mutate(()=>E.syncExternalApproval(S,id,S.actor));render();externalApprovalDetail(id);toast('审批状态已刷新');return;}
+ if(act==='approvalRetry'){let nextId;await mutate(()=>{const r=E.externalRecord(S,id);nextId=E.retryExternalApproval(S,ticket(r.ticketId),S.actor,id).id;});render();externalApprovalDetail(nextId);toast('审批已重新发起');return;}
+ if(act==='approvalCorrect'){let t;await mutate(()=>{const r=E.externalRecord(S,id);t=ticket(r.ticketId);E.correctApprovalApplication(S,t,S.actor,id);});closeModal(true);render();if(E.canHandle(S,t,S.actor))return actionForm(t.approvalAmendment?'amendProcurement':'proposal',t.id);toast('已退回售后补充方案');return;}
+ if(act==='moreFilters'){UI.more=!UI.more;$('#filter-form')?.classList.toggle('expanded',UI.more);return}
+ if(act==='create')return createForm();
+ if(['amendProcurement','retryWorkflowUpgrade','transferAftercare','transferHandling','finishStoreAssistance','retryStoreEntry','suspendTicket','resumeTicket','extendSuspension','invalidateSuspension','finishStore','finishProcurement','closeTicket','retryFlowNode','noPayment','confirmGrading','retryIntake','follow','assign','proposal','pay','payReturn','repeat','bindOrder','call'].includes(act)){closeModal(true);return actionForm(act,id)}
+
+ if(act==='appendExisting'||act==='repeatExisting'){const f=$('[data-form="create"]'),d=Object.fromEntries(new FormData(f));if(!d.description.trim())throw Error('请先填写本次投诉内容');const t=ticket(id),files=await readFiles(f.elements.files.files);let result=t;await mutate(()=>{if(act==='appendExisting'){if(['已结案','已合并'].includes(t.state))throw Error('已结束工单请登记再次投诉');t.sources.push({channel:d.channel,at:Date.now(),content:d.description});t.attachments.push(...files);E.log(t,S.actor,'补充来源记录',d.channel+'；'+d.description);E.scan(S,t,S.actor,d.description)}else{result=E.repeat(S,t,S.actor,d.description);result.attachments.push(...files);result.sources[result.sources.length-1].channel=d.channel}});closeModal(true);location.hash=(mobile()?'#/mobile/':'#/tickets/')+result.id;UI.drawer=result.id;render();toast(act==='appendExisting'?'已补充到原工单':'已登记再次投诉');return}
+ if(act==='utilities'){modal('演示工具',`<div class="action-buttons">${btn('重置样例数据','resetData','','danger')}</div>`);return}
+ if(act==='resetData'){modal('重置样例数据','<p>本机演示工单将重置，已保存的规则配置保留。</p><div class="gap"></div>'+btn('确认重置','doResetData','','danger'));return}
+ if(act==='doResetData'){await mutate(()=>{const next=E.seed();next.configuration=S.configuration;next.unifiedVersion=1;next.assignmentCursors=S.assignmentCursors;next._revision=S._revision;E.ensureIntakeExamples(next);E.prepareTickets(next);E.ensureWorkflowExamples(next);E.ensureSolutionExamples(next);ApprovalTemplates.ensure(next);E.ensureExternalApprovals(next);E.ensureExternalApprovalExamples(next);E.ensureLocalApprovalInteractions(next);E.ensureApprovalPresentation(next);window.ComplaintConfiguration.ensureRuleSetup(next);window.CRMProfiles.ensure(next);S=next;});UI.drawer=null;UI.editor=null;UI.view='mine';closeModal(true);location.hash='#/demo';render();toast('演示数据已重置');return}
+ if(act==='mobileFilter'){const f={...UI.filters,q:$('[data-form=mobileSearch] [name=q]')?.value??UI.filters.q};modal('筛选工单',`<div class="form-grid">${field('搜索',inp('q',f.q,'search',false,'placeholder="工单号、客户姓名、手机号或会员号" enterkeyhint="search"'),true)}${field('状态',select('state',E.STATES,f.state,'全部状态'))}${field('等级',select('level',[[1,'一级'],[2,'二级'],[3,'三级'],[4,'四级'],[5,'五级']],f.level,'全部等级'))}${field('门店',select('store',E.STORES,f.store,'全部门店'))}${field('来源',select('channel',E.CHANNELS,f.channel,'全部来源'))}${field('排序',select('sort',[['risk','风险优先'],['new','最近受理'],['due','最近截止']],f.sort))}</div>`,{form:'mobileFilters',submit:'应用筛选'});return}
+}
+document.addEventListener('click',async ev=>{const el=ev.target.closest('[data-action]');if(!el){const link=ev.target.closest('a[href^="#/"]');if(link){ev.preventDefault();location.hash=link.getAttribute('href');}return;}if(el.classList.contains('drawer-backdrop')&&ev.target.closest('[data-stop]'))return;ev.preventDefault();try{await onAction(el.dataset.action,el.dataset.id,el)}catch(e){toast(e.message)}});
+document.addEventListener('keydown',ev=>{if(ev.key==='Escape'){if(ev.target.matches('select'))return;if(UI.productPicker){closeProductPicker();return;}if($('#modal-root').children.length)closeModal();else if(UI.drawer)onAction('closeDrawer','')}if(ev.key==='Tab'){const container=$('#modal-root .product-picker')||$('#modal-root .mobile-action-page, #modal-root .modal, #modal-root .drawer')||$('#drawer-root .drawer');if(!container)return;const elements=[...container.querySelectorAll('button:not(:disabled),summary,a[href],input:not(:disabled),select:not(:disabled),textarea:not(:disabled),[tabindex="0"]')].filter(x=>x.offsetParent!==null);const first=elements[0],last=elements[elements.length-1];if(ev.shiftKey&&document.activeElement===first){ev.preventDefault();last?.focus()}else if(!ev.shiftKey&&document.activeElement===last){ev.preventDefault();first?.focus()}}});
+document.addEventListener('input',ev=>{if(ev.target.closest('#modal-root form')&&!ev.target.closest('[data-form=simulate]'))UI.modalDirty=true;if(ev.target.closest('[data-editor-basic],[data-node-form]'))UI.editor.dirty=true;const row=ev.target.closest('[data-condition]');if(row){const[g,c]=row.dataset.condition.split('|').map(Number);UI.editor.doc.groups[g][c][ev.target.dataset.condField]=ev.target.value;UI.editor.dirty=true}if(ev.target.closest('[data-form="create"]')&&['phone','member'].includes(ev.target.name))duplicateCandidates()});
+document.addEventListener('change',ev=>{const f=ev.target.closest('[data-form="create"]');if(f&&ev.target.name==='order'){const o=S.orders.find(x=>x.id===ev.target.value);if(o){['name','phone','member','store','isNew'].forEach(k=>f.elements[k].value=o[k]);}duplicateCandidates()}});
+document.addEventListener('submit',async ev=>{ev.preventDefault();const f=ev.target;if(f.id==='filter-form'){Object.assign(UI.filters,Object.fromEntries(new FormData(f)));UI.page=1;render();return}const type=f.dataset.form;if(!type)return;const d=Object.fromEntries(new FormData(f)),id=f.dataset.id,t=ticket(id),submit=f.querySelector('[type=submit]');if(submit)submit.disabled=true;try{
+ if(type==='sceneSearch'){UI.sceneSearch=d.q;render();return}
+ if(type==='mobileSearch'){UI.filters.q=d.q;UI.page=1;render();return}
+ if(type==='mobileFilters'){Object.assign(UI.filters,d);UI.page=1;closeModal(true);render();return}
+ if(type==='create'){if(UI.duplicates?.length&&!d.distinct)throw Error('请选择关联处理方式，或确认是不同事件');const files=await readFiles(f.elements.files.files);const nt=await mutate(()=>E.create(S,S.actor,{...d,attachments:files}));closeModal(true);UI.drawer=nt.id;UI.view='all';location.hash=(mobile()?'#/mobile/':'#/tickets/')+nt.id;render();toast('工单已创建');return}
+ if(type==='retryWorkflowUpgrade')await mutate(()=>E.retryWorkflowUpgrade(S,t,S.actor));
+ else if(type==='confirmGrading')await mutate(()=>E.confirmGrading(S,t,S.actor,d.level,d.note));
+ else if(type==='retryIntake')await mutate(()=>E.retryIntake(S,t,S.actor));
+ else if(type==='follow'){await mutate(()=>E.follow(S,t,S.actor,{method:d.method,connected:d.connected==='yes',content:d.content,...(d.result?{result:d.result}:{})}))}
+ else if(type==='transferAftercare')await mutate(()=>{if(d.transferTarget==='store'){const person=E.allStoreCandidates(S,t,d.store).find(p=>p.id===d.person);if(!person)throw Error('请选择接收门店的有效办理人');return E.requestStoreAssistance(S,t,S.actor,{store:person.handlingStore,person:d.person,note:d.note});}if(d.transferTarget!=='aftercare')throw Error('请选择转派方式');return E.transferAftercare(S,t,S.actor,d.person,d.note);});
+ else if(type==='transferHandling')await mutate(()=>E.transferHandling(S,t,S.actor,d.person,d.note));
+ else if(type==='finishStoreAssistance'){const files=await readFiles(f.elements.files.files);await mutate(()=>E.finishStoreAssistance(S,t,S.actor,{note:d.note,files}));}
+ else if(type==='suspendTicket'){const files=await readFiles(f.elements.files.files);await mutate(()=>E.suspendTicket(S,t,S.actor,{...d,files}));}
+ else if(type==='extendSuspension')await mutate(()=>E.extendSuspension(S,t,S.actor,d));
+ else if(type==='invalidateSuspension')await mutate(()=>E.invalidateSuspension(S,t,S.actor,d.note));
+ else if(type==='resumeTicket')await mutate(()=>E.resumeTicket(S,t,S.actor,d.note));
+ else if(type==='assign')await mutate(()=>E.assign(S,t,S.actor,d.owner,d.reason));
+ else if(type==='amendProcurement')await mutate(()=>E.amendProcurement(S,t,S.actor,{note:d.note,delivery:{name:d.deliveryName,phone:d.deliveryPhone,address:d.deliveryAddress},items:[...f.querySelectorAll('.exchange-row')].map(row=>({productId:row.querySelector('[name=exchangeProduct]').value,quantity:Number(row.querySelector('[name=exchangeQuantity]').value)}))}));
+ else if(type==='proposal'){const data=proposalFromForm(f);if((E.solutionIncludes.refund(data.typeKey)||E.solutionIncludes.compensation(data.typeKey))&&data.payout.method==='bank'&&!data.payout.name?.trim())throw Error('请填写开户姓名');E.validateFinancialDetails(S,t,data);data.attachments=await proposalAttachments(f);await mutate(()=>E.confirmSolution(S,t,S.actor,data));}
+ else if(type==='retryStoreEntry')await mutate(()=>E.retryStoreEntry(S,t,S.actor));
+ else if(type==='finishStore'){const files=await readFiles(f.elements.files.files);await mutate(()=>E[type](S,t,S.actor,{...d,files}));}
+ else if(type==='finishProcurement')await mutate(()=>E.finishProcurement(S,t,S.actor,{...d,items:[...f.querySelectorAll('[data-shipment-line]')].map(row=>({lineIndex:Number(row.dataset.shipmentLine),quantity:Number(row.querySelector('[name=shipmentQuantity]').value)})).filter(x=>x.quantity!==0)}));
+ else if(type==='closeTicket')await mutate(()=>E[type](S,t,S.actor,d));
+ else if(type==='retryFlowNode')await mutate(()=>E.retryFlowNode(S,t,S.actor));
+ else if(type==='noPayment')await mutate(()=>E.pay(S,t,S.actor,{result:'无需付款',reason:d.reason}));
+ else if(type==='pay'){const proof=f.elements.proof.disabled?[]:await readFiles(f.elements.proof.files);await mutate(()=>E.pay(S,t,S.actor,{...d,amount:Math.round(Number(d.amount??0)*100),proof}))}
+ else if(type==='payReturn')await mutate(()=>E.pay(S,t,S.actor,{result:'退回',reason:d.reason}));
+ else if(type==='repeat'){const nt=await mutate(()=>E.repeat(S,t,S.actor,d.note));if(nt.id!==t.id){UI.drawer=nt.id;location.hash=(mobile()?'#/mobile/':'#/tickets/')+nt.id}}
+ else if(type==='bindOrder')await mutate(()=>{if(!E.canHandle(S,t,S.actor))throw Error('没有关联权限');const o=S.orders.find(x=>x.id===d.order&&x.phone===t.phone);if(!o)throw Error('请选择本人客户的有效订单');if(t.proposal?.approved||t.approval?.status==='审批中')throw Error('请先撤回当前方案');Object.assign(t,{order:o.id,project:o.project,amount:o.paid,member:o.member,staff:o.staff});E.log(t,S.actor,'关联消费订单',o.external)});
+ if(type==='follow'&&d.result==='plan'){
+  closeModal(true);render();await actionForm('proposal',id);toast('跟进已保存');return;
+ }
+ closeModal(true);render();toast(type==='follow'&&d.result?({resolved:'工单已结案',unresolved:'门店处理已完成，工单已转售后',continue:'跟进已记录，工单仍需门店处理'})[d.result]:'操作已完成');
+ }catch(e){const slot=f.querySelector('.error-slot');if(slot)slot.innerHTML=`<div class="error-inline">${esc(e.message)}</div>`;else toast(e.message)}finally{if(submit?.isConnected)submit.disabled=false}
+});
+window.addEventListener('hashchange',()=>{window.CRMCustomerView?.dismiss({restore:false});if(!location.hash.startsWith('#/rules')){UI.editor=null;UI.node=null;}closeModal(true);UI.drawer=null;UI.tab='info';render()});
+const backgroundRefresh=ComplaintRefreshQueue.create({
+ blocked:()=>document.hidden||!!$('#modal-root').children.length||!!UI.editor||!!document.activeElement?.matches('input,select,textarea,[contenteditable="true"]'),
+ refresh:()=>{S=Store.load();render();},
+ onError:error=>toast(error.message)
+});
+window.addEventListener('complaint-dispatch',()=>backgroundRefresh.request());
+window.addEventListener('complaint-dispatch-error',e=>toast(e.detail));
+window.addEventListener('storage',ev=>{if(ev.key===KEY&&ev.newValue)backgroundRefresh.request();});
+for(const event of ['focusout','click','keydown','visibilitychange'])document.addEventListener(event,()=>backgroundRefresh.flush());
+
+function renderArchive(id){
+ const c=S.configuration.cases.find(c=>c.id===decodeURIComponent(id||''));
+ const customer=c&&S.configuration.customers?.find(x=>x.id===c.customerId);
+ $('#drawer-root').innerHTML='';
+ $('#app').innerHTML=`<main class="content"><div class="page-head"><h1>历史工单记录</h1><a class="link" href="#/tickets">返回客诉工单</a></div>${c?`<div class="card"><h2>${esc(c.number)} · ${esc(c.title)}</h2><p>${esc(customer?.name||'')} · ${esc(c.store)}</p><p class="text">${esc(c.description)}</p><p class="sub">旧版记录已完整保留，仅供查阅；当前工单统一从客诉工单入口办理。</p></div><div class="card"><h3>处理记录</h3>${(c.records||[]).map(r=>`<div class="approval-line"><div><b>${esc(r.title)}</b><p class="sub">${date(r.at)}</p><p class="text">${esc(r.body)}</p>${filesView(r.attachments||[])}</div></div>`).join('')}</div><div class="card"><h3>历史方案</h3>${(c.plans||[]).map(p=>`<div class="approval-line"><div><b>V${p.version}</b><p class="text">${esc(p.summary)}</p>${p.refund?`<p>${money(p.refund.amountCents)} · ${esc(p.refund.status)}</p>`:''}${(p.items||[]).map(i=>`<p>${esc(i.description)} · ${esc(i.status)}</p>`).join('')}</div></div>`).join('')}</div>`:empty('历史工单不存在')}
+ </main>`;
+}
+async function onAction(act,id,el){return legacyOnAction(act,id,el);}
+function externalNodeStatus(n){return n.external&&(n.current||n.status==='done'||n.status==='returned')?ApprovalTemplates.STATUS[n.external.status]:'';}
+function externalNodeLink(n){return n.external?`<span class="external-node-link">${btn('查看审批','externalApproval',n.external.id,'link')}${n.external.syncStatus==='pending'?'<small>待同步</small>':''}</span>`:'';}
+function externalApprovalDetail(id){
+ const r=E.externalRecord(S,id),t=r&&ticket(r.ticketId);if(!r||!t||!E.canView(S,t,S.actor))throw Error('没有审批记录访问权限');
+ const recovery=E.approvalRecovery(S,t,r),maintain=recovery.current&&(S.actor===t.owner||actor().role==='lead'),latest=S.approvalRecords.filter(x=>x.ticketId===r.ticketId&&x.nodeId===r.nodeId).at(-1);
+ const controls=`${recovery.failed&&maintain?`${!recovery.issues.length&&recovery.missing.length?btn(t.payments.some(p=>p.result==='成功')?'调整采购事项':'补充方案','approvalCorrect',r.id):''}${btn('重新发起','approvalRetry',r.id)}`:r.status!=='failed'&&(maintain||r.instanceId)?btn('同步状态','approvalSync',r.id):''}${latest&&latest.id!==r.id?btn('查看最新审批','externalApproval',latest.id):''}${r.url&&E.approvalSafeURL(r.url)?`<a class="primary external-ding-link" href="${esc(E.approvalSafeURL(r.url))}" target="_blank" rel="noopener noreferrer">在钉钉查看</a>`:''}`;
+ const detailLink=mobile()?btn('查看详情'+I('arrow'),'approvalTicketDetail',t.id,'link'):`<a href="index.html?view=h5&tab=fund#/mobile/${encodeURIComponent(t.id)}" target="_blank" rel="noopener">查看详情${I('arrow')}</a>`;
+ modal('审批详情',`<div class="external-approval-detail">${ApprovalDetailView.detail(r,t,{detailLink,controls,state:S})}</div>`,{drawer:true});
+ if(!mobile())$('#modal-root .form-drawer').classList.add('external-approval-surface');
+}
+function procurementAmendmentForm(t){
+ const m=t.approvalAmendment;if(!m)throw Error('当前工单无需调整采购');
+ modal('调整采购事项',`<div class="proposal-composer"><div class="external-paid-lock"><span>已付款 · ${money(t.proposal.refund+t.proposal.compensation)}</span><small>退款、赔偿及收款信息已锁定</small></div><p class="external-record-reason">${esc(m.reason)}</p><section class="solution-section exchange-editor"><div class="proposal-section-heading"><h3>置换商品</h3>${btn(I('plus')+' 添加商品','addExchange','','link')}</div>${exchangeEditor(t.proposal.exchangeItems)}<div class="exchange-total"><span>商品总价值</span><b data-exchange-total>${money(t.proposal.exchangeValue)}</b></div>${deliveryFields(t.proposal.delivery)}</section><section class="solution-section">${field('调整说明 *',txt('note',t.proposal.procurementNote||''),true)}</section></div>`,{form:'amendProcurement',id:t.id,submit:'确认调整并发起审批'});
+ $('#modal-root .form-drawer, #modal-root .mobile-action-page').classList.add('proposal-surface');
+}
+
+const DEMO_ENTRIES=[
+ {id:'pc-list',title:'工单列表',device:'PC端',icon:'ticket',tag:'列表 · 新增 · 跟进',kind:'list'},
+ {id:'pc-rules',title:'规则配置',device:'PC端',icon:'flow',tag:'场景 · 定级 · 流程',kind:'rules'},
+ {id:'mobile-list',title:'移动工单列表',device:'移动端',icon:'mobile',tag:'状态 · 当前环节 · 待办',kind:'mobileList'},
+ {id:'approval',title:'钉钉审批进度',device:'移动端',icon:'check',tag:'审批进度 · 申请内容',route:'#/mobile/KS20261007-D01'},
+ ...[...E.EXTERNAL_APPROVAL_EXAMPLES,...E.WORKFLOW_EXAMPLES.filter(row=>!['all','sequential','any'].includes(row.kind))].map(row=>({id:row.kind,title:row.title,device:ticket(row.id)?.state||row.state,icon:(ticket(row.id)?.state||row.state)==='已结案'?'check':'ticket',route:'#/mobile/'+row.id}))
+];
+function demoPortal(){UI.drawer=null;$('#drawer-root').innerHTML='';document.body.classList.remove('is-mobile');const card=(x,compact=false)=>`<a href="#/demo/${x.id}" class="demo-card ${compact?'compact':''}"><div class="demo-card-icon">${I(x.icon)}</div><div class="demo-card-content"><span class="demo-device">${x.device}</span><h2>${x.title}</h2>${x.tag?`<div class="demo-tag">${x.tag}</div>`:''}</div><span class="demo-card-arrow">${I('arrow')}</span></a>`;$('#app').innerHTML=`<main class="demo-portal"><header class="demo-header"><div class="brand"><div class="brand-mark">✓</div><div><strong>悦服</strong><small>客诉工单系统</small></div></div><span class="demo-version">交互原型</span></header><section class="demo-main"><div class="demo-title"><span class="demo-kicker">PROTOTYPE DIRECTORY</span><h1>原型演示入口</h1></div><div class="demo-section-heading"><h2>页面入口</h2><span>PC / 移动端 / 钉钉 H5</span></div><div class="demo-main-grid">${DEMO_ENTRIES.slice(0,4).map(x=>card(x)).join('')}</div><div class="demo-section-heading demo-secondary-heading"><h2>办理场景</h2></div><div class="demo-scenes-grid">${DEMO_ENTRIES.slice(4).map(x=>card(x,true)).join('')}</div></section><footer class="demo-portal-footer"><span>悦服 · 客诉工单系统</span>${btn('重置演示数据','resetData','','link')}</footer></main>`}
+function openDemo(id){id=({review:'close_service',risk:'urgent',repeat:'channels',closed:'refund'})[id]||id;const e=DEMO_ENTRIES.find(x=>x.id===id);if(!e){history.replaceState(null,'','#/demo');demoPortal();return}UI.editor=null;UI.node=null;UI.tab='info';UI.drawer=null;UI.view='all';UI.page=1;UI.demoMode=e.mode||'auto';sessionStorage.setItem('meiye.complaint.reference.demo-mode',UI.demoMode);Object.keys(UI.filters).forEach(k=>UI.filters[k]=k==='sort'?'risk':'');let route='#/tickets',action='';if(e.route)route=e.route;else if(e.kind==='rules'||e.kind==='flow'){route='#/rules';UI.ruleTab='scenes';action=e.kind==='flow'?'flow':''}else if(e.kind==='mobileList')route='#/mobile';else if(e.kind==='create')action='create';history.replaceState(null,'',route);render();if(action==='create')createForm();}
+function syncDemoActor(route){const rid=route.split('/')[2],t=ticket(rid);if(t&&!route.startsWith('#/rules')){S.actor=E.taskPeople(S,t)[0]||t.owner||S.rules.fallback;}else {S.actor='jiang';}}
+
+if(!location.hash||!/^#\/(demo|tickets|rules|mobile|archive)/.test(location.hash))history.replaceState(null,'','#/demo');
+render();
+
+// Keep auxiliary actions grouped, and close the menu after choosing an action.
+document.addEventListener('click',ev=>{document.querySelectorAll('.ticket-more-menu[open]').forEach(menu=>{if(!menu.contains(ev.target)||ev.target.closest('.ticket-more-items button'))menu.open=false;});});
+document.addEventListener('keydown',ev=>{if(ev.key!=='Escape'||$('#modal-root').children.length)return;const menu=document.querySelector('.ticket-more-menu[open]');if(menu){ev.preventDefault();ev.stopImmediatePropagation();menu.open=false;menu.querySelector('summary').focus();}},true);

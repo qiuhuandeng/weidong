@@ -1,0 +1,15 @@
+{
+  "mode": "built-in image_gen",
+  "generatedAt": "2026-10-07",
+  "purpose": "Fictional customer photographs for the local CRM profile prototype. No real patient photographs or clinical outcome claims.",
+  "assets": [
+    {
+      "path": "aftercare-left.png",
+      "prompt": "Use case: photorealistic-natural. Asset type: fictional CRM clinical documentation photo for a local customer-support UI prototype, one standalone photo. Primary request: a realistic close-up photograph of the LEFT cheek of a wholly fictional adult East Asian woman aged about 35 after a gentle facial cosmetic treatment. Show slight non-graphic pinkness and natural skin texture, no wounds or blood. Hair tucked behind ear, neutral expression, white towel at shoulder, soft light gray clinic wall. Frame from eyebrow to jaw, a three-quarter angle focused on skin, clinical even daylight, no glamour retouching. No text, no logo, no watermark, no charts, no interface, no collage."
+    },
+    {
+      "path": "aftercare-right.png",
+      "prompt": "Use case: photorealistic-natural. Asset type: fictional CRM clinical documentation photo for a local customer-support UI prototype, one standalone photo. Primary request: a realistic close-up photograph of the RIGHT cheek of a wholly fictional adult East Asian woman aged about 35, recorded in a skin-care follow-up. Natural skin texture with mild pinkness, no blood, wounds, needles or graphic details. Hair tucked behind ear, neutral expression, white towel at shoulder, soft light gray clinic wall. Three-quarter profile with cheek and jaw filling frame, clinical even daylight, no glamour retouching. No text, no logo, no watermark, no charts, no interface, no collage."
+    }
+  ]
+}

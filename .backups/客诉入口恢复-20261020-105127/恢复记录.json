@@ -1,0 +1,1163 @@
+{
+  "source_commit": "22b73762850722c053f2f8ca6b8848b5f3be55de",
+  "source_snapshot_time": "2026-10-20 09:13:42 +08:00",
+  "index_last_content_update": "2026-10-20 09:12:36 +08:00",
+  "index_before_sha256": "5b000bab1bbdf347744177b43833630d0a23083196044bb7167380ffc3e3c6b4",
+  "files": [
+    {
+      "path": "complaint-prototype/README.md",
+      "bytes": 105315,
+      "sha256": "c1a32162dc0f07d34e8f8f9fb8b5ff9edb151eb1814a9855bca6dff7f37b1f96"
+    },
+    {
+      "path": "complaint-prototype/access.js",
+      "bytes": 1669,
+      "sha256": "aca5a985f25b2c3cf5d43de98f41941f23e1e08d81797dd1d3b03356aa7ca84d"
+    },
+    {
+      "path": "complaint-prototype/aftercare-actions.js",
+      "bytes": 14350,
+      "sha256": "35dc9d894195cd749b63f7db6e76aa277e5eaa8b637be15c9c1293ee3cfe912c"
+    },
+    {
+      "path": "complaint-prototype/aftercare-actions.test.cjs",
+      "bytes": 12390,
+      "sha256": "95ce50ede689baa52a8fbaf4c4626655c4dc237a185119d32f03c0328c8dc953"
+    },
+    {
+      "path": "complaint-prototype/aftercare-browser.check.cjs",
+      "bytes": 10258,
+      "sha256": "6dd76f8a7e768762cc8da2f9f6868bdad26cd6853c3e94615a5d5136a05755c9"
+    },
+    {
+      "path": "complaint-prototype/aftercare-followup.test.cjs",
+      "bytes": 5617,
+      "sha256": "3f715957f4b8ee10b6e52b650d999edbb18e31b0a284266e0bb28d6922925fb8"
+    },
+    {
+      "path": "complaint-prototype/aftercare-schedule.js",
+      "bytes": 5474,
+      "sha256": "f5b92ce691073316495155d41d8571fc1a7da249cf7f4ff3cf4ab0900845ac74"
+    },
+    {
+      "path": "complaint-prototype/aftercare-schedule.test.cjs",
+      "bytes": 8577,
+      "sha256": "c428cefd7c560cd7692dd2a3b0e188c6d937daff30ec739cf9d43a7dc9ea4bf7"
+    },
+    {
+      "path": "complaint-prototype/ai-grading-view.js",
+      "bytes": 5257,
+      "sha256": "71b8b807ac7847f4ca53f5a8f5373baab9cae15fee6370a237676920bbc71ff5"
+    },
+    {
+      "path": "complaint-prototype/ai-grading.css",
+      "bytes": 985,
+      "sha256": "6a99c69e75cf4c85790f73edd67b39280fd41f593e6d3bc19b579c1fc7dba0ba"
+    },
+    {
+      "path": "complaint-prototype/ai-grading.js",
+      "bytes": 5419,
+      "sha256": "c00613002cf49f682043c65eaae60c4b9aef3b9d2331356fb0e7ba906fae89d3"
+    },
+    {
+      "path": "complaint-prototype/app.js",
+      "bytes": 65957,
+      "sha256": "9445ad10632851fb257c9e851d4a81ab6294423162a1e2dcaafd4492e6c9024b"
+    },
+    {
+      "path": "complaint-prototype/approval-detail-view.js",
+      "bytes": 11781,
+      "sha256": "be76e689d5095a3d12a8bb387aaa7eaa0db6587a64145770467e331a7d5435ab"
+    },
+    {
+      "path": "complaint-prototype/approval-detail-view.test.cjs",
+      "bytes": 7974,
+      "sha256": "72fd363c662a5e74898642c86b146e6a7080a00a1842dc3309dd62caa14e1da6"
+    },
+    {
+      "path": "complaint-prototype/approval-detail.css",
+      "bytes": 8692,
+      "sha256": "f0df1933404df20869701b1f7bc3a5d5c273e19290f1f28a7c42a0a26d7c3aae"
+    },
+    {
+      "path": "complaint-prototype/approval-flow-view.js",
+      "bytes": 41352,
+      "sha256": "ec4f93a8a54deabbc756e81f139b6b260892ff4aaca59a325b1177e107908f3a"
+    },
+    {
+      "path": "complaint-prototype/approval-flow.css",
+      "bytes": 18595,
+      "sha256": "c21ab8cce97e28cbf7a427d20d1db7e51943b87440bbe1f60b51b967161cee7c"
+    },
+    {
+      "path": "complaint-prototype/approval-flow.js",
+      "bytes": 25826,
+      "sha256": "198f3b426683a6cb67cebbff00d5130961eb891f8910b4c68db8a4f3c4b86e0c"
+    },
+    {
+      "path": "complaint-prototype/approval-flow.test.js",
+      "bytes": 10995,
+      "sha256": "558e0c3141a180d4fb974df5dcb32b56a87fff0c7c629097745a583659856870"
+    },
+    {
+      "path": "complaint-prototype/approval-recovery-browser.check.cjs",
+      "bytes": 6889,
+      "sha256": "a518526b48fb508ee0ccf07fe03d7f1ea343583a54decac4cdc3365758c32b97"
+    },
+    {
+      "path": "complaint-prototype/approval-templates-browser.check.cjs",
+      "bytes": 8743,
+      "sha256": "6ece8d38f669f3f21a282c54704e4f391b63e44d8e7a8ce8e36671a954b873e0"
+    },
+    {
+      "path": "complaint-prototype/approval-templates.css",
+      "bytes": 13425,
+      "sha256": "e77eed66650196dddc3024798f537d0873cc75b7cf264be199148b77274a0579"
+    },
+    {
+      "path": "complaint-prototype/approval-templates.js",
+      "bytes": 31697,
+      "sha256": "b0799e6fd0287be2e1df92b93bf3cb54a1d223477a0d4239849f8dcb7d59ba64"
+    },
+    {
+      "path": "complaint-prototype/approval-templates.test.cjs",
+      "bytes": 9948,
+      "sha256": "ced953708b0712249fa2b6c860c519f44c5a033a02334fe2d986c194708159e6"
+    },
+    {
+      "path": "complaint-prototype/approvals-app.js",
+      "bytes": 27123,
+      "sha256": "68df6ef533ddf4f27d22bf0c0b1dd8eab147a1d443f5e4681e4d11e213ac08dc"
+    },
+    {
+      "path": "complaint-prototype/approvals.html",
+      "bytes": 2723,
+      "sha256": "1a88af696100c5089189b8f8ab421add75c8e23d0c58e52891250bd138b492b9"
+    },
+    {
+      "path": "complaint-prototype/assets/crm/aftercare-left.png",
+      "bytes": 2205766,
+      "sha256": "37c8130171ab7ad727b095718efc0a563233bd4225d314171e0b21b023965349"
+    },
+    {
+      "path": "complaint-prototype/assets/crm/aftercare-right.png",
+      "bytes": 2276977,
+      "sha256": "5678e68789e9eafad4390a463068bca55578b128e14ba8da547ba3f94feab7f7"
+    },
+    {
+      "path": "complaint-prototype/assets/crm/provenance.json",
+      "bytes": 1714,
+      "sha256": "dcc7479a58bd1f9e37850b5caaf6837521dcc1381ef4f63228469e9b11c6ce58"
+    },
+    {
+      "path": "complaint-prototype/bi-app.js",
+      "bytes": 56748,
+      "sha256": "8f3ddd5cfa93933897c5323b3a05a7600d9264bbb6298f15483302e1a06cca88"
+    },
+    {
+      "path": "complaint-prototype/bi-browser.check.cjs",
+      "bytes": 20190,
+      "sha256": "cebfec951c106ef2d0e1483df35b72a3b378a2462da0e809e36c697a2560fe48"
+    },
+    {
+      "path": "complaint-prototype/bi-data.js",
+      "bytes": 13710,
+      "sha256": "954dd0b2d62b6fcf707f9139996dc5947068420c7a4b53223d256b8bb606afdc"
+    },
+    {
+      "path": "complaint-prototype/bi-data.test.cjs",
+      "bytes": 9384,
+      "sha256": "84418531af39120f049ee350a58f11041351f8c07bc8b191454ce99dea0c9e53"
+    },
+    {
+      "path": "complaint-prototype/bi.css",
+      "bytes": 23245,
+      "sha256": "c5a831f6d4b1b4005734af84c74e729f1685022ab058dee070d2469b7d06fee5"
+    },
+    {
+      "path": "complaint-prototype/bi.html",
+      "bytes": 549,
+      "sha256": "9b009ca1a2ad04f17a79bc3d08da98f4bb91db5a4ff1f0482c90eaa194136ed8"
+    },
+    {
+      "path": "complaint-prototype/configuration.js",
+      "bytes": 17285,
+      "sha256": "f47c238f94f2cb075f458c63e6d17f2773c16aae246037322f1b9b44f2cf1bc0"
+    },
+    {
+      "path": "complaint-prototype/crm-customer-browser.check.cjs",
+      "bytes": 10639,
+      "sha256": "5d60ec72d551b37b6d00d430d3da27d1e4cf30fc056c5d229589a98dcd7cfdfa"
+    },
+    {
+      "path": "complaint-prototype/crm-customer-view.js",
+      "bytes": 18715,
+      "sha256": "4cd33198d9c327627ec64d027bae94bd166436be4d68ea963441595e5100412c"
+    },
+    {
+      "path": "complaint-prototype/crm-customer.css",
+      "bytes": 17490,
+      "sha256": "751343c87ed6915f23a222b0f58ec870fdce028327580868a3a28f69e6d34e55"
+    },
+    {
+      "path": "complaint-prototype/crm-profiles.js",
+      "bytes": 8344,
+      "sha256": "fc25c8f91fce281c6326fbda9aacef5fffae768ce57966877bb946e536287f31"
+    },
+    {
+      "path": "complaint-prototype/crm-profiles.test.cjs",
+      "bytes": 5377,
+      "sha256": "f95eb7e780f23ac413afcffd3fd090a02a10a3c8f20ef6c1fff139cb39338557"
+    },
+    {
+      "path": "complaint-prototype/demo.css",
+      "bytes": 2800,
+      "sha256": "8473eb3415874e166060ca2981a13c783c003f834b8f34ad578a882b2c0f1664"
+    },
+    {
+      "path": "complaint-prototype/demo.html",
+      "bytes": 2879,
+      "sha256": "d46535ea264f736599d8dcd8193e52ae31bdb0b3599c81750fabf73ae8fc65c5"
+    },
+    {
+      "path": "complaint-prototype/demo.js",
+      "bytes": 2770,
+      "sha256": "05a2961e8d84fb13b65a32fdbf56a5bc008adcb62fa2905c8058d16d4e7aa4d8"
+    },
+    {
+      "path": "complaint-prototype/design-qa.md",
+      "bytes": 6015,
+      "sha256": "f608118177edf24646db1afc49b9e2c4cb1314b539a61de5c93a71784d89e9c3"
+    },
+    {
+      "path": "complaint-prototype/dropdown-sync.test.cjs",
+      "bytes": 2426,
+      "sha256": "3df754cf95e156f41fd82411136d7e0f122d2b20d1eb4e9eaf19a2f32b3e6660"
+    },
+    {
+      "path": "complaint-prototype/engine.js",
+      "bytes": 38519,
+      "sha256": "a75946ea0db922cba039e741a18b9c32018bbe2400d0559bcbd746dcc6324703"
+    },
+    {
+      "path": "complaint-prototype/engine.test.js",
+      "bytes": 9455,
+      "sha256": "273d70a07c483cb5b8669fed44719317cc138bce1a183c5373fbcb4be48a569d"
+    },
+    {
+      "path": "complaint-prototype/external-approval-examples.js",
+      "bytes": 13731,
+      "sha256": "094bf6eadd29c7cac2ab180b26ff623cc8b3a5ca9f880183c971bcae4afe77d5"
+    },
+    {
+      "path": "complaint-prototype/external-approvals-browser.check.cjs",
+      "bytes": 10494,
+      "sha256": "e7aa8773f83dcf2fdee90c2477049138d4d61c716da22be9e7e67ae31eb602a6"
+    },
+    {
+      "path": "complaint-prototype/external-approvals.js",
+      "bytes": 17042,
+      "sha256": "efc7ade718766164cb350e8a0615bd4d854561f6e6aadb549c59ba0b111e694f"
+    },
+    {
+      "path": "complaint-prototype/external-approvals.test.cjs",
+      "bytes": 16521,
+      "sha256": "8fd083934325ad101cb5c30ceed17010da473f75b694c12d5593934aa7171c9c"
+    },
+    {
+      "path": "complaint-prototype/h5-detail-browser.check.cjs",
+      "bytes": 6976,
+      "sha256": "24d3f37cef37ec8575bd0970eedcb78f7a327172c849af8660807dbef1b43994"
+    },
+    {
+      "path": "complaint-prototype/handling-transfer-browser.check.cjs",
+      "bytes": 10130,
+      "sha256": "e4013e3906c95e59ad5516a99f911201d12591ad513b62a4dfc3485ef15afe60"
+    },
+    {
+      "path": "complaint-prototype/handling-transfer.test.cjs",
+      "bytes": 8648,
+      "sha256": "1ee8139f6b71721b4bce87072fc80746442aa0efe97f812bd42c29f33a4d5759"
+    },
+    {
+      "path": "complaint-prototype/handling.test.js",
+      "bytes": 11562,
+      "sha256": "9ceed0c1b5a1c75d20be2b043fbf376b674be2c1ab7a7d8fbf78652c1cdc8fff"
+    },
+    {
+      "path": "complaint-prototype/index.html",
+      "bytes": 2893,
+      "sha256": "f8d97b7a69271063dafa6d92e1b1845025aff29878967ba035d65701b31162cb"
+    },
+    {
+      "path": "complaint-prototype/intake.js",
+      "bytes": 7127,
+      "sha256": "77199f4583c6c9fa0e39c468f38cc3ebd62526ccd5d039301d077c1b5b39a720"
+    },
+    {
+      "path": "complaint-prototype/intake.test.cjs",
+      "bytes": 8419,
+      "sha256": "1377dc78d841407918072f3c6784367e6a477b5f95a77dfd7b3ff3a8ef56d04e"
+    },
+    {
+      "path": "complaint-prototype/lifecycle-browser.check.cjs",
+      "bytes": 7341,
+      "sha256": "5c1d7f3858280f9e68f40b070d9dc813efb9947938e23d6d83803fc943fa1ee4"
+    },
+    {
+      "path": "complaint-prototype/method-select.css",
+      "bytes": 3650,
+      "sha256": "45016ee86e4733e7237507f19fc4fabaf719d7ba8831549dd0857504836462b2"
+    },
+    {
+      "path": "complaint-prototype/method-select.js",
+      "bytes": 7183,
+      "sha256": "2b3f6f8c586729666d4adf0f129855876608fe25c097362ffebb6fae143e45c4"
+    },
+    {
+      "path": "complaint-prototype/mobile-process-browser.check.cjs",
+      "bytes": 7585,
+      "sha256": "66c7609d2b044ee1ed72c73f60b027d8cfac6696d11265f794986c16fb2cc656"
+    },
+    {
+      "path": "complaint-prototype/node-approval-settings.test.js",
+      "bytes": 4227,
+      "sha256": "90140565b675a61de25002f402532d4dd6435e773d6f5146f956b08f161e2817"
+    },
+    {
+      "path": "complaint-prototype/node-assignment-view.js",
+      "bytes": 15746,
+      "sha256": "cf05d9bad6ebb4d7679335cace59ebfbf257dff01c53f43a6eb37ca2be23fe06"
+    },
+    {
+      "path": "complaint-prototype/node-assignment.js",
+      "bytes": 5665,
+      "sha256": "a8e0e4c6f1bc2f73ec989a08a703db323fe7f2b17b1bc0830d2e8c29c1cc6cf8"
+    },
+    {
+      "path": "complaint-prototype/node-assignment.test.cjs",
+      "bytes": 2683,
+      "sha256": "fb4a038fcc8c6bc34489cd5a5c12561a6a58b465ec7dda320b6dbb66c891ce48"
+    },
+    {
+      "path": "complaint-prototype/overlay-bridge.js",
+      "bytes": 2057,
+      "sha256": "6b3d6db35f5f5bb63bbb0b0ef3715f0adc6b86f1dc00f9d8fef8afa6e383ca51"
+    },
+    {
+      "path": "complaint-prototype/pc-detail-browser.check.cjs",
+      "bytes": 9030,
+      "sha256": "b924ddb1d97de8d61c0c576391775d0cdd53532fe240fd5a44aa66f73250e6a9"
+    },
+    {
+      "path": "complaint-prototype/plan-conditions.test.cjs",
+      "bytes": 8620,
+      "sha256": "8bd7656e82fc46138c25bc091f8640440df1d80fd7b13a8a7a20bd2aa9217a0e"
+    },
+    {
+      "path": "complaint-prototype/position-approval.test.js",
+      "bytes": 4370,
+      "sha256": "329db3245ec02ae7074e9ad3e882b3721f8f754fdde248da437f8d9f6f537bec"
+    },
+    {
+      "path": "complaint-prototype/positions.css",
+      "bytes": 4581,
+      "sha256": "496aae1a8c0298bc30a13264710a87291679704cb63d3fa7991a5c6f11f1db4a"
+    },
+    {
+      "path": "complaint-prototype/procurement-shipping-browser.check.cjs",
+      "bytes": 9047,
+      "sha256": "66a0b26a0629fe046adaf0c02d975012c2733f0a81479328cd218901948f09a1"
+    },
+    {
+      "path": "complaint-prototype/procurement-shipping.test.cjs",
+      "bytes": 7207,
+      "sha256": "823c9abe5c2734c3a8236a5a1b30d0001a0baa2822368e6404496e707d055313"
+    },
+    {
+      "path": "complaint-prototype/procurement.test.cjs",
+      "bytes": 7013,
+      "sha256": "cc39ffef914efd617b1e19c98375c9b61879bb2def2a456d33ea6000fd59c76c"
+    },
+    {
+      "path": "complaint-prototype/refresh-queue.js",
+      "bytes": 663,
+      "sha256": "9f8c7e9746d88c4cf7edf11e8f9d0d0ec5c429b223c5151251a6bdcb86ab6255"
+    },
+    {
+      "path": "complaint-prototype/refund-view.js",
+      "bytes": 8585,
+      "sha256": "9d67a50a15df269bfbd75a72efb7d3544ac9365ee8e8f24648c3f8d04b649fe7"
+    },
+    {
+      "path": "complaint-prototype/refund.test.js",
+      "bytes": 9376,
+      "sha256": "c22752356319788d9920ed2c32f25c115fc0746fc906aa2652d3f5606bb00949"
+    },
+    {
+      "path": "complaint-prototype/refunds.js",
+      "bytes": 20211,
+      "sha256": "a8d9d570dd46c1a962c0bc66be6d5ac4c1865c53a45bd3a83597343aeb66b800"
+    },
+    {
+      "path": "complaint-prototype/rule-node-settings.test.cjs",
+      "bytes": 5009,
+      "sha256": "fb97e0e1413ea944da6377029f8bf39801e96a5864e06e918e8a2927593b6258"
+    },
+    {
+      "path": "complaint-prototype/rule-setup-browser.check.cjs",
+      "bytes": 8404,
+      "sha256": "1a8d840b55a980f80f540fad0a9ce9acb600273dc586b08a9fdc88faa56f546a"
+    },
+    {
+      "path": "complaint-prototype/rule-setup.test.cjs",
+      "bytes": 5334,
+      "sha256": "b27309036d76362e412c087e7ee45efb2df70545657e1915c30cc82569efc631"
+    },
+    {
+      "path": "complaint-prototype/rules-app.js",
+      "bytes": 12007,
+      "sha256": "19e6d83463b8c0ec9935b813d0fd27f20779d3a77d87e423f194376b97d80adf"
+    },
+    {
+      "path": "complaint-prototype/rules-view.js",
+      "bytes": 5991,
+      "sha256": "4c4603a184d939200691b8d8f06a6abe2149bfe76897f3610480f174ca7a3489"
+    },
+    {
+      "path": "complaint-prototype/rules.js",
+      "bytes": 20466,
+      "sha256": "0bdbfed094096fa87e89ffc8752f0b615f1586ea47238ce47146e3fa602b4cd2"
+    },
+    {
+      "path": "complaint-prototype/rules.test.js",
+      "bytes": 9041,
+      "sha256": "bc8934e5ab5e052478604bb4ae293bb064b682cf76328cb0fd83659fb8d9943e"
+    },
+    {
+      "path": "complaint-prototype/scenes.test.js",
+      "bytes": 6266,
+      "sha256": "78c4a31c1e9841cc90249e258060cd1337576cf09aa3cf00905e5192d85c670a"
+    },
+    {
+      "path": "complaint-prototype/schedule-app.js",
+      "bytes": 17191,
+      "sha256": "1fe14aaf1952416053d399b1685e90b8b1a5098c49cb91571cd50e6b02d6a337"
+    },
+    {
+      "path": "complaint-prototype/schedule-runner.js",
+      "bytes": 1153,
+      "sha256": "1e2069b3deceb7719a9ec522c07faa95719150b8ea8386d9f65495297b9f7f7b"
+    },
+    {
+      "path": "complaint-prototype/schedule.css",
+      "bytes": 10153,
+      "sha256": "fd73e1f3888090d3299a8cff05d217c8480a9c8112a784d9d2a2308b605b9536"
+    },
+    {
+      "path": "complaint-prototype/schedule.html",
+      "bytes": 2328,
+      "sha256": "9ee135a632d1e18fd372cff6b02f8d34abb3c08fb9ab45c632306528fc086695"
+    },
+    {
+      "path": "complaint-prototype/shared-store.js",
+      "bytes": 4559,
+      "sha256": "0616a51754233d4806e3a1b1e98a18bb45a813579cd46f5233388f515aa32504"
+    },
+    {
+      "path": "complaint-prototype/solution-browser.check.cjs",
+      "bytes": 10911,
+      "sha256": "ee2ec291b8fc414b5bbd3313ebe5c8df806c1a726174e8a4fc2ea6b9129e0f12"
+    },
+    {
+      "path": "complaint-prototype/solution-examples-browser.check.cjs",
+      "bytes": 5146,
+      "sha256": "2a8128641795407ff72aab1dd46eb1a2e86cb706d51d94d70e09f781f8e82ad4"
+    },
+    {
+      "path": "complaint-prototype/solution-examples.test.cjs",
+      "bytes": 6825,
+      "sha256": "b7937443d5c477b7cf086e9b46685db47c2e648ee11b2225e5bb91f680418126"
+    },
+    {
+      "path": "complaint-prototype/solution-flow.js",
+      "bytes": 21281,
+      "sha256": "985d47f255f7bc2abb8dd6bf51d220ca78f34245afc4429d8fd508dc1a645a10"
+    },
+    {
+      "path": "complaint-prototype/solution-flow.test.cjs",
+      "bytes": 13780,
+      "sha256": "b4f497c2ead396d9068a74469ea7afc139832fdb30ec25fae8c6b4497cd939c7"
+    },
+    {
+      "path": "complaint-prototype/solution-methods.js",
+      "bytes": 3528,
+      "sha256": "b19a75ab3637473842efe15fe546c5d00cf2dc5e43fd69dee9fe5943d9133b13"
+    },
+    {
+      "path": "complaint-prototype/solution-methods.test.cjs",
+      "bytes": 9356,
+      "sha256": "b3d6f435f4c517c0f862869301033a737ae5bacf836d4451154792aadbeb837c"
+    },
+    {
+      "path": "complaint-prototype/source-routing-browser.check.cjs",
+      "bytes": 10197,
+      "sha256": "184f6b264ed6fb6801a47fa21ad2348e84db431dab784f97cea02ceced4035b0"
+    },
+    {
+      "path": "complaint-prototype/source-routing-view.js",
+      "bytes": 1986,
+      "sha256": "947ec855b6572cd2c6b5b7144e52f7a096e77b90d95e246e33ce730c8ff63cfe"
+    },
+    {
+      "path": "complaint-prototype/source-routing.test.cjs",
+      "bytes": 9693,
+      "sha256": "dd2cbbcdd82a7516120f7322310282e1af10dfba37df4eee677345b9e6f88f6f"
+    },
+    {
+      "path": "complaint-prototype/store-handling.test.cjs",
+      "bytes": 7458,
+      "sha256": "2903a74aac10b779773429cb70358b2e1fce0e55689dd9a82c1869527946323b"
+    },
+    {
+      "path": "complaint-prototype/store.js",
+      "bytes": 1450,
+      "sha256": "03ada62c3197489ebe2f42c89514919d4e452ad1395114eb71e4fa8cd8bd1350"
+    },
+    {
+      "path": "complaint-prototype/store.test.js",
+      "bytes": 1890,
+      "sha256": "d71e4e5d60a7e78a053ab1ebcf4ab3efa662db92088d57177e1db0eb8f871df4"
+    },
+    {
+      "path": "complaint-prototype/structure.test.js",
+      "bytes": 5845,
+      "sha256": "c2b61ac94aff3e6afe7a07b03a973c4865ca50cb6665d5ed7a25787686155dcd"
+    },
+    {
+      "path": "complaint-prototype/styles.css",
+      "bytes": 46876,
+      "sha256": "dd569a318038063e613a58bd2b666f540c146e3c6227c2575671a273372e7e60"
+    },
+    {
+      "path": "complaint-prototype/suspension-browser.check.cjs",
+      "bytes": 7397,
+      "sha256": "0e6ca021f3560c34d8aec0e7a7472cd85cb85f4e5b2c5bdd7c9f626a93f54085"
+    },
+    {
+      "path": "complaint-prototype/suspension-control.js",
+      "bytes": 9911,
+      "sha256": "76cb8c926f439963c8ebb5e3f84031f01d0b6f1d796d7c5cdfae67790ed7814d"
+    },
+    {
+      "path": "complaint-prototype/suspension-control.test.cjs",
+      "bytes": 8010,
+      "sha256": "40bd1f80c7364a19047c6690a328e1bf947e4b5bf37daeffd57e405d933e7768"
+    },
+    {
+      "path": "complaint-prototype/suspension-ui.js",
+      "bytes": 7266,
+      "sha256": "8f2520b9d6282f14673d9a78bc776df4e5c9d5863e799f5e5c5fd1b9f397f91a"
+    },
+    {
+      "path": "complaint-prototype/ticket-flow-config.js",
+      "bytes": 19011,
+      "sha256": "638e046e4b0493bc958ab17bd6b97f7103b71f5235bd64d8bf49f4335d5e355a"
+    },
+    {
+      "path": "complaint-prototype/ticket-flow-config.test.cjs",
+      "bytes": 6401,
+      "sha256": "ba38abbbb305824d43de1bbaa12e2bc7f269b2f0d0221fbdf70bdd25730613fa"
+    },
+    {
+      "path": "complaint-prototype/ticket-lifecycle.js",
+      "bytes": 14060,
+      "sha256": "e1d24d8b3c71ccd778ddc08cb1ecad41ff102bb7ecec3f04f2ea1cb1f54ad53a"
+    },
+    {
+      "path": "complaint-prototype/ticket-lifecycle.test.cjs",
+      "bytes": 19301,
+      "sha256": "e71f6849b5f2186015efedf20aafa3bf8671396ea6cffa8a1a0e71fca7b64cb2"
+    },
+    {
+      "path": "complaint-prototype/ticket-operations-browser.check.cjs",
+      "bytes": 18016,
+      "sha256": "3ab24f0c6be56785f9707692a3421589bf7abfb74e8b4da1ae41a2947491fbf9"
+    },
+    {
+      "path": "complaint-prototype/ticket-operations.js",
+      "bytes": 17452,
+      "sha256": "fdfeff4ee94c8531efaa4e345dc9880c6e8cdcc605e3980bac2d775b13a6fe56"
+    },
+    {
+      "path": "complaint-prototype/ticket-operations.test.cjs",
+      "bytes": 14858,
+      "sha256": "2ba3256e931207e2c25fa3057f5cd12dcdf80bfa4f6c37597d75ebe18f33025e"
+    },
+    {
+      "path": "complaint-prototype/ticket-sources.js",
+      "bytes": 1721,
+      "sha256": "03181dd5c54d2a746e644e0806805ad6bd9f895f162aaac2a5c216afb8e91e3d"
+    },
+    {
+      "path": "complaint-prototype/ticket-sources.test.cjs",
+      "bytes": 2921,
+      "sha256": "1fb90fc09be1dfe891cb9c30bdc4d9f7c176181f8e2cdf46c127da484efdd7fa"
+    },
+    {
+      "path": "complaint-prototype/ui-workflow.check.cjs",
+      "bytes": 7424,
+      "sha256": "26fca1e281f753af6138119f200223584a827c072c81374d5355882634b97cbe"
+    },
+    {
+      "path": "complaint-prototype/unified-browser.check.cjs",
+      "bytes": 7228,
+      "sha256": "34a45a6d66ec1afa25723908b9e9934b21be6647db9978fd8637ca1673cc053d"
+    },
+    {
+      "path": "complaint-prototype/unified.test.cjs",
+      "bytes": 12741,
+      "sha256": "d68ceb1d84807fe901221074ea3b4f1ef771562805e3031b6ffea2c7cac88c0d"
+    },
+    {
+      "path": "complaint-prototype/workflow-examples.js",
+      "bytes": 25581,
+      "sha256": "73b9f2d9a4557a72b1e124a84dc902f0f4ac909b22d43cd85d392f77bf38ebea"
+    },
+    {
+      "path": "complaint-prototype/workflow.test.js",
+      "bytes": 10876,
+      "sha256": "470f1cb69a114c6be7ad885e13389a0948bf5f0d8dda188fe04284432c6ae1b1"
+    },
+    {
+      "path": "complaint-prototype/workflow/app.js",
+      "bytes": 141754,
+      "sha256": "0b41fc6d0ea541e64e00641a163dd65fac2b6db5697c80fbd04bc245ced8c10f"
+    },
+    {
+      "path": "complaint-prototype/workflow/base.css",
+      "bytes": 23910,
+      "sha256": "a5262dc419b810f05dbfc4b4d3a9020cc58b201e4cd31a96012aa64eeb010416"
+    },
+    {
+      "path": "complaint-prototype/workflow/engine.js",
+      "bytes": 34730,
+      "sha256": "fae0e6a7507304be88288e396ef7b54be278642f257e5af39669ad0d09be77cb"
+    },
+    {
+      "path": "complaint-prototype/workflow/index.html",
+      "bytes": 3622,
+      "sha256": "4ae95b90df0a744a1121621618022d8c55682625865dc300a67e9334d2282aed"
+    },
+    {
+      "path": "complaint-prototype/workflow/integration.js",
+      "bytes": 1481,
+      "sha256": "e27b8dcf2dcdac40a0ac061ccceff921c6fbc48c2f0312253363e46958eac245"
+    },
+    {
+      "path": "complaint-prototype/workflow/proposal-desktop.css",
+      "bytes": 11364,
+      "sha256": "09638fe436ca4c5abcc5bb4da57345e237f04212b17c4bece3afbfdefeb43607"
+    },
+    {
+      "path": "complaint-prototype/workflow/theme.css",
+      "bytes": 111216,
+      "sha256": "f85e7f3f5e247bfa64fabcf6a8746de9014c4d576dbb06f283205cadd618eea5"
+    },
+    {
+      "path": "complaint-prototype/workflow/workflow.check.cjs",
+      "bytes": 11294,
+      "sha256": "a4aafcc5c7d91a6fad232beb7e7536254eccb7fa79670d410495473e65b05dba"
+    },
+    {
+      "path": "complaint-prototype/zuhu-entry.js",
+      "bytes": 7044,
+      "sha256": "d8ef30136280c55a90202077e58b5a8c8e8c4a89ad8c69c4cfe3cea6656a5c91"
+    },
+    {
+      "path": "customer-merge-prototype/README.md",
+      "bytes": 4753,
+      "sha256": "4a9e191a92522f950d606b39c2ac1d0822cc3bb31803ddbebcc2750d63ef1764"
+    },
+    {
+      "path": "customer-merge-prototype/app.js",
+      "bytes": 22683,
+      "sha256": "c104f0a133ece3767a253ebd931b42ccfe7d516b50f37545f74526d897296eed"
+    },
+    {
+      "path": "customer-merge-prototype/approval.html",
+      "bytes": 821,
+      "sha256": "6a1c195d984394ed51c132e8db96157af0a1d320731495b242da1a44cbba2f7b"
+    },
+    {
+      "path": "customer-merge-prototype/client.html",
+      "bytes": 819,
+      "sha256": "77ae8b324f9936a440109b750150188a43fba833a58b34f20f9c409c19f4e702"
+    },
+    {
+      "path": "customer-merge-prototype/demo.html",
+      "bytes": 4938,
+      "sha256": "eb56e7a76cef73beb708191c2fefa2efd8a047ef5e6725971ddfdc45a70b2720"
+    },
+    {
+      "path": "customer-merge-prototype/dialogs.js",
+      "bytes": 23137,
+      "sha256": "3675c3960a01b015865b2910b675fff3bc3e432edfcbfd79bdaa2c2694826da7"
+    },
+    {
+      "path": "customer-merge-prototype/engine.js",
+      "bytes": 29694,
+      "sha256": "d6c32154f19ff069e5ca1dfa6adcecf2bf49257a840d170dd314a2bcb7f3fc5e"
+    },
+    {
+      "path": "customer-merge-prototype/engine.test.cjs",
+      "bytes": 9896,
+      "sha256": "ac67b1019bd215903868296de259870b3346d57482e5b5fd6ce19434d4ef2ee6"
+    },
+    {
+      "path": "customer-merge-prototype/entry.js",
+      "bytes": 2244,
+      "sha256": "ec5407a351929a9d24e0814e8d10fcb99c3848ecb9e247567a15b7f91cd7fc13"
+    },
+    {
+      "path": "customer-merge-prototype/host-adapter.js",
+      "bytes": 1441,
+      "sha256": "c50fb154b48f12e914353170a60c8870af8fe1f4e0142a66e5ba56e0a09cef19"
+    },
+    {
+      "path": "customer-merge-prototype/page-manifest.js",
+      "bytes": 7410,
+      "sha256": "6a055a7fd54e87bcc325b1e6a73eac89cdf1c0488c809c0647d39a3f658e3c5a"
+    },
+    {
+      "path": "customer-merge-prototype/pc.html",
+      "bytes": 821,
+      "sha256": "a89d02e0830a85eac20a9ff3a82d43a783658d071b284826bd70f497681834a9"
+    },
+    {
+      "path": "customer-merge-prototype/qa/approval.png",
+      "bytes": 46212,
+      "sha256": "b5619f906e6ae388a1fb795a1939ac12816edd74f7c429540d8c907d3c8f4ab4"
+    },
+    {
+      "path": "customer-merge-prototype/qa/browser-report.json",
+      "bytes": 994,
+      "sha256": "7f83235d6b96e5943b3eca5ec2242ac7de069ae9eaacb2b7b8e10c59c0212c5c"
+    },
+    {
+      "path": "customer-merge-prototype/qa/browser-test.cjs",
+      "bytes": 9954,
+      "sha256": "27210cc33959530b2e19986ddc8a00cfb8030e27b33945469b001ebddec8ba04"
+    },
+    {
+      "path": "customer-merge-prototype/qa/client.png",
+      "bytes": 41920,
+      "sha256": "1cc7ed388471a1cd88831a46b0f87aa283028ee81b2b06b768955884a561ed61"
+    },
+    {
+      "path": "customer-merge-prototype/qa/correction.png",
+      "bytes": 155760,
+      "sha256": "c06b7b8b60546c63d268c9d9a90887520aafabfe0a8fb222179dc4fa81d34c61"
+    },
+    {
+      "path": "customer-merge-prototype/qa/pc-list.png",
+      "bytes": 142648,
+      "sha256": "f617de86f864e8025b83f3542cabcf763129b67802a31b0b99f88b2115ed8b0f"
+    },
+    {
+      "path": "customer-merge-prototype/qa/rules.png",
+      "bytes": 135965,
+      "sha256": "c0cef662cb4235b510bf49863aa5b649a9956fa141cb2bd84ccda1c43c814fe1"
+    },
+    {
+      "path": "customer-merge-prototype/qa/store.png",
+      "bytes": 48079,
+      "sha256": "014e6dea04b0e22e2334e3110b1695296ff4b748a6a059759007af72428040ca"
+    },
+    {
+      "path": "customer-merge-prototype/scenarios.js",
+      "bytes": 4657,
+      "sha256": "413dceba091aaa429336eab270ab78062070e333d8aed1269bc7399f2d370f71"
+    },
+    {
+      "path": "customer-merge-prototype/seed.js",
+      "bytes": 12577,
+      "sha256": "745a5ef222997dd60f31cbedf0353d37893f26c908b8c2a8d8905c369990da90"
+    },
+    {
+      "path": "customer-merge-prototype/store.html",
+      "bytes": 821,
+      "sha256": "abf5a8772e9b297a0479e5c89a464d4fcc865128b17313be25b53ee19a238ad3"
+    },
+    {
+      "path": "customer-merge-prototype/styles.css",
+      "bytes": 25350,
+      "sha256": "c50c3cf133ea214e8f95140aca5002b426e529583645e49c8bd0a913cebd1b08"
+    },
+    {
+      "path": "customer-merge-prototype/views-correction.js",
+      "bytes": 20350,
+      "sha256": "40597c40960a492d342739b375a9d1ea74d9baff31fc5c0c2c57e6fd6b8d06d2"
+    },
+    {
+      "path": "customer-merge-prototype/views-mobile.js",
+      "bytes": 19820,
+      "sha256": "19a219ed697649587f6218c9cc85b92eb7d53b4db8eacff1717744ff0c94e885"
+    },
+    {
+      "path": "customer-merge-prototype/views-pc.js",
+      "bytes": 21683,
+      "sha256": "ce6b513f24fe21c064fc893dc2036dbcc977c845a674cd573bbc450f21d75e30"
+    },
+    {
+      "path": "customer-merge-prototype/views-rules.js",
+      "bytes": 16005,
+      "sha256": "de0d0849728766b617b9417d6d2aeb9bc5d440900f1db95cd6f85f21822d4c49"
+    },
+    {
+      "path": "customer-merge-prototype/walkthrough.js",
+      "bytes": 13747,
+      "sha256": "5c0b76ab8ae481ca7a5a473b34b8bb28e568b065cb0857bcee676453fd131658"
+    },
+    {
+      "path": "customer-merge-prototype/启动原型.command",
+      "bytes": 823,
+      "sha256": "0f5fe3593fe7db7249cd29b37622f26c8e88c134f601b0de894226406b562590"
+    },
+    {
+      "path": "group-approval/PLAN.md",
+      "bytes": 6725,
+      "sha256": "6aa44d3a53142a28230adf10a9744136a8c60c46e1c687779e3ba055bcf87cd0"
+    },
+    {
+      "path": "group-approval/README.md",
+      "bytes": 19523,
+      "sha256": "b7c6425728b7529ea9fac3c896f697f1096f18dd4654254c6f2beca2847bb50d"
+    },
+    {
+      "path": "group-approval/app.js",
+      "bytes": 48042,
+      "sha256": "156dcc158b8da5461b61aa13a15413feb2f5efb82231369c1cc37a46533b8a98"
+    },
+    {
+      "path": "group-approval/base.css",
+      "bytes": 46876,
+      "sha256": "dd569a318038063e613a58bd2b666f540c146e3c6227c2575671a273372e7e60"
+    },
+    {
+      "path": "group-approval/browser.check.cjs",
+      "bytes": 15132,
+      "sha256": "85234dd4a2d51c1a04ca6d8dbb3c8a16a15164189c609b22a2470e5bcbd58f08"
+    },
+    {
+      "path": "group-approval/configuration.js",
+      "bytes": 35589,
+      "sha256": "41836b3fb2e727e8ab40cee80d5192de57e4a332f8e9ca712f625dd71549719c"
+    },
+    {
+      "path": "group-approval/engine.js",
+      "bytes": 25970,
+      "sha256": "d8fd5aa641b6e2248341331568bc9681c136e8f79263cadbf40eee4bfed58ad4"
+    },
+    {
+      "path": "group-approval/engine.test.cjs",
+      "bytes": 10725,
+      "sha256": "93c77ef3ce2a9c182d5b1ff273c8ee0b20b0e80c54b67347b21c12d7fd46683e"
+    },
+    {
+      "path": "group-approval/entry.js",
+      "bytes": 3342,
+      "sha256": "ade1fe4e59bc0fd25ecbc3ed83bbc17acdc5db444c4139cc790f0394e65c09e6"
+    },
+    {
+      "path": "group-approval/flow-base.css",
+      "bytes": 18595,
+      "sha256": "c21ab8cce97e28cbf7a427d20d1db7e51943b87440bbe1f60b51b967161cee7c"
+    },
+    {
+      "path": "group-approval/form-model.js",
+      "bytes": 12511,
+      "sha256": "2afa952224e3a0b9ece2c55963f11fdbec98579e813faf03b566fe4908507252"
+    },
+    {
+      "path": "group-approval/index.html",
+      "bytes": 1121,
+      "sha256": "1f701ff145e6d4e8ad3093d08ccf82f44c134067effaa1067909467c6154cdd9"
+    },
+    {
+      "path": "group-approval/management.js",
+      "bytes": 27550,
+      "sha256": "22fa9c5b4c24542040373d555fe0775fee0be419402385b156db8c1ac6470754"
+    },
+    {
+      "path": "group-approval/mobile.check.cjs",
+      "bytes": 6660,
+      "sha256": "6931276549bb1fc97010f17be1ff530182f5d227be90d53f54612c9405f57390"
+    },
+    {
+      "path": "group-approval/mobile.css",
+      "bytes": 14162,
+      "sha256": "3d86df426011b246b1e30345187bd1924d7b975ccd1ed807867adccd59ffc171"
+    },
+    {
+      "path": "group-approval/oa-designer.css",
+      "bytes": 18115,
+      "sha256": "0f777cc1a6419c9266e25c55a684d3f0b3896b909bd86d57a739941658f9e429"
+    },
+    {
+      "path": "group-approval/oa-designer.js",
+      "bytes": 58681,
+      "sha256": "170ca305cddd84372ddd5c7f83bf7bae4294dd221ff6bc462cae48b524fa6af1"
+    },
+    {
+      "path": "group-approval/oa-dom.test.cjs",
+      "bytes": 15600,
+      "sha256": "5b4a9495ba159967b54cf2e9bfa3ca3114ecee6016d339c35ad5e8cd3cee97eb"
+    },
+    {
+      "path": "group-approval/oa-runtime.js",
+      "bytes": 20886,
+      "sha256": "bfce6b3811cce255cb85936e6fa1f24686925db4b35869d0ed1aee3c6480db21"
+    },
+    {
+      "path": "group-approval/oa-settings.css",
+      "bytes": 12845,
+      "sha256": "530a8e4197d9d4f81c212c1e578d3b5103e3b9f455ac4259b7865de56d1bf821"
+    },
+    {
+      "path": "group-approval/oa.test.cjs",
+      "bytes": 13087,
+      "sha256": "fc71e77868158630bc3e4ea8d08020f9ef700f5066dbbd1db8da70007adb1734"
+    },
+    {
+      "path": "group-approval/persistence.check.cjs",
+      "bytes": 4553,
+      "sha256": "50a146363b88f73c4955e4b7c341bc257f7f08019a27dbf5b0fbf0bf872586b1"
+    },
+    {
+      "path": "group-approval/seed.js",
+      "bytes": 13058,
+      "sha256": "60529ae91c5e0dd97894305c854fd425fc051a70f0653e079c08ea06b5eada94"
+    },
+    {
+      "path": "group-approval/styles.css",
+      "bytes": 22475,
+      "sha256": "c1b8f5b98b68a71d5fa850167e2074c142c0034df5a5d32123e12ad7e2a013c6"
+    },
+    {
+      "path": "group-approval/timing.check.cjs",
+      "bytes": 7759,
+      "sha256": "976da2d36c525aae1d6f8dcf08ed11061695adf2a4b11d6db9330225c91d7ae4"
+    },
+    {
+      "path": "group-approval/timing.js",
+      "bytes": 4504,
+      "sha256": "4c16f8b1819e61de9a1824b054c88ad340dc09adf53326b943d6a5f12f00af6f"
+    },
+    {
+      "path": "group-approval/timing.test.cjs",
+      "bytes": 7801,
+      "sha256": "c04650bacbfb3b341beb37b290b840f98817b2a246fd92aec813901601d53e90"
+    },
+    {
+      "path": "unified-complaints/README.md",
+      "bytes": 12473,
+      "sha256": "e57ad902449088a0c6930e19f51834d7a2893cc80d47e744ad3357b919eb1086"
+    },
+    {
+      "path": "unified-complaints/app.js",
+      "bytes": 93340,
+      "sha256": "139b0a9d42f96066aaf7c081337990ba4ac7de49da907b53711a0525fd37c144"
+    },
+    {
+      "path": "unified-complaints/index.html",
+      "bytes": 367,
+      "sha256": "538b05022abcefc45b013fb73369a918e3e8824eb78bd29f9e9cc03bf1397381"
+    },
+    {
+      "path": "unified-complaints/preview/assessment.jpg",
+      "bytes": 73179,
+      "sha256": "15299a4d48e047efc324649761a3e034421bbe618cc1d70f798aeec2ac6dc6d5"
+    },
+    {
+      "path": "unified-complaints/preview/closed-history.jpg",
+      "bytes": 79973,
+      "sha256": "c1eb831d3585bd905e27e0e5c5db33a90cac4039c1cf35d309bc7155cd2492b8"
+    },
+    {
+      "path": "unified-complaints/preview/closed-order-readonly.jpg",
+      "bytes": 56503,
+      "sha256": "883bdd7f881e8ee855edded1f51dccfe441b161854c773da5c30800db55a286b"
+    },
+    {
+      "path": "unified-complaints/preview/closed-plan-readonly.jpg",
+      "bytes": 78699,
+      "sha256": "cf6d0ea6567464426d692cb590965b5824d8104a055afafa7b421a9fd550a85e"
+    },
+    {
+      "path": "unified-complaints/preview/common-orders-detail.jpg",
+      "bytes": 79368,
+      "sha256": "bd8db05a902adfc596b75870b50e5d313ddc42544a6ddc9991dbf79e6b614dcc"
+    },
+    {
+      "path": "unified-complaints/preview/common-orders-pending.jpg",
+      "bytes": 74301,
+      "sha256": "5bb4768ce501094091871aa1fc66f22186b5f25bccc1e1a17b5e088c8eab66b8"
+    },
+    {
+      "path": "unified-complaints/preview/complaint-image.jpg",
+      "bytes": 58858,
+      "sha256": "60c8ef689a50022b12b454fdcbfe45cebef294d2776adef18d8c2babd3958269"
+    },
+    {
+      "path": "unified-complaints/preview/complaint-store-search.jpg",
+      "bytes": 33880,
+      "sha256": "3b0a28a91bdd09a76407975ce545a295c51858f4bd7b53b7c4cd5592210b568d"
+    },
+    {
+      "path": "unified-complaints/preview/detail.jpg",
+      "bytes": 75723,
+      "sha256": "8990252c3eb2e6653632b0a0222e38d57b2d7f514355451943f35864cae42502"
+    },
+    {
+      "path": "unified-complaints/preview/follow-history.jpg",
+      "bytes": 74566,
+      "sha256": "e818a0f3c579d056c19f100ba6d8d4894b77fd2a823382d520982c0796117cd3"
+    },
+    {
+      "path": "unified-complaints/preview/follow.jpg",
+      "bytes": 62431,
+      "sha256": "a703a83aba8e469f3591d5243f7d826a72d98fe826640976ca7f55255c89e478"
+    },
+    {
+      "path": "unified-complaints/preview/handling-attachments-audio.jpg",
+      "bytes": 86754,
+      "sha256": "64e861b79b1348c08f5c41bf422a11d06bd3ed402c84bf3914f9f7981d17c915"
+    },
+    {
+      "path": "unified-complaints/preview/handling-compact-required.jpg",
+      "bytes": 71380,
+      "sha256": "adf18317ea35c0eed8643829d8e6e16e7689c3fb2b17e284dad78767fd33b017"
+    },
+    {
+      "path": "unified-complaints/preview/handling-multiselect.jpg",
+      "bytes": 70336,
+      "sha256": "56a2351d71656477010332b9ac1682f6b01e4c6a1e9a968c057af47db8b55de6"
+    },
+    {
+      "path": "unified-complaints/preview/handling-plan-form.jpg",
+      "bytes": 57390,
+      "sha256": "15f67b85f004df0f1a27d0976c40e1bdaec93fb486661606caf9054d28c6e56a"
+    },
+    {
+      "path": "unified-complaints/preview/list-customer-store-order.jpg",
+      "bytes": 129381,
+      "sha256": "4c0107ed342ae476e11193501df35a9df9b6e54103de412b32f8a6841fceefd8"
+    },
+    {
+      "path": "unified-complaints/preview/list-empty-fields.jpg",
+      "bytes": 88068,
+      "sha256": "9f2a27e663a1c8318ad17bfc944735e0c02b36d1d17721f530228d032217898c"
+    },
+    {
+      "path": "unified-complaints/preview/list-keyword-search.jpg",
+      "bytes": 41269,
+      "sha256": "d7719947756e2784f2b7601f516dd1a84e14867a45c1d45e964031146335c670"
+    },
+    {
+      "path": "unified-complaints/preview/list-time-only.jpg",
+      "bytes": 84326,
+      "sha256": "77275eef61f36a413408f07f0b9e970f65796a58e692647e1d127560ed0deadc"
+    },
+    {
+      "path": "unified-complaints/preview/list.jpg",
+      "bytes": 89225,
+      "sha256": "94135dc75ea58e6c1aaf6f885a05b20e31944385907341f2127db032a3327204"
+    },
+    {
+      "path": "unified-complaints/preview/mock-details.jpg",
+      "bytes": 77392,
+      "sha256": "9e3f3ff905d7eb83c2953a9d524bdc7069276c6a689d0fe2eeec0e888cb2d976"
+    },
+    {
+      "path": "unified-complaints/preview/order-filter-refined.jpg",
+      "bytes": 33133,
+      "sha256": "d75507ab4bd46f0a669fbb2021c798df4581fb066f340fa83df3a7e548b73ef4"
+    },
+    {
+      "path": "unified-complaints/preview/order-pagination-right.jpg",
+      "bytes": 42354,
+      "sha256": "78807bec57de96e60e672e451a934bb6baf5d1e928376fd8ef821be65e7cc39f"
+    },
+    {
+      "path": "unified-complaints/preview/order-picker-expanded.jpg",
+      "bytes": 89976,
+      "sha256": "3ea3170c479524cfce0d48b18889ebae2619846272d7756c388810bdb27d9269"
+    },
+    {
+      "path": "unified-complaints/preview/order-picker.jpg",
+      "bytes": 48267,
+      "sha256": "80769530ea09fb4884d49b8d6709350909a12d15f4eae7c4fda0e3320c93261d"
+    },
+    {
+      "path": "unified-complaints/preview/orders.jpg",
+      "bytes": 79136,
+      "sha256": "e4eb75385bb41c95e289c15e8e8c7d98fe509158fbfdc5c325b28576f92e8026"
+    },
+    {
+      "path": "unified-complaints/preview/pagination-right.jpg",
+      "bytes": 82787,
+      "sha256": "cb8ff2327945ffc00530dabc0b65ed4f9c1a41eca2a4d22e931cc6a936e3eded"
+    },
+    {
+      "path": "unified-complaints/preview/pending-plan.jpg",
+      "bytes": 65771,
+      "sha256": "521989d44eed50cd3ab8e7d6e741c6a54698d56a4a5ba9aea8704f1a68fb4622"
+    },
+    {
+      "path": "unified-complaints/preview/recognition-actions.jpg",
+      "bytes": 79404,
+      "sha256": "67467827112b4cb547f124f8abc971526756184e851908c412c857738a0effbe"
+    },
+    {
+      "path": "unified-complaints/preview/recognition-timeline.jpg",
+      "bytes": 89421,
+      "sha256": "2a602250d798a4d16621d01ea8330877c0ce85c02c4f421583b63a8caf28567d"
+    },
+    {
+      "path": "unified-complaints/preview/status-tab-counts.jpg",
+      "bytes": 87978,
+      "sha256": "bdb8d519bdabc17078312b14bbcb5b4fdef83bc661c2582c7b3c7549f2fbbeb1"
+    },
+    {
+      "path": "unified-complaints/preview/unified-scheme-details.jpg",
+      "bytes": 77929,
+      "sha256": "9e1816c3da8321b49c5be34a60c30108e0333693152553410e449e851649f0dd"
+    },
+    {
+      "path": "unified-complaints/preview/unified-scheme.jpg",
+      "bytes": 77011,
+      "sha256": "deeec44e982fe35cf8369c4cecf76f81cd936c928d67798fd77abf597d88632f"
+    },
+    {
+      "path": "unified-complaints/preview/wechat-list.jpg",
+      "bytes": 84261,
+      "sha256": "4a7064d48d9dd26766f55397499e8538fc2f0deb44a72758a2c7c606f89558b8"
+    },
+    {
+      "path": "unified-complaints/preview/wechat-payment-detail.jpg",
+      "bytes": 69121,
+      "sha256": "c0bb9c65c31221d08d40fa1faf9aceffdebcbd716d4f1831f161a44f147c4fd0"
+    },
+    {
+      "path": "unified-complaints/styles.css",
+      "bytes": 48823,
+      "sha256": "1a0a27ad7e046adf262d96a16ced0ae8c9f778f2d8f042d6b956912c14291f4d"
+    },
+    {
+      "path": "index.html",
+      "bytes": 1917957,
+      "sha256": "7591d15f229006fdf549d7bb3fde955b08d26b597fa43ac1cc8ed28e59d3b2e4"
+    }
+  ]
+}

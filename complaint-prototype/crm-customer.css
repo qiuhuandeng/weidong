@@ -1,0 +1,102 @@
+.crm-customer-view{display:flex;flex-direction:column;background:white;min-width:0;color:#26364b}.crm-customer-view button,.crm-customer-view input,.crm-customer-view select{font:inherit}.crm-header{height:68px;min-height:68px;display:flex;align-items:center;gap:22px;padding:0 28px;border-bottom:1px solid #e8edf3}.crm-header h2{font-size:17px;font-weight:600;margin:0}.crm-header .crm-back{padding:4px 0;border:0;background:none;color:#1677ff;font-size:13px}.crm-dismiss{margin-left:auto;border:0;font-size:24px!important;line-height:24px;background:none;color:#8191a7}.crm-scroll{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain}.crm-customer-summary{padding:25px 28px 23px;border-bottom:1px solid #edf1f6;display:flex;justify-content:space-between;align-items:center;gap:20px}.crm-customer-summary>div{display:flex;gap:12px 20px;flex-wrap:wrap;align-items:baseline}.crm-customer-summary h3{font-size:20px;font-weight:600;margin:0;width:100%;color:#20334b}.crm-customer-summary span{font-size:13px;color:#63778f}.crm-customer-summary small{font-size:12px;white-space:nowrap;color:#8b9aaf;align-self:flex-start;margin-top:4px}.crm-tabs{display:flex;padding:0 28px;gap:30px;border-bottom:1px solid #e7edf5;background:white;position:sticky;top:0;z-index:2}.crm-tabs button{border:0;border-radius:0;background:none;padding:16px 0;font-size:14px;color:#7c8da3;border-bottom:2px solid transparent;white-space:nowrap}.crm-tabs [aria-selected=true]{color:#1677ff;border-bottom-color:#1677ff;font-weight:600}.crm-main{padding:20px 28px 32px}.crm-table-wrap{border:1px solid #e5ebf3;border-radius:7px;overflow:hidden}.crm-table{width:100%;border-collapse:collapse;font-size:13px;table-layout:auto}.crm-table th{background:#f6f8fb;color:#7e8ea5;font-size:12px;font-weight:500;padding:13px 12px;text-align:left;white-space:nowrap}.crm-table td{padding:18px 12px;border-top:1px solid #ebeff5;vertical-align:top;line-height:21px}.crm-table th.numeric,.crm-table td.numeric{text-align:right;white-space:nowrap}.crm-table strong{font-weight:500}.crm-table td:first-child{min-width:150px;max-width:245px}.crm-table .link{padding:0;font-size:12px;white-space:nowrap;border:0;background:none;min-height:22px}.crm-muted{display:block;font-size:12px;color:#8798ae;line-height:20px}.crm-break{overflow-wrap:anywhere}.crm-linked{display:inline-flex;align-items:center;white-space:nowrap;padding:0 6px;margin-top:6px;font-size:11px;line-height:21px;color:#1677ff;background:#f0f6ff;border-radius:3px}.crm-state{color:#409e84;white-space:nowrap;font-size:12px}.crm-state.is-waiting{color:#a5823b}.crm-order-expanded>td{background:#fafcff!important;padding:16px 20px}.crm-order-expanded[hidden]{display:none}.crm-order-items{display:grid;gap:12px}.crm-order-items>div{display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:center;font-size:12px}.crm-order-items strong,.crm-order-items b{font-weight:500}.crm-order-items span{color:#8193a8}.crm-empty{text-align:center;padding:64px 16px;color:#8b9bb0}.crm-empty>span{display:flex;justify-content:center;align-items:center;width:48px;height:48px;margin:auto;background:#f2f5fa;border-radius:50%;color:#a6b3c4;font-size:23px}.crm-empty p{margin:16px 0;font-size:14px}.crm-image-group+ .crm-image-group{margin-top:28px}.crm-image-group>header{display:flex;justify-content:space-between;gap:16px;margin:2px 0 18px}.crm-image-group h3{font-size:14px;font-weight:600;margin:0 0 5px}.crm-image-group header span,.crm-image-group header time{font-size:12px;color:#8a9bb0}.crm-image-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}.crm-photo{border:0!important;background:none!important;padding:0!important;text-align:left;min-width:0;display:flex;flex-direction:column;color:#31465f}.crm-photo-frame{display:block;position:relative;width:100%;aspect-ratio:4/3;border-radius:6px;overflow:hidden;background:#f1f4f8}.crm-photo img{width:100%;height:100%;object-fit:cover}.crm-photo-stage{position:absolute;bottom:7px;left:7px;background:#193754aa;color:white;border-radius:3px;padding:2px 7px;font-size:11px}.crm-photo>strong{font-size:13px;font-weight:500;margin:9px 0 4px}.crm-photo>small{font-size:12px;color:#91a0b3}.crm-visits{margin:0;padding:0;list-style:none}.crm-visits li{padding:22px 0;border-bottom:1px solid #e8edf5}.crm-visits li:first-child{padding-top:4px}.crm-visit-heading{display:flex;gap:12px;align-items:center}.crm-visit-heading strong{font-size:14px;font-weight:600}.crm-visit-heading time{margin-left:auto;color:#8496ac;font-size:12px}.crm-visit-person{color:#8798ad;font-size:12px;margin:9px 0}.crm-visit-body{font-size:13px;line-height:1.9;margin:0;white-space:pre-wrap;overflow-wrap:anywhere}.crm-visit-meta{display:flex;justify-content:space-between;gap:12px;margin-top:13px;color:#91a0b3;font-size:12px}
+.crm-mobile-surface{position:fixed;inset:0;z-index:250;display:flex;justify-content:center;background:#f0f2f5}.crm-mobile{width:100%;max-width:430px;height:100dvh;background:#f5f7fa;box-shadow:0 8px 30px #16385b12}.crm-mobile .crm-header{height:54px;min-height:54px;padding:0 16px;display:grid;grid-template-columns:65px 1fr 65px;background:white;gap:0}.crm-mobile .crm-header h2{text-align:center;font-size:17px}.crm-mobile .crm-back{text-align:left;font-size:14px;min-height:44px}.crm-mobile .crm-customer-summary{display:block;background:white;padding:20px 16px}.crm-mobile .crm-customer-summary>div{gap:7px 14px}.crm-mobile .crm-customer-summary h3{font-size:20px;margin-bottom:4px}.crm-mobile .crm-customer-summary span{font-size:12px}.crm-mobile .crm-customer-summary small{display:block;font-size:11px;margin-top:14px}.crm-mobile .crm-tabs{padding:0 16px;gap:0;justify-content:space-between}.crm-mobile .crm-tabs button{font-size:13px;padding:14px 0}.crm-mobile .crm-main{padding:16px 12px 28px}.crm-mobile #crm-content{display:grid;gap:12px;outline:none}.crm-order-card,.crm-payment-card{background:white;border:1px solid #e4ebf5;border-radius:8px;padding:16px;min-width:0}.crm-card-top{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:11px;overflow-wrap:anywhere;color:#8193aa}.crm-order-card h3{margin:12px 0 6px;font-size:15px;font-weight:600;line-height:24px}.crm-order-card .crm-muted{font-size:11px;margin:0}.crm-order-amount{display:flex;align-items:center;justify-content:space-between;margin:16px 0;font-size:12px;color:#8799ad}.crm-order-amount strong{font-size:18px;font-weight:600;color:#233a56}.crm-mobile details{border-top:1px solid #edf1f7;padding-top:12px}.crm-mobile summary{display:flex;align-items:center;justify-content:space-between;list-style:none;color:#677f9c;font-size:12px;min-height:25px;cursor:pointer}.crm-mobile summary::-webkit-details-marker{display:none}.crm-mobile .crm-order-items{margin-top:16px;gap:16px}.crm-mobile .crm-order-items>div{grid-template-columns:minmax(0,1fr) auto;gap:5px 8px}.crm-mobile .crm-order-items strong{font-size:13px}.crm-mobile .crm-order-items span{grid-column:1/-1;font-size:11px;grid-row:2}.crm-transaction-amount{font-size:22px;font-weight:600;color:#223b58}.crm-payment-method{font-size:13px;margin-top:12px}.crm-payment-card>.crm-muted{font-size:11px;margin-top:5px}.crm-payment-order{font-size:13px;line-height:22px;margin:16px 0;color:#3e5571}.crm-payment-order span{display:block;color:#8a9db3;font-size:11px}.crm-key-values{display:grid;grid-template-columns:72px minmax(0,1fr);font-size:12px;gap:12px;margin:16px 0 0}.crm-key-values dt{color:#8a9bb0}.crm-key-values dd{margin:0;overflow-wrap:anywhere}.crm-mobile .crm-image-group{background:white;border:1px solid #e4ebf5;border-radius:8px;padding:14px}.crm-mobile .crm-image-group>header{display:block}.crm-mobile .crm-image-group>header span{display:block;font-size:11px;overflow-wrap:anywhere;line-height:20px}.crm-mobile .crm-image-group>header time{display:block;margin-top:6px;font-size:11px}.crm-mobile .crm-image-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.crm-mobile .crm-photo-frame{aspect-ratio:1}.crm-mobile .crm-photo small{font-size:11px}.crm-mobile .crm-visits{display:grid;gap:12px}.crm-mobile .crm-visits li{background:white;border:1px solid #e4ebf5;border-radius:8px;padding:16px}.crm-mobile .crm-visit-heading{flex-wrap:wrap;gap:6px 10px}.crm-mobile .crm-visit-heading time{width:100%;margin:3px 0 0;font-size:11px}.crm-mobile .crm-visit-body{font-size:13px}.crm-mobile .crm-visit-meta{display:grid;gap:6px;font-size:11px}.crm-mobile .crm-empty{padding:60px 8px}
+.crm-lightbox{position:fixed;inset:0;z-index:2147483647;background:#101823;color:white;display:flex;flex-direction:column}.crm-lightbox header{display:flex;justify-content:space-between;align-items:center;padding:20px 28px;gap:20px;z-index:2;background:#101823}.crm-lightbox header strong{font-weight:500;font-size:15px}.crm-lightbox header span{display:block;color:#9bacc1;font-size:12px;margin-top:6px}.crm-lightbox button{background:#1e2c3c;border:1px solid #334458;color:white;min-width:38px;min-height:38px}.crm-lightbox .crm-lightbox-close{font-size:25px;background:none;border:0}.crm-photo-viewport{flex:1;min-height:0;overflow:hidden;display:flex;justify-content:center;align-items:center;touch-action:none;cursor:grab}.crm-photo-viewport img{max-width:100%;max-height:100%;object-fit:contain;user-select:none;will-change:transform}.crm-lightbox footer{display:flex;align-items:center;justify-content:center;padding:18px 16px max(18px,env(safe-area-inset-bottom));gap:12px;background:#101823;z-index:2}.crm-lightbox footer>span{min-width:45px;text-align:center;font-size:12px}.crm-lightbox footer i{height:20px;border-left:1px solid #3b4a5d;margin:0 6px}.crm-lightbox button:disabled{opacity:.3}.crm-photo-error{color:#97a8be}.is-mobile .crm-lightbox header{padding:16px}.is-mobile .crm-lightbox footer{gap:8px}.is-mobile .crm-lightbox button{padding:6px 10px}.is-mobile .crm-lightbox footer i{margin:0 2px}
+@media(max-width:1100px){.crm-customer-view:not(.crm-mobile) .crm-customer-summary{align-items:flex-start;flex-direction:column;gap:10px}.crm-customer-view:not(.crm-mobile) .crm-table td,.crm-customer-view:not(.crm-mobile) .crm-table th{padding:12px 9px}}
+
+.crm-mobile-lightbox{left:50%;right:auto;transform:translateX(-50%);width:min(430px,100%)}
+@media(max-width:760px){.crm-mobile{max-width:none;box-shadow:none}.crm-mobile-lightbox{width:100%}}
+
+/* Order information and the same transaction fields in both payment views. */
+.crm-orders-table,.crm-items-table,.crm-payments-table{table-layout:fixed}
+.crm-orders-table>thead th:nth-child(1){width:25%}
+.crm-orders-table>thead th:nth-child(2){width:20%}
+.crm-orders-table>thead th:nth-child(3){width:19%}
+.crm-orders-table>thead th:nth-child(4){width:19%}
+.crm-orders-table>thead th:nth-child(5){width:10%}
+.crm-orders-table>thead th:nth-child(6){width:7%}
+.crm-orders-table td,.crm-items-table td,.crm-payments-table td{overflow-wrap:anywhere}
+.crm-orders-table td:first-child,.crm-items-table td:first-child,.crm-payments-table td:first-child{min-width:0;max-width:none}
+.crm-order-staff{display:grid;gap:2px;font-size:12px;line-height:19px}
+.crm-order-staff>span{color:#8798ae;font-size:11px}
+.crm-order-staff>span:not(:first-child){margin-top:5px}
+.crm-order-money{margin:0;display:grid;gap:7px;font-variant-numeric:tabular-nums}
+.crm-order-money>div{display:flex;align-items:baseline;justify-content:space-between;gap:10px;min-width:0}
+.crm-order-money dt{font-size:12px;color:#8798ae;white-space:nowrap}
+.crm-order-money dd{margin:0;font-size:13px;white-space:nowrap;font-weight:500}
+.crm-order-money .is-paid{color:#1677ff}
+.crm-order-money .is-outstanding{color:#e55a57}
+.crm-order-section+.crm-order-section{margin-top:24px}
+.crm-order-section h4{font-size:13px;font-weight:600;margin:0 0 12px;color:#31465f}
+.crm-order-section .crm-table-wrap{background:white}
+.crm-order-section .crm-table td{padding:14px 12px}
+.crm-items-table th:first-child{width:39%}
+.crm-items-table th:nth-child(2){width:16%}
+.crm-items-table th:nth-child(n+3){width:15%}
+.crm-item-heading{display:flex;gap:7px;align-items:baseline;min-width:0;line-height:22px}
+.crm-item-heading strong{overflow-wrap:anywhere}
+.crm-item-type{display:inline-flex;padding:0 5px;border-radius:3px;background:#edf8f3;color:#409e84;font-size:10px;line-height:18px;flex:none;font-weight:400}
+.crm-inline-empty{margin:8px 0;padding:10px 0}
+.crm-payment-content{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:baseline;gap:7px 10px}
+.crm-payment-content>span:first-child{font-size:12px}
+.crm-payment-content>strong{font-size:15px;font-weight:600;white-space:nowrap;font-variant-numeric:tabular-nums;color:#263e5a}
+.crm-payment-status{grid-column:1/-1;justify-self:start;font-size:11px;line-height:19px;padding:0 5px;border-radius:3px;color:#409e84;background:#edf8f3}
+.crm-payment-status.is-voided{color:#7c8fa9;background:#eef2f7}
+.crm-payments-table th:first-child{width:26%}
+.crm-payments-table th:nth-child(2){width:42%}
+.crm-payments-table th:nth-child(3){width:32%}
+.crm-payment-channel{font-size:14px;font-weight:600;color:#31465f}
+.crm-payment-operator{color:#8798ae;font-size:12px;margin:8px 0 12px}
+.crm-payment-card time{font-variant-numeric:tabular-nums;white-space:nowrap;font-size:11px}
+/* Mobile order summaries follow a compact vertical reading order. */
+.crm-mobile .crm-order-card{padding:14px 14px 0}
+.crm-order-brief{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:6px}
+.crm-order-brief .crm-state{font-size:11px;flex:none}
+.crm-order-intention{display:flex;flex-wrap:wrap;align-items:baseline;margin:0;font-size:13px;line-height:21px;color:#31465f}
+.crm-order-intention .crm-linked{margin:0 0 0 7px;font-size:10px;line-height:17px;padding:0 4px}
+.crm-order-line{margin:4px 0;font-size:12px;line-height:19px;color:#536780;overflow-wrap:anywhere}
+.crm-order-reference{display:flex;flex-wrap:wrap;gap:2px 12px;color:#8a9aaf;font-size:11px}
+.crm-order-reference time{font-variant-numeric:tabular-nums}
+.crm-order-personnel{display:flex;flex-wrap:wrap;gap:2px 14px}
+.crm-order-personnel label{color:#8798ae;font-size:11px}
+.crm-mobile .crm-order-money{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:11px 0 13px;margin:0}
+.crm-mobile .crm-order-money>div{display:flex;flex-wrap:wrap;justify-content:flex-start;gap:2px 3px}
+.crm-mobile .crm-order-money dt{font-size:11px;line-height:18px}
+.crm-mobile .crm-order-money dt:after{content:'：'}
+.crm-mobile .crm-order-money dd{font-size:12px;line-height:18px;font-weight:600;overflow-wrap:anywhere;white-space:normal}
+.crm-mobile .crm-order-money>div:nth-child(2){justify-content:center}
+.crm-mobile .crm-order-money>div:last-child{justify-content:flex-end}
+.crm-mobile .crm-order-disclosure{padding:0;border-top:1px solid #edf1f7}
+.crm-mobile .crm-order-disclosure>summary{min-height:44px;color:#536b86;font-size:12px}
+.crm-mobile .crm-order-disclosure[open]>summary{color:#1677ff}
+.crm-mobile .crm-order-disclosure[open]>summary>span{transform:rotate(180deg)}
+.crm-mobile .crm-order-disclosure>summary:focus-visible{outline:2px solid #1677ff;outline-offset:-2px;border-radius:4px}
+.crm-mobile .crm-order-items{gap:0;margin:0}
+.crm-project-item{padding:0 0 14px}
+.crm-project-item+.crm-project-item{padding-top:14px;border-top:1px solid #edf1f7}
+.crm-project-item .crm-item-heading{gap:5px;line-height:21px}
+.crm-project-item .crm-item-heading strong{font-size:13px;font-weight:500}
+.crm-mobile .crm-project-item .crm-item-type{font-size:10px;color:#409e84;line-height:16px;padding:0 4px}
+.crm-item-person{font-size:11px;line-height:18px;color:#8a9aaf;margin:6px 0 10px}
+.crm-project-prices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:0}
+.crm-project-prices dt{font-size:11px;line-height:16px;color:#8a9aaf;margin-bottom:4px}
+.crm-project-prices dd{font-size:12px;line-height:18px;margin:0;font-variant-numeric:tabular-nums;overflow-wrap:anywhere;color:#536780}
+.crm-project-prices>div:last-child dd{font-weight:600;color:#263e5a}
+/* All payments and order payments share the same compact, continuous list. */
+.crm-mobile .crm-payment-list{background:white;border:1px solid #e4ebf5;border-radius:8px;padding:0 14px;min-width:0}
+.crm-mobile .crm-payment-card{padding:16px 0;border:0;border-radius:0;background:none}
+.crm-mobile .crm-payment-card+.crm-payment-card{border-top:1px solid #edf1f7}
+.crm-payment-line{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.crm-payment-line>div{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 7px;min-width:0}
+.crm-mobile .crm-payment-channel{font-size:13px;line-height:20px;font-weight:500}
+.crm-payment-action{font-size:11px;color:#7b8ea6;line-height:18px}
+.crm-payment-value{font-size:16px;line-height:22px;font-weight:600;white-space:nowrap;font-variant-numeric:tabular-nums;color:#263e5a}
+.crm-payment-meta{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-top:6px;color:#8a9aaf;font-size:11px;line-height:17px}
+.crm-payment-meta time{font-size:10px}
+.crm-mobile .crm-payment-status{font-size:10px;line-height:16px;padding:0 4px}
+.crm-mobile .crm-payment-list.is-scoped{padding:0;border:0;border-radius:0}
+.crm-mobile .crm-payment-list.is-scoped .crm-payment-card{padding:12px 0}
+@media(max-width:1100px){
+ .crm-customer-view:not(.crm-mobile) .crm-order-expanded>td{padding:16px 12px}
+ .crm-customer-view:not(.crm-mobile) .crm-order-money>div{gap:5px}
+ .crm-customer-view:not(.crm-mobile) .crm-order-money dd{font-size:12px}
+}

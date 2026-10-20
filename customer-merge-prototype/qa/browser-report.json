@@ -1,0 +1,23 @@
+{
+  "testedAt": "2026-10-15T03:58:32.620Z",
+  "pages": 64,
+  "dialogs": 24,
+  "results": [
+    "64 pages render at target widths without horizontal overflow",
+    "PC merge review → conflict selection → snapshot and merge succeeds",
+    "Correction attribution → transfer → identity → validation → mobile finance confirmation completes",
+    "Store application uploads evidence and appears in manager mobile inbox",
+    "Rule draft → successful simulation → publish; in-flight version unchanged",
+    "24 dialogs render, focusable and dismissible",
+    "S21 supplementary order created with original return state preserved",
+    "Financial export produces downloadable CSV",
+    "Host index Data Center entry opens embedded module",
+    "Existing mobile workbench and approval adapters mounted",
+    "Filtered export respects source selection; client membership omits internal customer identifiers"
+  ],
+  "errors": [],
+  "engineTests": {
+    "passed": 27,
+    "failed": 0
+  }
+}

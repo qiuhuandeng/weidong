@@ -1,0 +1,9 @@
+/* Route inspection reads the editable flow tree; there is no separate source diagram. */
+(function(root){
+'use strict';
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function preview(P,d,{source='hotline',storeResult='unresolved',planType='service',refund=100,compensation=100}={}){
+ const F=root.CaseEngine.Rules.Flow,amounts=F.allowedFields([planType]);let steps=[],error='';try{const proposal=F.proposalValues({type:planType,refund:amounts.includes('refund')?refund:0,compensation:amounts.includes('compensation')?compensation:0});steps=P.entryPath(d,{source,storeResult,proposal});}catch(e){error=e.message;}return `<div class="source-path-fields"><p class="small muted">AI 定级 · ${esc(F.complaintLevels[d.level])}，匹配「${esc(d.name)}」</p><label>工单来源<select name="entrySource">${Object.entries(P.sourceTypes).map(([v,n])=>`<option value="${v}" ${v===source?'selected':''}>${esc(n)}</option>`).join('')}</select><small class="muted">${esc(P.sourceDescriptions[source])}</small></label><label>门店处理结果<select name="entryResult">${[['','尚未完成'],...Object.entries(F.storeResults)].map(([v,n])=>`<option value="${v}" ${v===storeResult?'selected':''}>${n}</option>`).join('')}</select></label><label>方案类型<select name="entryPlan">${Object.entries(F.planTypes).map(([v,n])=>`<option value="${v}" ${v===planType?'selected':''}>${n}</option>`).join('')}</select></label>${['refund','compensation'].filter(v=>amounts.includes(v)).map(v=>`<label>${F.amountFields[v]}（元）<input type="number" min="0" max="1000000" step="0.01" name="${v==='refund'?'entryRefund':'entryCompensation'}" value="${v==='refund'?refund:compensation}"></label>`).join('')}</div>${error?`<p class="condition-notice is-error" role="alert">${esc(error)}</p>`:''}<ol class="source-path-result">${steps.map(n=>`<li>${esc(n.title)}</li>`).join('')}</ol>`;
+}
+root.SourceRoutingView={preview};
+})(window);
