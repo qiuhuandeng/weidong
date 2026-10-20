@@ -11,7 +11,7 @@
 <section class="section-card"><div class="section-head"><h2 id="tableTitle">规则清单</h2><div class="actions"><span class="tag">示例数据</span><button class="btn primary" id="add">＋ 新建规则</button></div></div><div id="tableRows"></div></section></div>
 <article class="section-card"><div class="section-head"><h2>规范正文</h2><span class="tag">全项目 PC 后台统一执行标准</span></div><div class="section-body spec">
 <!-- UI_SPEC_BODY_START: synchronized from UI设计规范.md -->
-<p>版本 1.5 · 更新日期 2026年10月20日</p>
+<p>版本 1.7 · 更新日期 2026年10月20日</p>
 <p>本文件是整个微动项目 PC 后台的统一设计与交互依据，适用于根目录及所有子目录中的既有页面改动、新页面、新业务模块，以及其列表、搜索、表格、新增、编辑、详情、历史和各层抽屉。统一视觉与实现基准为 <code>pc/档案合并.html</code> 当前确认的后台设计；同类组件必须保持相同结构、颜色、字号、尺寸、间距和交互，不按业务模块另行设计。</p>
 <p>当前任务的用户明确要求优先于本规范；本规范优先于旧页面中不一致的样式。修改已有页面时，统一本次涉及的页面和组件，不顺带重做无关模块。移动端根据屏幕和触控场景单独适配，不直接套用 PC 布局。</p>
 <h2 id="project-standard">全项目统一执行原则</h2>
@@ -54,6 +54,7 @@
 <p>颜色、字号、间距和圆角使用统一变量，同一语义不另起一套颜色。大面积页面使用中性背景，蓝色用于主要动作、当前选中项和可点击文本。</p>
 <div class="table-wrap"><table><thead><tr><th>变量</th><th>标准值</th><th>用途</th></tr></thead><tbody><tr><td>主色</td><td><code>#1677ff</code></td><td>主要按钮、链接、选中状态</td></tr><tr><td>主色悬停</td><td><code>#0958d9</code></td><td>主按钮和链接悬停</td></tr><tr><td>主色浅背景</td><td><code>#e6f4ff</code></td><td>小范围选中状态、标签背景</td></tr><tr><td>页面背景</td><td><code>#f0f2f5</code></td><td>业务内容区底色</td></tr><tr><td>内容背景</td><td><code>#ffffff</code></td><td>搜索卡片、内容卡片、表单</td></tr><tr><td>抽屉内容背景</td><td><code>#ffffff</code></td><td>紧凑抽屉和分组主体；固定 tab 可用 <code>#f6f8fb</code></td></tr><tr><td>标题文字</td><td><code>#1a2332</code></td><td>模块标题、抽屉标题</td></tr><tr><td>正文文字</td><td><code>#333333</code></td><td>业务数据、主要内容</td></tr><tr><td>次级文字</td><td><code>#555555</code></td><td>表单标签、辅助内容</td></tr><tr><td>弱化文字</td><td><code>#8c9bab</code></td><td>占位、时间、次要信息</td></tr><tr><td>普通分隔线</td><td><code>#e8edf2</code></td><td>卡片与表格分隔</td></tr><tr><td>控件边框</td><td><code>#d9e0e8</code></td><td>输入框、下拉框、线框按钮</td></tr><tr><td>成功</td><td><code>#389e0d</code></td><td>成功文字，浅底 <code>#f6ffed</code></td></tr><tr><td>警告</td><td><code>#d48806</code></td><td>待关注状态，浅底 <code>#fff7e6</code></td></tr><tr><td>危险</td><td><code>#ff4d4f</code></td><td>删除、失败、异常，浅底 <code>#fff1f0</code></td></tr><tr><td>侧栏背景</td><td><code>#001529</code></td><td>全局左侧菜单</td></tr><tr><td>侧栏选中背景</td><td><code>#0d2137</code></td><td>当前菜单、悬停项</td></tr></tbody></table></div>
 <p>状态必须有文字，不能只靠颜色区分。蓝色标签和选中态可正常使用；解释规则或介绍页面的整条蓝色提示横幅不再使用。确有异常或影响当前操作的风险时，在相关控件附近给出简短提示。</p>
+<p>投诉处理中的微信支付工单状态位于微信支付信息标题右侧，与标题同行，使用紧凑浅色标签：高 28px、4px 圆角、同色细边框、16px 线框图标和 14px / 600 状态文字；处理中为浅蓝底蓝字，已完成为浅绿底绿字，前置“微信工单状态”标签使用 13px 次级文字。该样式仅适用于微信返回的工单状态，与内部处理状态独立，不使用大圆章或增加整块留白，其他状态标签仍沿用公共规格。</p>
 <h2 id="section-4">字体和间距</h2>
 <p>字体统一使用系统中文无衬线字体，不额外加载装饰字体。</p>
 <pre><code class="language-css">font-family: -apple-system, BlinkMacSystemFont,
