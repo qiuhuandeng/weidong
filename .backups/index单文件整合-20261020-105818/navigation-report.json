@@ -1,0 +1,29 @@
+{
+  "oldComplaintDetail": true,
+  "photos": [
+    {
+      "loaded": true,
+      "embedded": true,
+      "width": 1295
+    },
+    {
+      "loaded": true,
+      "embedded": true,
+      "width": 1266
+    }
+  ],
+  "groupDetail": {
+    "route": "#detail/request-mvg3qg8h-f1fjt5",
+    "text": "，同意。\n\n10-20 04:06 · 第 1 轮\n刘欣 · 发起申请\n\n—\n\n10-20 04:06 · 第 1 轮\n审批时限\n整单时限\n剩余 65 小时\n\n截止：10-23 04:06\n\n开始：10-20 04:06\n\n当前节点\n剩余 17 小时\n\n截止：10-21 04:06\n\n开始：10-20 04:06\n\n退回与重新提交延续整单截止时间。 转交不重置节点时限。\n\n审批过程\nV1\n✓\n门店至区域逐级审批 · 第1级\n张芳 ✓\n\n会签（全部同意） · 10-20 04:06\n\n2\n门店至区域逐级审批 · 第2级 审批中\n赵明\n\n会签（全部同意） · 剩余 17 小时\n\n3\n运营负责人审批\n李楠\n\n会签（全部同意） · 待流转（时限 1 天）\n\n4\n总部采购审核\n王晨\n\n会签（全部同意） · 待流转（时限 1 天）\n\n5\n采购下单办理\n王晨\n\n会签（全部同意） · 待流转（时限 1 天）\n\n6\n抄送集团财务\n陆清\n许宁\n\n抄送 · 待流转\n\n条件匹配\n按采购金额分流\n\n需增加集团审核"
+  },
+  "mergeDetail": {
+    "hash": "#P-MG-03?id=MA-20261015-001",
+    "title": "合并审核详情 · 微动"
+  },
+  "crossPort": {
+    "file": "/private/tmp/weid-index-single/isolated/index.html",
+    "page": "customer-merge-prototype/store.html",
+    "title": "门店工作台首页 · 微动"
+  },
+  "errors": []
+}

@@ -1,0 +1,533 @@
+{
+  "search": "共 1 条",
+  "orderPicker": {
+    "rows": 1,
+    "title": "调整关联订单",
+    "inputs": [
+      "",
+      "",
+      "输入客户手机",
+      "输入咨询姓名"
+    ]
+  },
+  "handlingSaved": {
+    "layers": 1,
+    "text": "投诉详情\n刘晴\n138****6219\n处理中\n1级\n客户小程序\n2026-10-19 17:10\n工单号：31016\n发起人：客户本人\n原单号：22120\n投诉内容\n客户已提出取消预约，但尚未收到明确回复，希望客服协助确认。\n客户沟通记录\n到店服务记录\n关联订单\n调整订单\n客户信息\t预约门店\t订单意向\t服务项目\t到店时间\t操作\n刘晴\n138****6219\n\t杭州上城店\t舒缓修护\t肌肤修护疗程\n2610190000001906\n\t2026-10-12 14:06\t展开\n处理方案\n跟进记录\n客户反馈\n客诉第一联系人\n未填写\n投诉时间\n未填写\n投诉门店\n未填写\n客户陈述\n未填写\n责任认定\n编辑\n责任部门\n推广\n售后类型\n闭店\n责任人\n林晓\n客诉等级\n1级\n责任原因\n未填写\n处理结果\n未解决，继续沟通\n处理人：林晓（售后客服）\n处理时间：2026-10-20 11:07\n写跟进\n结案",
+    "storage": "处理中"
+  },
+  "reloadPersisted": true,
+  "complaint-tickets": {
+    "buttons": [
+      {
+        "text": "查看详情",
+        "attrs": [
+          [
+            "type",
+            "button"
+          ],
+          [
+            "class",
+            "link"
+          ],
+          [
+            "data-action",
+            "detail"
+          ],
+          [
+            "data-id",
+            "KS20260929-001"
+          ]
+        ]
+      },
+      {
+        "text": "查看详情",
+        "attrs": [
+          [
+            "type",
+            "button"
+          ],
+          [
+            "class",
+            "link"
+          ],
+          [
+            "data-action",
+            "detail"
+          ],
+          [
+            "data-id",
+            "KS20261007-P18"
+          ]
+        ]
+      },
+      {
+        "text": "查看详情",
+        "attrs": [
+          [
+            "type",
+            "button"
+          ],
+          [
+            "class",
+            "link"
+          ],
+          [
+            "data-action",
+            "detail"
+          ],
+          [
+            "data-id",
+            "KS20261007-R01"
+          ]
+        ]
+      },
+      {
+        "text": "查看详情",
+        "attrs": [
+          [
+            "type",
+            "button"
+          ],
+          [
+            "class",
+            "link"
+          ],
+          [
+            "data-action",
+            "detail"
+          ],
+          [
+            "data-id",
+            "KS20261007-W05"
+          ]
+        ]
+      },
+      {
+        "text": "查看详情",
+        "attrs": [
+          [
+            "type",
+            "button"
+          ],
+          [
+            "class",
+            "link"
+          ],
+          [
+            "data-action",
+            "detail"
+          ],
+          [
+            "data-id",
+            "KS20260929-003"
+          ]
+        ]
+      },
+      {
+        "text": "查看详情",
+        "attrs": [
+          [
+            "type",
+            "button"
+          ],
+          [
+            "class",
+            "link"
+          ],
+          [
+            "data-action",
+            "detail"
+          ],
+          [
+            "data-id",
+            "KS20261007-H04"
+          ]
+        ]
+      },
+      {
+        "text": "查看详情",
+        "attrs": [
+          [
+            "type",
+            "button"
+          ],
+          [
+            "class",
+            "link"
+          ],
+          [
+            "data-action",
+            "detail"
+          ],
+          [
+            "data-id",
+            "KS20260929-002"
+          ]
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "id": "filter-form",
+        "inputs": [
+          {
+            "name": "q",
+            "placeholder": "搜索工单号、客户、手机号 / 会员号"
+          },
+          {
+            "name": "state"
+          },
+          {
+            "name": "level"
+          },
+          {
+            "name": "store"
+          }
+        ]
+      }
+    ]
+  },
+  "group-list": {
+    "buttons": [
+      {
+        "text": "南京浦口店护理设备采购",
+        "attrs": [
+          [
+            "type",
+            "button"
+          ],
+          [
+            "class",
+            "btn quiet compact blue"
+          ],
+          [
+            "data-action",
+            "go"
+          ],
+          [
+            "data-to",
+            "detail/request-mvg3qg8h-f1fjt5"
+          ]
+        ]
+      },
+      {
+        "text": "查看",
+        "attrs": [
+          [
+            "type",
+            "button"
+          ],
+          [
+            "class",
+            "btn quiet compact blue"
+          ],
+          [
+            "data-action",
+            "go"
+          ],
+          [
+            "data-to",
+            "detail/request-mvg3qg8h-f1fjt5"
+          ]
+        ]
+      },
+      {
+        "text": "华东巡店差旅报销",
+        "attrs": [
+          [
+            "type",
+            "button"
+          ],
+          [
+            "class",
+            "btn quiet compact blue"
+          ],
+          [
+            "data-action",
+            "go"
+          ],
+          [
+            "data-to",
+            "detail/request-mvg3qg8h-wfxn5x"
+          ]
+        ]
+      },
+      {
+        "text": "查看",
+        "attrs": [
+          [
+            "type",
+            "button"
+          ],
+          [
+            "class",
+            "btn quiet compact blue"
+          ],
+          [
+            "data-action",
+            "go"
+          ],
+          [
+            "data-to",
+            "detail/request-mvg3qg8h-wfxn5x"
+          ]
+        ]
+      },
+      {
+        "text": "设备供应商首期款申请",
+        "attrs": [
+          [
+            "type",
+            "button"
+          ],
+          [
+            "class",
+            "btn quiet compact blue"
+          ],
+          [
+            "data-action",
+            "go"
+          ],
+          [
+            "data-to",
+            "detail/request-mvg3qg8h-4pemfj"
+          ]
+        ]
+      },
+      {
+        "text": "查看",
+        "attrs": [
+          [
+            "type",
+            "button"
+          ],
+          [
+            "class",
+            "btn quiet compact blue"
+          ],
+          [
+            "data-action",
+            "go"
+          ],
+          [
+            "data-to",
+            "detail/request-mvg3qg8h-4pemfj"
+          ]
+        ]
+      },
+      {
+        "text": "总部办公场地租赁合同用印",
+        "attrs": [
+          [
+            "type",
+            "button"
+          ],
+          [
+            "class",
+            "btn quiet compact blue"
+          ],
+          [
+            "data-action",
+            "go"
+          ],
+          [
+            "data-to",
+            "detail/request-mvg3qg8h-y5lvds"
+          ]
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "id": "list-filters",
+        "inputs": [
+          {
+            "name": "q",
+            "placeholder": "审批标题 / 单号 / 发起人"
+          },
+          {
+            "name": "status"
+          },
+          {
+            "name": "company"
+          },
+          {
+            "name": "template"
+          }
+        ]
+      }
+    ]
+  },
+  "customer-merge": {
+    "buttons": [
+      {
+        "text": "MA-20261015-001",
+        "attrs": [
+          [
+            "type",
+            "button"
+          ],
+          [
+            "class",
+            "link"
+          ],
+          [
+            "data-action",
+            "go"
+          ],
+          [
+            "data-args",
+            "{\"page\":\"P-MG-03\",\"id\":\"MA-20261015-001\"}"
+          ]
+        ]
+      },
+      {
+        "text": "查看并处理",
+        "attrs": [
+          [
+            "type",
+            "button"
+          ],
+          [
+            "class",
+            "link"
+          ],
+          [
+            "data-action",
+            "go"
+          ],
+          [
+            "data-args",
+            "{\"page\":\"P-MG-03\",\"id\":\"MA-20261015-001\"}"
+          ]
+        ]
+      },
+      {
+        "text": "MA-20261015-002",
+        "attrs": [
+          [
+            "type",
+            "button"
+          ],
+          [
+            "class",
+            "link"
+          ],
+          [
+            "data-action",
+            "go"
+          ],
+          [
+            "data-args",
+            "{\"page\":\"P-MG-03\",\"id\":\"MA-20261015-002\"}"
+          ]
+        ]
+      },
+      {
+        "text": "查看并处理",
+        "attrs": [
+          [
+            "type",
+            "button"
+          ],
+          [
+            "class",
+            "link"
+          ],
+          [
+            "data-action",
+            "go"
+          ],
+          [
+            "data-args",
+            "{\"page\":\"P-MG-03\",\"id\":\"MA-20261015-002\"}"
+          ]
+        ]
+      },
+      {
+        "text": "MA-20261015-003",
+        "attrs": [
+          [
+            "type",
+            "button"
+          ],
+          [
+            "class",
+            "link"
+          ],
+          [
+            "data-action",
+            "go"
+          ],
+          [
+            "data-args",
+            "{\"page\":\"P-MG-03\",\"id\":\"MA-20261015-003\"}"
+          ]
+        ]
+      },
+      {
+        "text": "查看并处理",
+        "attrs": [
+          [
+            "type",
+            "button"
+          ],
+          [
+            "class",
+            "link"
+          ],
+          [
+            "data-action",
+            "go"
+          ],
+          [
+            "data-args",
+            "{\"page\":\"P-MG-03\",\"id\":\"MA-20261015-003\"}"
+          ]
+        ]
+      },
+      {
+        "text": "MA-20261015-004",
+        "attrs": [
+          [
+            "type",
+            "button"
+          ],
+          [
+            "class",
+            "link"
+          ],
+          [
+            "data-action",
+            "go"
+          ],
+          [
+            "data-args",
+            "{\"page\":\"P-MG-03\",\"id\":\"MA-20261015-004\"}"
+          ]
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "id": "filter-form",
+        "inputs": [
+          {
+            "name": "q",
+            "placeholder": "搜索编号、客户姓名或手机号"
+          },
+          {
+            "name": "状态"
+          },
+          {
+            "name": "来源"
+          },
+          {
+            "name": ""
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}

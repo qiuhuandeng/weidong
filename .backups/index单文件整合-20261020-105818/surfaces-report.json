@@ -1,0 +1,111 @@
+{
+  "results": [
+    {
+      "page": "complaint-prototype/index.html",
+      "title": "客诉管理 · 美业AI平台",
+      "text": "✦\n美业AI平台\nSERVICE OPERATIONS\n客诉管理\n客诉工单\n规则配置\n售后排班\n审批管理\n受理、跟进与回访\n在一张工单中协作\n客诉管理 / 规则配置\n林岚 · 售后主管\n林\n规则配置\n\n维护审批场景、定级",
+      "overflow": false,
+      "styles": 5,
+      "external": []
+    },
+    {
+      "page": "complaint-prototype/approvals.html",
+      "title": "审批管理 · 美业AI平台",
+      "text": "✦\n美业AI平台\nSERVICE OPERATIONS\n客诉管理\n▤ 客诉工单\n▤ 规则配置\n▤ 售后排班\n▤ 审批管理\n客诉管理 / 审批管理\n林岚 · 售后主管\n林\n审批管理\n钉钉配置\n＋ 新增模板\n审批模板\n审批记",
+      "overflow": false,
+      "styles": 7,
+      "external": []
+    },
+    {
+      "page": "complaint-prototype/schedule.html",
+      "title": "售后排班 · 美业AI平台",
+      "text": "✦\n美业AI平台\nSERVICE OPERATIONS\n客诉管理\n客诉工单\n规则配置\n售后排班\n审批管理\n客诉管理 / 售后排班\n林岚 · 售后主管\n林\n售后排班\n\n维护售后班次、人员排班及每日派单时间。\n\n批量排班\n班",
+      "overflow": false,
+      "styles": 3,
+      "external": []
+    },
+    {
+      "page": "complaint-prototype/bi.html",
+      "title": "全国客诉分析 · 微动",
+      "text": "全国客诉分析\n全国演示数据\n指标说明\n导出当前分析\n统计周期\n近 7 天\n近 30 天\n本月\n上月\n自定义日期\n2026.09.08 — 2026.10.07\n组织\n全部大区\n华东大区\n华南大区\n华北大区\n华西大区\n全部",
+      "overflow": false,
+      "styles": 1,
+      "external": []
+    },
+    {
+      "page": "complaint-prototype/demo.html",
+      "title": "客诉管理 · 移动端演示入口",
+      "text": "移动端演示入口\n\n选择页面入口或办理场景，在新标签页查看移动端客诉工单原型。\n\n页面入口\n移动端 / 钉钉 H5\n移动端\n移动工单\n\n搜索筛选 · 移动填单 · 随时跟进\n\n独立打开 H5 ↗\n钉钉 H5\n钉钉审批\n\n当",
+      "overflow": false,
+      "styles": 3,
+      "external": []
+    },
+    {
+      "page": "complaint-prototype/workflow/index.html",
+      "title": "客诉工单 · 美业AI平台",
+      "text": "✓\n美业AI平台\n客诉管理\n工单列表\n规则配置\n售后排班\n审批管理\n演示入口\n客诉管理 / 工单列表\n 移动端\n演示入口\n客诉工单\n 新增工单\n待我处理\n我发起的\n我参与的\n全部工单\n全部状态\n待处理\n处理中\n审批中\n付",
+      "overflow": false,
+      "styles": 6,
+      "external": []
+    },
+    {
+      "page": "customer-merge-prototype/client.html",
+      "title": "会员中心 · 微动",
+      "text": "会员中心\n微动\nWEIDONG · MEMBER\n张\n张晓雯\n139****1000\n\n每一次服务，都为更好的你\n\n会员服务\n139****1000\n我的服务\n我的订单\n查看预约与服务记录\n手机号管理\n验证并更新联系手机",
+      "overflow": false,
+      "styles": 1,
+      "external": []
+    },
+    {
+      "page": "customer-merge-prototype/pc.html",
+      "title": "合并申请列表 · 微动",
+      "text": "微\n微动\nCUSTOMER PLATFORM\n客户档案合并\n合并管理\n合并记录\n纠错工单\n财务处理\n规则配置\n运行与审计\n关联业务\n客户档案\n订单记录\n身份统一 · 业务可追溯\n数据中台\n/\n客户档案合并\n/\n合并管理\n",
+      "overflow": false,
+      "styles": 1,
+      "external": []
+    },
+    {
+      "page": "customer-merge-prototype/approval.html",
+      "title": "待我处理列表 · 微动",
+      "text": "待我处理列表\n功能演示\n待我处理 9\n\n全部演示待办，无需切换账号\n\n全部事项\n合并\n纠错\n高风险\n财务\n确认\n查询\n重置\n客户合并审核\n合并\n张晓雯\n\nMA-20261015-001\n\n2026-10-20 11:06",
+      "overflow": false,
+      "styles": 1,
+      "external": []
+    },
+    {
+      "page": "customer-merge-prototype/store.html",
+      "title": "门店工作台首页 · 微动",
+      "text": "门店工作台首页\n功能演示\nSTORE WORKSPACE\n静安旗舰店\n\n林悦，今日工作从这里开始\n\n客户与业务\n客户录入\n手机号核验与重复客户识别\n创建订单\n核实客户后开单\n预约排客\n安排服务时间与人员\n档案合并与纠错\n",
+      "overflow": false,
+      "styles": 1,
+      "external": []
+    },
+    {
+      "page": "customer-merge-prototype/demo.html",
+      "title": "客户档案合并 · 原型演示入口",
+      "text": "WEIDONG · INTERACTIVE PROTOTYPE\n客户档案合并与纠错\n\n4 个端口 · 64 个页面视图 · 24 类浮层 · 22 个业务场景\n\n功能演示模式：表单可留空提交，自动使用示例数据；全部操作开",
+      "overflow": false,
+      "styles": 2,
+      "external": []
+    },
+    {
+      "page": "group-approval/index.html",
+      "title": "移动端演示 · 集团审批",
+      "text": "✦\n美业AI平台\nGROUP APPROVAL\n集团审批\n审批工作台\n审批列表\n规则配置\n组织与人员\n审批统计\n移动端演示\n统一发起 · 跨公司协作\n集团审批管理中心\n集团审批 / 移动端演示\n返回系统首页\n许宁\n许\n客",
+      "overflow": false,
+      "styles": 6,
+      "external": []
+    },
+    {
+      "page": "unified-complaints/index.html",
+      "title": "统一客诉 · 美业AI平台",
+      "text": "全部\n待处理（9）\n处理中（6）\n已完成\n关键词\n客户手机\n客户姓名\n客户微信\n会员号\n订单号\n投诉渠道\n全部渠道\n客户小程序\n移动工作台\n微信支付\n客诉等级\n全部等级\n1级\n2级\n3级\n4级\n搜索\n重置\n更多筛选\n投诉",
+      "overflow": false,
+      "styles": 0,
+      "external": []
+    }
+  ],
+  "failures": [],
+  "localRequests": 15,
+  "physicalFiles": 1
+}

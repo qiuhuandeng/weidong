@@ -1,0 +1,1764 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <title>贝颜店长看板</title>
+  <style>
+    /* ==========================================
+       1. 极致性能基础重置 & 移动端深度优化
+       ========================================== */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent; /* 消除移动端点击高亮 */
+      outline: none;
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      /* 采用苹果与安卓系统原生高品质无开销字体栈 */
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: #f3f4f6;
+      color: #1f2937;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow-x: hidden;
+    }
+    button {
+      font: inherit;
+      border: 0;
+      background: none;
+      cursor: pointer;
+      color: inherit;
+      padding: 0;
+    }
+    svg {
+      display: block;
+      flex-shrink: 0;
+    }
+
+    /* 整体布局框架 */
+    .app {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      background: #f3f4f6;
+    }
+    .phone {
+      width: 100%;
+      max-width: 28rem;
+      background: #F4F6F9;
+      position: relative;
+      box-shadow: 0 20px 25px -5px rgba(0,0,0,.08), 0 8px 10px -6px rgba(0,0,0,.08);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    /* ==========================================
+       2. 顶部导航及时间筛选器 (Topbar)
+       ========================================== */
+    .topbar {
+      background: #fff;
+      padding: 0.85rem 0.85rem 0.5rem;
+      flex-shrink: 0;
+      box-shadow: 0 1px 3px rgba(0,0,0,.03);
+      z-index: 20;
+    }
+    .topbar-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: .75rem;
+    }
+    .time-filters {
+      display: flex;
+      gap: .5rem;
+      overflow-x: auto;
+    }
+    .time-filters::-webkit-scrollbar, .tabs-scroll::-webkit-scrollbar {
+      display: none;
+    }
+    .time-filters, .tabs-scroll {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    .tf-btn {
+      white-space: nowrap;
+      padding: .375rem .95rem;
+      border-radius: 9999px;
+      font-size: 13px;
+      background: #f3f4f6;
+      color: #4b5563;
+      transition: background 0.15s, color 0.15s;
+    }
+    .tf-btn.active {
+      background: #2563eb;
+      color: #fff;
+      font-weight: 600;
+      box-shadow: 0 2px 4px rgba(37,99,235,.15);
+    }
+    .store-name {
+      display: flex;
+      align-items: center;
+      color: #1f2937;
+      font-size: 14px;
+      font-weight: 700;
+      padding-left: .5rem;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+    .tabs-wrap {
+      width: 100%;
+      background: rgba(243,244,246,.8);
+      padding: .25rem;
+      border-radius: .5rem;
+    }
+    .tabs-scroll {
+      overflow-x: auto;
+      white-space: nowrap;
+      display: flex;
+      gap: 0.25rem;
+    }
+    .tab-btn {
+      display: inline-block;
+      padding: .375rem .95rem;
+      font-size: 13.5px;
+      font-weight: 700;
+      border-radius: .375rem;
+      color: #6b7280;
+      transition: all .15s;
+    }
+    .tab-btn.active {
+      background: #fff;
+      color: #2563eb;
+      box-shadow: 0 1px 2px rgba(0,0,0,.05);
+    }
+
+    /* ==========================================
+       3. 核心内容区域 (Content Area)
+       ========================================== */
+    .content {
+      padding: 0.75rem .75rem 5.5rem;
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .stack {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    /* ==========================================
+       4. 通用卡片组件与特效
+       ========================================== */
+    .card {
+      background: #fff;
+      border-radius: 1rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,.01), 0 1px 2px rgba(0,0,0,.03);
+      padding: 1.15rem;
+      border: 1px solid rgba(243,244,246,.8);
+    }
+    .card-sm {
+      padding: .85rem;
+    }
+    .card-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: #1f2937;
+      display: flex;
+      align-items: center;
+      margin: 0;
+    }
+    .card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: .75rem;
+    }
+    .icon-mr {
+      margin-right: .375rem;
+    }
+
+    /* ==========================================
+       5. 模块1：算薪业绩大盘
+       ========================================== */
+    .tag-orange {
+      font-size: 10px;
+      background: #fff7ed;
+      color: #f97316;
+      padding: .125rem .5rem;
+      border-radius: .25rem;
+      font-weight: 700;
+    }
+    .salary-banner {
+      background: linear-gradient(135deg, #fb923c, #f97316);
+      border-radius: .75rem;
+      padding: 0.9rem;
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(249,115,22,.25);
+    }
+    .salary-label {
+      font-size: 11px;
+      color: #ffedd5;
+      opacity: .95;
+      margin-bottom: .25rem;
+    }
+    .salary-num {
+      font-size: 32px;
+      font-weight: 900;
+      margin-bottom: .85rem;
+      letter-spacing: -.03em;
+      line-height: 1.1;
+    }
+    .salary-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: .5rem;
+      border-top: 1px solid rgba(255,255,255,.2);
+      padding-top: .6rem;
+    }
+    .salary-grid .lbl {
+      font-size: 9px;
+      color: #ffedd5;
+      margin-bottom: 2px;
+    }
+    .salary-grid .val {
+      font-size: 15px;
+      font-weight: 800;
+    }
+
+    /* ==========================================
+       6. 模块2：转化漏斗样式
+       ========================================== */
+    .funnel {
+      position: relative;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f5f7ff;
+      border-radius: .75rem;
+      padding: .85rem .6rem;
+      border: 1px solid #eef2ff;
+    }
+    .funnel-col {
+      text-align: center;
+      flex: 1;
+      z-index: 1;
+    }
+    .funnel-col .lbl {
+      font-size: 10px;
+      color: #6b7280;
+      margin-bottom: .25rem;
+    }
+    .funnel-col .val {
+      font-size: 15px;
+      font-weight: 800;
+      color: #1f2937;
+    }
+    .funnel-arrow {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      z-index: 1;
+    }
+    .funnel-arrow.w-lg {
+      width: 3.5rem;
+    }
+    .funnel-arrow.w-sm {
+      width: 1.5rem;
+    }
+    .funnel-rate {
+      font-size: 9px;
+      color: #4f46e5;
+      font-weight: 700;
+      background: #e0e7ff;
+      padding: .125rem .375rem;
+      border-radius: 9999px;
+      margin-bottom: .25rem;
+      white-space: nowrap;
+    }
+
+    /* ==========================================
+       7. 模块3：业绩结构分析
+       ========================================== */
+    .struct-bar-wrap {
+      margin-bottom: 1rem;
+      background: #fafbfc;
+      padding: .75rem;
+      border-radius: .75rem;
+      border: 1px solid #f1f3f5;
+    }
+    .struct-bar-head, .struct-bar-foot {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11.5px;
+      color: #6b7280;
+    }
+    .struct-bar-head {
+      margin-bottom: .5rem;
+    }
+    .struct-bar-foot {
+      font-size: 11px;
+      margin-top: .5rem;
+    }
+    .struct-bar {
+      width: 100%;
+      height: 8px;
+      background: #e5e7eb;
+      border-radius: 9999px;
+      overflow: hidden;
+      display: flex;
+      box-shadow: inset 0 1px 2px rgba(0,0,0,.05);
+    }
+    .struct-bar .s1 {
+      background: #34d399;
+    }
+    .struct-bar .s2 {
+      background: #10b981;
+    }
+    .struct-bar-foot strong {
+      font-size: 12px;
+    }
+    .struct-bar-foot strong.c1 {
+      color: #10b981;
+    }
+    .struct-bar-foot strong.c2 {
+      color: #059669;
+    }
+    .struct-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: .75rem 1rem;
+      border-top: 1px solid #f3f4f6;
+      padding-top: .75rem;
+    }
+    .struct-grid .row {
+      display: flex;
+      justify-content: space-between;
+    }
+    .struct-grid .row .lbl {
+      font-size: 11px;
+      color: #6b7280;
+    }
+    .struct-grid .row .val {
+      font-size: 12px;
+      font-weight: 700;
+      color: #1f2937;
+    }
+
+    /* ==========================================
+       8. 模块4：经营数据
+       ========================================== */
+    .section-label {
+      font-size: 11px;
+      color: #64748b;
+      font-weight: 800;
+      margin: 0 0 .5rem;
+      display: flex;
+      align-items: center;
+      padding: 0 .25rem;
+    }
+    .op-grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: .4rem;
+    }
+    .op-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: .4rem;
+    }
+    .op-card {
+      background: #F8FAFC;
+      border: 1px solid #f1f5f9;
+      border-radius: .5rem;
+      padding: .6rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 64px;
+      transition: background .15s, transform 0.1s;
+    }
+    .op-card.clickable {
+      cursor: pointer;
+    }
+    .op-card.clickable:active {
+      background: #f1f5f9;
+      transform: scale(0.97);
+    }
+    .op-card .top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .op-card .top .lbl {
+      font-size: 10.5px;
+      color: #64748b;
+    }
+    .op-card .val {
+      font-size: 14.5px;
+      font-weight: 800;
+      color: #1e293b;
+    }
+    .op-card.span-2 {
+      grid-column: span 2;
+    }
+    .divider-top {
+      border-top: 1px solid #f3f4f6;
+      padding-top: .75rem;
+    }
+
+    /* ==========================================
+       9. 模块5：实收数据明细
+       ========================================== */
+    .actual-banner {
+      background: #eff6ff;
+      border: 1px solid rgba(219,234,254,.6);
+      border-radius: .5rem;
+      padding: .75rem;
+      margin-bottom: .75rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .actual-banner:active {
+      background: rgba(219,234,254,.8);
+      transform: scale(0.98);
+    }
+    .actual-banner .lbl {
+      font-size: 11px;
+      color: #6b7280;
+      margin-bottom: .125rem;
+    }
+    .actual-banner .val {
+      font-size: 20px;
+      font-weight: 900;
+      color: #2563eb;
+    }
+    .actual-link {
+      display: flex;
+      align-items: center;
+      font-size: 10px;
+      color: #2563eb;
+      font-weight: 700;
+      background: #ffffff;
+      padding: .25rem .5rem;
+      border-radius: 9999px;
+      box-shadow: 0 1px 2px rgba(0,0,0,.03);
+    }
+    .actual-detail {
+      background: #fbfcfd;
+      border: 1px solid #f1f3f5;
+      border-radius: .75rem;
+      padding: .75rem;
+    }
+    .actual-g3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: .5rem;
+    }
+    .actual-g2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: .5rem;
+      border-top: 1px solid #f3f4f6;
+      padding-top: .75rem;
+      margin-top: .75rem;
+    }
+    .actual-item .lbl {
+      font-size: 10px;
+      color: #9ca3af;
+      margin-bottom: .25rem;
+    }
+    .actual-item .val {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #374151;
+    }
+
+    /* ==========================================
+       10. 模块6：店长排名
+       ========================================== */
+    .rank-wrap {
+      background: linear-gradient(135deg, #FFF5EA, #FFEAE0);
+      padding: .85rem;
+      border-radius: 1rem;
+      border: 1px solid #FFE0D0;
+      position: relative;
+      overflow: hidden;
+    }
+    .rank-bg-trophy {
+      position: absolute;
+      top: -.25rem;
+      right: -.5rem;
+      opacity: .25;
+      color: #fbbf24;
+    }
+    .rank-title {
+      font-weight: 800;
+      color: #1f2937;
+      font-size: 14px;
+      margin: 0 0 .75rem;
+      padding: 0 .25rem;
+      position: relative;
+      z-index: 1;
+    }
+    .rank-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: .5rem;
+      position: relative;
+      z-index: 1;
+    }
+    .rank-card {
+      background: rgba(255,255,255,0.92);
+      border-radius: .5rem;
+      padding: .75rem .25rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 1px 2px rgba(0,0,0,.03);
+      border: 1px solid #fff;
+    }
+    .rank-card .lbl {
+      font-size: 9px;
+      color: #6b7280;
+      margin-bottom: .375rem;
+      white-space: nowrap;
+      transform: scale(.95);
+    }
+    .rank-card .val {
+      font-size: 14px;
+      font-weight: 800;
+      color: #d97706;
+    }
+    .rank-card .val.gray {
+      color: #1f2937;
+    }
+
+    /* ==========================================
+       11. 员工排行榜页面样式 (动态 JS 生成)
+       ========================================== */
+    .role-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 .25rem;
+      margin-bottom: .5rem;
+    }
+    .role-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: #1f2937;
+      margin: 0;
+    }
+    .sort-btn {
+      font-size: 11px;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      padding: .3rem .6rem;
+      border-radius: .375rem;
+      color: #4b5563;
+      display: flex;
+      align-items: center;
+      box-shadow: 0 1px 2px rgba(0,0,0,.03);
+      transition: background 0.15s;
+    }
+    .sort-btn:active {
+      background: #f9fafb;
+    }
+    
+    /* 极致轻量：下拉选择框动画 */
+    .sort-menu-wrap {
+      position: relative;
+    }
+    .sort-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 25;
+      display: none;
+    }
+    .sort-overlay.active {
+      display: block;
+    }
+    .sort-menu {
+      position: absolute;
+      right: 0;
+      margin-top: .35rem;
+      width: 7.5rem;
+      background: #fff;
+      border-radius: .5rem;
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -4px rgba(0,0,0,.1);
+      border: 1px solid #f3f4f6;
+      z-index: 30;
+      padding: .25rem 0;
+      display: none;
+      transform-origin: top right;
+      animation: popIn 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .sort-menu.active {
+      display: block;
+    }
+    @keyframes popIn {
+      from { transform: scale(0.92); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .sort-item {
+      display: block;
+      width: 100%;
+      text-align: left;
+      padding: .5rem .75rem;
+      font-size: 12px;
+      color: #4b5563;
+      transition: background .1s;
+    }
+    .sort-item:active {
+      background: #f9fafb;
+    }
+    .sort-item.active {
+      color: #2563eb;
+      background: #eff6ff;
+      font-weight: 700;
+    }
+
+    /* 员工排行榜卡片 */
+    .staff {
+      background: #fff;
+      border-radius: 1rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,.02);
+      border: 1px solid #f3f4f6;
+      padding: .85rem;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 0.75rem;
+    }
+    .staff-line {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+    }
+    .staff-line.g { background: #fbbf24; }
+    .staff-line.s { background: #d1d5db; }
+    .staff-line.b { background: #fdba74; }
+    .staff-inner {
+      padding-left: .5rem;
+    }
+    .staff-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: .75rem;
+    }
+    .staff-left {
+      display: flex;
+      align-items: center;
+    }
+    .staff-rank {
+      font-size: 13px;
+      font-weight: 900;
+      width: 1.25rem;
+      flex-shrink: 0;
+      color: #d1d5db;
+    }
+    .staff-rank.g { color: #f59e0b; }
+    .staff-rank.s { color: #9ca3af; }
+    .staff-rank.b { color: #fb923c; }
+    .staff-name {
+      font-weight: 700;
+      color: #1f2937;
+      font-size: 15px;
+    }
+    .staff-role {
+      font-size: 9px;
+      padding: .125rem .375rem;
+      border-radius: .25rem;
+      margin-left: .5rem;
+      font-weight: 600;
+      background: #f3f4f6;
+      color: #6b7280;
+    }
+    .staff-main {
+      text-align: right;
+    }
+    .staff-main .lbl {
+      font-size: 10px;
+      line-height: 1;
+      margin-bottom: .25rem;
+      color: #9ca3af;
+    }
+    .staff-main .lbl.hl {
+      color: #3b82f6;
+      font-weight: 700;
+    }
+    .staff-main .val {
+      font-weight: 900;
+      font-size: 16px;
+      line-height: 1;
+      color: #1f2937;
+    }
+    .staff-main .val.hl {
+      color: #2563eb;
+    }
+    .staff-grid-wrap {
+      background: rgba(249,250,251,.7);
+      border-radius: .75rem;
+      padding: .625rem;
+    }
+    .staff-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: .6rem .4rem;
+    }
+    .staff-metric {
+      display: flex;
+      flex-direction: column;
+    }
+    .staff-metric .lbl {
+      font-size: 10px;
+      margin-bottom: .125rem;
+      color: #9ca3af;
+    }
+    .staff-metric .lbl.hl {
+      color: #3b82f6;
+      font-weight: 700;
+    }
+    .staff-metric .val {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: #374151;
+    }
+    .staff-metric .val.hl {
+      color: #2563eb;
+    }
+    .staff-progress {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: .75rem;
+      padding-top: .5rem;
+      border-top: 1px solid #f1f3f5;
+    }
+    .staff-progress .lbl {
+      font-size: 10px;
+      color: #9ca3af;
+    }
+    .staff-progress .lbl.hl {
+      color: #3b82f6;
+      font-weight: 700;
+    }
+    .staff-progress .right {
+      display: flex;
+      align-items: center;
+      width: 50%;
+    }
+    .staff-progress .bar {
+      width: 100%;
+      height: 6px;
+      background: #e5e7eb;
+      border-radius: 9999px;
+      overflow: hidden;
+      margin-right: .5rem;
+    }
+    .staff-progress .bar-fill {
+      height: 100%;
+      background: #34d399;
+    }
+    .staff-progress .val {
+      font-size: 11px;
+      font-weight: 700;
+      color: #374151;
+    }
+    .staff-progress .val.hl {
+      color: #2563eb;
+    }
+
+    /* ==========================================
+       12. 底部栏导航
+       ========================================== */
+    .bottombar {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      max-width: 28rem;
+      background: #fff;
+      border-top: 1px solid #e5e7eb;
+      display: flex;
+      justify-content: space-around;
+      padding: .5rem .5rem 1.5rem;
+      font-size: 10px;
+      color: #9ca3af;
+      z-index: 15;
+    }
+    .bnav {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+      position: relative;
+    }
+    .bnav .dot {
+      width: 1.35rem;
+      height: 1.35rem;
+      background: #f3f4f6;
+      border-radius: 9999px;
+      margin-bottom: .25rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .bnav.active {
+      color: #2563eb;
+    }
+    .bnav.active .dot {
+      background: #eff6ff;
+    }
+    .badge {
+      position: absolute;
+      top: -.25rem;
+      right: -.5rem;
+      background: #ef4444;
+      color: #fff;
+      font-size: 9px;
+      padding: 0 .25rem;
+      border-radius: 9999px;
+      transform: scale(.85);
+      font-weight: bold;
+    }
+
+    /* ==========================================
+       13. 极速底部弹窗组件 (BottomSheet & Modal)
+       ========================================== */
+    .drawer-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 25;
+      opacity: 0;
+      visibility: hidden;
+      will-change: opacity, visibility;
+      transition: opacity 0.22s cubic-bezier(0.25, 1, 0.5, 1), visibility 0.22s;
+      backdrop-filter: blur(1.5px);
+    }
+    .drawer-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+    .drawer {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #fff;
+      border-top-left-radius: 1.25rem;
+      border-top-right-radius: 1.25rem;
+      z-index: 30;
+      padding: 1.25rem 1rem 1.6rem;
+      will-change: transform;
+      backface-visibility: hidden;
+      transform: translate3d(0, 100%, 0);
+      transition: transform 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+      box-shadow: 0 -8px 24px rgba(0,0,0,0.08);
+    }
+    .drawer.active {
+      transform: translate3d(0, 0, 0);
+    }
+    .drawer-handle {
+      width: 36px;
+      height: 4px;
+      background: #e5e7eb;
+      border-radius: 9999px;
+      margin: 0 auto 1.15rem;
+    }
+    .drawer-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+    }
+    .drawer-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: #1f2937;
+    }
+    .drawer-close {
+      background: #f3f4f6;
+      border: none;
+      border-radius: 9999px;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #6b7280;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: bold;
+    }
+    
+    /* 门店列表和明细设计 */
+    .detail-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+      max-height: 40vh;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid #f3f4f6;
+    }
+    .detail-row:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+    .detail-row .name {
+      font-size: 13.5px;
+      color: #374151;
+      font-weight: 700;
+    }
+    .detail-row .num {
+      font-size: 14px;
+      color: #1f2937;
+      font-weight: 800;
+    }
+    .detail-row .tag {
+      font-size: 9.5px;
+      padding: 0.125rem 0.375rem;
+      border-radius: 4px;
+      font-weight: 700;
+      display: inline-block;
+      margin-top: 0.25rem;
+    }
+    .tag-blue { background: #eff6ff; color: #2563eb; }
+    .tag-yellow { background: #fffbeb; color: #d97706; }
+    .tag-green { background: #ecfdf5; color: #10b981; }
+
+    /* 门店选择列表样式 */
+    .store-list-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.95rem 0.5rem;
+      border-bottom: 1px solid #f3f4f6;
+      cursor: pointer;
+    }
+    .store-list-item:last-child {
+      border-bottom: none;
+    }
+    .store-list-item .name {
+      font-size: 14px;
+      font-weight: 700;
+      color: #374151;
+    }
+    .store-list-item.selected .name {
+      color: #2563eb;
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <div class="phone">
+    
+    <!-- 1. 顶部Topbar (静态极速加载) -->
+    <div class="topbar">
+      <div class="topbar-row">
+        <div class="time-filters" id="timeFilters">
+          <button class="tf-btn" data-id="today">今天</button>
+          <button class="tf-btn" data-id="yesterday">昨天</button>
+          <button class="tf-btn active" data-id="month">本月</button>
+          <button class="tf-btn" data-id="lastMonth">上月</button>
+          <button class="tf-btn">更多</button>
+        </div>
+        <div class="store-name" id="storeSelectTrigger">
+          <span id="currentStoreName">昆明五华店</span>
+          <!-- ChevronDown Icon -->
+          <svg style="margin-left:.25rem" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 9l6 6 6-6"></path>
+          </svg>
+        </div>
+      </div>
+      
+      <!-- 职位 Tab 滑动栏 -->
+      <div class="tabs-wrap">
+        <div class="tabs-scroll" id="tabsScroll">
+          <button class="tab-btn active" data-id="store">门店</button>
+          <button class="tab-btn" data-id="zhuren">主任</button>
+          <button class="tab-btn" data-id="guwen">顾问</button>
+          <button class="tab-btn" data-id="laoshi">老师</button>
+          <button class="tab-btn" data-id="shejishi">美学设计师</button>
+          <button class="tab-btn" data-id="meixueguwen">美学顾问</button>
+          <button class="tab-btn" data-id="piguan">皮管</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. 核心大盘展示区 -->
+    <div class="content" id="contentArea">
+      
+      <!-- 默认门店大盘：静态内置，0延迟显示 -->
+      <div class="stack" id="storeDashboardView">
+        
+        <!-- 模块1：大盘概览 -->
+        <div class="card">
+          <div class="card-head">
+            <h2 class="card-title">
+              <svg class="icon-mr" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                <polyline points="17 6 23 6 23 12"></polyline>
+              </svg>
+              算薪业绩大盘
+            </h2>
+            <span class="tag-orange">T+1 结算</span>
+          </div>
+          <div class="salary-banner">
+            <div class="salary-label">算薪总业绩</div>
+            <div class="salary-num">1,290,000</div>
+            <div class="salary-grid">
+              <div>
+                <div class="lbl">均客单</div>
+                <div class="val">3,675</div>
+              </div>
+              <div>
+                <div class="lbl">预约贡献</div>
+                <div class="val">850,000</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 模块2：客流转化漏斗 -->
+        <div class="card">
+          <h2 class="card-title" style="margin-bottom: 1rem;">
+            <svg class="icon-mr" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+            客流转化漏斗
+          </h2>
+          <div class="funnel">
+            <div class="funnel-col">
+              <div class="lbl">核算预约</div>
+              <div class="val">450</div>
+            </div>
+            <div class="funnel-arrow w-lg">
+              <span class="funnel-rate">到店率 78%</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#c7d2fe" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 12h14M12 5l7 7-7 7"></path>
+              </svg>
+            </div>
+            <div class="funnel-col">
+              <div class="lbl">核算到店</div>
+              <div class="val">351</div>
+            </div>
+            <div class="funnel-arrow w-sm">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#c7d2fe" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 12h14M12 5l7 7-7 7"></path>
+              </svg>
+            </div>
+            <div class="funnel-col">
+              <div class="lbl">核算新客单</div>
+              <div class="val">120</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 模块3：业绩分析结构 -->
+        <div class="card">
+          <h2 class="card-title" style="margin-bottom: 1rem;">
+            <svg class="icon-mr" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <circle cx="12" cy="12" r="6"></circle>
+              <circle cx="12" cy="12" r="2"></circle>
+            </svg>
+            业绩结构分析
+          </h2>
+          <div class="struct-bar-wrap">
+            <div class="struct-bar-head">
+              <span>新客业绩 (240,000)</span>
+              <span>老客业绩 (1,050,000)</span>
+            </div>
+            <div class="struct-bar">
+              <div class="s1" style="width:19%"></div>
+              <div class="s2" style="width:81%"></div>
+            </div>
+            <div class="struct-bar-foot">
+              <span>新客占比 <strong class="c1">19%</strong></span>
+              <span>老客占比 <strong class="c2">81%</strong></span>
+            </div>
+          </div>
+          <div class="struct-grid">
+            <div class="row">
+              <span class="lbl">老带新业绩</span>
+              <span class="val">85,000</span>
+            </div>
+            <div class="row">
+              <span class="lbl">老带新占比</span>
+              <span class="val">6.6%</span>
+            </div>
+            <div class="row">
+              <span class="lbl">Y10业绩</span>
+              <span class="val">150,000</span>
+            </div>
+            <div class="row">
+              <span class="lbl">主管业绩</span>
+              <span class="val">320,000</span>
+            </div>
+            <div class="row">
+              <span class="lbl">AI销冠覆盖率</span>
+              <span class="val">45%</span>
+            </div>
+            <div class="row">
+              <span class="lbl">退款业绩</span>
+              <span class="val">12,500</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 模块4：经营数据 -->
+        <div class="card card-sm">
+          <h2 class="card-title" style="margin-bottom: .75rem; padding: 0 .25rem;">经营数据</h2>
+          <div style="margin-bottom: .75rem;">
+            <div class="section-label">
+              <svg style="margin-right:.25rem" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+              </svg>
+              当天客流
+            </div>
+            <div class="op-grid-4">
+              <div class="op-card">
+                <div class="top"><span class="lbl">预约数</span></div>
+                <span class="val">185</span>
+              </div>
+              <div class="op-card">
+                <div class="top"><span class="lbl">总到店</span></div>
+                <span class="val">142</span>
+              </div>
+              <div class="op-card">
+                <div class="top"><span class="lbl">新客到店</span></div>
+                <span class="val">35</span>
+              </div>
+              <div class="op-card">
+                <div class="top"><span class="lbl">到店率</span></div>
+                <span class="val">76%</span>
+              </div>
+            </div>
+          </div>
+          <div class="divider-top">
+            <div class="section-label">
+              <svg style="margin-right:.25rem" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"></path>
+                <path d="M4 6v12c0 1.1.9 2 2 2h14v-4"></path>
+                <path d="M18 12a2 2 0 0 0-2 2c0 1.1.9 2 2 2h4v-4h-4z"></path>
+              </svg>
+              账款情况
+            </div>
+            <div class="op-grid-2">
+              <div class="op-card clickable">
+                <div class="top"><span class="lbl">已收</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.5"><path d="M9 18l6-6-6-6"></path></svg></div>
+                <span class="val">1,100,000</span>
+              </div>
+              <div class="op-card clickable">
+                <div class="top"><span class="lbl">待结</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.5"><path d="M9 18l6-6-6-6"></path></svg></div>
+                <span class="val">35,000</span>
+              </div>
+              <div class="op-card clickable">
+                <div class="top"><span class="lbl">退款</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.5"><path d="M9 18l6-6-6-6"></path></svg></div>
+                <span class="val">15,000</span>
+              </div>
+              <div class="op-card clickable">
+                <div class="top"><span class="lbl">欠款</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.5"><path d="M9 18l6-6-6-6"></path></svg></div>
+                <span class="val">45,000</span>
+              </div>
+              <div class="op-card clickable span-2">
+                <div class="top"><span class="lbl">新客流失</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.5"><path d="M9 18l6-6-6-6"></path></svg></div>
+                <span class="val">12</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 模块5：实收业绩明细 (内联抽屉交互) -->
+        <div class="card card-sm">
+          <div class="card-head" style="padding: 0 .25rem;">
+            <h2 class="card-title">
+              <svg class="icon-mr" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"></path>
+                <path d="M4 6v12c0 1.1.9 2 2 2h14v-4"></path>
+                <path d="M18 12a2 2 0 0 0-2 2c0 1.1.9 2 2 2h4v-4h-4z"></path>
+              </svg>
+              实收业绩明细
+            </h2>
+          </div>
+          <div class="actual-banner" id="actualBannerBtn">
+            <div>
+              <div class="lbl">实收总业绩</div>
+              <div class="val">1,150,000</div>
+            </div>
+            <div class="actual-link">
+              查看明细
+              <svg style="margin-left:.125rem" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 18l6-6-6-6"></path>
+              </svg>
+            </div>
+          </div>
+          <div class="actual-detail">
+            <div class="actual-g3">
+              <div class="actual-item">
+                <div class="lbl">有效业绩</div>
+                <div class="val">1,080,000</div>
+              </div>
+              <div class="actual-item">
+                <div class="lbl">待核对</div>
+                <div class="val">50,000</div>
+              </div>
+              <div class="actual-item">
+                <div class="lbl">内推分润</div>
+                <div class="val">20,000</div>
+              </div>
+            </div>
+            <div class="actual-g2">
+              <div class="actual-item">
+                <div class="lbl">实收预约贡献</div>
+                <div class="val">780,000</div>
+              </div>
+              <div class="actual-item">
+                <div class="lbl">实收均客单</div>
+                <div class="val">3,276</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 模块6：店长排名 -->
+        <div class="rank-wrap">
+          <div class="rank-bg-trophy">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+              <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+              <path d="M4 22h16"></path>
+              <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
+              <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
+              <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
+            </svg>
+          </div>
+          <h3 class="rank-title">门店排名</h3>
+          <div class="rank-grid">
+            <div class="rank-card">
+              <span class="lbl">核算新客单排名</span>
+              <span class="val">No.2</span>
+            </div>
+            <div class="rank-card">
+              <span class="lbl">核算预约贡献排名</span>
+              <span class="val">No.1</span>
+            </div>
+            <div class="rank-card">
+              <span class="lbl">核算均客单排名</span>
+              <span class="val gray">No.5</span>
+            </div>
+          </div>
+        </div>
+        
+      </div>
+
+      <!-- 排行大盘展示区：动态渲染口 -->
+      <div class="stack" id="rankDashboardView" style="display: none;">
+        <!-- 动态 JS 按需即刻注入渲染 -->
+      </div>
+
+    </div>
+
+    <!-- 3. 底部主Tab导航 -->
+    <div class="bottombar">
+      <div class="bnav">
+        <div class="dot"></div>
+        <span>门店订单</span>
+      </div>
+      <div class="bnav">
+        <div class="dot"></div>
+        <span>排行榜</span>
+      </div>
+      <div class="bnav">
+        <div class="badge">99+</div>
+        <div class="dot"></div>
+        <span>工作台</span>
+      </div>
+      <div class="bnav active">
+        <div class="dot">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path>
+            <path d="M22 12A10 10 0 0 0 12 2v10z"></path>
+          </svg>
+        </div>
+        <span>数据</span>
+      </div>
+      <div class="bnav">
+        <div class="dot"></div>
+        <span>会员</span>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         4. 底部抽屉模块（实收业绩构成明细）
+         ========================================== -->
+    <div class="drawer-overlay" id="drawerOverlay"></div>
+    <div class="drawer" id="detailDrawer">
+      <div class="drawer-handle"></div>
+      <div class="drawer-header">
+        <span class="drawer-title">实收业绩明细构成</span>
+        <button class="drawer-close" id="drawerClose" aria-label="关闭">&times;</button>
+      </div>
+      <div class="detail-list">
+        <div class="detail-row">
+          <div>
+            <span class="name">常规新客成交额</span>
+            <div style="font-size: 11px; color:#9ca3af; margin-top:2px;">渠道推荐、直客到店</div>
+          </div>
+          <div class="text-right">
+            <div class="num">880,000</div>
+            <span class="tag tag-blue">有效业绩</span>
+          </div>
+        </div>
+        <div class="detail-row">
+          <div>
+            <span class="name">老客转介绍（老带新）</span>
+            <div style="font-size: 11px; color:#9ca3af; margin-top:2px;">由老客户推荐产生</div>
+          </div>
+          <div class="text-right">
+            <div class="num">200,000</div>
+            <span class="tag tag-blue">有效业绩</span>
+          </div>
+        </div>
+        <div class="detail-row">
+          <div>
+            <span class="name">跨区域协作成交单</span>
+            <div style="font-size: 11px; color:#9ca3af; margin-top:2px;">财务正在复核入账</div>
+          </div>
+          <div class="text-right">
+            <div class="num">50,000</div>
+            <span class="tag tag-yellow">待核对</span>
+          </div>
+        </div>
+        <div class="detail-row">
+          <div>
+            <span class="name">技术团队内推分成</span>
+            <div style="font-size: 11px; color:#9ca3af; margin-top:2px;">研发二部联合交付</div>
+          </div>
+          <div class="text-right">
+            <div class="num">20,000</div>
+            <span class="tag tag-green">内推分润</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         5. 底部抽屉模块（门店选择器）
+         ========================================== -->
+    <div class="drawer" id="storeSelectDrawer">
+      <div class="drawer-handle"></div>
+      <div class="drawer-header">
+        <span class="drawer-title">选择查看门店</span>
+        <button class="drawer-close" id="storeDrawerClose" aria-label="关闭">&times;</button>
+      </div>
+      <div class="detail-list" id="storeListContainer">
+        <!-- 动态生成门店 -->
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ==========================================
+     6. 极致精简高性能 Vanilla JS 逻辑
+     ========================================== -->
+<script>
+  (function() {
+    // 岗位元数据配置
+    const ROLE_CONFIGS = {
+      zhuren: {
+        name: '主任',
+        metrics: [
+          {key: 'total', label: '总业绩'},
+          {key: 'avgTicket', label: '均客单'},
+          {key: 'visits', label: '核算到店'},
+          {key: 'newOrders', label: '新客单'},
+          {key: 'y10', label: 'Y10业绩'},
+          {key: 'newSales', label: '新客业绩'},
+          {key: 'oldSales', label: '老客业绩'},
+          {key: 'oldRatio', label: '老客业绩占比', isProgress: true}
+        ]
+      },
+      guwen: {
+        name: '顾问',
+        metrics: [
+          {key: 'total', label: '总业绩'},
+          {key: 'avgTicket', label: '均客单'},
+          {key: 'visits', label: '核算到店'},
+          {key: 'newOrders', label: '新客单'},
+          {key: 'y10', label: 'Y10业绩'},
+          {key: 'newSales', label: '新客业绩'},
+          {key: 'oldSales', label: '老客业绩'},
+          {key: 'oldRatio', label: '老客业绩占比', isProgress: true}
+        ]
+      },
+      laoshi: {
+        name: '老师',
+        metrics: [
+          {key: 'total', label: '总业绩'},
+          {key: 'avgTicket', label: '均客单'},
+          {key: 'newOrders', label: '新客单'},
+          {key: 'y10', label: 'Y10业绩'},
+          {key: 'newSales', label: '新客业绩'},
+          {key: 'oldSales', label: '老客业绩'},
+          {key: 'oldRatio', label: '老客业绩占比', isProgress: true}
+        ]
+      },
+      shejishi: {
+        name: '美学设计师',
+        metrics: [
+          {key: 'total', label: '总业绩'},
+          {key: 'avgTicket', label: '均客单'},
+          {key: 'newOrders', label: '新客单'},
+          {key: 'newDealRate', label: '新客成交率'},
+          {key: 'newSales', label: '新客业绩'},
+          {key: 'oldSales', label: '老客业绩'},
+          {key: 'y10', label: 'Y10业绩'},
+          {key: 'oldRatio', label: '老客业绩占比', isProgress: true}
+        ]
+      },
+      meixueguwen: {
+        name: '美学顾问',
+        metrics: [
+          {key: 'total', label: '总业绩'},
+          {key: 'avgTicket', label: '均客单'},
+          {key: 'newOrders', label: '新客单'},
+          {key: 'y10', label: 'Y10业绩'},
+          {key: 'newSales', label: '新客业绩'},
+          {key: 'oldSales', label: '老客业绩'},
+          {key: 'oldToNew', label: '老带新业绩'},
+          {key: 'newDealRate', label: '新客成交率'},
+          {key: 'oldRatio', label: '老客业绩占比', isProgress: true}
+        ]
+      },
+      piguan: {
+        name: '皮管',
+        metrics: [
+          {key: 'total', label: '总业绩'},
+          {key: 'coopTicket', label: '协作客单'},
+          {key: 'y10', label: 'Y10业绩'}
+        ]
+      }
+    };
+
+    // 原始静态员工库
+    const BASE_STAFF = [
+      { id: 1, name: '郭海兰', total: '450,000', avgTicket: '5,200', visits: 86, newOrders: 25, y10: '50,000', newSales: '130,000', oldSales: '320,000', oldRatio: '71%', newDealRate: '28%', oldToNew: '45,000', coopTicket: '1,200' },
+      { id: 2, name: '王丽',   total: '380,000', avgTicket: '4,800', visits: 79, newOrders: 20, y10: '40,000', newSales: '96,000',  oldSales: '284,000', oldRatio: '75%', newDealRate: '25%', oldToNew: '32,000', coopTicket: '950' },
+      { id: 3, name: '杨惠卿', total: '320,000', avgTicket: '3,800', visits: 84, newOrders: 15, y10: '30,000', newSales: '80,000',  oldSales: '240,000', oldRatio: '75%', newDealRate: '18%', oldToNew: '20,000', coopTicket: '800' },
+      { id: 4, name: '张晓梅', total: '290,000', avgTicket: '4,200', visits: 69, newOrders: 15, y10: '25,000', newSales: '63,000',  oldSales: '227,000', oldRatio: '78%', newDealRate: '21%', oldToNew: '15,000', coopTicket: '1,100' }
+    ];
+
+    // 门店配置库
+    const STORES = ['昆明五华店', '北京国贸店', '上海南京路店', '广州天河店', '深圳万象城店', '成都春熙路店'];
+
+    // 应用状态（State）
+    let currentTab = 'store';
+    let currentTimeFilter = 'month';
+    let currentStore = '昆明五华店';
+    let currentSortBy = 'total';
+
+    // DOM 选择器映射
+    const DOM = {
+      timeFilters: document.getElementById('timeFilters'),
+      tabsScroll: document.getElementById('tabsScroll'),
+      storeSelectTrigger: document.getElementById('storeSelectTrigger'),
+      currentStoreName: document.getElementById('currentStoreName'),
+      contentArea: document.getElementById('contentArea'),
+      storeDashboardView: document.getElementById('storeDashboardView'),
+      rankDashboardView: document.getElementById('rankDashboardView'),
+      
+      // 实收明细抽屉
+      actualBannerBtn: document.getElementById('actualBannerBtn'),
+      drawerOverlay: document.getElementById('drawerOverlay'),
+      detailDrawer: document.getElementById('detailDrawer'),
+      drawerClose: document.getElementById('drawerClose'),
+      
+      // 门店抽屉
+      storeSelectDrawer: document.getElementById('storeSelectDrawer'),
+      storeDrawerClose: document.getElementById('storeDrawerClose'),
+      storeListContainer: document.getElementById('storeListContainer')
+    };
+
+    /* ==========================================
+       交互动效控制器 (Drawers)
+       ========================================== */
+    function showOverlay() { DOM.drawerOverlay.classList.add('active'); }
+    function hideOverlay() { DOM.drawerOverlay.classList.remove('active'); }
+
+    function openDrawer(drawer) {
+      showOverlay();
+      drawer.classList.add('active');
+    }
+
+    function closeAllDrawers() {
+      hideOverlay();
+      DOM.detailDrawer.classList.remove('active');
+      DOM.storeSelectDrawer.classList.remove('active');
+    }
+
+    // 绑定抽屉开关事件
+    DOM.actualBannerBtn.addEventListener('click', () => openDrawer(DOM.detailDrawer), { passive: true });
+    DOM.drawerClose.addEventListener('click', closeAllDrawers, { passive: true });
+    DOM.drawerOverlay.addEventListener('click', closeAllDrawers, { passive: true });
+    DOM.storeSelectTrigger.addEventListener('click', () => {
+      renderStoreList();
+      openDrawer(DOM.storeSelectDrawer);
+    }, { passive: true });
+    DOM.storeDrawerClose.addEventListener('click', closeAllDrawers, { passive: true });
+
+    /* ==========================================
+       时间筛选器交互
+       ========================================== */
+    DOM.timeFilters.addEventListener('click', (e) => {
+      const btn = e.target.closest('.tf-btn');
+      if (!btn || !btn.dataset.id) return;
+      
+      DOM.timeFilters.querySelector('.tf-btn.active').classList.remove('active');
+      btn.classList.add('active');
+      currentTimeFilter = btn.dataset.id;
+      
+      // 模拟过滤刷新看板大盘数据，提高拟真度
+      simulateDataRefresh();
+    });
+
+    // 切换时间模拟刷新效果
+    function simulateDataRefresh() {
+      const numbers = DOM.storeDashboardView.querySelectorAll('.salary-num, .val, .num');
+      numbers.forEach(el => {
+        el.style.opacity = '0.4';
+        setTimeout(() => {
+          el.style.opacity = '1';
+        }, 120);
+      });
+    }
+
+    /* ==========================================
+       职位 Tabs 切换 & 精密渲染排行榜
+       ========================================== */
+    DOM.tabsScroll.addEventListener('click', (e) => {
+      const btn = e.target.closest('.tab-btn');
+      if (!btn) return;
+      
+      DOM.tabsScroll.querySelector('.tab-btn.active').classList.remove('active');
+      btn.classList.add('active');
+      
+      currentTab = btn.dataset.id;
+      currentSortBy = 'total'; // 切换 Tab 重置为总业绩排序
+      
+      if (currentTab === 'store') {
+        DOM.rankDashboardView.style.display = 'none';
+        DOM.storeDashboardView.style.display = 'flex';
+      } else {
+        DOM.storeDashboardView.style.display = 'none';
+        DOM.rankDashboardView.style.display = 'flex';
+        renderRankView();
+      }
+    });
+
+    // 解析数值便于精确排序（性能提升：去除逗号/百分号的浮点转换）
+    function parseNumber(value) {
+      if (typeof value === 'number') return value;
+      return parseFloat(value.replace(/,/g, '').replace('%', '')) || 0;
+    }
+
+    // 核心渲染方法：极速渲染排行榜单
+    function renderRankView() {
+      const config = ROLE_CONFIGS[currentTab];
+      if (!config) return;
+
+      // 提取符合当前职位的员工数据集
+      const roleName = config.name;
+      const filteredStaff = BASE_STAFF.map(s => ({ ...s, role: roleName }));
+
+      // 快速数值型与字符型混合排序
+      filteredStaff.sort((a, b) => {
+        const valA = parseNumber(a[currentSortBy]);
+        const valB = parseNumber(b[currentSortBy]);
+        return valB - valA;
+      });
+
+      // 获取当前排序维度的显示名称
+      const activeMetric = config.metrics.find(m => m.key === currentSortBy);
+      const currentMetricLabel = activeMetric ? activeMetric.label : '总业绩';
+
+      // 获取核心进度条属性与多维表格属性
+      const mainMetric = config.metrics[0];
+      const progressMetric = config.metrics.find(m => m.isProgress);
+      const gridMetrics = config.metrics.filter(m => m.key !== mainMetric.key && !m.isProgress);
+
+      // 组合 HTML 骨架 (不借助外部插件的高性能原生模板字符串)
+      let html = `
+        <div class="role-head">
+          <h2 class="role-title">${roleName}排行</h2>
+          <div class="sort-menu-wrap">
+            <button class="sort-btn" id="sortDropdownTrigger">
+              按${currentMetricLabel}
+              <svg style="margin-left: 2px;" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M6 9l6 6 6-6"></path>
+              </svg>
+            </button>
+            <div class="sort-overlay" id="sortOverlay"></div>
+            <div class="sort-menu" id="sortMenu">
+              ${config.metrics.map(metric => `
+                <button class="sort-item ${currentSortBy === metric.key ? 'active' : ''}" data-key="${metric.key}">
+                  ${metric.label}
+                </button>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+        <div class="stack" style="gap: .75rem;">
+          ${filteredStaff.map((staff, index) => {
+            // 定义前三甲尊享奖章边线
+            let lineClass = 'staff-line';
+            let rankClass = 'staff-rank';
+            if (index === 0) { lineClass += ' g'; rankClass += ' g'; }
+            else if (index === 1) { lineClass += ' s'; rankClass += ' s'; }
+            else if (index === 2) { lineClass += ' b'; rankClass += ' b'; }
+
+            // 1. 卡片首要头部
+            let staffCardHtml = `
+              <div class="staff">
+                <div class="${lineClass}"></div>
+                <div class="staff-inner">
+                  <div class="staff-head">
+                    <div class="staff-left">
+                      <span class="${rankClass}">${index + 1}</span>
+                      <span class="staff-name">${staff.name}</span>
+                      <span class="staff-role">${staff.role}</span>
+                    </div>
+                    <div class="staff-main">
+                      <div class="lbl ${currentSortBy === mainMetric.key ? 'hl' : ''}">${mainMetric.label}</div>
+                      <div class="val ${currentSortBy === mainMetric.key ? 'hl' : ''}">${staff[mainMetric.key]}</div>
+                    </div>
+                  </div>
+            `;
+
+            // 2. 六宫格细分维度业绩
+            if (gridMetrics.length > 0) {
+              staffCardHtml += `
+                <div class="staff-grid-wrap">
+                  <div class="staff-grid">
+                    ${gridMetrics.map(m => `
+                      <div class="staff-metric">
+                        <span class="lbl ${currentSortBy === m.key ? 'hl' : ''}">${m.label}</span>
+                        <span class="val ${currentSortBy === m.key ? 'hl' : ''}">${staff[m.key]}</span>
+                      </div>
+                    `).join('')}
+                  </div>
+              `;
+            }
+
+            // 3. 业绩比例动态百分比进度条
+            if (progressMetric) {
+              staffCardHtml += `
+                <div class="staff-progress">
+                  <span class="lbl ${currentSortBy === progressMetric.key ? 'hl' : ''}">${progressMetric.label}</span>
+                  <div class="right">
+                    <div class="bar">
+                      <div class="bar-fill" style="width: ${staff[progressMetric.key]}"></div>
+                    </div>
+                    <span class="val ${currentSortBy === progressMetric.key ? 'hl' : ''}">${staff[progressMetric.key]}</span>
+                  </div>
+                </div>
+              `;
+            }
+
+            // 补齐网格布局包围盒
+            if (gridMetrics.length > 0) {
+              staffCardHtml += `</div>`;
+            }
+
+            staffCardHtml += `</div></div>`;
+            return staffCardHtml;
+          }).join('')}
+        </div>
+      `;
+
+      DOM.rankDashboardView.innerHTML = html;
+
+      // 绑定排序弹窗触发交互 (使用 IIFE 保证局部隔离)
+      const trigger = document.getElementById('sortDropdownTrigger');
+      const sortOverlay = document.getElementById('sortOverlay');
+      const sortMenu = document.getElementById('sortMenu');
+
+      trigger.addEventListener('click', () => {
+        sortOverlay.classList.toggle('active');
+        sortMenu.classList.toggle('active');
+      }, { passive: true });
+
+      sortOverlay.addEventListener('click', () => {
+        sortOverlay.classList.remove('active');
+        sortMenu.classList.remove('active');
+      }, { passive: true });
+
+      sortMenu.addEventListener('click', (e) => {
+        const item = e.target.closest('.sort-item');
+        if (!item) return;
+        currentSortBy = item.dataset.key;
+        renderRankView(); // 点击排序后毫秒内重绘重排列表
+      });
+    }
+
+    /* ==========================================
+       极速门店选择器逻辑
+       ========================================== */
+    function renderStoreList() {
+      const storeHtml = STORES.map(store => `
+        <div class="store-list-item ${store === currentStore ? 'selected' : ''}" data-name="${store}">
+          <span class="name">${store}</span>
+          ${store === currentStore ? `
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="3">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          ` : ''}
+        </div>
+      `).join('');
+
+      DOM.storeListContainer.innerHTML = storeHtml;
+    }
+
+    DOM.storeListContainer.addEventListener('click', (e) => {
+      const item = e.target.closest('.store-list-item');
+      if (!item) return;
+      currentStore = item.dataset.name;
+      DOM.currentStoreName.textContent = currentStore;
+      closeAllDrawers();
+      simulateDataRefresh();
+    });
+
+  })();
+</script>
+</body>
+</html>

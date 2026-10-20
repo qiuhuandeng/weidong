@@ -1,0 +1,28 @@
+{
+  "entry": {
+    "title": "美业AI平台 - 系统管理后台",
+    "resources": 112,
+    "rows": "共 18 条"
+  },
+  "modules": [
+    {
+      "page": "complaint-prototype/workflow/index.html",
+      "title": "客诉工单 · 美业AI平台",
+      "text": "客诉工单\n 新增工单\n待我处理\n我发起的\n我参与的\n全部工单\n全部状态\n待处理\n处理中\n审批中\n付款"
+    },
+    {
+      "page": "group-approval/index.html",
+      "title": "审批工作台 · 集团审批",
+      "text": "客户档案合并与纠错\n\n查看业务工单、风险审批与调整单处理记录\n\n进入业务工单\n功能演示入口\n审批工作"
+    },
+    {
+      "page": "customer-merge-prototype/pc.html",
+      "title": "合并申请列表 · 微动",
+      "text": "合并管理\n合并记录\n纠错工单\n财务处理\n规则配置\n运行与审计\n合并申请\n\n核实客户身份，确认档案与订"
+    }
+  ],
+  "errors": [],
+  "requestedFiles": [
+    "/Users/qiu/我的坚果云/微动/index.html"
+  ]
+}

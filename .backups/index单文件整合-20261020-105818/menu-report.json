@@ -1,0 +1,291 @@
+[
+  {
+    "id": "complaint-tickets",
+    "data": {
+      "title": "客诉工单 · 美业AI平台",
+      "page": "complaint-prototype/workflow/index.html",
+      "text": "客诉工单\n 新增工单\n待我处理\n我发起的\n我参与的\n全部工单\n全部状态\n待处理\n处理中\n审批中\n付款办理\n采购办理\n待结案\n已挂起\n已结案\n全部等级\n一级\n二级\n三级\n四级\n五级\n全部门店\n杭州湖滨店\n上海徐汇店\n南京新街口店\n成都春熙店\n查询\n重置\n 更多筛选\n工单 / 来源\t客户\t门店\t等级 / 风险\t状态 / 当前环节\t责任人\t处理时效\t操作\n\nKS20260929-001\n服务效果争议，客户提及12315\n400电话\t王女士\n138****1001\n\t杭州湖滨店\t四级重复投诉\t处理中\n售后办理\n\t陈悦\n主责 · 陈悦\n\t已超时 1小时0分\n整单 10-22 05:06\n\t查看详情\n\nKS20261007-P18\n五级客诉，售后经理直接办理\n微动\t林女士\n138****1002\n\t上海徐汇店\t五级\t处理中\n售后办理\n\t林岚\n主责 · 林岚\n\t剩余 23小时59分\n整单 10-21 11:06\n\t查看详情\n\nKS20261007-R01\n警方到店协调纠纷，待匹配处理规则\n微动\t刘女士\n138****2082\n\t上海徐汇店\t五级\t待处理\n规则匹配\n\t林岚\n主责 · 待分派\n\t时限待设定\n整单 待设定\n\t查看详情\n\nKS20261007-W05\n规则未匹配，补齐后重试\n微动\t刘女士\n138****2082\n\t上海徐汇店\t五级\t待处理\n规则匹配\n\t林岚\n主责 · 待分派\n\t时限待设定\n整单 待设定\n\t查看详情\n\nKS20260929-003\n定金退款未解决，再次来电\n微动\t陈女士\n138****1003\n\t杭州湖滨店\t二级重复投诉\t处理中\n售后办理\n\t陈悦\n主责 · 陈悦\n\t剩余 59分钟\n整单 10-20 21:06\n\t查看详情\n\nKS20261007-H04\n工单挂起中，整单仍已超时\n微动\t林女士\n138****1002\n\t上海徐汇店\t二级\t已挂起\n售后办理\n等待客户补充必要资料 · 已挂起 0分钟\n恢复 10-21 11:06\t许宁\n主责 · 许宁\n\t整单已超时 1小时0分\n整单 10-20 10:06\n\t查看详情\n\nKS20260929-002\n淡斑项目退款申请\n小程序\t林女士\n138****1002\n\t上海徐汇店\t二级\t待处理\n售后办理\n\t陈悦\n主责 · 陈悦\n\t已超时 1分钟\n整单 10-23 07:06\n\t查看详情\n\nKS20260929-010\n未使用套餐退款已完成\n企微\t周女士\n138****1006\n\t成都春熙店\t二级\t已结案\n流程结束\n\t周宁\n主责 · 周宁\n\t10-18 11:06\n整单 10-18 11:06\n\t查看详情\n共 99 条工单\n上一页\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n下一页",
+      "tables": 1,
+      "bodyWidth": 1157,
+      "width": 1172,
+      "links": [
+        "file:///private/tmp/weid-index-single/isolated/index.html?v=20261007-crm-profile&embed=1&page=tickets&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/tickets",
+        "file:///private/tmp/weid-index-single/isolated/index.html?v=20261006-unified&view=pc&actor=manager&page=rules&__weid_page=complaint-prototype%2Findex.html",
+        "file:///private/tmp/weid-index-single/isolated/index.html?__weid_page=complaint-prototype%2Fschedule.html",
+        "file:///private/tmp/weid-index-single/isolated/index.html?__weid_page=complaint-prototype%2Fapprovals.html",
+        "file:///private/tmp/weid-index-single/isolated/index.html?v=20261007-crm-profile&embed=1&page=tickets&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/demo",
+        "file:///private/tmp/weid-index-single/isolated/index.html?v=20261007-crm-profile&embed=1&page=tickets&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile",
+        "file:///private/tmp/weid-index-single/isolated/index.html?v=20261007-crm-profile&embed=1&page=tickets&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/tickets/KS20260929-001",
+        "file:///private/tmp/weid-index-single/isolated/index.html?v=20261007-crm-profile&embed=1&page=tickets&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/tickets/KS20261007-P18",
+        "file:///private/tmp/weid-index-single/isolated/index.html?v=20261007-crm-profile&embed=1&page=tickets&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/tickets/KS20261007-R01",
+        "file:///private/tmp/weid-index-single/isolated/index.html?v=20261007-crm-profile&embed=1&page=tickets&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/tickets/KS20261007-W05",
+        "file:///private/tmp/weid-index-single/isolated/index.html?v=20261007-crm-profile&embed=1&page=tickets&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/tickets/KS20260929-003",
+        "file:///private/tmp/weid-index-single/isolated/index.html?v=20261007-crm-profile&embed=1&page=tickets&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/tickets/KS20261007-H04",
+        "file:///private/tmp/weid-index-single/isolated/index.html?v=20261007-crm-profile&embed=1&page=tickets&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/tickets/KS20260929-002",
+        "file:///private/tmp/weid-index-single/isolated/index.html?v=20261007-crm-profile&embed=1&page=tickets&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/tickets/KS20260929-010"
+      ]
+    },
+    "errors": []
+  },
+  {
+    "id": "complaint-rules",
+    "data": {
+      "title": "客诉管理 · 美业AI平台",
+      "page": "complaint-prototype/index.html",
+      "text": "规则配置\n\n维护审批场景、定级条件、岗位人员及工单办理流程。\n\n＋ 新建规则\n审批场景\n岗位人员\n全部状态\n启用\n停用\n查询\n重置\n审批场景名称\t客诉等级\t整单办结时限\t工单办理流程\t状态\t操作\n\n一级客诉\n\t一级\t24 小时\t条件分支 → 售后专员办理 → 条件分支 → 条件分支 → 售后结案\t启用\t流程配置编辑停用\n\n二级客诉\n\t二级\t72 小时\t条件分支 → 售后专员办理 → 条件分支 → 条件分支 → 售后结案\t启用\t流程配置编辑停用\n\n三级客诉\n\t三级\t72 小时\t条件分支 → 售后专员办理 → 条件分支 → 条件分支 → 售后结案\t启用\t流程配置编辑停用\n\n四级客诉\n\t四级\t72 小时\t条件分支 → 售后专员办理 → 条件分支 → 条件分支 → 售后结案\t启用\t流程配置编辑停用\n\n五级客诉\n\t五级\t24 小时\t条件分支 → 售后经理办理 → 条件分支 → 条件分支 → 售后结案\t启用\t流程配置编辑停用\n共 5 个审批场景\n\n每个审批场景独立维护办理节点、审批节点及各节点时限。",
+      "tables": 1,
+      "bodyWidth": 1172,
+      "width": 1172,
+      "links": [
+        "file:///private/tmp/weid-index-single/isolated/index.html?__weid_page=complaint-prototype%2Fapprovals.html"
+      ]
+    },
+    "errors": []
+  },
+  {
+    "id": "complaint-schedule",
+    "data": {
+      "title": "售后排班 · 美业AI平台",
+      "page": "complaint-prototype/schedule.html",
+      "text": "售后排班\n\n维护售后班次、人员排班及每日派单时间。\n\n批量排班\n班次设置\n人员排班\n派单设置\n2026/10/19 — 10/25\n本周\n查询\n售后员工 1\n当前当班 0\n今日休息 0\n今日未排班 1\n早班\n晚班\n休息\n\t售后员工\t10/19\n周一\n\t10/20\n周二 · 今天\n\t10/21\n周三\n\t10/22\n周四\n\t10/23\n周五\n\t10/24\n周六\n\t10/25\n周日\n\n\t\n许\n许宁\n售后处理岗\n\t\n未排班\n\t\n未排班\n\t\n未排班\n\t\n未排班\n\t\n未排班\n\t\n未排班\n\t\n未排班",
+      "tables": 1,
+      "bodyWidth": 1172,
+      "width": 1172,
+      "links": [
+        "file:///private/tmp/weid-index-single/isolated/index.html?__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/tickets",
+        "file:///private/tmp/weid-index-single/isolated/index.html?page=rules&__weid_page=complaint-prototype%2Findex.html#rules/scenes",
+        "file:///private/tmp/weid-index-single/isolated/index.html?__weid_page=complaint-prototype%2Fschedule.html",
+        "file:///private/tmp/weid-index-single/isolated/index.html?__weid_page=complaint-prototype%2Fapprovals.html"
+      ]
+    },
+    "errors": []
+  },
+  {
+    "id": "complaint-approvals",
+    "data": {
+      "title": "审批管理 · 美业AI平台",
+      "page": "complaint-prototype/approvals.html",
+      "text": "审批管理\n钉钉配置\n＋ 新增模板\n审批模板\n审批记录\n全部状态\n启用\n停用\n草稿\n配置异常\n查询\n重置\n模板名称\t钉钉审批模板\t状态\t最近同步\t操作\n\n付款申请\nV1\n\t市场客户退款（赔款）申请\nPROC-COMPLAINT-PAYMENT\n\t启用\t10-07 09:00\t编辑预览审批停用\n\n商品赠送或店耗申请\nV1\n\t门店赠送或店耗申请\nPROC-COMPLAINT-PURCHASE\n\t启用\t10-07 09:00\t编辑预览审批停用\n\n门店付款申请\nV1\n\t市场客户退款（赔款）申请\nPROC-COMPLAINT-PAYMENT\n\t配置异常\t10-07 09:00\t编辑预览审批停用\n共 3 个模板",
+      "tables": 1,
+      "bodyWidth": 1172,
+      "width": 1172,
+      "links": [
+        "file:///private/tmp/weid-index-single/isolated/index.html?__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/tickets",
+        "file:///private/tmp/weid-index-single/isolated/index.html?page=rules&__weid_page=complaint-prototype%2Findex.html#rules",
+        "file:///private/tmp/weid-index-single/isolated/index.html?__weid_page=complaint-prototype%2Fschedule.html",
+        "file:///private/tmp/weid-index-single/isolated/index.html?v=20261007-crm-profile&embed=1&__weid_page=complaint-prototype%2Fapprovals.html#templates"
+      ]
+    },
+    "errors": []
+  },
+  {
+    "id": "complaint-demo",
+    "data": {
+      "title": "客诉管理 · 移动端演示入口",
+      "page": "complaint-prototype/demo.html",
+      "text": "移动端演示入口\n\n选择页面入口或办理场景，在新标签页查看移动端客诉工单原型。\n\n页面入口\n移动端 / 钉钉 H5\n移动端\n移动工单\n\n搜索筛选 · 移动填单 · 随时跟进\n\n独立打开 H5 ↗\n钉钉 H5\n钉钉审批\n\n当前节点 · 审批意见 · 处理记录\n\n办理场景\n在新标签页打开对应工单\n待处理\n7 种办理情况\nKS20261007-W04 · 当前待处理\n定级依据不足，经理确认\nKS20261007-W05 · 当前待处理\n规则未匹配，补齐后重试\nKS20261007-W01 · 当前待处理\n非派单时段，等待当班售后\nKS20261007-W02 · 当前待处理\n已分派，等待首次联系\nKS20261007-W03 · 当前待处理\n售后人员配置异常，等待重试\nKS20261007-P23 · 当前待处理\n非 CRM 来源，等待门店首次联系\nKS20261007-P38 · 当前待处理\n微信来源，等待门店联系\n处理中\n23 种办理情况\nKS20261007-D04 · 当前处理中\n付款审批拒绝，售后调整方案\nKS20261007-D05 · 当前处理中\n已付款，采购拒绝后调整商品\nKS20261007-D09 · 当前处理中\n审批已撤销，售后重新确认方案\nKS20261007-D19 · 当前处理中\n退款、赔偿及商品置换，待调整方案\nKS20261007-P01 · 当前处理中\n售后已联系，继续协商方案\nKS20261007-P02 · 当前处理中\n同部门已转派，接收客服继续办理\nKS20261007-P03 · 当前处理中\n门店已联系，待确认处理结果\nKS20261007-P04 · 当前处理中\n门店未解决，售后已接手跟进\nKS20261007-P05 · 当前处理中\n售后已安抚解决，可直接结案\nKS20261007-P09 · 当前处理中\n部门驳回，售后补充处理依据\nKS20261007-P10 · 当前处理中\n置换商品待门店交付\nKS20261007-P13 · 当前处理中\n付款退回，售后补充收款信息\nKS20261007-P17 · 当前处理中\n挂起已恢复，继续售后办理\nKS20261007-P18 · 当前处理中\n五级客诉，售后经理直接办理\nKS20261007-P19 · 当前处理中\n门店节点缺少办理人，等待重新匹配\nKS20261007-P21 · 当前处理中\n电话与门店多渠道补充同一工单\nKS20261007-P22 · 当前处理中\n首次联系未接通，等待继续跟进\nKS20261007-P28 · 当前处理中\n挂起到期已自动恢复，客服继续跟进\nKS20261007-P29 · 当前处理中\n主管纠正不合理挂起，时间计入办理耗时\nKS20261007-P30 · 当前处理中\n自主挂起次数已用完，再次挂起须由主管办理\nKS20261007-P37 · 当前处理中\n门店已联系，待确认是否解决\nKS20261007-P39 · 当前处理中\n门店未解决，转售后继续跟进\nKS20261007-P42 · 当前处理中\n门店已沟通，继续跟进并确认处理结果\n审批中\n11 种办理情况\nKS20261007-D01 · 当前审批中\n付款审批中，等待钉钉审批结果\nKS20261007-D03 · 当前审批中\n退款已到账，采购审批中\nKS20261007-D06 · 当前审批中\n申请发起失败，等待重新发起\nKS20261007-D07 · 当前审批中\n审批状态待同步，保留当前节点\nKS20261007-D10 · 当前审批中\n申请结果待确认，先同步后重试\nKS",
+      "tables": 0,
+      "bodyWidth": 1157,
+      "width": 1172,
+      "links": [
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/demo/approval",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-W04",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-W05",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-W01",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-W02",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-W03",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-P23",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-P38",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-D04",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-D05",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-D09",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-D19",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-P01",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-P02",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-P03",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-P04",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-P05",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-P09",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-P10",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-P13",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-P17",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-P18",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-P19",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-P21",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-P22",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-P28",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-P29",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-P30",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-P37",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-P39",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-P42",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-D01",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-D03",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-D06",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-D07",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-D10",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-D11",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-D12",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-D13",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-D21",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-D22",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-P40",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-D02",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-P11",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-P12",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-P20",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-P34",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-P41",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-D08",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-D14",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-D17",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-D18",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-D20",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-P31",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-P32",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-P33",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-P35",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-P36",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-D15",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-P14",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-P15",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-P16",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-P24",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-P25",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-P26",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-P27",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-H01",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-H02",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-H03",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-H04",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-H05",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-H06",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-H07",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-D16",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-C08",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-C09",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-C01",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-C02",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-C03",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-C04",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-C05",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-C06",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=complaint-prototype%2Fworkflow%2Findex.html#/mobile/KS20261007-C07"
+      ]
+    },
+    "errors": []
+  },
+  {
+    "id": "group-workbench",
+    "data": {
+      "title": "审批工作台 · 集团审批",
+      "page": "group-approval/index.html",
+      "text": "客户档案合并与纠错\n\n查看业务工单、风险审批与调整单处理记录\n\n进入业务工单\n功能演示入口\n审批工作台\n\n许宁，欢迎回来。集中处理集团行政与业务审批。\n\n＋ 发起审批\n待我处理\n4\n审批与办理待办\n我发起的\n2\n追踪申请处理进度\n我已处理\n2\n查看历史处理记录\n超时待办\n1\n请优先处理\n常用审批\n全部事项 ›\n用印申请\n合同、公函、证明等文件的用印申请。\n费用报销\n差旅、办公及业务费用的报销申请。\n采购申请\n门店设备、耗材和总部物资采购。\n请假申请\n员工请假与人事登记。\n业务优惠申请\n门店活动及特殊客户优惠审批。\n付款申请\n供应商、合同及业务款项的支付申请。\n待我处理 4\n查看全部 ›\n南京门店耗材采购付款\n\n刘欣 · 南京公司 · 集团财务复核\n\n整单 · 剩余 9 小时\n节点 · 已超时 39 小时\n去审批\n上海徐汇店活动费用报销\n\n唐琳 · 上海公司 · 财务付款办理\n\n整单 · 剩余 49 小时\n节点 · 剩余 1 小时\n去办理\n设备供应商首期款申请\n\n林悦 · 集团总部 · 集团财务复核\n\n整单 · 剩余 57 小时\n节点 · 剩余 9 小时\n去审批\n华东巡店差旅报销\n\n刘欣 · 南京公司 · 集团复核\n\n整单 · 剩余 61 小时\n节点 · 剩余 13 小时\n去审批\n我的申请\n全部 ›\n合作项目证明用印\n草稿\n10-18 00:06 · 集团总部\n十月系统服务费付款\n草稿\n10-18 04:06 · 集团总部\n消息通知\n全部 ›\n即将到期 · 财务付款办理：上海徐汇店活动费用报销\n10-20 11:06 · 未读\n审批已超时 · 集团财务复核：南京门店耗材采购付款\n10-20 11:06 · 未读\n待办理：总部办公用品报销\n10-20 11:06 · 未读\n待审批：总部办公用品报销\n10-20 11:06 · 未读",
+      "tables": 0,
+      "bodyWidth": 1157,
+      "width": 1172,
+      "links": [
+        "file:///private/tmp/weid-index-single/isolated/index.html?actor=admin&__weid_page=customer-merge-prototype%2Fpc.html#P-EC-01",
+        "file:///private/tmp/weid-index-single/isolated/index.html?__weid_page=customer-merge-prototype%2Fdemo.html"
+      ]
+    },
+    "errors": []
+  },
+  {
+    "id": "group-list",
+    "data": {
+      "title": "审批列表 · 集团审批",
+      "page": "group-approval/index.html",
+      "text": "客户档案合并与纠错\n\n查看业务工单、风险审批与调整单处理记录\n\n进入业务工单\n功能演示入口\n审批列表\n\n集中查看审批进度、处理待办与历史记录。\n\n导出\n＋ 发起审批\n待我处理\n我已处理\n我发起的\n抄送我的\n全部审批\n全部状态\n草稿\n审批中\n办理中\n已办结\n退回修改\n已拒绝\n已撤回\n全部公司\n集团总部\n南京公司\n上海公司\n全部类型\n用印申请\n费用报销\n采购申请\n请假申请\n业务优惠申请\n付款申请\n查询\n重置\n审批单\t发起人 / 所属公司\t审批类型\t状态\t当前节点 / 处理人\t审批时限\t发起时间\t操作\n南京浦口店护理设备采购\nJT202610201001\n采购类型：设备采购 · 采购总额：14300 · 期望到货日期：2026-10-20 · 采购原因：南京浦口店设备升级，旧设备使用年限已满。\n\t刘欣\n南京公司\n\t采购申请\t审批中\t门店至区域逐级审批 · 第2级\n赵明\n\t\n整单 · 剩余 65 小时\n节点 · 剩余 17 小时\n\t10-20 04:06\t查看\n华东巡店差旅报销\nJT202610201002\n费用类型：差旅费 · 报销金额：6280 · 费用发生日期：2026-10-08 · 费用说明：华东区域门店巡店差旅费用，包含交通、住宿。\n\t刘欣\n南京公司\n\t费用报销\t审批中\t集团复核\n许宁、陆清\n\t\n整单 · 剩余 61 小时\n节点 · 剩余 13 小时\n\t10-20 00:06\t查看\n设备供应商首期款申请\nJT202610201003\n收款单位：南京悦美设备有限公司 · 收款账号：6222 0000 8888 6666 · 付款金额：28600 · 付款事由：根据设备采购合同支付首期款项。\n\t林悦\n集团总部\n\t付款申请\t审批中\t集团财务复核\n许宁、陆清\n\t\n整单 · 剩余 57 小时\n节点 · 剩余 9 小时\n\t10-19 20:06\t查看\n总部办公场地租赁合同用印\nJT202610201004\n文件名称：办公场地租赁补充协议 · 印章类型：合同专用章 · 用印份数：2 · 预计用印日期：2026-10-15 · 申请事由：续签总部办公场地租赁协议，请审核后安排用印。\n\t林悦\n集团总部\n\t用印申请\t审批中\t部门负责人审批\n周敏\n\t\n整单 · 剩余 53 小时\n节点 · 剩余 5 小时\n\t10-19 16:06\t查看\n上海徐汇店活动费用报销\nJT202610201005\n费用类型：差旅费 · 报销金额：6280 · 费用发生日期：2026-10-08 · 费用说明：华东区域门店巡店差旅费用，包含交通、住宿。\n\t唐琳\n上海公司\n\t费用报销\t办理中\t财务付款办理\n许宁\n\t\n整单 · 剩余 49 小时\n节点 · 剩余 1 小时\n\t10-19 12:06\t查看\n十月老客复购优惠申请\nJT202610201006\n客户／活动名称：十月老客复购活动 · 优惠金额：1800 · 优惠原因：老客户套餐复购，申请专项优惠额度。\n\t刘欣\n南京公司\n\t业务优惠申请\t审批中\t运营与财务依次审核 · 1\n李楠\n\t\n整单 · 剩余 45 小时\n节点 · 已超时 3 小时\n\t10-19 08:06\t查看\n年假申请 · 10月15日至17日\nJT202610201007\n请假类型：年假 · 开始日期：2026-10-15 · 结束日期：2026-10-17 · 请假天数：3 · 请假事由：个人事务，工作已安排交接。\n\t唐琳\n上海公司\n\t请假申请\t审批中\t直属上级审批\n沈佳\n\t\n整单 · 剩余 41 小时\n节点 · 已超时 7 小时\n\t10-19 04:06\t查看\n供应商合作框架",
+      "tables": 1,
+      "bodyWidth": 1157,
+      "width": 1172,
+      "links": [
+        "file:///private/tmp/weid-index-single/isolated/index.html?actor=admin&__weid_page=customer-merge-prototype%2Fpc.html#P-EC-01",
+        "file:///private/tmp/weid-index-single/isolated/index.html?__weid_page=customer-merge-prototype%2Fdemo.html"
+      ]
+    },
+    "errors": []
+  },
+  {
+    "id": "group-rules",
+    "data": {
+      "title": "规则配置 · 集团审批",
+      "page": "group-approval/index.html",
+      "text": "客户档案合并与纠错\n\n查看业务工单、风险审批与调整单处理记录\n\n进入业务工单\n功能演示入口\n表单管理\n批量停用\n＋ 新建分组\n＋ 创建审批表单\n全部表单\n行政人事\n财务费用\n经营业务\n已停用\n表单名称\n查询\n重置\n分组排序\n行政人事\n（2）\n表单排序\n分组设置\n删除空分组\n表单\t谁可以发起\t最后更新 / 版本\t操作\n\n用印申请\n合同、公函、证明等文件的用印申请。\n\t集团全部成员\t10-20 11:06\nV1\n\t编辑导出更多\n\n请假申请\n员工请假与人事登记。\n\t集团全部成员\t10-20 11:06\nV1\n\t编辑导出更多\n财务费用\n（2）\n表单排序\n分组设置\n删除空分组\n表单\t谁可以发起\t最后更新 / 版本\t操作\n\n费用报销\n差旅、办公及业务费用的报销申请。\n\t集团全部成员\t10-20 11:06\nV1\n\t编辑导出更多\n\n付款申请\n供应商、合同及业务款项的支付申请。\n\t集团全部成员\t10-20 11:06\nV1\n\t编辑导出更多\n经营业务\n（2）\n表单排序\n分组设置\n删除空分组\n表单\t谁可以发起\t最后更新 / 版本\t操作\n\n采购申请\n门店设备、耗材和总部物资采购。\n\t集团全部成员\t10-20 11:06\nV1\n\t编辑导出更多\n\n业务优惠申请\n门店活动及特殊客户优惠审批。\n\t集团全部成员\t10-20 11:06\nV1\n\t编辑导出更多",
+      "tables": 3,
+      "bodyWidth": 1172,
+      "width": 1172,
+      "links": [
+        "file:///private/tmp/weid-index-single/isolated/index.html?actor=admin&__weid_page=customer-merge-prototype%2Fpc.html#P-EC-01",
+        "file:///private/tmp/weid-index-single/isolated/index.html?__weid_page=customer-merge-prototype%2Fdemo.html"
+      ]
+    },
+    "errors": []
+  },
+  {
+    "id": "group-organization",
+    "data": {
+      "title": "组织与人员 · 集团审批",
+      "page": "group-approval/index.html",
+      "text": "客户档案合并与纠错\n\n查看业务工单、风险审批与调整单处理记录\n\n进入业务工单\n功能演示入口\n组织与人员\n\n维护审批所需的集团管理关系、员工统一身份及岗位任职。\n\n＋ 新增公司\n公司主体\n集团组织\n员工与身份\n岗位任职\n查询\n重置\n公司名称\t公司编码\t钉钉企业标识\t组织部门\t状态\t操作\n\n艺施集团总部\n集团总部\n\tJT001\tding-group-001\n演示身份映射\n\t5 个\t启用\t编辑停用\n\n艺施华东运营有限公司\n华东公司\n\tHD001\tding-east-001\n演示身份映射\n\t1 个\t启用\t编辑停用\n\n南京艺施美容有限公司\n南京公司\n\tNJ001\tding-nanjing-001\n演示身份映射\n\t1 个\t启用\t编辑停用\n\n上海艺施美容有限公司\n上海公司\n\tSH001\tding-shanghai-001\n演示身份映射\n\t1 个\t启用\t编辑停用\n\n艺施华南运营有限公司\n华南公司\n\tHN001\tding-south-001\n演示身份映射\n\t1 个\t启用\t编辑停用\n\n艺施区域第6公司\n第6公司\n\tGS006\tding-demo-6\n演示身份映射\n\t1 个\t启用\t编辑停用\n\n艺施区域第7公司\n第7公司\n\tGS007\tding-demo-7\n演示身份映射\n\t1 个\t启用\t编辑停用\n\n艺施区域第8公司\n第8公司\n\tGS008\tding-demo-8\n演示身份映射\n\t1 个\t启用\t编辑停用\n\n艺施区域第9公司\n第9公司\n\tGS009\tding-demo-9\n演示身份映射\n\t1 个\t启用\t编辑停用\n\n艺施区域第10公司\n第10公司\n\tGS010\tding-demo-10\n演示身份映射\n\t1 个\t启用\t编辑停用\n共 52 个公司主体\n上一页\n1\n/ 6\n下一页",
+      "tables": 1,
+      "bodyWidth": 1157,
+      "width": 1172,
+      "links": [
+        "file:///private/tmp/weid-index-single/isolated/index.html?actor=admin&__weid_page=customer-merge-prototype%2Fpc.html#P-EC-01",
+        "file:///private/tmp/weid-index-single/isolated/index.html?__weid_page=customer-merge-prototype%2Fdemo.html"
+      ]
+    },
+    "errors": []
+  },
+  {
+    "id": "group-statistics",
+    "data": {
+      "title": "审批统计 · 集团审批",
+      "page": "group-approval/index.html",
+      "text": "客户档案合并与纠错\n\n查看业务工单、风险审批与调整单处理记录\n\n进入业务工单\n功能演示入口\n审批统计\n\n按当前权限范围统计审批效率与待办分布。\n\n导出统计\n全部可见公司\n集团总部\n南京公司\n上海公司\n至\n查询\n重置\n发起审批\n14\n不含草稿\n办结率\n21.4%\n已办结 / 发起审批\n平均办结时长\n31.3h\n按已办结申请计算\n当前超时审批\n3\n整单或节点到期，按单去重\n审批类型分布\n用印申请\n2\n费用报销\n4\n采购申请\n2\n请假申请\n2\n业务优惠申请\n2\n付款申请\n2\n公司申请分布\n集团总部\n5\n南京公司\n5\n上海公司\n4\n处理人待办与效率\n多人审批分别计入各处理人待办\n处理人\t所属公司\t当前待办\t超时待办\t已处理审批\n许宁\n集团审批管理员\n\t集团总部\t4\t1\t2\n陆清\n集团财务负责人\n\t集团总部\t3\t1\t2\n周敏\n行政人事负责人\n\t集团总部\t1\t0\t3\n李楠\n运营负责人\n\t集团总部\t1\t1\t1\n赵明\n华东区域负责人\n\t华东公司\t1\t0\t2\n沈佳\n上海徐汇店店长\n\t上海公司\t1\t1\t2\n王晨\n采购负责人\n\t集团总部\t0\t0\t1\n苏妍\n公司财务负责人\n\t华东公司\t0\t0\t2\n张芳\n南京浦口店店长\n\t南京公司\t0\t0\t4",
+      "tables": 1,
+      "bodyWidth": 1157,
+      "width": 1172,
+      "links": [
+        "file:///private/tmp/weid-index-single/isolated/index.html?actor=admin&__weid_page=customer-merge-prototype%2Fpc.html#P-EC-01",
+        "file:///private/tmp/weid-index-single/isolated/index.html?__weid_page=customer-merge-prototype%2Fdemo.html"
+      ]
+    },
+    "errors": []
+  },
+  {
+    "id": "group-mobile",
+    "data": {
+      "title": "移动端演示 · 集团审批",
+      "page": "group-approval/index.html",
+      "text": "客户档案合并与纠错\n\n查看业务工单、风险审批与调整单处理记录\n\n进入业务工单\n功能演示入口\n移动端与演示\n\n使用相同数据体验手机端发起、审批与办理。\n\n独立打开移动端\n完整业务场景\n采购申请与逐级审批\n\n按申请部门匹配逐级负责人及总部采购。\n\n开始体验\n大额报销与财务会签\n\n通过金额条件进入集团复核，再到付款办理。\n\n开始体验\n总部行政用印\n\n部门审核、行政审核、用印办理和自动抄送。\n\n开始体验\n业务优惠与依次审批\n\n优惠金额超授权时，进入运营、财务依次审批。\n\n开始体验\n请假与人事登记\n\n按天数条件增加人事审核，完成登记后办结。\n\n开始体验\n演示方式\n1\n配置事项\n\n在规则配置中编辑表单与审批节点，并发布版本。\n\n2\n发起申请\n\n填写表单并预览匹配的审批路径。\n\n3\n查看审批\n\n在全部审批中查看各公司的审批进度、处理人和办理记录。\n\n4\n查看结果\n\nPC、移动端共享进度，操作和消息均留痕。\n\n演示数据\n\n已预置 52 个公司主体、六类审批和多种状态。当前为浏览器本地原型，跨设备登录、钉钉推送及付款接口尚未接入。\n\n导出本模块数据\n重置演示数据\n\n重置仅作用于集团审批模块，会清除本模块新增数据。\n\n430px 手机视图 · 与 PC 共用审批进度",
+      "tables": 0,
+      "bodyWidth": 1157,
+      "width": 1172,
+      "links": [
+        "file:///private/tmp/weid-index-single/isolated/index.html?actor=admin&__weid_page=customer-merge-prototype%2Fpc.html#P-EC-01",
+        "file:///private/tmp/weid-index-single/isolated/index.html?__weid_page=customer-merge-prototype%2Fdemo.html",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=group-approval%2Findex.html#workbench",
+        "file:///private/tmp/weid-index-single/isolated/index.html?view=h5&__weid_page=group-approval%2Findex.html#workbench"
+      ]
+    },
+    "errors": []
+  },
+  {
+    "id": "customer-merge",
+    "data": {
+      "title": "合并申请列表 · 微动",
+      "page": "customer-merge-prototype/pc.html",
+      "text": "合并管理\n合并记录\n纠错工单\n财务处理\n规则配置\n运行与审计\n合并申请\n\n核实客户身份，确认档案与订单的最终归属。\n\n独立客户排除名单\n导出\n发起合并\n全部状态\n待审核\n已执行\n已驳回\n确认独立\n全部来源\n人工申请\n批量清洗\n手机号录入\n创建订单\n查询\n重置\n申请记录\n申请编号 / 时间\t合并对象\t触发来源\t处理人\t状态\t操作\nMA-20261015-001\n2026-10-20 11:06\n\t张晓雯 / 晓雯\n静安旗舰店\n\t手机号录入\t周岚\t待审核\t查看并处理\nMA-20261015-002\n2026-10-20 08:42\n\t林舒雅 / 舒雅\n徐汇滨江店\n\t批量清洗\t陈予安\t待审核\t查看并处理\nMA-20261015-003\n2026-10-20 06:18\n\t陈雨桐 / 雨桐\n静安旗舰店\n\t人工申请\t周岚\t待审核\t查看并处理\nMA-20261015-004\n2026-10-20 03:54\n\t周晓敏 / 晓敏\n徐汇滨江店\n\t创建订单\t陈予安\t待审核\t查看并处理\nMA-20261015-005\n2026-10-20 01:30\n\t宋婉清 / 婉清\n静安旗舰店\n\t手机号录入\t周岚\t待审核\t查看并处理\nMA-20261015-006\n2026-10-19 23:06\n\t张晓雯 / 晓雯\n静安旗舰店\n\t批量清洗\t陈予安\t已驳回\t查看详情\n共 6 条记录\n上一页\n1 / 1\n下一页",
+      "tables": 1,
+      "bodyWidth": 1157,
+      "width": 1172,
+      "links": []
+    },
+    "errors": []
+  }
+]

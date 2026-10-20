@@ -1,0 +1,41 @@
+{
+  "resources": 112,
+  "size": 11446652,
+  "patches": [
+    [
+      "complaint-prototype/rules-app.js",
+      "location.href",
+      2
+    ],
+    [
+      "complaint-prototype/rules-app.js",
+      "location method",
+      1
+    ],
+    [
+      "complaint-prototype/zuhu-entry.js",
+      "location method",
+      2
+    ],
+    [
+      "complaint-prototype/approvals-app.js",
+      "location.href",
+      1
+    ],
+    [
+      "complaint-prototype/workflow/app.js",
+      "location method",
+      1
+    ],
+    [
+      "customer-merge-prototype/app.js",
+      "location.href",
+      1
+    ],
+    [
+      "group-approval/app.js",
+      "location.href",
+      1
+    ]
+  ]
+}

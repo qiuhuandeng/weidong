@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>百星美学设计</title>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:#f3f4f6;color:#1f2937;-webkit-font-smoothing:antialiased}
+svg{display:block}
+
+.app{min-height:100vh;display:flex;justify-content:center;background:#f3f4f6}
+.phone{width:100%;max-width:28rem;background:#F4F6F9;position:relative;box-shadow:0 20px 25px -5px rgba(0,0,0,.1),0 8px 10px -6px rgba(0,0,0,.1);overflow:hidden;display:flex;flex-direction:column;height:100vh}
+.content{padding:1rem .75rem;flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:1rem}
+
+/* 通用卡片 */
+.card{background:#fff;border-radius:1rem;box-shadow:0 1px 2px rgba(0,0,0,.05);padding:1rem;border:1px solid rgba(243,244,246,.5)}
+.card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem}
+.card-title{font-size:16px;font-weight:800;color:#1f2937;display:flex;align-items:center;margin:0}
+.icon-mr{margin-right:.5rem}
+
+/* 模块1 个人业绩 */
+.perf-num{font-size:40px;font-weight:900;color:#1f2937;margin-bottom:1.25rem;line-height:1;letter-spacing:-.025em}
+.struct-box{background:rgba(249,250,251,.8);padding:.875rem;border-radius:.75rem;border:1px solid #f3f4f6;margin-bottom:1.25rem}
+.struct-row{display:flex;justify-content:space-between;align-items:center;width:100%;font-size:11.5px;color:#6b7280}
+.struct-row.top{margin-bottom:.625rem}
+.struct-row.bot{margin-top:.625rem;font-size:11px}
+.struct-row .left{text-align:left;flex:1}
+.struct-row .right{text-align:right;flex:1}
+.struct-bar{width:100%;height:10px;background:#e5e7eb;border-radius:9999px;overflow:hidden;display:flex;box-shadow:inset 0 2px 4px rgba(0,0,0,.06)}
+.struct-bar .s1{background:#34d399}
+.struct-bar .s2{background:#10b981}
+.struct-row .pct1{color:#10b981;font-size:12px;margin-left:.25rem;font-weight:700}
+.struct-row .pct2{color:#059669;font-size:12px;margin-left:.25rem;font-weight:700}
+.perf-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem 1rem;border-top:1px solid #f3f4f6;padding-top:1rem}
+.perf-item{display:flex;flex-direction:column}
+.perf-item .lbl{font-size:12px;color:#6b7280;margin-bottom:.375rem;display:flex;align-items:center}
+.perf-item .val{font-size:18px;font-weight:700;color:#1f2937}
+.perf-item .val.orange{color:#f97316}
+
+/* 模块2 漏斗 */
+.funnel{position:relative;display:flex;justify-content:space-between;align-items:center;background:rgba(238,242,255,.5);border-radius:.75rem;padding:.75rem;border:1px solid #eef2ff}
+.funnel-col{text-align:center;flex:1;z-index:1;min-width:0}
+.funnel-col .lbl{font-size:10px;color:#6b7280;margin-bottom:.125rem;white-space:nowrap}
+.funnel-col .val{font-size:14px;font-weight:700;color:#1f2937}
+.funnel-arrow{display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;z-index:1}
+.funnel-arrow.w-rate{width:3.25rem}
+.funnel-arrow.w-plain{width:1.25rem}
+.funnel-rate{font-size:9px;color:#4f46e5;font-weight:700;background:#e0e7ff;padding:.125rem .375rem;border-radius:9999px;margin-bottom:.25rem;white-space:nowrap}
+
+/* 模块3 实收 */
+.actual-banner{background:#eff6ff;border:1px solid rgba(219,234,254,.6);border-radius:.75rem;padding:1rem;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:flex-end}
+.actual-banner .lbl{font-size:10.5px;color:#6b7280;margin-bottom:.375rem}
+.actual-banner .val{font-size:30px;font-weight:900;color:#2563eb;line-height:1;letter-spacing:-.025em}
+.actual-link{display:flex;align-items:center;font-size:12px;color:#2563eb;font-weight:700;background:#fff;padding:.375rem .75rem;border-radius:9999px;box-shadow:0 1px 2px rgba(0,0,0,.05);cursor:pointer;border:1px solid #eff6ff;transition:background .15s;text-decoration:none}
+.actual-link:hover{background:#f9fafb}
+.actual-detail{display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;padding:.25rem .25rem .25rem}
+.actual-detail .item .lbl{font-size:11.5px;color:#9ca3af;margin-bottom:.375rem}
+.actual-detail .item .val{font-size:16px;font-weight:700;color:#1f2937}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="phone">
+    <div class="content">
+
+      <!-- 模块1：个人业绩 -->
+      <div class="card">
+        <div class="card-head">
+          <h2 class="card-title">
+            <svg class="icon-mr" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+              <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+            </svg>
+            个人业绩 (元)
+          </h2>
+        </div>
+
+        <div class="perf-num">175,000</div>
+
+        <div class="struct-box">
+          <div class="struct-row top">
+            <div class="left">新客业绩 (240,000)</div>
+            <div class="right">老客业绩 (1,050,000)</div>
+          </div>
+          <div class="struct-bar">
+            <div class="s1" style="width:19%"></div>
+            <div class="s2" style="width:81%"></div>
+          </div>
+          <div class="struct-row bot">
+            <div class="left">新客占比 <strong class="pct1">19%</strong></div>
+            <div class="right">老客占比 <strong class="pct2">81%</strong></div>
+          </div>
+        </div>
+
+        <div class="perf-grid">
+          <div class="perf-item">
+            <span class="lbl">老带新业绩</span>
+            <span class="val">155,000</span>
+          </div>
+          <div class="perf-item">
+            <span class="lbl">
+              <svg style="margin-right:.25rem" width="12" height="12" viewBox="0 0 24 24" fill="#f97316" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+              </svg>
+              Y10业绩
+            </span>
+            <span class="val orange">20,000</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 模块2：客流转化漏斗 -->
+      <div class="card">
+        <h2 class="card-title" style="font-size:15px;margin-bottom:1rem">
+          <svg class="icon-mr" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+          客流转化漏斗
+        </h2>
+
+        <div class="funnel">
+          <div class="funnel-col">
+            <div class="lbl">核算到店</div>
+            <div class="val">450</div>
+          </div>
+          <div class="funnel-arrow w-rate">
+            <span class="funnel-rate">成交率 78%</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#c7d2fe" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14M12 5l7 7-7 7"></path>
+            </svg>
+          </div>
+          <div class="funnel-col">
+            <div class="lbl">新客成交</div>
+            <div class="val">351</div>
+          </div>
+          <div class="funnel-arrow w-plain">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#c7d2fe" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14M12 5l7 7-7 7"></path>
+            </svg>
+          </div>
+          <div class="funnel-col">
+            <div class="lbl">个人新客单</div>
+            <div class="val">120</div>
+          </div>
+          <div class="funnel-arrow w-plain">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#c7d2fe" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14M12 5l7 7-7 7"></path>
+            </svg>
+          </div>
+          <div class="funnel-col">
+            <div class="lbl">个人均客单</div>
+            <div class="val">1900</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 模块3：实收业绩明细 -->
+      <div class="card" style="margin-bottom:1.5rem">
+        <div class="card-head">
+          <h2 class="card-title">
+            <svg class="icon-mr" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"></path>
+              <path d="M4 6v12c0 1.1.9 2 2 2h14v-4"></path>
+              <path d="M18 12a2 2 0 0 0-2 2c0 1.1.9 2 2 2h4v-4h-4z"></path>
+            </svg>
+            实收业绩明细
+          </h2>
+        </div>
+
+        <div class="actual-banner">
+          <div>
+            <div class="lbl">实收总业绩</div>
+            <div class="val">1,150,000</div>
+          </div>
+          <a class="actual-link" href="javascript:void(0)">
+            查看明细
+            <svg style="margin-left:.125rem" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 18l6-6-6-6"></path>
+            </svg>
+          </a>
+        </div>
+
+        <div class="actual-detail">
+          <div class="item">
+            <div class="lbl">有效业绩</div>
+            <div class="val">1,080,000</div>
+          </div>
+          <div class="item">
+            <div class="lbl">待核对</div>
+            <div class="val">50,000</div>
+          </div>
+          <div class="item">
+            <div class="lbl">内推分润</div>
+            <div class="val">20,000</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</body>
+</html>
