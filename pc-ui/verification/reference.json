@@ -1,0 +1,20 @@
+{
+  "source": "https://static.service.4ba.cn/by-components/",
+  "verified": "2026-10-22",
+  "reference_runtime": "Vue 2 / Element UI",
+  "project_runtime": "Vue 3.5.13 / Element Plus 2.9.3 / @weitutech/by-components-v3 1.1.26",
+  "measurements": {
+    "search_control_px": 28,
+    "search_label_font_px": 14,
+    "edit_control_px": 40,
+    "mini_button_px": 28,
+    "table_font_px": 14,
+    "pager_radius_px": 8,
+    "dialog_radius_px": 8
+  },
+  "source_assets": {
+    "weid-doc-app.js": "e7955fcd14abdcf536b7142921daf60ab335806546f780da3df5d2e387949f4f",
+    "weid-doc-app.css": "5631a4041f3e409242952f1dd1d6dda9fc8e572b600c73455fc7885353ff83aa",
+    "weid-doc-vendor.css": "295c87283023fd1edeb9589bb7a1eab916db94f2f92ef7b9c3658cede52b100f"
+  }
+}

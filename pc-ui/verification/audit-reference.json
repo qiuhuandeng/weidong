@@ -1,0 +1,10 @@
+{
+  "url": "https://static.service.4ba.cn/by-components/",
+  "checkedAt": "2026-10-22T04:26:54.274952+00:00",
+  "assetsSha256": {
+    "appJs": "e7955fcd14abdcf536b7142921daf60ab335806546f780da3df5d2e387949f4f",
+    "appCss": "5631a4041f3e409242952f1dd1d6dda9fc8e572b600c73455fc7885353ff83aa",
+    "vendorCss": "295c87283023fd1edeb9589bb7a1eab916db94f2f92ef7b9c3658cede52b100f"
+  },
+  "note": "当前官方文档静态资源与 reference.json 的既有实测基准一致；本轮浏览器打开文档站超时，改为核对官方资源，并复用既有文档视觉测量。"
+}

@@ -1,0 +1,2627 @@
+[
+  {
+    "bodyOverflow": false,
+    "dialogs": 0,
+    "entries": [
+      {
+        "code": "pcCustomerReset()",
+        "disabled": false,
+        "name": "重置",
+        "role": null
+      },
+      {
+        "code": "pcCustomerSearch()",
+        "disabled": false,
+        "name": "搜索",
+        "role": null
+      },
+      {
+        "code": "pcOpenCustomer(\"CUS-50390\")",
+        "disabled": false,
+        "name": "周晓敏",
+        "role": null
+      },
+      {
+        "code": "pcOpenCustomer(\"CUS-50390\")",
+        "disabled": false,
+        "name": "查看档案",
+        "role": null
+      },
+      {
+        "code": "pcOpenCustomer(\"CUS-50391\")",
+        "disabled": false,
+        "name": "周女士",
+        "role": null
+      },
+      {
+        "code": "pcOpenCustomer(\"CUS-50390\")",
+        "disabled": false,
+        "name": "已合并至 50390",
+        "role": null
+      },
+      {
+        "code": "pcOpenCustomer(\"CUS-BIZ-B\")",
+        "disabled": false,
+        "name": "林女士",
+        "role": null
+      },
+      {
+        "code": "pcOpenCustomer(\"CUS-BIZ-A\")",
+        "disabled": false,
+        "name": "林宁",
+        "role": null
+      },
+      {
+        "code": "pcOpenCustomer(\"CUS-BIZ-B\")",
+        "disabled": false,
+        "name": "已合并至 61651",
+        "role": null
+      },
+      {
+        "code": "pcOpenCustomer(\"CUS-30281\")",
+        "disabled": false,
+        "name": "林知夏",
+        "role": null
+      },
+      {
+        "code": "pcOpenCustomer(\"CUS-40281\")",
+        "disabled": false,
+        "name": "王雨",
+        "role": null
+      },
+      {
+        "code": "pcOpenCustomer(\"CUS-30281\")",
+        "disabled": false,
+        "name": "已合并至 30281",
+        "role": null
+      },
+      {
+        "code": "pcOpenCustomer(\"CUS-30282\")",
+        "disabled": false,
+        "name": "陈嘉宁",
+        "role": null
+      },
+      {
+        "code": "pcOpenCustomer(\"CUS-40282\")",
+        "disabled": false,
+        "name": "吴思琪",
+        "role": null
+      },
+      {
+        "code": "pcOpenCustomer(\"CUS-30282\")",
+        "disabled": false,
+        "name": "已合并至 30282",
+        "role": null
+      }
+    ],
+    "forms": 0,
+    "legacyButtons": [],
+    "nativeControls": [],
+    "nestedForms": 0,
+    "overflow": false,
+    "route": "#customers",
+    "searchForms": 1,
+    "tables": 1,
+    "title": "客户档案",
+    "label": "最终主页面-客户档案",
+    "search": [
+      {
+        "actions": "重置搜索",
+        "fields": 3,
+        "gap": "12px",
+        "padding": "16px 20px"
+      }
+    ],
+    "unconvertedFields": 0,
+    "width": 1920
+  },
+  {
+    "bodyOverflow": false,
+    "dialogs": 0,
+    "entries": [
+      {
+        "code": "mergeListQuery='';mergeListFilter='all';render()",
+        "disabled": false,
+        "name": "重置",
+        "role": null
+      },
+      {
+        "code": "render()",
+        "disabled": false,
+        "name": "搜索",
+        "role": null
+      },
+      {
+        "code": "openMergeEditor()",
+        "disabled": false,
+        "name": "新建合并规则",
+        "role": null
+      },
+      {
+        "code": "openMergeEditor('merge-profile-1')",
+        "disabled": false,
+        "name": "通用客户合并规则",
+        "role": null
+      },
+      {
+        "code": "openMergeEditor('merge-profile-1')",
+        "disabled": false,
+        "name": "编辑",
+        "role": null
+      },
+      {
+        "code": "openMergeHistory('merge-profile-1')",
+        "disabled": false,
+        "name": "变更历史",
+        "role": null
+      }
+    ],
+    "forms": 0,
+    "legacyButtons": [],
+    "nativeControls": [],
+    "nestedForms": 0,
+    "overflow": false,
+    "route": "#rules",
+    "searchForms": 1,
+    "tables": 1,
+    "title": "合并规则",
+    "label": "最终主页面-规则配置",
+    "search": [
+      {
+        "actions": "重置搜索",
+        "fields": 2,
+        "gap": "12px",
+        "padding": "16px 20px"
+      }
+    ],
+    "unconvertedFields": 0,
+    "width": 1920
+  },
+  {
+    "bodyOverflow": false,
+    "dialogs": 0,
+    "entries": [
+      {
+        "code": "go('merge-candidates')",
+        "disabled": false,
+        "name": "待合并处理",
+        "role": "tab"
+      },
+      {
+        "code": "go('merge-records')",
+        "disabled": false,
+        "name": "合并记录",
+        "role": "tab"
+      },
+      {
+        "code": "mgReset()",
+        "disabled": false,
+        "name": "重置",
+        "role": null
+      },
+      {
+        "code": "mgSearch()",
+        "disabled": false,
+        "name": "搜索",
+        "role": null
+      },
+      {
+        "code": "mgBatchAsk()",
+        "disabled": false,
+        "name": "批量确认不合并",
+        "role": null
+      },
+      {
+        "code": "mrNew()",
+        "disabled": false,
+        "name": "申请合并",
+        "role": null
+      },
+      {
+        "code": "mgOpen(\"g:DG-MERGE-UI-001\")",
+        "disabled": false,
+        "name": "63113",
+        "role": null
+      },
+      {
+        "code": "mgOpen(\"g:DG-MERGE-UI-001\")",
+        "disabled": false,
+        "name": "详情",
+        "role": null
+      },
+      {
+        "code": "mgOpen(\"g:DG-MERGE-UI-001\",true)",
+        "disabled": false,
+        "name": "查看审核",
+        "role": null
+      },
+      {
+        "code": "mgOpen(\"g:DG-DEMO-001\",true)",
+        "disabled": false,
+        "name": "核对合并方案",
+        "role": null
+      }
+    ],
+    "forms": 0,
+    "legacyButtons": [],
+    "nativeControls": [],
+    "nestedForms": 0,
+    "overflow": false,
+    "route": "#merge-candidates",
+    "searchForms": 1,
+    "tables": 1,
+    "title": "合并事项",
+    "label": "最终主页面-档案合并",
+    "search": [
+      {
+        "actions": "重置搜索",
+        "fields": 8,
+        "gap": "12px",
+        "padding": "16px 20px"
+      }
+    ],
+    "unconvertedFields": 0,
+    "width": 1920
+  },
+  {
+    "bodyOverflow": false,
+    "dialogs": 0,
+    "entries": [
+      {
+        "code": "apSwitch('merge')",
+        "disabled": false,
+        "name": "合并审核",
+        "role": "tab"
+      },
+      {
+        "code": "apSwitch('correction')",
+        "disabled": false,
+        "name": "纠错审核",
+        "role": "tab"
+      },
+      {
+        "code": "apSwitch('history')",
+        "disabled": false,
+        "name": "审核记录",
+        "role": "tab"
+      },
+      {
+        "code": "apReset()",
+        "disabled": false,
+        "name": "重置",
+        "role": null
+      },
+      {
+        "code": "apSearch()",
+        "disabled": false,
+        "name": "搜索",
+        "role": null
+      },
+      {
+        "code": "apOpen('merge',\"MA-20261020-007\")",
+        "disabled": false,
+        "name": "查看审核",
+        "role": null
+      }
+    ],
+    "forms": 0,
+    "legacyButtons": [],
+    "nativeControls": [],
+    "nestedForms": 0,
+    "overflow": false,
+    "route": "#reviews",
+    "searchForms": 1,
+    "tables": 1,
+    "title": "合并审核",
+    "label": "最终主页面-审核管理",
+    "search": [
+      {
+        "actions": "重置搜索",
+        "fields": 5,
+        "gap": "12px",
+        "padding": "16px 20px"
+      }
+    ],
+    "unconvertedFields": 0,
+    "width": 1920
+  },
+  {
+    "bodyOverflow": false,
+    "dialogs": 0,
+    "entries": [
+      {
+        "code": "flowSetScope('all')",
+        "disabled": false,
+        "name": "全部工单",
+        "role": "tab"
+      },
+      {
+        "code": "flowSetScope('active')",
+        "disabled": false,
+        "name": "未完成",
+        "role": "tab"
+      },
+      {
+        "code": "flowSetScope('done')",
+        "disabled": false,
+        "name": "已完成",
+        "role": "tab"
+      },
+      {
+        "code": "flowSetScope('drafts')",
+        "disabled": false,
+        "name": "草稿",
+        "role": "tab"
+      },
+      {
+        "code": "flowSetScope('review')",
+        "disabled": false,
+        "name": "待审核",
+        "role": "tab"
+      },
+      {
+        "code": "flowSetScope('process')",
+        "disabled": false,
+        "name": "待执行 / 执行中",
+        "role": "tab"
+      },
+      {
+        "code": "flowSetScope('confirm')",
+        "disabled": false,
+        "name": "待确认",
+        "role": "tab"
+      },
+      {
+        "code": "flowSetScope('blocked')",
+        "disabled": false,
+        "name": "需补充 / 核查",
+        "role": "tab"
+      },
+      {
+        "code": "flowMoreFilters()",
+        "disabled": false,
+        "name": "更多筛选",
+        "role": null
+      },
+      {
+        "code": "filter={status:'',risk:'',store:'',author:'',q:'',from:'',to:''};pageNo=1;render()",
+        "disabled": false,
+        "name": "重置",
+        "role": null
+      },
+      {
+        "code": "render()",
+        "disabled": false,
+        "name": "搜索",
+        "role": null
+      },
+      {
+        "code": "flowNew()",
+        "disabled": false,
+        "name": "发起纠错",
+        "role": null
+      },
+      {
+        "code": "go('ticket','EC-20261020-002')",
+        "disabled": false,
+        "name": "60015",
+        "role": null
+      },
+      {
+        "code": "flowOpen('EC-20261020-002')",
+        "disabled": false,
+        "name": "查看进度",
+        "role": null
+      },
+      {
+        "code": "flowOpen('EC-20261014-002')",
+        "disabled": false,
+        "name": "核对结果",
+        "role": null
+      },
+      {
+        "code": "flowOpen('EC-20261011-017')",
+        "disabled": false,
+        "name": "查看结果",
+        "role": null
+      }
+    ],
+    "forms": 0,
+    "legacyButtons": [],
+    "nativeControls": [],
+    "nestedForms": 0,
+    "overflow": false,
+    "route": "#tickets",
+    "searchForms": 1,
+    "tables": 1,
+    "title": "纠错工单",
+    "label": "最终主页面-纠错工单",
+    "search": [
+      {
+        "actions": "重置搜索",
+        "fields": 3,
+        "gap": "12px",
+        "padding": "16px 20px"
+      }
+    ],
+    "unconvertedFields": 0,
+    "width": 1920
+  },
+  {
+    "bodyOverflow": false,
+    "dialogs": 0,
+    "entries": [
+      {
+        "code": "rvScope='all';rvPage=1;render()",
+        "disabled": false,
+        "name": "全部记录",
+        "role": "tab"
+      },
+      {
+        "code": "rvScope='pending';rvPage=1;render()",
+        "disabled": false,
+        "name": "待确认",
+        "role": "tab"
+      },
+      {
+        "code": "rvScope='effective';rvPage=1;render()",
+        "disabled": false,
+        "name": "已生效",
+        "role": "tab"
+      },
+      {
+        "code": "rvFilter={q:'',customer:'',type:'',from:'',to:'',min:'',max:''};render()",
+        "disabled": false,
+        "name": "重置",
+        "role": null
+      },
+      {
+        "code": "render()",
+        "disabled": false,
+        "name": "搜索",
+        "role": null
+      },
+      {
+        "code": "exportReversals(false)",
+        "disabled": false,
+        "name": "导出含冲销明细",
+        "role": null
+      },
+      {
+        "code": "exportReversals(true)",
+        "disabled": false,
+        "name": "导出只看净值",
+        "role": null
+      },
+      {
+        "code": "go('ticket','EC-20261014-002')",
+        "disabled": false,
+        "name": "60100",
+        "role": null
+      },
+      {
+        "code": "openReversal('RV-20261014-002-01')",
+        "disabled": false,
+        "name": "详情",
+        "role": null
+      }
+    ],
+    "forms": 0,
+    "legacyButtons": [],
+    "nativeControls": [],
+    "nestedForms": 0,
+    "overflow": false,
+    "route": "#reversals",
+    "searchForms": 1,
+    "tables": 1,
+    "title": "冲销记录",
+    "label": "最终主页面-冲销记录",
+    "search": [
+      {
+        "actions": "重置搜索",
+        "fields": 7,
+        "gap": "12px",
+        "padding": "16px 20px"
+      }
+    ],
+    "unconvertedFields": 0,
+    "width": 1920
+  },
+  {
+    "bodyOverflow": false,
+    "dialogs": 0,
+    "entries": [
+      {
+        "code": "UB.shopCityFilter()",
+        "disabled": false,
+        "name": "全部城市",
+        "role": null
+      },
+      {
+        "code": "UB.reset('shops')",
+        "disabled": false,
+        "name": "重置",
+        "role": null
+      },
+      {
+        "code": "UB.search('shops',this.closest('section').querySelector('form'))",
+        "disabled": false,
+        "name": "搜索",
+        "role": null
+      },
+      {
+        "code": "UB.shopEdit()",
+        "disabled": false,
+        "name": "新增门店",
+        "role": null
+      },
+      {
+        "code": "UB.shopTransfer()",
+        "disabled": true,
+        "name": "转出设置",
+        "role": null
+      },
+      {
+        "code": "UB.shopLogs()",
+        "disabled": false,
+        "name": "日志",
+        "role": null
+      },
+      {
+        "code": "UB.shopEdit('442')",
+        "disabled": false,
+        "name": "修改",
+        "role": null
+      },
+      {
+        "code": "UB.shopCapacity('442')",
+        "disabled": false,
+        "name": "床位",
+        "role": null
+      },
+      {
+        "code": "UB.shopShifts('442')",
+        "disabled": false,
+        "name": "班次",
+        "role": null
+      },
+      {
+        "code": "UB.shopRules('442')",
+        "disabled": false,
+        "name": "服务规则",
+        "role": null
+      }
+    ],
+    "forms": 0,
+    "legacyButtons": [],
+    "nativeControls": [],
+    "nestedForms": 0,
+    "overflow": false,
+    "route": "#shops",
+    "searchForms": 1,
+    "tables": 1,
+    "title": "门店列表",
+    "label": "最终主页面-门店列表",
+    "search": [
+      {
+        "actions": "重置搜索",
+        "fields": 3,
+        "gap": "12px",
+        "padding": "16px 20px"
+      }
+    ],
+    "unconvertedFields": 0,
+    "width": 1920
+  },
+  {
+    "bodyOverflow": false,
+    "dialogs": 0,
+    "entries": [
+      {
+        "code": "UB.seatPickFilter('district')",
+        "disabled": false,
+        "name": "全部大区",
+        "role": null
+      },
+      {
+        "code": "UB.seatPickFilter('area')",
+        "disabled": false,
+        "name": "全部区域",
+        "role": null
+      },
+      {
+        "code": "UB.seatPickFilter('store')",
+        "disabled": false,
+        "name": "全部门店",
+        "role": null
+      },
+      {
+        "code": "UB.seatQuick('last')",
+        "disabled": false,
+        "name": "上月",
+        "role": null
+      },
+      {
+        "code": "UB.seatQuick('yesterday')",
+        "disabled": false,
+        "name": "昨天",
+        "role": null
+      },
+      {
+        "code": "UB.seatQuick('today')",
+        "disabled": false,
+        "name": "今天",
+        "role": null
+      },
+      {
+        "code": "UB.seatQuick('week')",
+        "disabled": false,
+        "name": "本周",
+        "role": null
+      },
+      {
+        "code": "UB.seatQuick('month')",
+        "disabled": false,
+        "name": "本月",
+        "role": null
+      },
+      {
+        "code": "UB.seatSearch(true)",
+        "disabled": false,
+        "name": "重置",
+        "role": null
+      },
+      {
+        "code": "UB.seatSearch()",
+        "disabled": false,
+        "name": "搜索",
+        "role": null
+      },
+      {
+        "code": "UB.seatEdit('quantity')",
+        "disabled": true,
+        "name": "床位数量",
+        "role": null
+      },
+      {
+        "code": "UB.seatEdit('board')",
+        "disabled": true,
+        "name": "床位模板",
+        "role": null
+      },
+      {
+        "code": "UB.seatResetWidth()",
+        "disabled": false,
+        "name": "重置列宽",
+        "role": null
+      },
+      {
+        "code": "go('bed-logs')",
+        "disabled": false,
+        "name": "床位日志",
+        "role": null
+      },
+      {
+        "code": "UB.seatSmart()",
+        "disabled": false,
+        "name": "智能床位",
+        "role": null
+      },
+      {
+        "code": "UB.seatEdit('quantity','SH001','2026-10-01')",
+        "disabled": true,
+        "name": "床位数量未设置",
+        "role": null
+      },
+      {
+        "code": "UB.seatEdit('board','SH001','2026-10-01')",
+        "disabled": true,
+        "name": "旧看板 · 默认",
+        "role": null
+      },
+      {
+        "code": "UB.seatEdit('quantity','SH001','2026-10-04')",
+        "disabled": true,
+        "name": "新客/小时6老客/小时6",
+        "role": null
+      },
+      {
+        "code": "UB.seatEdit('board','SH001','2026-10-04')",
+        "disabled": true,
+        "name": "新看板 · 30分钟",
+        "role": null
+      },
+      {
+        "code": "UB.seatEdit('quantity','SH001','2026-10-08')",
+        "disabled": true,
+        "name": "新客/小时2老客/小时2",
+        "role": null
+      },
+      {
+        "code": "UB.seatEdit('board','SH001','2026-10-09')",
+        "disabled": true,
+        "name": "旧看板",
+        "role": null
+      },
+      {
+        "code": "UB.seatEdit('quantity','SH001','2026-10-13')",
+        "disabled": true,
+        "name": "新客/小时3老客/小时2",
+        "role": null
+      },
+      {
+        "code": "UB.seatEdit('quantity','SH001','2026-10-20')",
+        "disabled": true,
+        "name": "新客/小时12老客/小时3",
+        "role": null
+      },
+      {
+        "code": "UB.seatEdit('quantity','SH001','2026-10-21')",
+        "disabled": true,
+        "name": "新客未设置老客未设置",
+        "role": null
+      },
+      {
+        "code": "UB.seatEdit('board','SH001','2026-10-22')",
+        "disabled": false,
+        "name": "新看板 · 15分钟",
+        "role": null
+      },
+      {
+        "code": "UB.seatEdit('quantity','SH001','2026-10-24')",
+        "disabled": false,
+        "name": "新客/小时0老客/小时4",
+        "role": null
+      },
+      {
+        "code": "UB.seatEdit('quantity','SH001','2026-10-26')",
+        "disabled": false,
+        "name": "新客/小时3老客/小时3",
+        "role": null
+      }
+    ],
+    "forms": 0,
+    "legacyButtons": [],
+    "nativeControls": [],
+    "nestedForms": 0,
+    "overflow": false,
+    "route": "#store-beds",
+    "searchForms": 1,
+    "tables": 0,
+    "title": "门店床位",
+    "label": "最终主页面-门店床位",
+    "search": [
+      {
+        "actions": "重置搜索",
+        "fields": 5,
+        "gap": "12px",
+        "padding": "16px 20px"
+      }
+    ],
+    "unconvertedFields": 0,
+    "width": 1920
+  },
+  {
+    "bodyOverflow": false,
+    "dialogs": 0,
+    "entries": [
+      {
+        "code": "UB.tab('beds','rules')",
+        "disabled": false,
+        "name": "床位规则",
+        "role": "tab"
+      },
+      {
+        "code": "UB.tab('beds','types')",
+        "disabled": false,
+        "name": "床位类型",
+        "role": "tab"
+      },
+      {
+        "code": "UB.tab('beds','allocation')",
+        "disabled": false,
+        "name": "门店床位",
+        "role": "tab"
+      },
+      {
+        "code": "UB.reset('beds')",
+        "disabled": false,
+        "name": "重置",
+        "role": null
+      },
+      {
+        "code": "UB.search('beds',this.closest('section').querySelector('form'))",
+        "disabled": false,
+        "name": "搜索",
+        "role": null
+      },
+      {
+        "code": "UB.editBed()",
+        "disabled": false,
+        "name": "新增规则",
+        "role": null
+      },
+      {
+        "code": "UB.editBed('seat-rule-source')",
+        "disabled": false,
+        "name": "编辑",
+        "role": null
+      },
+      {
+        "code": "UB.seatBind('seat-rule-source')",
+        "disabled": false,
+        "name": "绑定门店",
+        "role": null
+      },
+      {
+        "code": "UB.copyBed('seat-rule-source')",
+        "disabled": false,
+        "name": "复制",
+        "role": null
+      },
+      {
+        "code": "UB.historyOpen('bedRules','seat-rule-source')",
+        "disabled": false,
+        "name": "历史",
+        "role": null
+      },
+      {
+        "code": "UB.deleteRow('bedRules','seat-rule-source')",
+        "disabled": false,
+        "name": "删除",
+        "role": null
+      }
+    ],
+    "forms": 0,
+    "legacyButtons": [],
+    "nativeControls": [],
+    "nestedForms": 0,
+    "overflow": false,
+    "route": "#beds",
+    "searchForms": 1,
+    "tables": 1,
+    "title": "床位规则",
+    "label": "最终主页面-床位设置",
+    "search": [
+      {
+        "actions": "重置搜索",
+        "fields": 2,
+        "gap": "12px",
+        "padding": "16px 20px"
+      }
+    ],
+    "unconvertedFields": 0,
+    "width": 1920
+  },
+  {
+    "bodyOverflow": false,
+    "dialogs": 0,
+    "entries": [
+      {
+        "code": "UB.reset('bed-logs')",
+        "disabled": false,
+        "name": "重置",
+        "role": null
+      },
+      {
+        "code": "UB.search('bed-logs',this.closest('section').querySelector('form'))",
+        "disabled": false,
+        "name": "搜索",
+        "role": null
+      },
+      {
+        "code": "UB.openLogs('SH001')",
+        "disabled": false,
+        "name": "查看日志",
+        "role": null
+      },
+      {
+        "code": "UB.exportLogs('SH001')",
+        "disabled": false,
+        "name": "导出",
+        "role": null
+      }
+    ],
+    "forms": 0,
+    "legacyButtons": [],
+    "nativeControls": [],
+    "nestedForms": 0,
+    "overflow": false,
+    "route": "#bed-logs",
+    "searchForms": 1,
+    "tables": 1,
+    "title": "床位变更记录",
+    "label": "最终主页面-床位日志",
+    "search": [
+      {
+        "actions": "重置搜索",
+        "fields": 2,
+        "gap": "12px",
+        "padding": "16px 20px"
+      }
+    ],
+    "unconvertedFields": 0,
+    "width": 1920
+  },
+  {
+    "bodyOverflow": false,
+    "dialogs": 0,
+    "entries": [
+      {
+        "code": "UB.reset('devices')",
+        "disabled": false,
+        "name": "重置",
+        "role": null
+      },
+      {
+        "code": "UB.search('devices',this.closest('section').querySelector('form'))",
+        "disabled": false,
+        "name": "搜索",
+        "role": null
+      },
+      {
+        "code": "UB.syncDevices()",
+        "disabled": false,
+        "name": "同步工牌",
+        "role": null
+      },
+      {
+        "code": "UB.deviceDetail(1)",
+        "disabled": false,
+        "name": "详情",
+        "role": null
+      },
+      {
+        "code": "UB.bindDevice(1)",
+        "disabled": false,
+        "name": "绑定员工",
+        "role": null
+      },
+      {
+        "code": "UB.bindDevice(2)",
+        "disabled": false,
+        "name": "重新绑定",
+        "role": null
+      }
+    ],
+    "forms": 0,
+    "legacyButtons": [],
+    "nativeControls": [],
+    "nestedForms": 0,
+    "overflow": false,
+    "route": "#devices",
+    "searchForms": 1,
+    "tables": 1,
+    "title": "录音设备",
+    "label": "最终主页面-多设备录音",
+    "search": [
+      {
+        "actions": "重置搜索",
+        "fields": 8,
+        "gap": "12px",
+        "padding": "16px 20px"
+      }
+    ],
+    "unconvertedFields": 0,
+    "width": 1920
+  },
+  {
+    "bodyOverflow": false,
+    "dialogs": 0,
+    "entries": [
+      {
+        "code": "UB.tab('partners','experience')",
+        "disabled": false,
+        "name": "体验卡合作",
+        "role": "tab"
+      },
+      {
+        "code": "UB.tab('partners','other')",
+        "disabled": false,
+        "name": "非体验卡合作",
+        "role": "tab"
+      },
+      {
+        "code": "UB.reset('partners')",
+        "disabled": false,
+        "name": "重置",
+        "role": null
+      },
+      {
+        "code": "UB.search('partners',this.closest('section').querySelector('form'))",
+        "disabled": false,
+        "name": "搜索",
+        "role": null
+      },
+      {
+        "code": "UB.editPartner()",
+        "disabled": false,
+        "name": "关联产品",
+        "role": null
+      },
+      {
+        "code": "UB.editPartner('exp-1')",
+        "disabled": false,
+        "name": "编辑",
+        "role": null
+      },
+      {
+        "code": "UB.copyPartner('exp-1')",
+        "disabled": false,
+        "name": "复制",
+        "role": null
+      },
+      {
+        "code": "UB.historyOpen('partners','exp-1')",
+        "disabled": false,
+        "name": "历史",
+        "role": null
+      },
+      {
+        "code": "UB.deleteRow('partners','exp-1')",
+        "disabled": false,
+        "name": "删除",
+        "role": null
+      }
+    ],
+    "forms": 0,
+    "legacyButtons": [],
+    "nativeControls": [],
+    "nestedForms": 0,
+    "overflow": false,
+    "route": "#partners",
+    "searchForms": 1,
+    "tables": 1,
+    "title": "北京外协中心 · 合作方案",
+    "label": "最终主页面-外协配置",
+    "search": [
+      {
+        "actions": "重置搜索",
+        "fields": 3,
+        "gap": "12px",
+        "padding": "16px 20px"
+      }
+    ],
+    "unconvertedFields": 0,
+    "width": 1920
+  },
+  {
+    "bodyOverflow": false,
+    "dialogs": 0,
+    "entries": [
+      {
+        "code": "UB.reset('scheduling')",
+        "disabled": false,
+        "name": "重置",
+        "role": null
+      },
+      {
+        "code": "UB.search('scheduling',this.closest('section').querySelector('form'))",
+        "disabled": false,
+        "name": "搜索",
+        "role": null
+      },
+      {
+        "code": "UB.editSchedule()",
+        "disabled": false,
+        "name": "新增规则",
+        "role": null
+      },
+      {
+        "code": "UB.editSchedule('schedule-1')",
+        "disabled": false,
+        "name": "编辑",
+        "role": null
+      },
+      {
+        "code": "UB.copySchedule('schedule-1')",
+        "disabled": false,
+        "name": "复制",
+        "role": null
+      },
+      {
+        "code": "UB.historyOpen('schedules','schedule-1')",
+        "disabled": false,
+        "name": "历史",
+        "role": null
+      },
+      {
+        "code": "UB.deleteRow('schedules','schedule-1')",
+        "disabled": false,
+        "name": "删除",
+        "role": null
+      }
+    ],
+    "forms": 0,
+    "legacyButtons": [],
+    "nativeControls": [],
+    "nestedForms": 0,
+    "overflow": false,
+    "route": "#scheduling",
+    "searchForms": 1,
+    "tables": 1,
+    "title": "智能排客规则",
+    "label": "最终主页面-智能排客",
+    "search": [
+      {
+        "actions": "重置搜索",
+        "fields": 2,
+        "gap": "12px",
+        "padding": "16px 20px"
+      }
+    ],
+    "unconvertedFields": 0,
+    "width": 1920
+  },
+  {
+    "bodyOverflow": false,
+    "dialogs": 0,
+    "entries": [
+      {
+        "code": "UB.tab('finance','employee')",
+        "disabled": false,
+        "name": "员工奖励发放",
+        "role": "tab"
+      },
+      {
+        "code": "UB.tab('finance','institution')",
+        "disabled": false,
+        "name": "机构成本发放",
+        "role": "tab"
+      },
+      {
+        "code": "UB.reset('finance')",
+        "disabled": false,
+        "name": "重置",
+        "role": null
+      },
+      {
+        "code": "UB.search('finance',this.closest('section').querySelector('form'))",
+        "disabled": false,
+        "name": "搜索",
+        "role": null
+      },
+      {
+        "code": "UB.financeExport()",
+        "disabled": false,
+        "name": "导出",
+        "role": null
+      },
+      {
+        "code": "UB.financeDetail('f1')",
+        "disabled": false,
+        "name": "查看",
+        "role": null
+      },
+      {
+        "code": "UB.financeConfirm(['f1'])",
+        "disabled": false,
+        "name": "确认发放",
+        "role": null
+      }
+    ],
+    "forms": 0,
+    "legacyButtons": [],
+    "nativeControls": [],
+    "nestedForms": 0,
+    "overflow": false,
+    "route": "#finance",
+    "searchForms": 1,
+    "tables": 1,
+    "title": "员工奖励清单",
+    "label": "最终主页面-财务核对",
+    "search": [
+      {
+        "actions": "重置搜索",
+        "fields": 6,
+        "gap": "12px",
+        "padding": "16px 20px"
+      }
+    ],
+    "unconvertedFields": 0,
+    "width": 1920
+  },
+  {
+    "bodyOverflow": false,
+    "dialogs": 0,
+    "entries": [
+      {
+        "code": "UB.refundTab('manage')",
+        "disabled": false,
+        "name": "退款管理",
+        "role": "tab"
+      },
+      {
+        "code": "UB.refundTab('list')",
+        "disabled": false,
+        "name": "退款列表",
+        "role": "tab"
+      },
+      {
+        "code": "UB.refundTab('detail')",
+        "disabled": false,
+        "name": "退款明细",
+        "role": "tab"
+      },
+      {
+        "code": "UB.refundQuick('上月')",
+        "disabled": false,
+        "name": "上月",
+        "role": null
+      },
+      {
+        "code": "UB.refundQuick('昨天')",
+        "disabled": false,
+        "name": "昨天",
+        "role": null
+      },
+      {
+        "code": "UB.refundQuick('今天')",
+        "disabled": false,
+        "name": "今天",
+        "role": null
+      },
+      {
+        "code": "UB.refundQuick('本周')",
+        "disabled": false,
+        "name": "本周",
+        "role": null
+      },
+      {
+        "code": "UB.refundQuick('本月')",
+        "disabled": false,
+        "name": "本月",
+        "role": null
+      },
+      {
+        "code": "UB.refundSearch(true)",
+        "disabled": false,
+        "name": "重置",
+        "role": null
+      },
+      {
+        "code": "UB.refundSearch()",
+        "disabled": false,
+        "name": "搜索",
+        "role": null
+      },
+      {
+        "code": "UB.refundAudit(0,true)",
+        "disabled": true,
+        "name": "主管审核通过",
+        "role": null
+      },
+      {
+        "code": "UB.refundAudit(0,false)",
+        "disabled": true,
+        "name": "主管审核拒绝",
+        "role": null
+      },
+      {
+        "code": "UB.refundAudit(1,true)",
+        "disabled": true,
+        "name": "售后审核通过",
+        "role": null
+      },
+      {
+        "code": "UB.refundAudit(1,false)",
+        "disabled": true,
+        "name": "售后审核拒绝",
+        "role": null
+      },
+      {
+        "code": "UB.refundAudit(2,true)",
+        "disabled": true,
+        "name": "财务审核通过",
+        "role": null
+      },
+      {
+        "code": "UB.refundAudit(2,false)",
+        "disabled": true,
+        "name": "财务审核拒绝",
+        "role": null
+      },
+      {
+        "code": "UB.refundExport()",
+        "disabled": false,
+        "name": "导出",
+        "role": null
+      },
+      {
+        "code": "UB.refundConfig()",
+        "disabled": false,
+        "name": "退款配置",
+        "role": null
+      },
+      {
+        "code": "UB.refundCustomer('19564')",
+        "disabled": false,
+        "name": "rock࿐ོ₂₀₂3",
+        "role": null
+      },
+      {
+        "code": "UB.refundDetail('19564')",
+        "disabled": false,
+        "name": "查看",
+        "role": null
+      },
+      {
+        "code": "UB.refundCustomer('19563')",
+        "disabled": false,
+        "name": "肖小洁",
+        "role": null
+      },
+      {
+        "code": "UB.refundCustomer('19561')",
+        "disabled": false,
+        "name": "墨墨",
+        "role": null
+      }
+    ],
+    "forms": 0,
+    "legacyButtons": [],
+    "nativeControls": [],
+    "nestedForms": 0,
+    "overflow": false,
+    "route": "#refunds",
+    "searchForms": 1,
+    "tables": 1,
+    "title": "退款申请",
+    "label": "最终主页面-退款管理",
+    "search": [
+      {
+        "actions": "重置搜索",
+        "fields": 7,
+        "gap": "12px",
+        "padding": "16px 20px"
+      }
+    ],
+    "unconvertedFields": 0,
+    "width": 1920
+  },
+  {
+    "bodyOverflow": false,
+    "dialogs": 0,
+    "entries": [
+      {
+        "code": "pcCustomerReset()",
+        "disabled": false,
+        "name": "重置",
+        "role": null
+      },
+      {
+        "code": "pcCustomerSearch()",
+        "disabled": false,
+        "name": "搜索",
+        "role": null
+      },
+      {
+        "code": "pcOpenCustomer(\"CUS-50390\")",
+        "disabled": false,
+        "name": "周晓敏",
+        "role": null
+      },
+      {
+        "code": "pcOpenCustomer(\"CUS-50390\")",
+        "disabled": false,
+        "name": "查看档案",
+        "role": null
+      },
+      {
+        "code": "pcOpenCustomer(\"CUS-50391\")",
+        "disabled": false,
+        "name": "周女士",
+        "role": null
+      },
+      {
+        "code": "pcOpenCustomer(\"CUS-50390\")",
+        "disabled": false,
+        "name": "已合并至 50390",
+        "role": null
+      },
+      {
+        "code": "pcOpenCustomer(\"CUS-BIZ-B\")",
+        "disabled": false,
+        "name": "林女士",
+        "role": null
+      },
+      {
+        "code": "pcOpenCustomer(\"CUS-BIZ-A\")",
+        "disabled": false,
+        "name": "林宁",
+        "role": null
+      },
+      {
+        "code": "pcOpenCustomer(\"CUS-BIZ-B\")",
+        "disabled": false,
+        "name": "已合并至 61651",
+        "role": null
+      },
+      {
+        "code": "pcOpenCustomer(\"CUS-30281\")",
+        "disabled": false,
+        "name": "林知夏",
+        "role": null
+      },
+      {
+        "code": "pcOpenCustomer(\"CUS-40281\")",
+        "disabled": false,
+        "name": "王雨",
+        "role": null
+      },
+      {
+        "code": "pcOpenCustomer(\"CUS-30281\")",
+        "disabled": false,
+        "name": "已合并至 30281",
+        "role": null
+      },
+      {
+        "code": "pcOpenCustomer(\"CUS-30282\")",
+        "disabled": false,
+        "name": "陈嘉宁",
+        "role": null
+      },
+      {
+        "code": "pcOpenCustomer(\"CUS-40282\")",
+        "disabled": false,
+        "name": "吴思琪",
+        "role": null
+      },
+      {
+        "code": "pcOpenCustomer(\"CUS-30282\")",
+        "disabled": false,
+        "name": "已合并至 30282",
+        "role": null
+      }
+    ],
+    "forms": 0,
+    "legacyButtons": [],
+    "nativeControls": [],
+    "nestedForms": 0,
+    "overflow": false,
+    "route": "#customers",
+    "searchForms": 1,
+    "tables": 1,
+    "title": "客户档案",
+    "label": "1280布局-客户档案",
+    "width": 1280
+  },
+  {
+    "bodyOverflow": false,
+    "dialogs": 0,
+    "entries": [
+      {
+        "code": "mergeListQuery='';mergeListFilter='all';render()",
+        "disabled": false,
+        "name": "重置",
+        "role": null
+      },
+      {
+        "code": "render()",
+        "disabled": false,
+        "name": "搜索",
+        "role": null
+      },
+      {
+        "code": "openMergeEditor()",
+        "disabled": false,
+        "name": "新建合并规则",
+        "role": null
+      },
+      {
+        "code": "openMergeEditor('merge-profile-1')",
+        "disabled": false,
+        "name": "通用客户合并规则",
+        "role": null
+      },
+      {
+        "code": "openMergeEditor('merge-profile-1')",
+        "disabled": false,
+        "name": "编辑",
+        "role": null
+      },
+      {
+        "code": "openMergeHistory('merge-profile-1')",
+        "disabled": false,
+        "name": "变更历史",
+        "role": null
+      }
+    ],
+    "forms": 0,
+    "legacyButtons": [],
+    "nativeControls": [],
+    "nestedForms": 0,
+    "overflow": false,
+    "route": "#rules",
+    "searchForms": 1,
+    "tables": 1,
+    "title": "合并规则",
+    "label": "1280布局-规则配置",
+    "width": 1280
+  },
+  {
+    "bodyOverflow": false,
+    "dialogs": 0,
+    "entries": [
+      {
+        "code": "go('merge-candidates')",
+        "disabled": false,
+        "name": "待合并处理",
+        "role": "tab"
+      },
+      {
+        "code": "go('merge-records')",
+        "disabled": false,
+        "name": "合并记录",
+        "role": "tab"
+      },
+      {
+        "code": "mgReset()",
+        "disabled": false,
+        "name": "重置",
+        "role": null
+      },
+      {
+        "code": "mgSearch()",
+        "disabled": false,
+        "name": "搜索",
+        "role": null
+      },
+      {
+        "code": "mgBatchAsk()",
+        "disabled": false,
+        "name": "批量确认不合并",
+        "role": null
+      },
+      {
+        "code": "mrNew()",
+        "disabled": false,
+        "name": "申请合并",
+        "role": null
+      },
+      {
+        "code": "mgOpen(\"g:DG-MERGE-UI-001\")",
+        "disabled": false,
+        "name": "63113",
+        "role": null
+      },
+      {
+        "code": "mgOpen(\"g:DG-MERGE-UI-001\")",
+        "disabled": false,
+        "name": "详情",
+        "role": null
+      },
+      {
+        "code": "mgOpen(\"g:DG-MERGE-UI-001\",true)",
+        "disabled": false,
+        "name": "查看审核",
+        "role": null
+      },
+      {
+        "code": "mgOpen(\"g:DG-DEMO-001\",true)",
+        "disabled": false,
+        "name": "核对合并方案",
+        "role": null
+      }
+    ],
+    "forms": 0,
+    "legacyButtons": [],
+    "nativeControls": [],
+    "nestedForms": 0,
+    "overflow": false,
+    "route": "#merge-candidates",
+    "searchForms": 1,
+    "tables": 1,
+    "title": "合并事项",
+    "label": "1280布局-档案合并",
+    "width": 1280
+  },
+  {
+    "bodyOverflow": false,
+    "dialogs": 0,
+    "entries": [
+      {
+        "code": "apSwitch('merge')",
+        "disabled": false,
+        "name": "合并审核",
+        "role": "tab"
+      },
+      {
+        "code": "apSwitch('correction')",
+        "disabled": false,
+        "name": "纠错审核",
+        "role": "tab"
+      },
+      {
+        "code": "apSwitch('history')",
+        "disabled": false,
+        "name": "审核记录",
+        "role": "tab"
+      },
+      {
+        "code": "apReset()",
+        "disabled": false,
+        "name": "重置",
+        "role": null
+      },
+      {
+        "code": "apSearch()",
+        "disabled": false,
+        "name": "搜索",
+        "role": null
+      },
+      {
+        "code": "apOpen('merge',\"MA-20261020-007\")",
+        "disabled": false,
+        "name": "查看审核",
+        "role": null
+      }
+    ],
+    "forms": 0,
+    "legacyButtons": [],
+    "nativeControls": [],
+    "nestedForms": 0,
+    "overflow": false,
+    "route": "#reviews",
+    "searchForms": 1,
+    "tables": 1,
+    "title": "合并审核",
+    "label": "1280布局-审核管理",
+    "width": 1280
+  },
+  {
+    "bodyOverflow": false,
+    "dialogs": 0,
+    "entries": [
+      {
+        "code": "flowSetScope('all')",
+        "disabled": false,
+        "name": "全部工单",
+        "role": "tab"
+      },
+      {
+        "code": "flowSetScope('active')",
+        "disabled": false,
+        "name": "未完成",
+        "role": "tab"
+      },
+      {
+        "code": "flowSetScope('done')",
+        "disabled": false,
+        "name": "已完成",
+        "role": "tab"
+      },
+      {
+        "code": "flowSetScope('drafts')",
+        "disabled": false,
+        "name": "草稿",
+        "role": "tab"
+      },
+      {
+        "code": "flowSetScope('review')",
+        "disabled": false,
+        "name": "待审核",
+        "role": "tab"
+      },
+      {
+        "code": "flowSetScope('process')",
+        "disabled": false,
+        "name": "待执行 / 执行中",
+        "role": "tab"
+      },
+      {
+        "code": "flowSetScope('confirm')",
+        "disabled": false,
+        "name": "待确认",
+        "role": "tab"
+      },
+      {
+        "code": "flowSetScope('blocked')",
+        "disabled": false,
+        "name": "需补充 / 核查",
+        "role": "tab"
+      },
+      {
+        "code": "flowMoreFilters()",
+        "disabled": false,
+        "name": "更多筛选",
+        "role": null
+      },
+      {
+        "code": "filter={status:'',risk:'',store:'',author:'',q:'',from:'',to:''};pageNo=1;render()",
+        "disabled": false,
+        "name": "重置",
+        "role": null
+      },
+      {
+        "code": "render()",
+        "disabled": false,
+        "name": "搜索",
+        "role": null
+      },
+      {
+        "code": "flowNew()",
+        "disabled": false,
+        "name": "发起纠错",
+        "role": null
+      },
+      {
+        "code": "go('ticket','EC-20261020-002')",
+        "disabled": false,
+        "name": "60015",
+        "role": null
+      },
+      {
+        "code": "flowOpen('EC-20261020-002')",
+        "disabled": false,
+        "name": "查看进度",
+        "role": null
+      },
+      {
+        "code": "flowOpen('EC-20261014-002')",
+        "disabled": false,
+        "name": "核对结果",
+        "role": null
+      },
+      {
+        "code": "flowOpen('EC-20261011-017')",
+        "disabled": false,
+        "name": "查看结果",
+        "role": null
+      }
+    ],
+    "forms": 0,
+    "legacyButtons": [],
+    "nativeControls": [],
+    "nestedForms": 0,
+    "overflow": false,
+    "route": "#tickets",
+    "searchForms": 1,
+    "tables": 1,
+    "title": "纠错工单",
+    "label": "1280布局-纠错工单",
+    "width": 1280
+  },
+  {
+    "bodyOverflow": false,
+    "dialogs": 0,
+    "entries": [
+      {
+        "code": "rvScope='all';rvPage=1;render()",
+        "disabled": false,
+        "name": "全部记录",
+        "role": "tab"
+      },
+      {
+        "code": "rvScope='pending';rvPage=1;render()",
+        "disabled": false,
+        "name": "待确认",
+        "role": "tab"
+      },
+      {
+        "code": "rvScope='effective';rvPage=1;render()",
+        "disabled": false,
+        "name": "已生效",
+        "role": "tab"
+      },
+      {
+        "code": "rvFilter={q:'',customer:'',type:'',from:'',to:'',min:'',max:''};render()",
+        "disabled": false,
+        "name": "重置",
+        "role": null
+      },
+      {
+        "code": "render()",
+        "disabled": false,
+        "name": "搜索",
+        "role": null
+      },
+      {
+        "code": "exportReversals(false)",
+        "disabled": false,
+        "name": "导出含冲销明细",
+        "role": null
+      },
+      {
+        "code": "exportReversals(true)",
+        "disabled": false,
+        "name": "导出只看净值",
+        "role": null
+      },
+      {
+        "code": "go('ticket','EC-20261014-002')",
+        "disabled": false,
+        "name": "60100",
+        "role": null
+      },
+      {
+        "code": "openReversal('RV-20261014-002-01')",
+        "disabled": false,
+        "name": "详情",
+        "role": null
+      }
+    ],
+    "forms": 0,
+    "legacyButtons": [],
+    "nativeControls": [],
+    "nestedForms": 0,
+    "overflow": false,
+    "route": "#reversals",
+    "searchForms": 1,
+    "tables": 1,
+    "title": "冲销记录",
+    "label": "1280布局-冲销记录",
+    "width": 1280
+  },
+  {
+    "bodyOverflow": false,
+    "dialogs": 0,
+    "entries": [
+      {
+        "code": "UB.shopCityFilter()",
+        "disabled": false,
+        "name": "全部城市",
+        "role": null
+      },
+      {
+        "code": "UB.reset('shops')",
+        "disabled": false,
+        "name": "重置",
+        "role": null
+      },
+      {
+        "code": "UB.search('shops',this.closest('section').querySelector('form'))",
+        "disabled": false,
+        "name": "搜索",
+        "role": null
+      },
+      {
+        "code": "UB.shopEdit()",
+        "disabled": false,
+        "name": "新增门店",
+        "role": null
+      },
+      {
+        "code": "UB.shopTransfer()",
+        "disabled": true,
+        "name": "转出设置",
+        "role": null
+      },
+      {
+        "code": "UB.shopLogs()",
+        "disabled": false,
+        "name": "日志",
+        "role": null
+      },
+      {
+        "code": "UB.shopEdit('442')",
+        "disabled": false,
+        "name": "修改",
+        "role": null
+      },
+      {
+        "code": "UB.shopCapacity('442')",
+        "disabled": false,
+        "name": "床位",
+        "role": null
+      },
+      {
+        "code": "UB.shopShifts('442')",
+        "disabled": false,
+        "name": "班次",
+        "role": null
+      },
+      {
+        "code": "UB.shopRules('442')",
+        "disabled": false,
+        "name": "服务规则",
+        "role": null
+      }
+    ],
+    "forms": 0,
+    "legacyButtons": [],
+    "nativeControls": [],
+    "nestedForms": 0,
+    "overflow": false,
+    "route": "#shops",
+    "searchForms": 1,
+    "tables": 1,
+    "title": "门店列表",
+    "label": "1280布局-门店列表",
+    "width": 1280
+  },
+  {
+    "bodyOverflow": false,
+    "dialogs": 0,
+    "entries": [
+      {
+        "code": "UB.seatPickFilter('district')",
+        "disabled": false,
+        "name": "全部大区",
+        "role": null
+      },
+      {
+        "code": "UB.seatPickFilter('area')",
+        "disabled": false,
+        "name": "全部区域",
+        "role": null
+      },
+      {
+        "code": "UB.seatPickFilter('store')",
+        "disabled": false,
+        "name": "全部门店",
+        "role": null
+      },
+      {
+        "code": "UB.seatQuick('last')",
+        "disabled": false,
+        "name": "上月",
+        "role": null
+      },
+      {
+        "code": "UB.seatQuick('yesterday')",
+        "disabled": false,
+        "name": "昨天",
+        "role": null
+      },
+      {
+        "code": "UB.seatQuick('today')",
+        "disabled": false,
+        "name": "今天",
+        "role": null
+      },
+      {
+        "code": "UB.seatQuick('week')",
+        "disabled": false,
+        "name": "本周",
+        "role": null
+      },
+      {
+        "code": "UB.seatQuick('month')",
+        "disabled": false,
+        "name": "本月",
+        "role": null
+      },
+      {
+        "code": "UB.seatSearch(true)",
+        "disabled": false,
+        "name": "重置",
+        "role": null
+      },
+      {
+        "code": "UB.seatSearch()",
+        "disabled": false,
+        "name": "搜索",
+        "role": null
+      },
+      {
+        "code": "UB.seatEdit('quantity')",
+        "disabled": true,
+        "name": "床位数量",
+        "role": null
+      },
+      {
+        "code": "UB.seatEdit('board')",
+        "disabled": true,
+        "name": "床位模板",
+        "role": null
+      },
+      {
+        "code": "UB.seatResetWidth()",
+        "disabled": false,
+        "name": "重置列宽",
+        "role": null
+      },
+      {
+        "code": "go('bed-logs')",
+        "disabled": false,
+        "name": "床位日志",
+        "role": null
+      },
+      {
+        "code": "UB.seatSmart()",
+        "disabled": false,
+        "name": "智能床位",
+        "role": null
+      },
+      {
+        "code": "UB.seatEdit('quantity','SH001','2026-10-01')",
+        "disabled": true,
+        "name": "床位数量未设置",
+        "role": null
+      },
+      {
+        "code": "UB.seatEdit('board','SH001','2026-10-01')",
+        "disabled": true,
+        "name": "旧看板 · 默认",
+        "role": null
+      },
+      {
+        "code": "UB.seatEdit('quantity','SH001','2026-10-04')",
+        "disabled": true,
+        "name": "新客/小时6老客/小时6",
+        "role": null
+      },
+      {
+        "code": "UB.seatEdit('board','SH001','2026-10-04')",
+        "disabled": true,
+        "name": "新看板 · 30分钟",
+        "role": null
+      },
+      {
+        "code": "UB.seatEdit('quantity','SH001','2026-10-08')",
+        "disabled": true,
+        "name": "新客/小时2老客/小时2",
+        "role": null
+      },
+      {
+        "code": "UB.seatEdit('board','SH001','2026-10-09')",
+        "disabled": true,
+        "name": "旧看板",
+        "role": null
+      },
+      {
+        "code": "UB.seatEdit('quantity','SH001','2026-10-13')",
+        "disabled": true,
+        "name": "新客/小时3老客/小时2",
+        "role": null
+      },
+      {
+        "code": "UB.seatEdit('quantity','SH001','2026-10-20')",
+        "disabled": true,
+        "name": "新客/小时12老客/小时3",
+        "role": null
+      },
+      {
+        "code": "UB.seatEdit('quantity','SH001','2026-10-21')",
+        "disabled": true,
+        "name": "新客未设置老客未设置",
+        "role": null
+      },
+      {
+        "code": "UB.seatEdit('board','SH001','2026-10-22')",
+        "disabled": false,
+        "name": "新看板 · 15分钟",
+        "role": null
+      },
+      {
+        "code": "UB.seatEdit('quantity','SH001','2026-10-24')",
+        "disabled": false,
+        "name": "新客/小时0老客/小时4",
+        "role": null
+      },
+      {
+        "code": "UB.seatEdit('quantity','SH001','2026-10-26')",
+        "disabled": false,
+        "name": "新客/小时3老客/小时3",
+        "role": null
+      }
+    ],
+    "forms": 0,
+    "legacyButtons": [],
+    "nativeControls": [],
+    "nestedForms": 0,
+    "overflow": false,
+    "route": "#store-beds",
+    "searchForms": 1,
+    "tables": 0,
+    "title": "门店床位",
+    "label": "1280布局-门店床位",
+    "width": 1280
+  },
+  {
+    "bodyOverflow": false,
+    "dialogs": 0,
+    "entries": [
+      {
+        "code": "UB.tab('beds','rules')",
+        "disabled": false,
+        "name": "床位规则",
+        "role": "tab"
+      },
+      {
+        "code": "UB.tab('beds','types')",
+        "disabled": false,
+        "name": "床位类型",
+        "role": "tab"
+      },
+      {
+        "code": "UB.tab('beds','allocation')",
+        "disabled": false,
+        "name": "门店床位",
+        "role": "tab"
+      },
+      {
+        "code": "UB.reset('beds')",
+        "disabled": false,
+        "name": "重置",
+        "role": null
+      },
+      {
+        "code": "UB.search('beds',this.closest('section').querySelector('form'))",
+        "disabled": false,
+        "name": "搜索",
+        "role": null
+      },
+      {
+        "code": "UB.editBed()",
+        "disabled": false,
+        "name": "新增规则",
+        "role": null
+      },
+      {
+        "code": "UB.editBed('seat-rule-source')",
+        "disabled": false,
+        "name": "编辑",
+        "role": null
+      },
+      {
+        "code": "UB.seatBind('seat-rule-source')",
+        "disabled": false,
+        "name": "绑定门店",
+        "role": null
+      },
+      {
+        "code": "UB.copyBed('seat-rule-source')",
+        "disabled": false,
+        "name": "复制",
+        "role": null
+      },
+      {
+        "code": "UB.historyOpen('bedRules','seat-rule-source')",
+        "disabled": false,
+        "name": "历史",
+        "role": null
+      },
+      {
+        "code": "UB.deleteRow('bedRules','seat-rule-source')",
+        "disabled": false,
+        "name": "删除",
+        "role": null
+      }
+    ],
+    "forms": 0,
+    "legacyButtons": [],
+    "nativeControls": [],
+    "nestedForms": 0,
+    "overflow": false,
+    "route": "#beds",
+    "searchForms": 1,
+    "tables": 1,
+    "title": "床位规则",
+    "label": "1280布局-床位设置",
+    "width": 1280
+  },
+  {
+    "bodyOverflow": false,
+    "dialogs": 0,
+    "entries": [
+      {
+        "code": "UB.reset('bed-logs')",
+        "disabled": false,
+        "name": "重置",
+        "role": null
+      },
+      {
+        "code": "UB.search('bed-logs',this.closest('section').querySelector('form'))",
+        "disabled": false,
+        "name": "搜索",
+        "role": null
+      },
+      {
+        "code": "UB.openLogs('SH001')",
+        "disabled": false,
+        "name": "查看日志",
+        "role": null
+      },
+      {
+        "code": "UB.exportLogs('SH001')",
+        "disabled": false,
+        "name": "导出",
+        "role": null
+      }
+    ],
+    "forms": 0,
+    "legacyButtons": [],
+    "nativeControls": [],
+    "nestedForms": 0,
+    "overflow": false,
+    "route": "#bed-logs",
+    "searchForms": 1,
+    "tables": 1,
+    "title": "床位变更记录",
+    "label": "1280布局-床位日志",
+    "width": 1280
+  },
+  {
+    "bodyOverflow": false,
+    "dialogs": 0,
+    "entries": [
+      {
+        "code": "UB.reset('devices')",
+        "disabled": false,
+        "name": "重置",
+        "role": null
+      },
+      {
+        "code": "UB.search('devices',this.closest('section').querySelector('form'))",
+        "disabled": false,
+        "name": "搜索",
+        "role": null
+      },
+      {
+        "code": "UB.syncDevices()",
+        "disabled": false,
+        "name": "同步工牌",
+        "role": null
+      },
+      {
+        "code": "UB.deviceDetail(1)",
+        "disabled": false,
+        "name": "详情",
+        "role": null
+      },
+      {
+        "code": "UB.bindDevice(1)",
+        "disabled": false,
+        "name": "绑定员工",
+        "role": null
+      },
+      {
+        "code": "UB.bindDevice(2)",
+        "disabled": false,
+        "name": "重新绑定",
+        "role": null
+      }
+    ],
+    "forms": 0,
+    "legacyButtons": [],
+    "nativeControls": [],
+    "nestedForms": 0,
+    "overflow": false,
+    "route": "#devices",
+    "searchForms": 1,
+    "tables": 1,
+    "title": "录音设备",
+    "label": "1280布局-多设备录音",
+    "width": 1280
+  },
+  {
+    "bodyOverflow": false,
+    "dialogs": 0,
+    "entries": [
+      {
+        "code": "UB.tab('partners','experience')",
+        "disabled": false,
+        "name": "体验卡合作",
+        "role": "tab"
+      },
+      {
+        "code": "UB.tab('partners','other')",
+        "disabled": false,
+        "name": "非体验卡合作",
+        "role": "tab"
+      },
+      {
+        "code": "UB.reset('partners')",
+        "disabled": false,
+        "name": "重置",
+        "role": null
+      },
+      {
+        "code": "UB.search('partners',this.closest('section').querySelector('form'))",
+        "disabled": false,
+        "name": "搜索",
+        "role": null
+      },
+      {
+        "code": "UB.editPartner()",
+        "disabled": false,
+        "name": "关联产品",
+        "role": null
+      },
+      {
+        "code": "UB.editPartner('exp-1')",
+        "disabled": false,
+        "name": "编辑",
+        "role": null
+      },
+      {
+        "code": "UB.copyPartner('exp-1')",
+        "disabled": false,
+        "name": "复制",
+        "role": null
+      },
+      {
+        "code": "UB.historyOpen('partners','exp-1')",
+        "disabled": false,
+        "name": "历史",
+        "role": null
+      },
+      {
+        "code": "UB.deleteRow('partners','exp-1')",
+        "disabled": false,
+        "name": "删除",
+        "role": null
+      }
+    ],
+    "forms": 0,
+    "legacyButtons": [],
+    "nativeControls": [],
+    "nestedForms": 0,
+    "overflow": false,
+    "route": "#partners",
+    "searchForms": 1,
+    "tables": 1,
+    "title": "北京外协中心 · 合作方案",
+    "label": "1280布局-外协配置",
+    "width": 1280
+  },
+  {
+    "bodyOverflow": false,
+    "dialogs": 0,
+    "entries": [
+      {
+        "code": "UB.reset('scheduling')",
+        "disabled": false,
+        "name": "重置",
+        "role": null
+      },
+      {
+        "code": "UB.search('scheduling',this.closest('section').querySelector('form'))",
+        "disabled": false,
+        "name": "搜索",
+        "role": null
+      },
+      {
+        "code": "UB.editSchedule()",
+        "disabled": false,
+        "name": "新增规则",
+        "role": null
+      },
+      {
+        "code": "UB.editSchedule('schedule-1')",
+        "disabled": false,
+        "name": "编辑",
+        "role": null
+      },
+      {
+        "code": "UB.copySchedule('schedule-1')",
+        "disabled": false,
+        "name": "复制",
+        "role": null
+      },
+      {
+        "code": "UB.historyOpen('schedules','schedule-1')",
+        "disabled": false,
+        "name": "历史",
+        "role": null
+      },
+      {
+        "code": "UB.deleteRow('schedules','schedule-1')",
+        "disabled": false,
+        "name": "删除",
+        "role": null
+      }
+    ],
+    "forms": 0,
+    "legacyButtons": [],
+    "nativeControls": [],
+    "nestedForms": 0,
+    "overflow": false,
+    "route": "#scheduling",
+    "searchForms": 1,
+    "tables": 1,
+    "title": "智能排客规则",
+    "label": "1280布局-智能排客",
+    "width": 1280
+  },
+  {
+    "bodyOverflow": false,
+    "dialogs": 0,
+    "entries": [
+      {
+        "code": "UB.tab('finance','employee')",
+        "disabled": false,
+        "name": "员工奖励发放",
+        "role": "tab"
+      },
+      {
+        "code": "UB.tab('finance','institution')",
+        "disabled": false,
+        "name": "机构成本发放",
+        "role": "tab"
+      },
+      {
+        "code": "UB.reset('finance')",
+        "disabled": false,
+        "name": "重置",
+        "role": null
+      },
+      {
+        "code": "UB.search('finance',this.closest('section').querySelector('form'))",
+        "disabled": false,
+        "name": "搜索",
+        "role": null
+      },
+      {
+        "code": "UB.financeExport()",
+        "disabled": false,
+        "name": "导出",
+        "role": null
+      },
+      {
+        "code": "UB.financeDetail('f1')",
+        "disabled": false,
+        "name": "查看",
+        "role": null
+      },
+      {
+        "code": "UB.financeConfirm(['f1'])",
+        "disabled": false,
+        "name": "确认发放",
+        "role": null
+      }
+    ],
+    "forms": 0,
+    "legacyButtons": [],
+    "nativeControls": [],
+    "nestedForms": 0,
+    "overflow": false,
+    "route": "#finance",
+    "searchForms": 1,
+    "tables": 1,
+    "title": "员工奖励清单",
+    "label": "1280布局-财务核对",
+    "width": 1280
+  },
+  {
+    "bodyOverflow": false,
+    "dialogs": 0,
+    "entries": [
+      {
+        "code": "UB.refundTab('manage')",
+        "disabled": false,
+        "name": "退款管理",
+        "role": "tab"
+      },
+      {
+        "code": "UB.refundTab('list')",
+        "disabled": false,
+        "name": "退款列表",
+        "role": "tab"
+      },
+      {
+        "code": "UB.refundTab('detail')",
+        "disabled": false,
+        "name": "退款明细",
+        "role": "tab"
+      },
+      {
+        "code": "UB.refundQuick('上月')",
+        "disabled": false,
+        "name": "上月",
+        "role": null
+      },
+      {
+        "code": "UB.refundQuick('昨天')",
+        "disabled": false,
+        "name": "昨天",
+        "role": null
+      },
+      {
+        "code": "UB.refundQuick('今天')",
+        "disabled": false,
+        "name": "今天",
+        "role": null
+      },
+      {
+        "code": "UB.refundQuick('本周')",
+        "disabled": false,
+        "name": "本周",
+        "role": null
+      },
+      {
+        "code": "UB.refundQuick('本月')",
+        "disabled": false,
+        "name": "本月",
+        "role": null
+      },
+      {
+        "code": "UB.refundSearch(true)",
+        "disabled": false,
+        "name": "重置",
+        "role": null
+      },
+      {
+        "code": "UB.refundSearch()",
+        "disabled": false,
+        "name": "搜索",
+        "role": null
+      },
+      {
+        "code": "UB.refundAudit(0,true)",
+        "disabled": true,
+        "name": "主管审核通过",
+        "role": null
+      },
+      {
+        "code": "UB.refundAudit(0,false)",
+        "disabled": true,
+        "name": "主管审核拒绝",
+        "role": null
+      },
+      {
+        "code": "UB.refundAudit(1,true)",
+        "disabled": true,
+        "name": "售后审核通过",
+        "role": null
+      },
+      {
+        "code": "UB.refundAudit(1,false)",
+        "disabled": true,
+        "name": "售后审核拒绝",
+        "role": null
+      },
+      {
+        "code": "UB.refundAudit(2,true)",
+        "disabled": true,
+        "name": "财务审核通过",
+        "role": null
+      },
+      {
+        "code": "UB.refundAudit(2,false)",
+        "disabled": true,
+        "name": "财务审核拒绝",
+        "role": null
+      },
+      {
+        "code": "UB.refundExport()",
+        "disabled": false,
+        "name": "导出",
+        "role": null
+      },
+      {
+        "code": "UB.refundConfig()",
+        "disabled": false,
+        "name": "退款配置",
+        "role": null
+      },
+      {
+        "code": "UB.refundCustomer('19564')",
+        "disabled": false,
+        "name": "rock࿐ོ₂₀₂3",
+        "role": null
+      },
+      {
+        "code": "UB.refundDetail('19564')",
+        "disabled": false,
+        "name": "查看",
+        "role": null
+      },
+      {
+        "code": "UB.refundCustomer('19563')",
+        "disabled": false,
+        "name": "肖小洁",
+        "role": null
+      },
+      {
+        "code": "UB.refundCustomer('19561')",
+        "disabled": false,
+        "name": "墨墨",
+        "role": null
+      }
+    ],
+    "forms": 0,
+    "legacyButtons": [],
+    "nativeControls": [],
+    "nestedForms": 0,
+    "overflow": false,
+    "route": "#refunds",
+    "searchForms": 1,
+    "tables": 1,
+    "title": "退款申请",
+    "label": "1280布局-退款管理",
+    "width": 1280
+  }
+]

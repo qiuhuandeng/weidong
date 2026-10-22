@@ -1,0 +1,14 @@
+PC UI offline dependencies
+
+Vue 3.5.13: https://registry.npmjs.org/vue/-/vue-3.5.13.tgz
+License: MIT. See Vue-LICENSE.
+
+Element Plus 2.9.3: https://registry.npmjs.org/element-plus/-/element-plus-2.9.3.tgz
+License: MIT. See ElementPlus-LICENSE (official 2.9.3 repository tag).
+
+@weitutech/by-components-v3 1.1.26:
+https://www.npmjs.com/package/@weitutech/by-components-v3
+Company component package supplied by the user as the required project component library.
+Its published UMD includes VXE and other transitive implementation dependencies.
+Preserve the published bundle and its notices; do not relicense it as project code.
+The original files are verified against vendor/manifest.json on each build.

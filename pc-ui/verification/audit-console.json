@@ -1,0 +1,26 @@
+[
+  {
+    "level": "error",
+    "message": "TypeError: Cannot read properties of undefined (reading 'startsWith')\n    at http://127.0.0.1:8766/pc.html:3005:89\n    at NodeList.forEach (<anonymous>)\n    at readForm (http://127.0.0.1:8766/pc.html:3005:65)\n    at stack.at.read (http://127.0.0.1:8766/pc.html:3256:34)\n    at collect (http://127.0.0.1:8766/pc.html:2999:77)\n    at Object.shopRuleTab (http://127.0.0.1:8766/pc.html:3351:30)\n    at HTMLButtonElement.onclick (http://127.0.0.1:8766/pc.html#shops:1:4)",
+    "timestamp": "2026-10-22T04:01:43.676Z",
+    "url": "http://127.0.0.1:8766/pc.html"
+  },
+  {
+    "level": "error",
+    "message": "TypeError: Failed to construct 'FormData': parameter 1 is not of type 'HTMLFormElement'.\n    at Object.refundDraftChange (http://127.0.0.1:8766/pc.html:3064:83)\n    at HTMLDivElement.oninput (http://127.0.0.1:8766/pc.html#refunds:1:4)",
+    "timestamp": "2026-10-22T04:16:26.874Z",
+    "url": "http://127.0.0.1:8766/pc.html"
+  },
+  {
+    "level": "error",
+    "message": "TypeError: Failed to construct 'FormData': parameter 1 is not of type 'HTMLFormElement'.\n    at Object.refundDraftChange (http://127.0.0.1:8766/pc.html:3064:83)\n    at HTMLDivElement.onchange (http://127.0.0.1:8766/pc.html#refunds:1:4)\n    at onUpdate:modelValue (http://127.0.0.1:8766/pc.html:3635:79)\n    at tq (http://127.0.0.1:8766/pc.html:1043:20036)\n    at tW (http://127.0.0.1:8766/pc.html:1043:20104)\n    at r0 (http://127.0.0.1:8766/pc.html:1043:56830)\n    at $ (http://127.0.0.1:8766/pc.html:1126:307338)\n    at j (http://127.0.0.1:8766/pc.html:1126:307157)\n    at tq (http://127.0.0.1:8766/pc.html:1043:20036)\n    at tW (http://127.0.0.1:8766/pc.html:1043:20104)",
+    "timestamp": "2026-10-22T04:16:26.881Z",
+    "url": "http://127.0.0.1:8766/pc.html"
+  },
+  {
+    "level": "error",
+    "message": "TypeError: Failed to construct 'FormData': parameter 1 is not of type 'HTMLFormElement'.\n    at Object.refundDraftChange (http://127.0.0.1:8766/pc.html:3064:83)\n    at HTMLDivElement.onchange (http://127.0.0.1:8766/pc.html#refunds:1:4)",
+    "timestamp": "2026-10-22T04:16:26.881Z",
+    "url": "http://127.0.0.1:8766/pc.html"
+  }
+]

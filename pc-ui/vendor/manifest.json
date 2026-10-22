@@ -1,0 +1,17 @@
+{
+  "scope": "pc.html only",
+  "reference": "https://test.by4dev.4ba.cn/web/wd/manage/#/shop/shopList",
+  "packages": {
+    "vue": "3.5.13",
+    "element-plus": "2.9.3",
+    "@weitutech/by-components-v3": "1.1.26"
+  },
+  "files": {
+    "by-components-v3-1.1.26.js": "b678e031088aa954a1fa81f299c6733c2361977fffa22c3bff0d9067d26857a0",
+    "by-components-v3-1.1.26.css": "19dc7aa91eb75591aeca5905a5d1bcecc992a6b74b3e345bab6fa8896b77403e",
+    "element-plus-zh-cn.js": "5576c7132ed144111c454491f5ccfe400c68fc71e73a2c5199dfffdad944a83d",
+    "element-plus-2.9.3.css": "e1913cca9e65d8292f7136dcd1d331f28b8e2ebbd2623174ca4b0948c53b03de",
+    "element-plus-2.9.3.js": "722c85065276f25eed6bc93f5d5f423c61349cbce98dd741820549103e9c210c",
+    "vue-3.5.13.js": "c459ba7cc8db65c982589fa5d64c7ff478877e8e5b0fd75683207cec6a4e89e8"
+  }
+}

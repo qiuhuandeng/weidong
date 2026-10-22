@@ -1,0 +1,232 @@
+{
+  "date": "2026-10-22",
+  "scope": "PC compact density",
+  "densityBefore": {
+    "font": "14px",
+    "queryHeight": 207,
+    "rowHeights": [
+      69.3125,
+      45.3125,
+      45.3125
+    ],
+    "tableTop": 404.28125
+  },
+  "densityAfter": {
+    "cellFont": "13px",
+    "font": "13px",
+    "overflows": false,
+    "queryHeight": 172,
+    "rowHeights": [
+      56,
+      36,
+      36
+    ],
+    "tableTop": 359.734375
+  },
+  "form": {
+    "bodyPadding": "16px",
+    "drawerWidth": 1120,
+    "font": "13px",
+    "formGap": "14px",
+    "inputHeight": 32,
+    "selectHeight": 32
+  },
+  "routes": [
+    {
+      "font": "13px",
+      "pageOverflow": false,
+      "queryControlHeights": [
+        28
+      ],
+      "route": "#customers",
+      "tables": 1,
+      "title": "客户档案 · WEID微动"
+    },
+    {
+      "font": "13px",
+      "pageOverflow": false,
+      "queryControlHeights": [],
+      "route": "#rules",
+      "tables": 1,
+      "title": "规则配置 · WEID微动"
+    },
+    {
+      "font": "13px",
+      "pageOverflow": false,
+      "queryControlHeights": [
+        28,
+        28,
+        28,
+        28,
+        28,
+        28
+      ],
+      "route": "#merge-candidates",
+      "tables": 1,
+      "title": "档案合并 · 待合并处理 · WEID微动"
+    },
+    {
+      "font": "13px",
+      "pageOverflow": false,
+      "queryControlHeights": [
+        28,
+        28,
+        28,
+        28
+      ],
+      "route": "#reviews",
+      "tables": 1,
+      "title": "审核管理 · WEID微动"
+    },
+    {
+      "font": "13px",
+      "pageOverflow": false,
+      "queryControlHeights": [
+        28,
+        28
+      ],
+      "route": "#tickets",
+      "tables": 1,
+      "title": "纠错工单 · WEID微动"
+    },
+    {
+      "font": "13px",
+      "pageOverflow": false,
+      "queryControlHeights": [
+        28
+      ],
+      "route": "#reversals",
+      "tables": 1,
+      "title": "冲销记录 · WEID微动"
+    },
+    {
+      "font": "13px",
+      "pageOverflow": false,
+      "queryControlHeights": [],
+      "route": "#shops",
+      "tables": 1,
+      "title": "门店列表 · WEID微动"
+    },
+    {
+      "font": "13px",
+      "pageOverflow": false,
+      "queryControlHeights": [],
+      "route": "#store-beds",
+      "tables": 0,
+      "title": "门店床位 · WEID微动"
+    },
+    {
+      "font": "13px",
+      "pageOverflow": false,
+      "queryControlHeights": [],
+      "route": "#beds",
+      "tables": 1,
+      "title": "床位设置 · WEID微动"
+    },
+    {
+      "font": "13px",
+      "pageOverflow": false,
+      "queryControlHeights": [],
+      "route": "#bed-logs",
+      "tables": 1,
+      "title": "床位日志 · WEID微动"
+    },
+    {
+      "font": "13px",
+      "pageOverflow": false,
+      "queryControlHeights": [
+        28,
+        28,
+        28,
+        28,
+        28
+      ],
+      "route": "#devices",
+      "tables": 1,
+      "title": "多设备录音 · WEID微动"
+    },
+    {
+      "font": "13px",
+      "pageOverflow": false,
+      "queryControlHeights": [
+        28
+      ],
+      "route": "#partners",
+      "tables": 1,
+      "title": "外协配置 · WEID微动"
+    },
+    {
+      "font": "13px",
+      "pageOverflow": false,
+      "queryControlHeights": [],
+      "route": "#scheduling",
+      "tables": 1,
+      "title": "智能排客 · WEID微动"
+    },
+    {
+      "font": "13px",
+      "pageOverflow": false,
+      "queryControlHeights": [
+        28,
+        28,
+        28
+      ],
+      "route": "#finance",
+      "tables": 1,
+      "title": "财务核对 · WEID微动"
+    },
+    {
+      "font": "13px",
+      "pageOverflow": false,
+      "queryControlHeights": [
+        28,
+        28,
+        28
+      ],
+      "route": "#refunds",
+      "tables": 1,
+      "title": "退款管理 · WEID微动"
+    }
+  ],
+  "viewports": [
+    {
+      "labelsClipped": 0,
+      "pageOverflow": false,
+      "queryHeight": 202,
+      "route": "#refunds",
+      "statusGroupsOverflowing": 0,
+      "width": 1440
+    },
+    {
+      "labelsClipped": 0,
+      "pageOverflow": false,
+      "queryHeight": 202,
+      "route": "#refunds",
+      "statusGroupsOverflowing": 0,
+      "width": 1280
+    },
+    {
+      "labelsClipped": 0,
+      "pageOverflow": false,
+      "queryHeight": 296,
+      "route": "#refunds",
+      "statusGroupsOverflowing": 0,
+      "width": 1024
+    }
+  ],
+  "errors": [],
+  "interactions": [
+    "partner keyword + Enter -> 1 row",
+    "reset -> 2 rows",
+    "edit drawer input 32px and dropdown 32px",
+    "dropdown opens and Escape closes",
+    "cancel closes drawer",
+    "company dialog opens and Escape closes"
+  ],
+  "standalone": {
+    "entry": "pc.html",
+    "externalScripts": 0,
+    "externalStyles": 0
+  },
+  "indexUnchangedSHA256": "67d8ebc9e0ca9a125ee14aae4d010dcd5b135523e090449775d655e639b11621"
+}

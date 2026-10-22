@@ -1,0 +1,286 @@
+{
+  "date": "2026-10-22",
+  "reference": "https://static.service.4ba.cn/by-components/",
+  "routes": [
+    {
+      "route": "客户档案",
+      "companyInputs": 1,
+      "nestedForms": 0,
+      "pageOverflow": false,
+      "searchForms": 1,
+      "tables": 1
+    },
+    {
+      "route": "规则配置",
+      "companyInputs": 1,
+      "nestedForms": 0,
+      "pageOverflow": false,
+      "searchForms": 1,
+      "tables": 1
+    },
+    {
+      "route": "档案合并",
+      "companyInputs": 1,
+      "nestedForms": 0,
+      "pageOverflow": false,
+      "searchForms": 1,
+      "tables": 1
+    },
+    {
+      "route": "审核管理",
+      "companyInputs": 1,
+      "nestedForms": 0,
+      "pageOverflow": false,
+      "searchForms": 1,
+      "tables": 1
+    },
+    {
+      "route": "纠错工单",
+      "companyInputs": 1,
+      "nestedForms": 0,
+      "pageOverflow": false,
+      "searchForms": 1,
+      "tables": 1
+    },
+    {
+      "route": "冲销记录",
+      "companyInputs": 4,
+      "nestedForms": 0,
+      "pageOverflow": false,
+      "searchForms": 1,
+      "tables": 1
+    },
+    {
+      "route": "门店列表",
+      "companyInputs": 1,
+      "nestedForms": 0,
+      "pageOverflow": false,
+      "searchForms": 1,
+      "tables": 1
+    },
+    {
+      "route": "门店床位",
+      "companyInputs": 1,
+      "nestedForms": 0,
+      "pageOverflow": false,
+      "searchForms": 1,
+      "tables": 0
+    },
+    {
+      "route": "床位设置",
+      "companyInputs": 1,
+      "nestedForms": 0,
+      "pageOverflow": false,
+      "searchForms": 1,
+      "tables": 1
+    },
+    {
+      "route": "床位日志",
+      "companyInputs": 1,
+      "nestedForms": 0,
+      "pageOverflow": false,
+      "searchForms": 1,
+      "tables": 1
+    },
+    {
+      "route": "多设备录音",
+      "companyInputs": 1,
+      "nestedForms": 0,
+      "pageOverflow": false,
+      "searchForms": 1,
+      "tables": 1
+    },
+    {
+      "route": "外协配置",
+      "companyInputs": 1,
+      "nestedForms": 0,
+      "pageOverflow": false,
+      "searchForms": 1,
+      "tables": 1
+    },
+    {
+      "route": "智能排客",
+      "companyInputs": 1,
+      "nestedForms": 0,
+      "pageOverflow": false,
+      "searchForms": 1,
+      "tables": 1
+    },
+    {
+      "route": "财务核对",
+      "companyInputs": 1,
+      "nestedForms": 0,
+      "pageOverflow": false,
+      "searchForms": 1,
+      "tables": 1
+    },
+    {
+      "route": "退款管理",
+      "companyInputs": 1,
+      "nestedForms": 0,
+      "pageOverflow": false,
+      "searchForms": 1,
+      "tables": 1
+    }
+  ],
+  "viewports": [
+    {
+      "width": 1440,
+      "route": "财务核对",
+      "nestedForms": 0,
+      "overflow": false,
+      "searchButtons": [
+        "重置",
+        "搜索"
+      ]
+    },
+    {
+      "width": 1440,
+      "route": "退款管理",
+      "nestedForms": 0,
+      "overflow": false,
+      "searchButtons": [
+        "重置",
+        "搜索"
+      ]
+    },
+    {
+      "width": 1440,
+      "route": "门店列表",
+      "nestedForms": 0,
+      "overflow": false,
+      "searchButtons": [
+        "重置",
+        "搜索"
+      ]
+    },
+    {
+      "width": 1440,
+      "route": "外协配置",
+      "nestedForms": 0,
+      "overflow": false,
+      "searchButtons": [
+        "重置",
+        "搜索"
+      ]
+    },
+    {
+      "width": 1280,
+      "route": "财务核对",
+      "nestedForms": 0,
+      "overflow": false,
+      "searchButtons": [
+        "重置",
+        "搜索"
+      ]
+    },
+    {
+      "width": 1280,
+      "route": "退款管理",
+      "nestedForms": 0,
+      "overflow": false,
+      "searchButtons": [
+        "重置",
+        "搜索"
+      ]
+    },
+    {
+      "width": 1280,
+      "route": "门店列表",
+      "nestedForms": 0,
+      "overflow": false,
+      "searchButtons": [
+        "重置",
+        "搜索"
+      ]
+    },
+    {
+      "width": 1280,
+      "route": "外协配置",
+      "nestedForms": 0,
+      "overflow": false,
+      "searchButtons": [
+        "重置",
+        "搜索"
+      ]
+    },
+    {
+      "width": 1024,
+      "route": "财务核对",
+      "nestedForms": 0,
+      "overflow": false,
+      "searchButtons": [
+        "重置",
+        "搜索"
+      ]
+    },
+    {
+      "width": 1024,
+      "route": "退款管理",
+      "nestedForms": 0,
+      "overflow": false,
+      "searchButtons": [
+        "重置",
+        "搜索"
+      ]
+    },
+    {
+      "width": 1024,
+      "route": "门店列表",
+      "nestedForms": 0,
+      "overflow": false,
+      "searchButtons": [
+        "重置",
+        "搜索"
+      ]
+    },
+    {
+      "width": 1024,
+      "route": "外协配置",
+      "nestedForms": 0,
+      "overflow": false,
+      "searchButtons": [
+        "重置",
+        "搜索"
+      ]
+    }
+  ],
+  "measured": {
+    "pager": {
+      "font": "13px",
+      "height": 26,
+      "radius": "8px"
+    },
+    "radioDisplay": "flex",
+    "search": {
+      "font": "12px",
+      "height": 28,
+      "radius": "4px"
+    },
+    "table": {
+      "font": "14px",
+      "height": 68,
+      "radius": "0px"
+    }
+  },
+  "errors": [],
+  "interactions": [
+    "keyword + Enter -> 1 row",
+    "status + search -> empty state",
+    "reset restores 2 rows",
+    "review keyword -> empty state",
+    "shop paging -> page 2 with 1 row",
+    "checkbox toggle",
+    "child search + cancel preserves parent draft",
+    "edit + save persisted",
+    "confirm cancel -> dialog removed",
+    "temporary copy + confirm delete -> 2 rows",
+    "help dialog Escape -> removed"
+  ],
+  "standalone": {
+    "entry": "pc.html",
+    "externalScripts": 0,
+    "externalStyles": 0
+  },
+  "indexUnchangedSHA256": "67d8ebc9e0ca9a125ee14aae4d010dcd5b135523e090449775d655e639b11621"
+}

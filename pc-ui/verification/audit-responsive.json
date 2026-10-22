@@ -1,0 +1,156 @@
+[
+  {
+    "width": 1440,
+    "bodyOverflow": false,
+    "dialogs": 0,
+    "entries": [
+      {
+        "code": "go('merge-candidates')",
+        "disabled": false,
+        "name": "待合并处理",
+        "role": "tab"
+      },
+      {
+        "code": "go('merge-records')",
+        "disabled": false,
+        "name": "合并记录",
+        "role": "tab"
+      },
+      {
+        "code": "mgReset()",
+        "disabled": false,
+        "name": "重置",
+        "role": null
+      },
+      {
+        "code": "mgSearch()",
+        "disabled": false,
+        "name": "搜索",
+        "role": null
+      },
+      {
+        "code": "mgBatchAsk()",
+        "disabled": false,
+        "name": "批量确认不合并",
+        "role": null
+      },
+      {
+        "code": "mrNew()",
+        "disabled": false,
+        "name": "申请合并",
+        "role": null
+      },
+      {
+        "code": "mgOpen(\"g:DG-MERGE-UI-001\")",
+        "disabled": false,
+        "name": "63113",
+        "role": null
+      },
+      {
+        "code": "mgOpen(\"g:DG-MERGE-UI-001\")",
+        "disabled": false,
+        "name": "详情",
+        "role": null
+      },
+      {
+        "code": "mgOpen(\"g:DG-MERGE-UI-001\",true)",
+        "disabled": false,
+        "name": "查看审核",
+        "role": null
+      },
+      {
+        "code": "mgOpen(\"g:DG-DEMO-001\",true)",
+        "disabled": false,
+        "name": "核对合并方案",
+        "role": null
+      }
+    ],
+    "forms": 0,
+    "legacyButtons": [],
+    "nativeControls": [],
+    "nestedForms": 0,
+    "overflow": false,
+    "route": "#merge-candidates",
+    "searchForms": 1,
+    "tables": 1,
+    "title": "合并事项",
+    "label": "最终响应式-1440"
+  },
+  {
+    "width": 1024,
+    "bodyOverflow": false,
+    "dialogs": 0,
+    "entries": [
+      {
+        "code": "go('merge-candidates')",
+        "disabled": false,
+        "name": "待合并处理",
+        "role": "tab"
+      },
+      {
+        "code": "go('merge-records')",
+        "disabled": false,
+        "name": "合并记录",
+        "role": "tab"
+      },
+      {
+        "code": "mgReset()",
+        "disabled": false,
+        "name": "重置",
+        "role": null
+      },
+      {
+        "code": "mgSearch()",
+        "disabled": false,
+        "name": "搜索",
+        "role": null
+      },
+      {
+        "code": "mgBatchAsk()",
+        "disabled": false,
+        "name": "批量确认不合并",
+        "role": null
+      },
+      {
+        "code": "mrNew()",
+        "disabled": false,
+        "name": "申请合并",
+        "role": null
+      },
+      {
+        "code": "mgOpen(\"g:DG-MERGE-UI-001\")",
+        "disabled": false,
+        "name": "63113",
+        "role": null
+      },
+      {
+        "code": "mgOpen(\"g:DG-MERGE-UI-001\")",
+        "disabled": false,
+        "name": "详情",
+        "role": null
+      },
+      {
+        "code": "mgOpen(\"g:DG-MERGE-UI-001\",true)",
+        "disabled": false,
+        "name": "查看审核",
+        "role": null
+      },
+      {
+        "code": "mgOpen(\"g:DG-DEMO-001\",true)",
+        "disabled": false,
+        "name": "核对合并方案",
+        "role": null
+      }
+    ],
+    "forms": 0,
+    "legacyButtons": [],
+    "nativeControls": [],
+    "nestedForms": 0,
+    "overflow": false,
+    "route": "#merge-candidates",
+    "searchForms": 1,
+    "tables": 1,
+    "title": "合并事项",
+    "label": "最终响应式-1024"
+  }
+]
