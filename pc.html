@@ -2999,7 +2999,7 @@ const UB = (() => {
       if(!Number.isInteger(r.managerLimit)||r.managerLimit<0)return error('店长每日接待上限须为非负整数');
       if(['order','maintain','collab','team','leader','member'].some(k=>['include','exclude'].includes(r[k+'Mode'])&&!r[k+'Posts'].length))return error('请为包含或不包含模式选择岗位');
       const refundChanged=!!store.rules.realTimeRefund!==r.realTimeRefund;store.rules=clone(r);shopLog(store,'服务规则','更新开单设置、转单设置、业绩分配及移动端权限'+(refundChanged?'；实时退款：'+(r.realTimeRefund?'开启':'关闭'):''));save('服务规则已保存');close(true);refresh();
-    },1120,m);
+    },860,m);
     stack.at(-1).view='order';stack.at(-1).read=(root,r)=>{readForm(root,r);if(root.querySelector('[name="standard"]'))r.durations.forEach((d,i)=>{d.type=root.querySelector(`[name="_bed-${i}"]`).value;d.standard=Number(root.querySelector(`[name="_standard-${i}"]`).value);d.minimum=Number(root.querySelector(`[name="_minimum-${i}"]`).value)})};
   }
   function shopRuleTab(view){collect();stack.at(-1).view=view;redraw();let body=topPanel().querySelector('.merge-drawer-body');body.scrollTop=0;topPanel().querySelector('.merge-rule-tab[aria-selected="true"]')?.focus()}
