@@ -10,11 +10,12 @@ import re
 ROOT = Path(__file__).resolve().parent
 PAGE = ROOT.parent / 'pc.html'
 FILES = {
-    'pc-business-style': ('style', ['business.css']),
+    'pc-business-style': ('style', ['business.css', 'complaints.css']),
     'pc-vendor-style': ('style', ['vendor/element-plus-2.9.3.css', 'vendor/by-components-v3-1.1.26.css']),
     'pc-theme': ('style', ['theme.css']),
     'pc-vendor-runtime': ('script', ['vendor/vue-3.5.13.js','vendor/element-plus-2.9.3.js','vendor/element-plus-zh-cn.js','vendor/by-components-v3-1.1.26.js']),
     'pc-components': ('script', ['components.js']),
+    'pc-complaints': ('script', ['complaints.js']),
 }
 
 def block(name, tag, files):

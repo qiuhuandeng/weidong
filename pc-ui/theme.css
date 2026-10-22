@@ -125,6 +125,9 @@ input[type=checkbox]:not(.el-checkbox__original),input[type=radio]:not(.el-radio
 .pc-table .vxe-cell{padding:var(--pc-table-padding);line-height:var(--pc-table-line);min-height:36px;max-width:100%;overflow:visible}
 .pc-table .vxe-header--column .vxe-cell{padding:var(--pc-table-padding);font-size:var(--pc-font);font-weight:600;color:#606266}
 .pc-table .pc-cell{min-width:0;line-height:var(--pc-table-line)}.pc-table .ub-ellipsis{max-width:100%}
+.pc-table .pc-cell .pc-block{display:block;line-height:var(--pc-table-line)}
+.pc-table .btn.el-button.pc-multiline{height:auto;min-height:24px;white-space:normal;line-height:var(--pc-table-line);text-align:left}
+.pc-table .btn.el-button.pc-multiline .pc-button-content{white-space:normal;line-height:var(--pc-table-line);text-align:left}
 .pc-table .ub-actions,.pc-table .actions{justify-content:center;gap:10px;flex-wrap:nowrap}
 .pc-table .reset-button{display:none}.pc-table .vxe-table--empty-content{font-size:var(--pc-font);color:#909399;padding:40px 0}
 .pc-table .vxe-table--fixed-right-wrapper,.pc-table .vxe-table--fixed-left-wrapper{z-index:5}
@@ -155,6 +158,8 @@ input[type=checkbox]:not(.el-checkbox__original),input[type=radio]:not(.el-radio
 .merge-drawer .pc-table{margin:0;width:100%}.merge-drawer .query-module{border:0;background:#f8f8f9}
 .merge-drawer .panel-body{padding:0}
 .pc-form{display:block!important;font-size:var(--pc-font)}.pc-form .el-form-item{margin-bottom:var(--pc-form-gap)}.pc-form .el-form-item__label{color:#606266;line-height:32px;font-size:var(--pc-font)}
+.pc-form .el-col[hidden]{display:none!important}
+.pc-field-group.pc-form{grid-column:1/-1;width:100%;min-width:0}
 .pc-form .el-form-item__content{min-width:0;line-height:32px}.pc-form .el-form-item__content>div,.pc-field-content,.pc-form .ub-control{width:100%;min-width:0}
 .pc-form .ub-control{min-height:32px}.pc-form .pc-select{flex:1;width:100%}.pc-form .ub-check{line-height:32px;min-height:32px}
 .rule-config-picker.btn{height:32px;width:100%;justify-content:space-between;border-radius:4px;border-color:#dcdfe6;color:#606266}
@@ -183,8 +188,15 @@ input[type=checkbox]:not(.el-checkbox__original),input[type=radio]:not(.el-radio
 .pc-company-dialog .el-dialog__header{padding:16px 16px 8px;margin:0;border:0}
 .pc-company-dialog .el-dialog__title{font-size:16px;line-height:24px;font-weight:400;color:#303133}
 .pc-company-dialog .el-dialog__headerbtn{top:10px;right:10px;height:40px;width:40px}
-.pc-company-dialog .el-dialog__body{padding:16px;min-height:0;overflow:auto;color:#606266;font-size:var(--pc-font)}
-.pc-company-dialog .by-dialog__body{padding:0}.pc-company-dialog .dialog-body{padding:0;overflow:visible;max-height:none}
+.pc-company-dialog .el-dialog__body{padding:16px;min-width:0;min-height:0;overflow:auto;color:#606266;font-size:var(--pc-font)}
+.pc-company-dialog .by-dialog__body{margin:0;padding:0;min-width:0;max-height:none;overflow:visible}.pc-company-dialog .dialog-body{padding:0;min-width:0;overflow:visible;max-height:none;overflow-wrap:anywhere}
+/* ByForm's negative gutter must not widen the dialog's scroll area. */
+.pc-company-dialog .pc-form .el-form>.el-row{margin-inline:0!important}
+.pc-company-dialog .pc-form .el-col:last-child .el-form-item{margin-bottom:0}
+/* Keep wheel, touch and keyboard scrolling without visible scrollbar tracks. */
+.pc-company-dialog,.pc-company-dialog *{scrollbar-width:none;scrollbar-gutter:auto}
+.pc-company-dialog::-webkit-scrollbar,.pc-company-dialog *::-webkit-scrollbar{display:none;width:0;height:0}
+.pc-company-dialog .el-scrollbar__bar{display:none}
 .pc-company-dialog .dialog-foot{display:flex;justify-content:flex-end;gap:8px;padding:16px 0 0;border:0;background:white}
 .pc-company-dialog .dialog-foot .btn{min-width:80px}.pc-company-dialog .panel{box-shadow:none}
 @media(max-width:1100px){.pc-form .el-form-item__label{width:110px!important}}

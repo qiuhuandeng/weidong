@@ -7,6 +7,8 @@ window.PCUI = (() => {
   const mounted = new Map();
   const failures = [];
   const choices = new Map();
+  const controlStates = new Map();
+  const pagerActions = new Map();
   const searchObservers = new Map();
   const excluded = '.phone,.mobile-stage,.ap-mobile-stage,.ap-sheet,[data-pc-native]';
   let scheduled = false, sequence = 0, pendingTabFocus;
@@ -43,7 +45,7 @@ window.PCUI = (() => {
     // legacy markup, which would discard those listeners.
     if (source.classList.contains('el-button') || source.querySelector('input') || source.closest('.pc-button')) return;
     const properties = attrs(source, ['class','type','disabled']);
-    const text = source.innerHTML, cls = source.className;
+    const text = source.innerHTML, cls = source.className, focused = document.activeElement === source;
     const host = island(source, 'button');
     mount(host, {render: () => h(ElementPlus.ElButton, {
       ...properties, class: cls, type: source.classList.contains('primary') ? 'primary' : source.classList.contains('danger') ? 'danger' : '',
@@ -51,6 +53,7 @@ window.PCUI = (() => {
       disabled: source.disabled, nativeType: source.getAttribute('type') || 'button', 'data-pc-ready':'button'
     }, {default: () => h('span', {class:'pc-button-content', innerHTML:text})})});
     restoreEvents(source, host.querySelector('button'));
+    if(focused)host.querySelector('button')?.focus({preventScroll:true});
   }
 
   function input(source) {
@@ -58,6 +61,7 @@ window.PCUI = (() => {
     if (!['text','search','number','tel','email','url','password'].includes(source.type) && source.tagName !== 'TEXTAREA') return;
     const size=source.closest('.query-module') ? 'small' : 'default';
     const properties = attrs(source, ['value','class','style','disabled','readonly']);
+    const focused = document.activeElement === source;
     const host = island(source, 'input', 'inline-flex');
     host.style.cssText += source.style.cssText;
     const value = ref(source.value);
@@ -70,7 +74,7 @@ window.PCUI = (() => {
     const control = host.querySelector('input,textarea');
     if (source.className) control.className += ' ' + source.className;
     restoreEvents(source, control);
-    if (document.activeElement === source) control.focus();
+    if (focused) control.focus({preventScroll:true});
   }
 
   function nativeControl(source, kind) {
@@ -93,7 +97,7 @@ window.PCUI = (() => {
     };
     const component = kind === 'radio' ? ElementPlus.ElRadio : kind === 'checkbox' ? ElementPlus.ElCheckbox : kind === 'switch' ? ElementPlus.ElSwitch : source.type === 'time' ? ElementPlus.ElTimePicker : ElementPlus.ElDatePicker;
     const properties = boolean ? (kind === 'radio' ? {value:true,name:source.name ? '_pc-choice-'+source.name : undefined} : {}) : {
-      type:source.type==='month'?'month':'date',valueFormat:source.type==='time'?'HH:mm':source.type==='month'?'YYYY-MM':'YYYY-MM-DD',format:source.type==='time'?'HH:mm':source.type==='month'?'YYYY-MM':'YYYY-MM-DD',
+      type:source.type==='month'?'month':source.type==='datetime-local'?'datetime':'date',valueFormat:source.type==='time'?'HH:mm':source.type==='month'?'YYYY-MM':source.type==='datetime-local'?'YYYY-MM-DDTHH:mm':'YYYY-MM-DD',format:source.type==='time'?'HH:mm':source.type==='month'?'YYYY-MM':source.type==='datetime-local'?'YYYY-MM-DD HH:mm':'YYYY-MM-DD',
       placeholder:source.getAttribute('placeholder') || source.getAttribute('aria-label') || (source.type === 'time' ? '选择时间' : '选择日期'),teleported:false,
       disabledDate:date=>{
         const key = date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0')+'-'+String(date.getDate()).padStart(2,'0');
@@ -115,18 +119,22 @@ window.PCUI = (() => {
     // Retain the real select for existing FormData, ID lookup and typed option values.
     native.hidden = true; native.tabIndex = -1; native.setAttribute('aria-hidden','true');
     native.dataset.pcReady = 'select-native';
-    const options = [...native.options].map(o => ({id:o.value,name:o.text,status:o.disabled ? 0 : 1}));
-    const value = ref(native.value), controlId = (native.id || 'pc-select-' + ++sequence) + '-control';
-    const inline = !!host.closest('.query-module') && /状态/.test(native.getAttribute('aria-label') || '') && options.length <= 6;
+    const readOptions = () => [...native.options].map(o => ({id:o.value,name:o.text,status:o.disabled ? 0 : 1}));
+    const options = ref(readOptions()), disabled = ref(native.disabled);
+    const readValue = () => native.multiple ? [...native.selectedOptions].map(o=>o.value) : native.value;
+    const value = ref(readValue()), controlId = (native.id || 'pc-select-' + ++sequence) + '-control';
+    controlStates.set(native,()=>{value.value=readValue();disabled.value=native.disabled;options.value=readOptions();});
+    const inline = !native.multiple && !!host.closest('.query-module') && /状态/.test(native.getAttribute('aria-label') || '') && options.value.length <= 6;
     const expanded=ref(inline);
     host.classList.toggle('pc-enum',inline);
     mount(host, {render: () => h(ByComponentsV3.components.ByCommonSelector, {
-      id:controlId, modelValue:value.value, disabled:native.disabled,
-      type:expanded.value ? 'border' : 'select',options,hiddenAllOptions:true,forceNoExpand:expanded.value,
+      id:controlId, modelValue:value.value, disabled:disabled.value, multiple:native.multiple,
+      ...(native.hasAttribute('data-filterable') ? {filterable:true} : {}),
+      type:expanded.value ? 'border' : 'select',options:options.value,hiddenAllOptions:true,forceNoExpand:expanded.value,
       size:host.closest('.query-module') ? 'small' : 'default',
       'aria-label':native.getAttribute('aria-label') || native.name || '请选择',
-      placeholder:options.find(o => o.id === native.value)?.name || '请选择', teleported:false, 'data-pc-ready':'select',
-      'onUpdate:modelValue': v => { value.value = v; native.value = v; native.dispatchEvent(new Event('change', {bubbles:true})); }
+      placeholder:native.getAttribute('placeholder') || options.value.find(o => o.id === native.value)?.name || '请选择', teleported:false, 'data-pc-ready':'select',
+      'onUpdate:modelValue': v => { value.value = v; if(native.multiple){for(const option of native.options)option.selected=(v||[]).includes(option.value);}else native.value = v; native.dispatchEvent(new Event('change', {bubbles:true})); }
     })});
     host.append(native);
     if(inline)nextTick(()=>{
@@ -148,7 +156,6 @@ window.PCUI = (() => {
       };
       fit();const observer=new ResizeObserver(fit);observer.observe(layout);searchObservers.set(host,observer);
     });
-    if(native.disabled){host.inert=true;host.setAttribute('aria-disabled','true');}
     if (native.id) document.querySelectorAll('label').forEach(label => { if (label.htmlFor === native.id) label.htmlFor = controlId; });
   }
 
@@ -168,7 +175,7 @@ window.PCUI = (() => {
       source.querySelectorAll(':scope > .pc-field-group').forEach(form);
       return;
     }
-    const single = source.classList.contains('pc-field-group') || source.closest('[data-size="small"]');
+    const single = source.classList.contains('pc-field-group') && !source.closest('[data-pc-columns="2"]') || source.closest('[data-size="small"]');
     const items = [], slots = {};
     fields.forEach((field, i) => {
       const label = field.querySelector(':scope > label,:scope > .ub-label');
@@ -187,6 +194,9 @@ window.PCUI = (() => {
       const oldLabel=fields[i]?.querySelector(':scope > label,:scope > .ub-label');
       const label=item.querySelector('.el-form-item__label');
       if(label && oldLabel){label.classList.toggle('required',oldLabel.classList.contains('required'));if(oldLabel.htmlFor)label.htmlFor=oldLabel.htmlFor;}
+      const column=item.closest('.el-col') || item;
+      if(fields[i]?.dataset.field)column.dataset.field=fields[i].dataset.field;
+      column.hidden=!!fields[i]?.hidden;
     });
   }
 
@@ -195,7 +205,7 @@ window.PCUI = (() => {
     if ((!empty && source.querySelector('[colspan],[rowspan]')) || source.closest('.pc-table,.vxe-table,.seat-calendar')) return;
     const heads = [...source.querySelectorAll('thead th')];
     if (!heads.length) return;
-    const wrapper = source.parentElement, rows = empty ? [] : [...source.querySelectorAll('tbody > tr')].map((row, i) => ({id:i,cells:[...row.cells].map(c => c.innerHTML)}));
+    const wrapper = source.parentElement, rows = empty ? [] : [...source.querySelectorAll('tbody > tr')].map((row, i) => ({id:i,cells:[...row.cells].map(c => c.innerHTML),attributes:[...row.cells].map(c=>Object.fromEntries([...c.attributes].filter(a=>a.name.startsWith('data-')||a.name.startsWith('aria-')).map(a=>[a.name,a.value])))}));
     const cols = [...source.querySelectorAll('colgroup col')];
     const shop = wrapper.classList.contains('shop-list-table');
     const slots = {}, columns = heads.map((cell, i) => {
@@ -206,17 +216,17 @@ window.PCUI = (() => {
       if (!width && /^(序号|ID)$/.test(title)) width = 70;
       const last = i === heads.length-1 && /操作/.test(title);
       if (last && !width) width = Math.max(150, Math.min(300, 40 + Math.max(0,...rows.map(r => (r.cells[i]?.match(/<button/g) || []).length)) * 64));
-      slots[field] = ({row}) => h('div', {class:'pc-cell',innerHTML:row.cells[i]});
+      slots[field] = ({row}) => h('div', {...row.attributes[i],class:'pc-cell',innerHTML:row.cells[i]});
       slots[field+'Header'] = () => h('span', {innerHTML:cell.innerHTML});
-      return {field,title,width,minWidth:110,fixed:last?'right':undefined,showOverflow:false,
+      return {field,title,width,minWidth:Number(cell.dataset.pcMinWidth) || 110,fixed:last?'right':undefined,showOverflow:false,
         slots:{default:field,header:field+'Header'}};
     });
     wrapper.classList.add('pc-table'); wrapper.dataset.pcIsland = 'table';
     wrapper.replaceChildren();
-    const gridOptions = {columns,data:rows,border:true,round:true,align:'center',size:'small',autoHeight:true,
+    const gridOptions = {columns,data:rows,border:true,round:true,align:['left','center','right'].includes(source.dataset.pcAlign)?source.dataset.pcAlign:'center',size:'small',autoHeight:true,
       minHeight:160,maxHeight:shop?Math.max(260,window.innerHeight-310):720,
       rowConfig:{height:'auto',isHover:true},columnConfig:{resizable:true},
-      showOverflow:false,emptyText:'暂无符合条件的数据',scrollX:{enabled:false},scrollY:{enabled:false}};
+      showOverflow:false,emptyText:empty?.textContent.trim() || '暂无符合条件的数据',scrollX:{enabled:false},scrollY:{enabled:false}};
     mount(wrapper, {render: () => h(ByComponentsV3.components.ByTable,{gridOptions,autoHeight:true},slots)});
   }
 
@@ -247,10 +257,10 @@ window.PCUI = (() => {
       }
       const input = control.matches('input,select,button') ? control : control.querySelector('input,select,button');
       if (!input || control.matches('.rule-config-shortcuts,.refund-quick,.seat-quick') || (control.tagName==='LABEL' && input.type!=='date') || (control.tagName==='BUTTON' && !input.getAttribute('aria-label'))) {extras.push(control.outerHTML);continue;}
-      let label = input.getAttribute('aria-label') || input.getAttribute('placeholder') || '';
+      let label = control.dataset.pcLabel || input.getAttribute('aria-label') || input.getAttribute('placeholder') || '';
       if (control.classList.contains('search')) label = '关键词';
       if(label==='q')label='关键词';
-      if (control.classList.contains('mr-date')) label = '日期';
+      if (control.classList.contains('mr-date')) label = control.dataset.pcLabel || '日期';
       label=label.replace(/^(全部|筛选)/,'');
       if (!label || label.length > 12) label = input.tagName === 'SELECT' ? '筛选' : '关键词';
       if (!input.id) input.id='pc-query-'+ ++sequence;
@@ -298,7 +308,7 @@ window.PCUI = (() => {
     source.classList.add('pc-pager'); source.dataset.pcIsland='pager';
     mount(source,{render:() => h('div',{class:'pc-pager-content'},[config.selected?h('span',{class:'pc-selection-summary'},'已选 '+config.selected+' 项'):null,h(ByComponentsV3.components.ByPager,{
       total:config.total,currentPage:config.page,pageSize:config.size,pageSizes:config.sizes || [10,20,50,100],
-      onChange: value => { if (['shopPaging','turnPage','refundPaging','seatPaging','shopLogPage','seatSmartPage'].includes(config.action)) UB[config.action](value.currentPage,value.pageSize); }
+      onChange: value => { if(pagerActions.has(config.action))pagerActions.get(config.action)(value,config);else if (['shopPaging','turnPage','refundPaging','seatPaging','shopLogPage','seatSmartPage'].includes(config.action)) UB[config.action](value.currentPage,value.pageSize); }
     })])});
   }
   function legacyPager(source) {
@@ -362,6 +372,7 @@ window.PCUI = (() => {
     scheduled=false;
     for (const [host,app] of mounted) if (!host.isConnected) { app.unmount(); mounted.delete(host); }
     for(const [source] of choices)if(!source.isConnected)choices.delete(source);
+    for(const [source] of controlStates)if(!source.isConnected)controlStates.delete(source);
     for(const [host,observer] of searchObservers)if(!host.isConnected){observer.disconnect();searchObservers.delete(host);}
     document.querySelectorAll(scope).forEach(root => {
       root.querySelectorAll('.query-module .filterbar').forEach(el => { if(eligible(el)) query(el); });
@@ -375,7 +386,7 @@ window.PCUI = (() => {
       root.querySelectorAll('button.btn').forEach(el => { if(eligible(el)) button(el); });
       root.querySelectorAll('label.switch > input[type="checkbox"]').forEach(el => {if(eligible(el))nativeControl(el,'switch');});
       root.querySelectorAll('input[type="checkbox"],input[type="radio"]').forEach(el => {if(eligible(el))nativeControl(el,el.type);});
-      root.querySelectorAll('input[type="date"],input[type="time"],input[type="month"]').forEach(el => {if(eligible(el))nativeControl(el,'date');});
+      root.querySelectorAll('input[type="date"],input[type="time"],input[type="month"],input[type="datetime-local"]').forEach(el => {if(eligible(el))nativeControl(el,'date');});
       root.querySelectorAll('input,textarea').forEach(el => { if(eligible(el)) input(el); });
       root.querySelectorAll('select').forEach(el => { if(eligible(el)) select(el); });
     });
@@ -417,5 +428,7 @@ window.PCUI = (() => {
   function closeDialog(){if(!activeDialog)return false;const state=activeDialog;if(state.timer)return true;state.host.classList.add('is-closing');state.visible.value=false;state.timer=setTimeout(()=>disposeDialog(state),300);return true;}
   function isPopupOpen(){return [...document.querySelectorAll('.el-popper')].some(el=>el.getClientRects().length && getComputedStyle(el).visibility!=='hidden');}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
-  return {version:'1.1.0',vendorVersion:'1.1.26',mount,sweep,confirm,dialog,closeDialog,isPopupOpen,failures,get mountedCount(){return mounted.size;}};
+  function syncControl(source){controlStates.get(source)?.();}
+  function focusControl(source){const host=source?.closest('.pc-island');(source?.hidden?host?.querySelector('input:not([hidden]),button,[tabindex="0"]'):source)?.focus({preventScroll:true});}
+  return {version:'1.2.0',vendorVersion:'1.1.26',mount,sweep,confirm,dialog,closeDialog,isPopupOpen,syncControl,focusControl,registerPager:(name,action)=>pagerActions.set(name,action),failures,get mountedCount(){return mounted.size;}};
 })();
