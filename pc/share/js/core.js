@@ -59,6 +59,7 @@ function mountSidebarGroups(){
  const navRoot=$('#nav'),children=Array.from(navRoot.children),groups=[];let current=null;
  children.forEach(child=>{if(child.classList.contains('nav-label')){current={name:child.textContent.trim(),items:[]};groups.push(current)}else if(current)current.items.push(child)});
  navRoot.replaceChildren();groups.forEach((group,index)=>{
+  if(group.items.length===1&&group.items[0].classList.contains('nav-standalone')){navRoot.append(group.items[0]);return}
   const active=group.items.some(item=>item.classList.contains('active'));
   if(!Object.hasOwn(sidebarPreferences.groups,group.name))sidebarPreferences.groups[group.name]=active;
   if(sidebarLastRoute!==null&&sidebarLastRoute!==route&&active)sidebarPreferences.groups[group.name]=true;

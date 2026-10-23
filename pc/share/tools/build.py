@@ -3,6 +3,7 @@ Sources live in share/. Deploy PC entries AND share/dist/ together. No CDN, npm 
 build service is needed. Older assets are deliberately retained for open tabs.
 """
 from pathlib import Path
+import base64
 import gzip
 import hashlib
 import json
@@ -50,11 +51,13 @@ def build():
     OUT.mkdir(parents=True, exist_ok=True)
     report = {}
     pending = {}
+    preferred_fonts = set()
 
     def asset(name, content, extension):
-        data = content.encode()
+        data = content if isinstance(content, bytes) else content.encode()
         digest = hashlib.sha256(data).hexdigest()[:16]
-        filename = f'{extension}/{name}.{digest}.{extension}'
+        directory = 'fonts' if extension in {'woff2', 'woff', 'ttf'} else extension
+        filename = f'{directory}/{name}.{digest}.{extension}'
         pending[filename] = data
         report[filename] = {'bytes': len(data), 'gzipBytes': len(gzip.compress(data, mtime=0)), 'sha256': hashlib.sha256(data).hexdigest()}
         return 'share/dist/' + filename
@@ -72,14 +75,30 @@ def build():
 
     def css(name, files, layer=False):
         content = '\n'.join(read(file) for file in files)
+        # Keep the vendor CSS and all fallback formats intact, but let browsers
+        # download only the font format actually needed instead of all base64 copies.
+        def font_face(match):
+            block = match.group(0)
+            family = re.search(r'font-family:\s*([\w-]+)', block)
+            def font_url(source):
+                data = base64.b64decode(source.group(1), validate=True)
+                extension = {b'wOF2': 'woff2', b'wOFF': 'woff', b'\x00\x01\x00\x00': 'ttf'}.get(data[:4])
+                if not extension or not family:
+                    raise SystemExit('Unrecognized embedded vendor font')
+                url = asset(family.group(1), data, extension)
+                if extension == 'woff2':
+                    preferred_fonts.add(url)
+                return 'url(../' + url.removeprefix('share/dist/') + ')'
+            return re.sub(r'url\(data:[^,)]*;base64,([A-Za-z0-9+/=]+)\)', font_url, block)
+        content = re.sub(r'@font-face\s*\{[^}]+\}', font_face, content)
         if layer:
             content = '@layer pc-business {\n' + content + '\n}'
         return asset(name, content, 'css')
 
     scripts = [
-        js('vue-3.5.13', ['vendor/vue-3.5.13.js'], True),
-        js('element-plus-2.9.3', ['vendor/element-plus-2.9.3.js', 'vendor/element-plus-zh-cn.js'], True),
-        js('by-components-1.1.26', ['vendor/by-components-v3-1.1.26.js'], True),
+        # Fixed dependencies keep their original order and public exports. One
+        # immutable request avoids three independent CDN response waits.
+        js('vendor', ['vendor/vue-3.5.13.js', 'vendor/element-plus-2.9.3.js', 'vendor/element-plus-zh-cn.js', 'vendor/by-components-v3-1.1.26.js'], True),
         js('components', ['js/components.js'])
     ]
     styles = [css('business', ['css/legacy-business.css'], True), css('vendor', ['vendor/element-plus-2.9.3.css', 'vendor/by-components-v3-1.1.26.css']), css('theme', ['css/tokens.css', 'css/theme.css'])]
@@ -98,12 +117,15 @@ def build():
         budget = min(module.get('gzipBudget', ceiling), ceiling)
         if size > budget:
             raise SystemExit(f'{name} exceeds compressed module budget: {size:,} > {budget:,}. Split the business module; do not raise the limit to bypass this check.')
-        modules[name] = {'routes': module['routes'], 'script': module_js, 'styles': module_css}
-    config = {'defaultRoute': routes['defaultRoute'], 'navigation': routes['navigation'], 'scripts': scripts, 'styles': styles, 'modules': modules}
+        if 'requiresUI' in module and not isinstance(module['requiresUI'], bool):
+            raise SystemExit(f'{name} requiresUI must be a boolean')
+        modules[name] = {'routes': module['routes'], 'script': module_js, 'styles': module_css, 'requiresUI': module.get('requiresUI', True)}
+    shell_styles = [styles[0], styles[2]]
+    config = {'defaultRoute': routes['defaultRoute'], 'navigation': routes['navigation'], 'scripts': scripts, 'styles': styles, 'shellStyles': shell_styles, 'modules': modules}
     template = read('templates/entry.html').replace('<!-- pc-critical -->', '<style>\n' + read('css/tokens.css') + read('css/critical.css') + '\n</style>')
     # Discover the selected route's assets before downloading/executing the shell.
     # Preload does not block first paint like a stylesheet link would.
-    hints = """(function(c){var r=location.hash.slice(1).split('?')[0]||c.defaultRoute,m=Object.values(c.modules).find(function(m){return m.routes.includes(r)})||Object.values(c.modules).find(function(m){return m.routes.includes(c.defaultRoute)});[[c.scripts.concat(m.script),'script'],[c.styles.concat(m.styles),'style']].forEach(function(g){g[0].forEach(function(url){var l=document.createElement('link');l.rel='preload';l.as=g[1];l.href=url;l.dataset.pcPreload='';document.head.appendChild(l)})})})(window.PC_ASSETS);"""
+    hints = """(function(c){var r=location.hash.slice(1).split('?')[0]||c.defaultRoute,m=Object.values(c.modules).find(function(m){return m.routes.includes(r)})||Object.values(c.modules).find(function(m){return m.routes.includes(c.defaultRoute)});[[(m.requiresUI?c.scripts:[]).concat(m.script),'script'],[(m.requiresUI?c.styles:c.shellStyles).concat(m.styles),'style']].forEach(function(g){g[0].forEach(function(url){var l=document.createElement('link');l.rel='preload';l.as=g[1];l.href=url;l.dataset.pcPreload='';document.head.appendChild(l)})})})(window.PC_ASSETS);"""
     fallback = """window.PC_BOOT_FAILED=function(){function show(){var main=document.getElementById('main');main.removeAttribute('aria-busy');main.innerHTML='<div class="pc-loading" role="alert"><span>页面加载失败，请检查网络后重试。</span><button type="button" onclick="location.reload()">重新加载</button></div>'}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',show,{once:true});else show()};window.PC_BOOT_TIMER=setTimeout(function(){if(!window.PCApp)PC_BOOT_FAILED()},30000);"""
     pages = {}
     for filename, entry in entries.items():
@@ -113,12 +135,16 @@ def build():
         if len(html.encode()) > ENTRY_BUDGET:
             raise SystemExit(f'{filename} exceeds {ENTRY_BUDGET:,} bytes; move business code to its module.')
         pages[filename] = html
-    shared_size = compressed([app, *scripts, *styles])
+    # WOFF2 is already compressed; conservatively count both preferred fonts even
+    # on pages that do not use their glyphs. Fallback formats are not double-counted.
+    font_size = sum(report[url.removeprefix('share/dist/')]['bytes'] for url in preferred_fonts)
+    shared_size = compressed([app, *scripts, *styles]) + font_size
     if shared_size > SHARED_GZIP_BUDGET:
         raise SystemExit(f'Shared assets exceed budget: {shared_size:,} > {SHARED_GZIP_BUDGET:,}')
     first_sizes = {}
     for name, module in modules.items():
-        first_sizes[name] = shared_size + max(len(gzip.compress(html.encode(), mtime=0)) for html in pages.values()) + compressed([module['script'], *module['styles']])
+        common_size = shared_size if module['requiresUI'] else compressed([app, *shell_styles])
+        first_sizes[name] = common_size + max(len(gzip.compress(html.encode(), mtime=0)) for html in pages.values()) + compressed([module['script'], *module['styles']])
         if first_sizes[name] > FIRST_ROUTE_GZIP_BUDGET:
             raise SystemExit(f'{name} first-load budget exceeded: {first_sizes[name]:,} > {FIRST_ROUTE_GZIP_BUDGET:,}')
     for filename, data in pending.items():
@@ -128,7 +154,7 @@ def build():
             path.write_bytes(data)
         elif path.read_bytes() != data:
             raise SystemExit(f'Asset hash collision: {filename}')
-    (ROOT / 'asset-manifest.json').write_text(json.dumps({'entryBytes': len(pages['pc.html'].encode()), 'entries': {name:len(html.encode()) for name,html in pages.items()}, 'sharedGzipBytes': shared_size, 'firstRouteGzipBytes': first_sizes, 'files': report}, ensure_ascii=False, indent=2) + '\n')
+    (ROOT / 'asset-manifest.json').write_text(json.dumps({'entryBytes': len(pages['pc.html'].encode()), 'entries': {name:len(html.encode()) for name,html in pages.items()}, 'sharedGzipBytes': shared_size, 'preferredFontBytes': font_size, 'firstRouteGzipBytes': first_sizes, 'files': report}, ensure_ascii=False, indent=2) + '\n')
     for filename, html in pages.items():
         (PROJECT / filename).write_text(html)
     print(f'Built {len(pages)} PC entries; pc.html: {len(pages["pc.html"].encode()):,} bytes; {len(report)} versioned assets. Shared gzip: {shared_size:,} bytes.')

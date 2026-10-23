@@ -4,25 +4,32 @@ clearTimeout(window.PC_BOOT_TIMER);
 window.PCApp = (() => {
   const config = window.PC_ASSETS;
   const scripts = new Map(), styles = new Map(), modules = new Map();
+  const styleOrder = [...config.styles, ...Object.values(config.modules).flatMap(module => module.styles)];
   const preloaded = new Set([...document.querySelectorAll('[data-pc-preload]')].map(link => link.getAttribute('href'))), routeModules = new Map();
   let activeModule = null, activeRoute = null, navigation = 0, shared;
   for (const [name, module] of Object.entries(config.modules)) {
     for (const path of module.routes) routeModules.set(path, name);
   }
 
-  function resource(url, type) {
+  function resource(url, type, ordered = true) {
     const cache = type === 'script' ? scripts : styles;
     if (cache.has(url)) return cache.get(url);
     const promise = new Promise((resolve, reject) => {
       const node = document.createElement(type === 'script' ? 'script' : 'link');
       const failed = () => { clearTimeout(timeout); cache.delete(url); node.remove(); reject(new Error('资源加载失败：' + url)); };
       const timeout = setTimeout(failed, 30000);
-      if (type === 'script') { node.src = url; node.async = false; }
+      if (type === 'script') { node.src = url; node.async = !ordered; }
       else { node.rel = 'stylesheet'; node.href = url; }
       node.dataset.pcAsset = type;
       node.onload = () => { clearTimeout(timeout); resolve(node); };
       node.onerror = failed;
-      document.head.appendChild(node);
+      if (type === 'style') {
+        // A shell-only route may load the theme before vendor styles are needed.
+        // Preserve the same cascade order on every navigation and failed-load retry.
+        const next = [...document.head.querySelectorAll('link[data-pc-asset="style"]')]
+          .find(link => styleOrder.indexOf(link.getAttribute('href')) > styleOrder.indexOf(url));
+        document.head.insertBefore(node, next || null);
+      } else document.head.appendChild(node);
     });
     cache.set(url, promise);
     return promise;
@@ -52,8 +59,10 @@ window.PCApp = (() => {
     preload(module.script, 'script');
     // Insert after the shared scripts immediately, so the browser can stream-parse
     // this module while dependencies download. async=false keeps execution ordered.
-    const dependencies = common();
-    const promise = Promise.all([dependencies, ...module.styles.map(url => resource(url, 'style')), resource(module.script, 'script')])
+    const dependencies = module.requiresUI === false
+      ? Promise.all(config.shellStyles.map(url => resource(url, 'style')))
+      : common();
+    const promise = Promise.all([dependencies, ...module.styles.map(url => resource(url, 'style')), resource(module.script, 'script', module.requiresUI !== false)])
       .then(() => {
         if (!window.PCModules[name]) throw new Error('页面模块未就绪：' + name);
         return window.PCModules[name];
@@ -90,7 +99,7 @@ window.PCApp = (() => {
       module.render();
       nav();
       document.querySelector('#main').removeAttribute('aria-busy');
-      PCUI.sweep();
+      window.PCUI?.sweep();
       performance.mark('pc-route-ready');
       window.dispatchEvent(new CustomEvent('pc:route-ready', {detail: {route, module: name}}));
     } catch (error) {
@@ -114,12 +123,12 @@ function nav() {
   let current;
   root.innerHTML = config.navigation.map(group => '<div class="nav-label">'+esc(group.group)+'</div>'+group.items.map(([id,label,mark]) => {
     if (id === selected) current = {group:group.group,label};
-    return '<button class="nav-item '+(id===selected?'active':'')+'" title="'+esc(label)+'" onclick="go(\''+id+'\')"'+(id===selected?' aria-current="page"':'')+'>'+icon(mark)+'<span>'+esc(label)+'</span></button>';
+    return '<button class="nav-item '+(group.standalone?'nav-standalone ':'')+(id===selected?'active':'')+'" title="'+esc(label)+'" onclick="go(\''+id+'\')"'+(id===selected?' aria-current="page"':'')+'>'+icon(mark)+'<span>'+esc(label)+'</span></button>';
   }).join('')).join('');
   mountSidebarGroups();
   document.querySelector('#sidebar').scrollTop = top;
   const title = current?.label || '系统管理后台';
-  document.querySelector('#crumb').innerHTML = '<span>WEID微动</span><span>/</span><span>'+esc(current?.group || '档案治理')+'</span><span>/</span><b>'+esc(title)+'</b>';
+  document.querySelector('#crumb').innerHTML = '<span>WEID微动</span><span>/</span>'+(route==='home'?'':'<span>'+esc(current?.group || '档案治理')+'</span><span>/</span>')+'<b>'+esc(title)+'</b>';
   document.title = title+' · WEID微动';
 }
 function render() { window.PCApp?.redraw(); }

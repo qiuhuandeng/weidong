@@ -12,6 +12,8 @@ import sys
 import tempfile
 import unittest
 import re
+import base64
+import hashlib
 
 sys.dont_write_bytecode = True
 SOURCE = Path(__file__).resolve().parent.parent
@@ -60,6 +62,28 @@ class BuildChecks(unittest.TestCase):
         self.assertTrue(all(name.startswith('js/complaints.') and name.endswith('.js') for name in changed))
         self.assertNotEqual(old_html, (self.root / 'pc.html').read_bytes())
         self.assertTrue(all((self.root / 'share/dist' / name).exists() for name in before['files']))
+
+    def test_fonts_preserve_vendor_bytes_and_relative_urls(self):
+        manifest = self.build()
+        css = (self.root / 'share/vendor/by-components-v3-1.1.26.css').read_text()
+        embedded = re.findall(r'url\(data:[^,)]*;base64,([A-Za-z0-9+/=]+)\)', ''.join(re.findall(r'@font-face\s*\{[^}]+\}', css)))
+        fonts = {name: info for name, info in manifest['files'].items() if name.startswith('fonts/')}
+        self.assertEqual(len(fonts), 6)
+        self.assertEqual({hashlib.sha256(base64.b64decode(data)).hexdigest() for data in embedded}, {info['sha256'] for info in fonts.values()})
+        published = next(self.root / 'share/dist' / name for name in manifest['files'] if name.startswith('css/vendor.'))
+        urls = re.findall(r'url\((\.\./fonts/[^)]+)\)', published.read_text())
+        self.assertEqual(len(urls), 6)
+        self.assertTrue(all((published.parent / url).is_file() for url in urls))
+        self.assertEqual(manifest['preferredFontBytes'], sum(info['bytes'] for name, info in fonts.items() if name.endswith('.woff2')))
+
+    def test_shell_only_module_has_no_ui_preload(self):
+        manifest = self.build()
+        html = (self.root / 'pc.html').read_text()
+        config = json.loads(re.search(r'window.PC_ASSETS=(.*?);\(function', html).group(1))
+        self.assertFalse(config['modules']['home']['requiresUI'])
+        self.assertTrue(config['modules']['customer']['requiresUI'])
+        self.assertLess(manifest['firstRouteGzipBytes']['home'], 60000)
+        self.assertEqual(len([url for url in config['scripts'] if '/vendor.' in url]), 1)
 
     def test_new_module_is_independent_and_gets_default_budget(self):
         before = self.build()

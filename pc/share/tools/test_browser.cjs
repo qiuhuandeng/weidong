@@ -8,9 +8,11 @@ const OUTPUT=process.env.PC_QA_OUTPUT||path.join(require('node:os').tmpdir(),'we
 fs.mkdirSync(OUTPUT,{recursive:true});
 async function socket(url){const ws=new WebSocket(url);await new Promise((r,j)=>{ws.onopen=r;ws.onerror=j});let seq=0;const pending=new Map(),events=[];ws.onmessage=e=>{const m=JSON.parse(e.data);if(m.id){const p=pending.get(m.id);pending.delete(m.id);m.error?p.reject(Error(JSON.stringify(m.error))):p.resolve(m.result)}else events.push(m)};return{events,close:()=>ws.close(),send:(method,params={})=>new Promise((resolve,reject)=>{pending.set(++seq,{resolve,reject});ws.send(JSON.stringify({id:seq,method,params}))})}}
 async function create(){const browser=await socket((await(await fetch(CDP+'/json/version')).json()).webSocketDebuggerUrl),{browserContextId}=await browser.send('Target.createBrowserContext'),{targetId}=await browser.send('Target.createTarget',{url:'about:blank',browserContextId}),page=await socket((await(await fetch(CDP+'/json')).json()).find(t=>t.id===targetId).webSocketDebuggerUrl);const S=page.send,E=async expression=>{const r=await S('Runtime.evaluate',{expression,returnByValue:true,awaitPromise:true});if(r.exceptionDetails)throw Error(JSON.stringify(r.exceptionDetails));return r.result.value},delay=ms=>new Promise(r=>setTimeout(r,ms)),until=async(expr,limit=200)=>{for(let i=0;i<limit;i++){if(await E(expr))return;await delay(100)}throw Error('Timed out '+expr+'\n'+JSON.stringify(page.events.filter(e=>['Runtime.exceptionThrown','Network.loadingFailed'].includes(e.method))))},shot=async(name)=>fs.writeFileSync(path.join(OUTPUT,name+'.png'),Buffer.from((await S('Page.captureScreenshot',{format:'png'})).data,'base64'));
-await S('Page.enable');await S('Network.enable');await S('Runtime.enable');await S('Emulation.setDeviceMetricsOverride',{width:1440,height:1000,deviceScaleFactor:1,mobile:false});return{browser,page,S,E,delay,until,shot,close:async()=>{page.close();await browser.send('Target.disposeBrowserContext',{browserContextId});browser.close()}}}
+await S('Page.enable');await S('Emulation.setFocusEmulationEnabled',{enabled:true});await S('Network.enable');await S('Runtime.enable');await S('Emulation.setDeviceMetricsOverride',{width:1440,height:1000,deviceScaleFactor:1,mobile:false});return{browser,page,S,E,delay,until,shot,close:async()=>{page.close();await browser.send('Target.disposeBrowserContext',{browserContextId});browser.close()}}}
 (async()=>{
  const b=await create(),checks=[];
+ const layout=`[...document.querySelectorAll('#main .panel,#main .pc-tabs,#main .pc-query-field')].map(el=>{const r=el.getBoundingClientRect(),s=getComputedStyle(el);return {x:r.x,y:r.y,width:r.width,height:r.height,border:s.borderWidth,padding:s.padding,font:s.fontSize}})`;
+ let refundLayout;
  try{
   await b.S('Page.navigate',{url:ENTRY+'#complaints'});
   await b.until('window.PCApp?.ready && !document.querySelector("#main[aria-busy]")');
@@ -20,9 +22,10 @@ await S('Page.enable');await S('Network.enable');await S('Runtime.enable');await
   const config=JSON.parse(fs.readFileSync(path.join(__dirname,'../routes.json')));
   for(const route of config.navigation.flatMap(group=>group.items.map(item=>item[0]))){
    await b.E(`go(${JSON.stringify(route)})`);
-   await b.until(`window.PCApp?.ready && location.hash==='#${route}' && !document.querySelector('#main[aria-busy]')`);
-   assert.ok(await b.E(`document.querySelector('#main').innerText.length > 100`));
+   await b.until(`window.PCApp?.ready && location.hash==='#${route}' && route==='${route}' && !document.querySelector('#main[aria-busy]')`);
+   assert.ok(await b.E(route==='home' ? `document.querySelector('#main').innerText.includes('欢迎使用 WEID微动')` : `document.querySelector('#main').innerText.length > 100`));
    assert.deepEqual(await b.E('PCUI.failures'),[]);
+   if(route==='refunds'){await b.delay(100);refundLayout=await b.E(layout);}
    checks.push('Route '+route);
   }
   await b.E(`go('refunds');go('customers');go('complaints');go('shops')`);
@@ -43,7 +46,24 @@ await S('Page.enable');await S('Network.enable');await S('Runtime.enable');await
    await b.shot('shops-'+width);
   }
  }finally{await b.close()}
- for(const pattern of ['*share/dist/js/app.*.js','*share/dist/js/management.*.js']){
+ const home=await create();
+ try{
+  await home.S('Page.navigate',{url:ENTRY+'#home'});
+  await home.until(`window.PCApp?.ready && PCApp.module==='home'`);
+  assert.equal(await home.E('typeof PCUI'),'undefined');
+  assert.ok(!home.page.events.some(e=>e.method==='Network.requestWillBeSent'&&/\/(vendor|components|customer|management|complaints)\.[a-f0-9]+\./.test(e.params.request.url)));
+  await home.E(`go('refunds')`);
+  await home.until(`PCApp.ready && PCApp.module==='management' && !document.querySelector('#main[aria-busy]')`);
+  assert.deepEqual(await home.E('PCUI.failures'),[]);
+  await home.delay(100);
+  assert.deepEqual(await home.E(layout),refundLayout,'Business layout changed when UI styles loaded after the welcome page');
+  checks.push('Welcome-to-business navigation preserves the original layout');
+  await home.E(`go('home');go('complaints');go('home')`);
+  await home.until(`PCApp.ready && PCApp.module==='home'`);
+  assert.deepEqual(home.page.events.filter(e=>e.method==='Runtime.exceptionThrown'),[]);
+  checks.push('Welcome page skips UI downloads; business navigation loads real components');
+ }finally{await home.close()}
+ for(const pattern of ['*share/dist/js/app.*.js','*share/dist/js/vendor.*.js','*share/dist/js/management.*.js']){
   const page=await create();
   try{
    await page.S('Network.setBlockedURLs',{urls:[pattern]});

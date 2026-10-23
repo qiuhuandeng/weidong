@@ -1,5 +1,5 @@
 {
-  "defaultRoute": "rules",
+  "defaultRoute": "home",
   "modules": {
     "customer": {
       "scripts": [
@@ -66,9 +66,30 @@
         "complaints"
       ],
       "gzipBudget": 40000
+    },
+    "home": {
+      "requiresUI": false,
+      "scripts": [
+        "pages/home/index.js"
+      ],
+      "styles": [],
+      "routes": [
+        "home"
+      ]
     }
   },
   "navigation": [
+    {
+      "group": "首页",
+      "items": [
+        [
+          "home",
+          "首页",
+          "grid"
+        ]
+      ],
+      "standalone": true
+    },
     {
       "group": "档案治理",
       "items": [

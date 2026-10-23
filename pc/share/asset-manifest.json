@@ -1,54 +1,76 @@
 {
-  "entryBytes": 8928,
+  "entryBytes": 9305,
   "entries": {
-    "pc.html": 8928
+    "pc.html": 9305
   },
-  "sharedGzipBytes": 1355623,
+  "sharedGzipBytes": 1272983,
+  "preferredFontBytes": 28440,
   "firstRouteGzipBytes": {
-    "customer": 1538019,
-    "management": 1415085,
-    "complaints": 1399162
+    "customer": 1455457,
+    "management": 1332523,
+    "complaints": 1316600,
+    "home": 50039
   },
   "files": {
-    "js/vue-3.5.13.19b473ee0f5e9b6a.js": {
-      "bytes": 160804,
-      "gzipBytes": 58691,
-      "sha256": "19b473ee0f5e9b6ac95e169a265c1da3b670b44b6ad27bd169642d94ae366c7a"
-    },
-    "js/element-plus-2.9.3.3b67863abb220c5b.js": {
-      "bytes": 1007799,
-      "gzipBytes": 298558,
-      "sha256": "3b67863abb220c5bc6fc074d276cc0b92d795e3a82d32fafd0561ae2e254cf8d"
-    },
-    "js/by-components-1.1.26.105f88054de26a24.js": {
-      "bytes": 2423362,
-      "gzipBytes": 733732,
-      "sha256": "105f88054de26a24c30ffc9d823ad4be257d7c8feb3095ea15e823c180e4b91b"
+    "js/vendor.27618b08a27e7019.js": {
+      "bytes": 3586211,
+      "gzipBytes": 1089614,
+      "sha256": "27618b08a27e7019e7085048ae95121c06888913a38f5b5a0d5b198933eabddc"
     },
     "js/components.cbdc5bd0db53d638.js": {
       "bytes": 31254,
       "gzipBytes": 9885,
       "sha256": "cbdc5bd0db53d638a1f664f4b011659f76f96c35b0a9050c0bb33b0dc9c2768f"
     },
-    "css/business.ce7a3370d166916f.css": {
-      "bytes": 167543,
-      "gzipBytes": 31456,
-      "sha256": "ce7a3370d166916f2f9a41bff67179c81031fa08d3c874b190c54deb432b684e"
+    "css/business.7d50a32ca6672788.css": {
+      "bytes": 167514,
+      "gzipBytes": 31453,
+      "sha256": "7d50a32ca66727889effd3dcff7de98ff733fc2c01bf336079297e5577392335"
     },
-    "css/vendor.1864cd9736589c40.css": {
-      "bytes": 963950,
-      "gzipBytes": 209773,
-      "sha256": "1864cd9736589c40f63297221ec7400204e9c083ccdf3c031c026c005cc57cb1"
+    "fonts/vxeiconfont.dd240a211e309f7d.woff2": {
+      "bytes": 24336,
+      "gzipBytes": 24364,
+      "sha256": "dd240a211e309f7d87385215d1efddba013b34257698063e0eeec5245a31004c"
     },
-    "css/theme.30ea1f938728cccf.css": {
-      "bytes": 23476,
-      "gzipBytes": 5969,
-      "sha256": "30ea1f938728cccf082f26e29eb872ff67c019c326c9c4131156bcb06f3f4bda"
+    "fonts/vxeiconfont.9bd0dcbee6dbea9d.woff": {
+      "bytes": 29240,
+      "gzipBytes": 29260,
+      "sha256": "9bd0dcbee6dbea9de7a88fcd328271d52c23216dae77c5e66f1817dba3479e8f"
     },
-    "js/app.fc3a09e45fa54451.js": {
-      "bytes": 20835,
-      "gzipBytes": 7559,
-      "sha256": "fc3a09e45fa54451cb3e35dd6580d29e43f36bd6b27b7616475e065b87eaf8b4"
+    "fonts/vxeiconfont.67f2277f2c6f6930.ttf": {
+      "bytes": 52108,
+      "gzipBytes": 29624,
+      "sha256": "67f2277f2c6f69309ffe7e80e8a7586fd82fa5822ca4583ade3e151ed7e87533"
+    },
+    "fonts/vxetableiconfont.7f2ad2a13dfd07ab.woff2": {
+      "bytes": 4104,
+      "gzipBytes": 4127,
+      "sha256": "7f2ad2a13dfd07ab1f9a13a12619cbee9d0fe7a2f0fa4e927602c6bed2a43529"
+    },
+    "fonts/vxetableiconfont.3421c4588a15e15f.woff": {
+      "bytes": 4856,
+      "gzipBytes": 4851,
+      "sha256": "3421c4588a15e15fd7736aec2d46f0970a7ec8dbf2e7f5f5a205ba409c08aee7"
+    },
+    "fonts/vxetableiconfont.4fbcea3650e44282.ttf": {
+      "bytes": 8632,
+      "gzipBytes": 4685,
+      "sha256": "4fbcea3650e44282347f82fb910e3683d394df186566baa2f299a67ebeb9e899"
+    },
+    "css/vendor.eb8773a535d3b413.css": {
+      "bytes": 799653,
+      "gzipBytes": 99336,
+      "sha256": "eb8773a535d3b4135a077277e6b335aec732c671140ea3084d4e76abacda07d3"
+    },
+    "css/theme.62955847fdfd87a7.css": {
+      "bytes": 25241,
+      "gzipBytes": 6378,
+      "sha256": "62955847fdfd87a75b4d9084129dc98675fd17767919ab40b9146078eced7cff"
+    },
+    "js/app.16e755aeb5418d1f.js": {
+      "bytes": 21744,
+      "gzipBytes": 7877,
+      "sha256": "16e755aeb5418d1f72b9cfd121ec474acaec6ff546ef2419b24c4d0f71ef16f9"
     },
     "js/customer.271cd9b5fff3381e.js": {
       "bytes": 601260,
@@ -69,6 +91,11 @@
       "bytes": 7566,
       "gzipBytes": 2063,
       "sha256": "491f19df976fbf271baa8dbc3736c2ba06c7fc3086a722a026163bbee290476d"
+    },
+    "js/home.8970e33cacf3c9db.js": {
+      "bytes": 531,
+      "gzipBytes": 389,
+      "sha256": "8970e33cacf3c9db9f2a3883ba97cede24e01923a7c3d698cd85b0a94c718e11"
     }
   }
 }
