@@ -1,0 +1,49 @@
+<!doctype html>
+<!-- Generated PC entry: share/tools/build.py -->
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WEID微动 · 系统管理后台</title>
+<style>
+/* PC design tokens. Shared by every PC entry; never imported by other systems. */
+:root {
+  --pc-primary:#409eff; --pc-primary-hover:#66b1ff; --pc-page:#f0f2f5;
+  --pc-text:#606266; --pc-title:#303133; --pc-muted:#909399;
+  --pc-border:#dcdfe6; --pc-line:#ebeef5; --pc-radius:4px;
+  --pc-sidebar:160px; --pc-header:50px; --pc-gap:12px; --pc-font:13px; --pc-control:32px; --pc-search-control:28px;
+  --pc-table-line:20px; --pc-table-padding:6px 8px; --pc-form-gap:14px;
+  --pc-search-padding:16px 20px; --pc-search-row-gap:12px; --pc-search-actions-gap:16px; --pc-search-field-width:280px;
+  --pc-tab-height:44px; --pc-tab-gap:24px; --pc-tab-padding:0 16px;
+  --blue:var(--pc-primary); --blue-hover:var(--pc-primary-hover); --blue-light:#ecf5ff;
+  --ink:var(--pc-title); --muted:var(--pc-muted); --line:var(--pc-line); --bg:var(--pc-page);
+  --green:#67c23a; --orange:#e6a23c; --red:#f56c6c; --radius:4px; --shadow:none;
+  --el-color-primary:var(--pc-primary); --el-color-primary-light-3:#79bbff;
+  --el-font-size-base:var(--pc-font); --el-font-size-small:12px; --el-border-radius-base:4px;
+  --vxe-ui-font-color:#606266; --vxe-ui-font-primary-color:#409eff;
+  --vxe-ui-table-border-color:#e8eaec; --vxe-ui-table-header-background-color:#f8f8f9;
+  --vxe-ui-table-row-hover-background-color:#f5f7fa; --vxe-ui-font-size-default:var(--pc-font);
+  --ui-control-height:28px; --ui-filter-padding:var(--pc-search-padding); --ui-filter-height:60px;
+  --ui-control-gap:12px; --ui-head-padding:8px 12px; --ui-head-height:44px;
+  --ui-pagination-padding:8px 10px; --ui-table-cell-padding:var(--pc-table-padding);
+  --ui-table-line-height:var(--pc-table-line); --ui-table-secondary-font:12px; --ui-table-secondary-gap:0;
+  --ui-table-link-height:24px; --ui-table-link-padding:0px;
+}
+/* First paint uses the same shell geometry and colors as theme.css. */
+@layer pc-business {
+*{box-sizing:border-box}body{margin:0;background:var(--pc-page);color:var(--pc-text);font:var(--pc-font)/1.55 "Helvetica Neue",Helvetica,"PingFang SC","Microsoft YaHei",Arial,sans-serif}button,input,select,textarea{font:inherit}button{cursor:pointer}svg.icon{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}.sidebar{position:fixed;inset:0 auto 0 0;width:var(--pc-sidebar);background:#304156;color:#bfcbd9;display:flex;flex-direction:column;z-index:30;overflow:hidden}.brand{height:var(--pc-header);min-height:var(--pc-header);padding:0 18px;display:flex;align-items:center;background:#2b2f3a}.brand-name{font-size:20px;font-weight:600;color:white;white-space:nowrap}.brand-name span{font-size:18px;font-weight:500}.brand-mark,.brand-sub{display:none}.body{margin-left:var(--pc-sidebar)}.topbar{height:var(--pc-header);padding:0 20px;background:#fff;display:flex;align-items:center;justify-content:space-between;box-shadow:0 1px 4px #00152914}.row,.crumb,.top-tools{display:flex;align-items:center;gap:10px}.crumb b{color:#97a8be}.icon-btn{border:0;background:transparent;color:var(--pc-text)}.avatar{display:flex;align-items:center;justify-content:center;background:var(--pc-primary);color:#fff;border-radius:4px}.main{padding:10px}#nav{padding:0;flex:1;min-height:0;overflow:auto}.nav-group-toggle,.nav-item{width:100%;border:0;background:transparent;text-align:left;display:flex;align-items:center;gap:9px;min-height:40px;font-size:var(--pc-font);color:#bfcbd9}.nav-group-toggle{padding:9px 16px;justify-content:space-between}.nav-group-heading{display:flex;align-items:center;gap:8px}.nav-group-items{background:#1f2d3d}.nav-group-items .nav-item{padding:9px 12px 9px 36px;border-left:2px solid transparent}.nav-item.active{background:#3b5069;color:var(--pc-primary);border-left-color:var(--pc-primary)}.nav-group.is-collapsed .nav-group-items{display:none}.app.sidebar-collapsed .sidebar{width:64px}.app.sidebar-collapsed .body{margin-left:64px}#toast:not(.show){display:none}#role[hidden]{display:none}
+@media(max-width:760px){.sidebar{transform:translateX(-100%)}.sidebar.open{transform:none}.body{margin-left:0}}
+}
+.pc-loading{min-height:160px;display:flex;align-items:center;justify-content:center;gap:16px;background:#fff;border-radius:4px;color:var(--pc-muted);font-size:var(--pc-font)}.pc-loading button{padding:6px 12px;border:1px solid #dcdfe6;border-radius:4px;background:#fff;color:var(--pc-primary)}
+
+</style>
+<script defer fetchpriority="high" src="share/dist/js/app.fc3a09e45fa54451.js" onerror="PC_BOOT_FAILED()"></script>
+<script>window.PC_ASSETS={"defaultRoute":"rules","navigation":[{"group":"档案治理","items":[["customers","客户档案","users"],["rules","规则配置","settings"],["merge-candidates","档案合并","layers"],["reviews","审核管理","shield"],["tickets","纠错工单","file"],["reversals","冲销记录","wallet"],["mobile-approvals","移动端预览","phone"]]},{"group":"门店管理","items":[["shops","门店列表","grid"],["store-beds","门店床位","grid"],["beds","床位设置","grid"],["bed-logs","床位日志","history"],["devices","多设备录音","phone"],["partners","外协配置","users"],["scheduling","智能排客","flow"]]},{"group":"财务管理","items":[["finance","财务核对","wallet"],["refunds","退款管理","wallet"]]},{"group":"统一客诉","items":[["complaints","投诉处理","file"]]}],"scripts":["share/dist/js/vue-3.5.13.19b473ee0f5e9b6a.js","share/dist/js/element-plus-2.9.3.3b67863abb220c5b.js","share/dist/js/by-components-1.1.26.105f88054de26a24.js","share/dist/js/components.cbdc5bd0db53d638.js"],"styles":["share/dist/css/business.ce7a3370d166916f.css","share/dist/css/vendor.1864cd9736589c40.css","share/dist/css/theme.30ea1f938728cccf.css"],"modules":{"customer":{"routes":["customers","rules","rule-base","rule-primary","rule-intercept","rule-deposit","rule-arbitration","merge-candidates","merge-records","reviews","tickets","new","approval","snapshot","process","identity","recalc","adjustment","ticket","reversals","reversal-detail","mobile-store","mobile-approvals","mobile-approval","mobile-adjustment","mobile-customer","mobile-new"],"script":"share/dist/js/customer.271cd9b5fff3381e.js","styles":[]},"management":{"routes":["shops","store-beds","finance","refunds","beds","bed-logs","devices","partners","scheduling"],"script":"share/dist/js/management.8963f4c8ece63100.js","styles":[]},"complaints":{"routes":["complaints"],"script":"share/dist/js/complaints.4492736fd7163f92.js","styles":["share/dist/css/complaints.491f19df976fbf27.css"]}}};(function(c){var r=location.hash.slice(1).split('?')[0]||c.defaultRoute,m=Object.values(c.modules).find(function(m){return m.routes.includes(r)})||Object.values(c.modules).find(function(m){return m.routes.includes(c.defaultRoute)});[[c.scripts.concat(m.script),'script'],[c.styles.concat(m.styles),'style']].forEach(function(g){g[0].forEach(function(url){var l=document.createElement('link');l.rel='preload';l.as=g[1];l.href=url;l.dataset.pcPreload='';document.head.appendChild(l)})})})(window.PC_ASSETS);window.PC_BOOT_FAILED=function(){function show(){var main=document.getElementById('main');main.removeAttribute('aria-busy');main.innerHTML='<div class="pc-loading" role="alert"><span>页面加载失败，请检查网络后重试。</span><button type="button" onclick="location.reload()">重新加载</button></div>'}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',show,{once:true});else show()};window.PC_BOOT_TIMER=setTimeout(function(){if(!window.PCApp)PC_BOOT_FAILED()},30000);</script>
+</head>
+<body>
+<div class="app"><aside class="sidebar" id="sidebar"><div class="brand"><div class="brand-mark" id="brandMark"></div><div><div class="brand-name" aria-label="WEID微动">WEID<span>微动</span></div><div class="brand-sub">系统管理后台</div></div></div><nav class="nav" id="nav"></nav></aside><div class="body"><header class="topbar"><div class="row"><button class="icon-btn mobile-toggle" onclick="toggleSidebar()" aria-label="展开或收起菜单">☰</button><div class="crumb" id="crumb"></div></div><div class="top-tools"><select id="role" hidden class="role-select" aria-label="切换演示角色"><option>总部运营</option><option>门店店长</option><option>总部财务</option><option>系统管理员</option><option>咨询师</option></select><div class="avatar" style="width:28px;height:28px">张</div></div></header><main id="main" class="main" aria-busy="true"><div class="pc-loading" role="status">正在加载…</div></main></div></div>
+<div id="mergeDrawers"></div><div id="modal"></div><div id="toast" role="status" aria-live="polite"></div>
+
+<noscript>请启用 JavaScript 后使用系统。</noscript>
+</body>
+</html>

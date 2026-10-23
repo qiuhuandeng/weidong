@@ -1,0 +1,23 @@
+/* PC design tokens. Shared by every PC entry; never imported by other systems. */
+:root {
+  --pc-primary:#409eff; --pc-primary-hover:#66b1ff; --pc-page:#f0f2f5;
+  --pc-text:#606266; --pc-title:#303133; --pc-muted:#909399;
+  --pc-border:#dcdfe6; --pc-line:#ebeef5; --pc-radius:4px;
+  --pc-sidebar:160px; --pc-header:50px; --pc-gap:12px; --pc-font:13px; --pc-control:32px; --pc-search-control:28px;
+  --pc-table-line:20px; --pc-table-padding:6px 8px; --pc-form-gap:14px;
+  --pc-search-padding:16px 20px; --pc-search-row-gap:12px; --pc-search-actions-gap:16px; --pc-search-field-width:280px;
+  --pc-tab-height:44px; --pc-tab-gap:24px; --pc-tab-padding:0 16px;
+  --blue:var(--pc-primary); --blue-hover:var(--pc-primary-hover); --blue-light:#ecf5ff;
+  --ink:var(--pc-title); --muted:var(--pc-muted); --line:var(--pc-line); --bg:var(--pc-page);
+  --green:#67c23a; --orange:#e6a23c; --red:#f56c6c; --radius:4px; --shadow:none;
+  --el-color-primary:var(--pc-primary); --el-color-primary-light-3:#79bbff;
+  --el-font-size-base:var(--pc-font); --el-font-size-small:12px; --el-border-radius-base:4px;
+  --vxe-ui-font-color:#606266; --vxe-ui-font-primary-color:#409eff;
+  --vxe-ui-table-border-color:#e8eaec; --vxe-ui-table-header-background-color:#f8f8f9;
+  --vxe-ui-table-row-hover-background-color:#f5f7fa; --vxe-ui-font-size-default:var(--pc-font);
+  --ui-control-height:28px; --ui-filter-padding:var(--pc-search-padding); --ui-filter-height:60px;
+  --ui-control-gap:12px; --ui-head-padding:8px 12px; --ui-head-height:44px;
+  --ui-pagination-padding:8px 10px; --ui-table-cell-padding:var(--pc-table-padding);
+  --ui-table-line-height:var(--pc-table-line); --ui-table-secondary-font:12px; --ui-table-secondary-gap:0;
+  --ui-table-link-height:24px; --ui-table-link-padding:0px;
+}

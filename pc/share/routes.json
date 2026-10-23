@@ -1,0 +1,178 @@
+{
+  "defaultRoute": "rules",
+  "modules": {
+    "customer": {
+      "scripts": [
+        "pages/customer/index.js"
+      ],
+      "styles": [],
+      "routes": [
+        "customers",
+        "rules",
+        "rule-base",
+        "rule-primary",
+        "rule-intercept",
+        "rule-deposit",
+        "rule-arbitration",
+        "merge-candidates",
+        "merge-records",
+        "reviews",
+        "tickets",
+        "new",
+        "approval",
+        "snapshot",
+        "process",
+        "identity",
+        "recalc",
+        "adjustment",
+        "ticket",
+        "reversals",
+        "reversal-detail",
+        "mobile-store",
+        "mobile-approvals",
+        "mobile-approval",
+        "mobile-adjustment",
+        "mobile-customer",
+        "mobile-new"
+      ],
+      "gzipBudget": 180000
+    },
+    "management": {
+      "scripts": [
+        "pages/management/index.js"
+      ],
+      "styles": [],
+      "routes": [
+        "shops",
+        "store-beds",
+        "finance",
+        "refunds",
+        "beds",
+        "bed-logs",
+        "devices",
+        "partners",
+        "scheduling"
+      ]
+    },
+    "complaints": {
+      "scripts": [
+        "pages/complaints/business.js",
+        "pages/complaints/index.js"
+      ],
+      "styles": [
+        "pages/complaints/style.css"
+      ],
+      "routes": [
+        "complaints"
+      ],
+      "gzipBudget": 40000
+    }
+  },
+  "navigation": [
+    {
+      "group": "档案治理",
+      "items": [
+        [
+          "customers",
+          "客户档案",
+          "users"
+        ],
+        [
+          "rules",
+          "规则配置",
+          "settings"
+        ],
+        [
+          "merge-candidates",
+          "档案合并",
+          "layers"
+        ],
+        [
+          "reviews",
+          "审核管理",
+          "shield"
+        ],
+        [
+          "tickets",
+          "纠错工单",
+          "file"
+        ],
+        [
+          "reversals",
+          "冲销记录",
+          "wallet"
+        ],
+        [
+          "mobile-approvals",
+          "移动端预览",
+          "phone"
+        ]
+      ]
+    },
+    {
+      "group": "门店管理",
+      "items": [
+        [
+          "shops",
+          "门店列表",
+          "grid"
+        ],
+        [
+          "store-beds",
+          "门店床位",
+          "grid"
+        ],
+        [
+          "beds",
+          "床位设置",
+          "grid"
+        ],
+        [
+          "bed-logs",
+          "床位日志",
+          "history"
+        ],
+        [
+          "devices",
+          "多设备录音",
+          "phone"
+        ],
+        [
+          "partners",
+          "外协配置",
+          "users"
+        ],
+        [
+          "scheduling",
+          "智能排客",
+          "flow"
+        ]
+      ]
+    },
+    {
+      "group": "财务管理",
+      "items": [
+        [
+          "finance",
+          "财务核对",
+          "wallet"
+        ],
+        [
+          "refunds",
+          "退款管理",
+          "wallet"
+        ]
+      ]
+    },
+    {
+      "group": "统一客诉",
+      "items": [
+        [
+          "complaints",
+          "投诉处理",
+          "file"
+        ]
+      ]
+    }
+  ]
+}

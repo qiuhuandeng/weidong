@@ -1,0 +1,74 @@
+{
+  "entryBytes": 8928,
+  "entries": {
+    "pc.html": 8928
+  },
+  "sharedGzipBytes": 1355623,
+  "firstRouteGzipBytes": {
+    "customer": 1538019,
+    "management": 1415085,
+    "complaints": 1399162
+  },
+  "files": {
+    "js/vue-3.5.13.19b473ee0f5e9b6a.js": {
+      "bytes": 160804,
+      "gzipBytes": 58691,
+      "sha256": "19b473ee0f5e9b6ac95e169a265c1da3b670b44b6ad27bd169642d94ae366c7a"
+    },
+    "js/element-plus-2.9.3.3b67863abb220c5b.js": {
+      "bytes": 1007799,
+      "gzipBytes": 298558,
+      "sha256": "3b67863abb220c5bc6fc074d276cc0b92d795e3a82d32fafd0561ae2e254cf8d"
+    },
+    "js/by-components-1.1.26.105f88054de26a24.js": {
+      "bytes": 2423362,
+      "gzipBytes": 733732,
+      "sha256": "105f88054de26a24c30ffc9d823ad4be257d7c8feb3095ea15e823c180e4b91b"
+    },
+    "js/components.cbdc5bd0db53d638.js": {
+      "bytes": 31254,
+      "gzipBytes": 9885,
+      "sha256": "cbdc5bd0db53d638a1f664f4b011659f76f96c35b0a9050c0bb33b0dc9c2768f"
+    },
+    "css/business.ce7a3370d166916f.css": {
+      "bytes": 167543,
+      "gzipBytes": 31456,
+      "sha256": "ce7a3370d166916f2f9a41bff67179c81031fa08d3c874b190c54deb432b684e"
+    },
+    "css/vendor.1864cd9736589c40.css": {
+      "bytes": 963950,
+      "gzipBytes": 209773,
+      "sha256": "1864cd9736589c40f63297221ec7400204e9c083ccdf3c031c026c005cc57cb1"
+    },
+    "css/theme.30ea1f938728cccf.css": {
+      "bytes": 23476,
+      "gzipBytes": 5969,
+      "sha256": "30ea1f938728cccf082f26e29eb872ff67c019c326c9c4131156bcb06f3f4bda"
+    },
+    "js/app.fc3a09e45fa54451.js": {
+      "bytes": 20835,
+      "gzipBytes": 7559,
+      "sha256": "fc3a09e45fa54451cb3e35dd6580d29e43f36bd6b27b7616475e065b87eaf8b4"
+    },
+    "js/customer.271cd9b5fff3381e.js": {
+      "bytes": 601260,
+      "gzipBytes": 178532,
+      "sha256": "271cd9b5fff3381e7dfe19f7f43fd661c0f4cb971baa0ab617dd8b3495bfcc46"
+    },
+    "js/management.8963f4c8ece63100.js": {
+      "bytes": 181787,
+      "gzipBytes": 55598,
+      "sha256": "8963f4c8ece6310092dd634ac9aed0fdb8232fd3b433cf6547ceea1525e8626a"
+    },
+    "js/complaints.4492736fd7163f92.js": {
+      "bytes": 122981,
+      "gzipBytes": 37612,
+      "sha256": "4492736fd7163f92b8babba3e5a39df5b52b4962d129629779dea7a169eb95a2"
+    },
+    "css/complaints.491f19df976fbf27.css": {
+      "bytes": 7566,
+      "gzipBytes": 2063,
+      "sha256": "491f19df976fbf271baa8dbc3736c2ba06c7fc3086a722a026163bbee290476d"
+    }
+  }
+}
