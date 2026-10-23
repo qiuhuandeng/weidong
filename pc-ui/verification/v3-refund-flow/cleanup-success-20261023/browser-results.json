@@ -1,0 +1,46 @@
+{
+  "passed": true,
+  "offline": true,
+  "amounts": {
+    "rfOriginalTotal": {
+      "text": "¥400.00",
+      "font": "22px",
+      "weight": "700",
+      "color": "rgb(51, 122, 246)"
+    },
+    "rfManualTotal": {
+      "text": "¥800.00",
+      "font": "22px",
+      "weight": "700",
+      "color": "rgb(51, 122, 246)"
+    },
+    "rfFooterTotal": {
+      "text": "¥1200.00",
+      "font": "26px",
+      "weight": "700",
+      "color": "rgb(51, 122, 246)"
+    }
+  },
+  "receiptFont": "13px",
+  "cards": [
+    {
+      "text": "示例·门店余额不足¥398.00订单 DEMO-ORDER-RF-1原路退回¥398.00原路退款失败2026-10-23 14:44查看详情 ›",
+      "completed": false,
+      "background": "rgb(255, 255, 255)",
+      "opacity": "1"
+    },
+    {
+      "text": "示例·门店账户受限¥680.00订单 DEMO-ORDER-RF-2原路退回¥680.00原路退款失败2026-10-23 14:44查看详情 ›",
+      "completed": false,
+      "background": "rgb(255, 255, 255)",
+      "opacity": "1"
+    },
+    {
+      "text": "示例·原路退款成功¥500.00订单 DEMO-ORDER-RF-3原路退回¥500.00已退款2026-10-23 14:44查看详情 ›",
+      "completed": true,
+      "background": "rgb(238, 240, 243)",
+      "opacity": "1"
+    }
+  ],
+  "errors": []
+}

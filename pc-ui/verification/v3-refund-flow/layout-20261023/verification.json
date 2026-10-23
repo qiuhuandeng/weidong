@@ -1,0 +1,23 @@
+{
+  "layout": {
+    "recordsBottom": 492,
+    "summaryTop": 502,
+    "summaryBottom": 663,
+    "bankTop": 673,
+    "top": "订单退款合计 ¥500.00\n修改项目",
+    "original": "¥400.00",
+    "manual": "¥100.00",
+    "width": 390,
+    "scrollWidth": 390
+  },
+  "checks": [
+    "summary below receipts and above bank",
+    "top only order total",
+    "400+100 split",
+    "full original no bank or hidden field submission",
+    "manual bank draft restored",
+    "one-cent manual remainder",
+    "360px no overflow and scrollable"
+  ],
+  "runtimeErrors": 0
+}

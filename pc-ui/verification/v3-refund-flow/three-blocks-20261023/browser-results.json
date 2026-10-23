@@ -1,0 +1,19 @@
+{
+  "passed": true,
+  "offline": true,
+  "storage": "readable stale cache / writes blocked by quota",
+  "geometry": {
+    "width": 360,
+    "clientWidth": 360,
+    "scrollWidth": 360,
+    "scrollbar": "none",
+    "topSections": 2,
+    "manualCards": 1,
+    "splitCard": false,
+    "receipts": 0,
+    "summaryHidden": true,
+    "manual": "¥980.00",
+    "toast": ""
+  },
+  "errors": []
+}

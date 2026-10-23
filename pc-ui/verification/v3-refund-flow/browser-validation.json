@@ -1,0 +1,24 @@
+{
+  "components": {
+    "exact": [
+      "ByForm",
+      "ByCommonSelector",
+      "ByCommonInput",
+      "ByTable",
+      "ByPager"
+    ],
+    "failures": [],
+    "mounted": 52
+  },
+  "dialog": "ByDialog verified by component identity",
+  "pagination": "page 2",
+  "search": "empty/reset passed",
+  "layout": {
+    "width": 360,
+    "scrollWidth": 360,
+    "appWidth": 360,
+    "scrollbar": "none"
+  },
+  "storageSync": "active PC imports mobile; active V3 refreshes on approval without reload",
+  "errors": []
+}
