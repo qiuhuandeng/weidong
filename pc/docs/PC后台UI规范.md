@@ -286,6 +286,7 @@ ByForm 使用公共固定宽度条件项和自动换行布局，禁止恢复百�
 - 公共搜索支持 `data-pc-label` 指定组合字段名；搜索按钮在独立按钮行时用 `form="搜索表单ID"` 关联 ByForm 的真实 form，确保点击和 Enter 都走同一提交逻辑。
 - 独立业务分页用 `PCUI.registerPager(action, callback)` 注册，data-pc-pager 传入 total / page / size / action 及业务 scope；禁止跨模块修改 UB 状态凑用分页。
 - ByTable 的单元格业务 data-* / aria-* 透传到 pc-cell，金额小计等更新定位仍有效。业务列最低可读宽度通过 th 的 data-pc-min-width 声明，窄屏只在表格内横向滚动，不把长内容列压成过窄竖列。多行信息使用公共 pc-block，多行文字操作用 pc-multiline；不能依赖厂商 span 默认显示，也不能让固定按钮高度压住多行文本。空表保留业务提供的空态文案。表格可用 `data-pc-align="left|center|right"` 指定表头与内容对齐，未声明继续默认居中，不允许用单页强制 CSS 覆盖对齐。
+- 少量明细行的抽屉表格可在原始 `table` 上声明 `data-pc-min-height="0"`，由 `PCUI` 表格适配器传入已接入的 `ByTable.gridOptions.minHeight`，随内容收缩，避免单行下方留出空白；退款项目与商品置换抽屉已使用。默认最小高度仍为 160px，未声明的表格保持原尺寸；不通过业务 CSS 改写厂商表格高度。
 - 自动挂载按钮、输入时保留当前焦点；业务重绘后校验、关闭与键盘 Tab 的焦点不能落到不可见原字段。
 
 本模块功能与组件验收见 [complaints-migration.md](../share/verification/complaints-migration.md)，金额与状态回归运行 `node share/verification/complaints-business.test.cjs`。

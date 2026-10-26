@@ -76,6 +76,13 @@
       "routes": [
         "home"
       ]
+    },
+    "complaint-solutions": {
+      "scripts": [
+        "pages/complaint-solutions/index.js"
+      ],
+      "styles": [],
+      "routes": []
     }
   },
   "navigation": [
