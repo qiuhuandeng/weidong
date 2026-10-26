@@ -23,12 +23,35 @@ test('date shortcuts handle leap year and week boundary',()=>{assert.deepEqual(c
 test('keyword, channel, status, date and linked filters compose',()=>{assert.equal(a.filtered({keyword:'3858',keywordType:'phone'}).length,1);assert.equal(a.filtered({keyword:'3858',keywordType:'phone',channel:'wechat'}).length,0);assert.ok(a.filtered({channel:'wechat',status:'待处理',linked:'yes'}).every(r=>r.channel==='wechat'&&r.status==='待处理'&&r.linked.length));assert.equal(a.filtered({start:'2099-01-01'}).length,0)});
 test('order search independent keyword/consultant/date criteria',()=>{assert.equal(a.matchingOrders({keywordType:'phone',keyword:'3858'}).length,2);assert.equal(a.matchingOrders({keywordType:'name',keyword:'王秀珍',consultant:'不存在'}).length,0)});
 const record=a.select('31001');const p=a.solutionDraft(null);
-p.methods=['refund','compensation','exchange'];
+p.methods=['refund','exchange'];
 p.refundOrderIds=a.solutionOrders().map(order=>order.id);
 for(const row of a.refundEntries())a.solutionTools().selectFullRefund(p,row);
-p.compensation='100';p.compensationReason='验收';p.exchangeItems=[{productId:'repair-cream',quantity:'2'}];p.delivery={name:'验收',phone:'13800000000',address:'验收地址'};p.payout={method:'bank',name:'验收',account:'6222000000000000',bank:'验收银行'};
+p.exchangeItems=[{productId:'repair-cream',quantity:'2'}];p.delivery={name:'验收',phone:'13800000000',address:'验收地址'};p.payout={method:'bank',name:'验收',account:'6222000000000000',bank:'验收银行'};
 const valid=a.validateCustomerSolution(p);
-test('multi-order refunds and combined solutions use integer cents',()=>{assert.equal(valid.errors.length,0);assert.equal(valid.value.refund,609900);assert.equal(valid.value.refundOrders.length,2);assert.equal(valid.value.compensation,10000);assert.equal(a.solutionTotals(p).exchange,36000);assert.equal(a.solutionTotals(p).refund+a.solutionTotals(p).compensation,619900)});
+test('multi-order refunds and combined solutions use integer cents',()=>{assert.equal(valid.errors.length,0);assert.equal(valid.value.refund,609900);assert.equal(valid.value.refundOrders.length,2);assert.equal(Object.hasOwn(valid.value,'compensation'),false);assert.equal(a.solutionTotals(p).exchange,36000);assert.equal(a.solutionTotals(p).refund,609900)});
+test('removed compensation is excluded from drafts, submissions and totals',()=>{
+  const legacy={...copy(valid.value),handlingMethods:['refund','compensation','exchange'],compensation:10000,compensationReason:'历史备注'};
+  const restored=a.solutionDraft(legacy),result=a.validateCustomerSolution(restored);
+  assert.deepEqual(copy(restored.methods),['refund','exchange']);assert.equal(result.errors.length,0);
+  for(const value of [restored,result.value,a.solutionTotals({...restored,compensation:'100'})])assert.equal(Object.hasOwn(value,'compensation'),false);
+  assert.equal(Object.hasOwn(result.value,'compensationReason'),false);assert.ok(a.solutionRead(legacy).includes('赔偿（历史）'));
+  const invalid={...copy(p),methods:['compensation'],compensation:'100',compensationReason:'test'};
+  assert.ok(a.validateCustomerSolution(invalid).errors.some(([field])=>field==='solutionMethods'));
+});
+test('order select-all affects only that order and preserves other selections',()=>{
+  const d=a.solutionDraft(null),rows=a.refundEntries(),first=rows[0].order.id,other=rows.find(row=>row.order.id!==first);
+  // No editor is mounted in this isolated check; make refresh a no-op.
+  const tools=context.window.PCModules['complaint-solutions'].create({selectedRefundEntries:()=>rows,refundAvailable:a.refundAvailable,centsText:value=>(value/100).toFixed(2),getRecords:()=>a.records,getRecord:()=>record,savedRefundOrders:p=>p?.refundOrders||[],renderSolutionFields(){}});
+  const root={querySelector(){return null}},control={dataset:{refundAll:first},hasAttribute:name=>name==='data-refund-all',checked:true};
+  a.solutionTools().selectFullRefund(d,other);tools.syncRefund(control,d,root);
+  assert.equal(Object.keys(d.refundAmounts).length,rows.length);
+  control.checked=false;tools.syncRefund(control,d,root);assert.deepEqual(Object.keys(d.refundAmounts),[other.key]);assert.deepEqual(Object.keys(d.refundQuantities),[other.key]);
+});
+test('grouped orders allow selecting just one project and reopen all orders',()=>{
+  const d=copy(p),first=a.refundEntries()[0];d.refundAmounts={[first.key]:p.refundAmounts[first.key]};
+  const result=a.validateCustomerSolution(d);assert.equal(result.errors.length,0);assert.equal(result.value.refundOrders.length,1);assert.equal(result.value.refundOrders[0].refundItems.length,1);
+  const restored=a.solutionDraft(result.value);assert.deepEqual(copy(restored.refundOrderIds),copy(a.solutionOrders().map(order=>order.id)));assert.equal(Object.keys(restored.refundAmounts).length,1);
+});
 test('full refund returns only unused quantities and leaves zero remaining',()=>{
   const item=valid.value.refundOrders[0].refundItems[0];
   assert.equal(item.quantity,5);assert.equal(item.consumedQuantity,2);assert.equal(item.refundedQuantity,0);assert.equal(item.remainingBefore,3);assert.equal(item.refundQuantity,3);assert.equal(item.remainingAfter,0);
@@ -75,7 +98,7 @@ test('other plans reserve quantities; old plans with unknown quantities require 
 test('refund exceeding a project limit is rejected',()=>{const bad=copy(p);bad.refundAmounts[Object.keys(bad.refundAmounts)[0]]='5500.01';assert.ok(a.validateCustomerSolution(bad).errors.some(e=>e[1].includes('超过')))});
 test('unlinked projects cannot be submitted',()=>{const bad=copy(p);bad.refundAmounts['unknown:item']='1';assert.ok(a.validateCustomerSolution(bad).errors.some(e=>e[1].includes('不属于')))});
 test('empty refund selection and invalid delivery/product/payout are rejected',()=>{const bad=copy(p);bad.refundAmounts={};bad.delivery.phone='x';bad.exchangeItems[0].quantity='1.5';bad.payout.account='12';assert.ok(a.validateCustomerSolution(bad).errors.length>=4)});
-test('hidden method fields do not affect the submitted solution',()=>{const hidden=copy(p);hidden.methods=['exchange'];assert.equal(a.validateCustomerSolution(hidden).errors.length,0);assert.equal(a.validateCustomerSolution(hidden).value.refund,0);assert.equal(a.validateCustomerSolution(hidden).value.compensation,0)});
+test('hidden method fields do not affect the submitted solution',()=>{const hidden=copy(p);hidden.methods=['exchange'];assert.equal(a.validateCustomerSolution(hidden).errors.length,0);assert.equal(a.validateCustomerSolution(hidden).value.refund,0);assert.equal(Object.hasOwn(a.validateCustomerSolution(hidden).value,'compensation'),false)});
 test('handling method and refund order remain required without removed attribution fields',()=>{
   assert.ok(a.validateCustomerSolution({...copy(p),methods:[]}).errors.some(([field])=>field==='solutionMethods'));
   assert.ok(a.validateCustomerSolution({...copy(p),refundOrderIds:[]}).errors.some(([field])=>field==='solution-refundOrders'));

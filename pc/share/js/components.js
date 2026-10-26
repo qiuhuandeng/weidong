@@ -104,7 +104,7 @@ window.PCUI = (() => {
         return !!(source.min && key<source.min || source.max && key>source.max);
       }
     };
-    mount(host,{render:()=>h(component,{...properties,id:controlId,modelValue:value.value,'onUpdate:modelValue':update,disabled:source.disabled,
+    mount(host,{render:()=>h(component,{...properties,id:controlId,modelValue:value.value,'onUpdate:modelValue':update,disabled:source.disabled,...(kind==='checkbox'?{indeterminate:source.indeterminate||source.dataset.pcIndeterminate==='true'}:{}),
       'aria-label':source.getAttribute('aria-label') || source.title || (choice && wrapper!==source ? wrapper.textContent.trim() : source.name), class:choice && wrapper!==source ? wrapper.className : undefined},choice ? ()=>wrapper===source ? '' : wrapper.textContent.trim() : undefined)});
     if(choice){const visible=host.querySelector('input');if(source.hasAttribute('onkeydown'))visible.setAttribute('onkeydown',source.getAttribute('onkeydown'));}
     source.hidden=true;source.tabIndex=-1;source.className+=' pc-native-value';source.setAttribute('aria-hidden','true');
@@ -126,6 +126,8 @@ window.PCUI = (() => {
     controlStates.set(native,()=>{value.value=readValue();disabled.value=native.disabled;options.value=readOptions();});
     const inline = !native.multiple && !!host.closest('.query-module') && /状态/.test(native.getAttribute('aria-label') || '') && options.value.length <= 6;
     const expanded=ref(inline);
+    // Table viewports clip descendants; render their menus in the page overlay.
+    const teleported=!!host.closest('.pc-table');
     host.classList.toggle('pc-enum',inline);
     mount(host, {render: () => h(ByComponentsV3.components.ByCommonSelector, {
       id:controlId, modelValue:value.value, disabled:disabled.value, multiple:native.multiple,
@@ -133,7 +135,7 @@ window.PCUI = (() => {
       type:expanded.value ? 'border' : 'select',options:options.value,hiddenAllOptions:true,forceNoExpand:expanded.value,
       size:host.closest('.query-module') ? 'small' : 'default',
       'aria-label':native.getAttribute('aria-label') || native.name || '请选择',
-      placeholder:native.getAttribute('placeholder') || options.value.find(o => o.id === native.value)?.name || '请选择', teleported:false, 'data-pc-ready':'select',
+      placeholder:native.getAttribute('placeholder') || options.value.find(o => o.id === native.value)?.name || '请选择', teleported, 'data-pc-ready':'select',
       'onUpdate:modelValue': v => { value.value = v; if(native.multiple){for(const option of native.options)option.selected=(v||[]).includes(option.value);}else native.value = v; native.dispatchEvent(new Event('change', {bubbles:true})); }
     })});
     host.append(native);
@@ -201,11 +203,12 @@ window.PCUI = (() => {
   }
 
   function table(source) {
-    const empty = source.querySelector('tbody tr:only-child td[colspan]');
-    if ((!empty && source.querySelector('[colspan],[rowspan]')) || source.closest('.pc-table,.vxe-table,.seat-calendar')) return;
     const heads = [...source.querySelectorAll('thead th')];
     if (!heads.length) return;
-    const wrapper = source.parentElement, rows = empty ? [] : [...source.querySelectorAll('tbody > tr')].map((row, i) => ({id:i,cells:[...row.cells].map(c => c.innerHTML),attributes:[...row.cells].map(c=>Object.fromEntries([...c.attributes].filter(a=>a.name.startsWith('data-')||a.name.startsWith('aria-')).map(a=>[a.name,a.value])))}));
+    const fullRows=new Set([...source.querySelectorAll('tbody > tr[data-pc-full-row]')].filter(row=>row.cells.length===1&&row.cells[0].colSpan===heads.length&&!row.cells[0].hasAttribute('rowspan')));
+    const empty = source.querySelector('tbody tr:only-child:not([data-pc-full-row]) td[colspan]');
+    if ((!empty && [...source.querySelectorAll('[colspan],[rowspan]')].some(cell=>!fullRows.has(cell.parentElement))) || source.closest('.pc-table,.vxe-table,.seat-calendar')) return;
+    const wrapper = source.parentElement, rows = empty ? [] : [...source.querySelectorAll('tbody > tr')].map((row, i) => ({id:i,full:fullRows.has(row),cells:[...row.cells].map(c => c.innerHTML),attributes:[...row.cells].map(c=>Object.fromEntries([...c.attributes].filter(a=>a.name.startsWith('data-')||a.name.startsWith('aria-')).map(a=>[a.name,a.value])))}));
     const cols = [...source.querySelectorAll('colgroup col')];
     const shop = wrapper.classList.contains('shop-list-table');
     const slots = {}, columns = heads.map((cell, i) => {
@@ -226,6 +229,7 @@ window.PCUI = (() => {
     const minHeight=source.hasAttribute('data-pc-min-height')&&Number.isFinite(Number(source.dataset.pcMinHeight))?Math.max(0,Number(source.dataset.pcMinHeight)):160;
     const gridOptions = {columns,data:rows,border:true,round:true,align:['left','center','right'].includes(source.dataset.pcAlign)?source.dataset.pcAlign:'center',size:'small',autoHeight:true,
       minHeight,maxHeight:shop?Math.max(260,window.innerHeight-310):720,
+      mergeCells:rows.filter(row=>row.full).map(row=>({row:row.id,col:0,rowspan:1,colspan:heads.length})),
       rowConfig:{height:'auto',isHover:true},columnConfig:{resizable:true},
       showOverflow:false,emptyText:empty?.textContent.trim() || '暂无符合条件的数据',scrollX:{enabled:false},scrollY:{enabled:false}};
     mount(wrapper, {render: () => h(ByComponentsV3.components.ByTable,{gridOptions,autoHeight:true},slots)});

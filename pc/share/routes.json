@@ -98,6 +98,16 @@
       "standalone": true
     },
     {
+      "group": "统一客诉",
+      "items": [
+        [
+          "complaints",
+          "投诉处理",
+          "file"
+        ]
+      ]
+    },
+    {
       "group": "档案治理",
       "items": [
         [
@@ -189,16 +199,6 @@
           "refunds",
           "退款管理",
           "wallet"
-        ]
-      ]
-    },
-    {
-      "group": "统一客诉",
-      "items": [
-        [
-          "complaints",
-          "投诉处理",
-          "file"
         ]
       ]
     }
