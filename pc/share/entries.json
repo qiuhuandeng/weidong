@@ -1,5 +1,22 @@
 {
   "pc.html": {
-    "route": "home"
+    "route": "home",
+    "excludeModules": [
+      "supply-chain",
+      "inventory-core",
+      "inventory-clinical"
+    ],
+    "redirectModules": {
+      "supply-chain": "inventory.html",
+      "inventory-clinical": "inventory.html"
+    }
+  },
+  "inventory.html": {
+    "route": "sc-services",
+    "modules": [
+      "supply-chain",
+      "inventory-core",
+      "inventory-clinical"
+    ]
   }
 }

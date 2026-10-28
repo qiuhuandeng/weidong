@@ -7,6 +7,15 @@ window.PCModules[__MODULE_KEY__] = (() => {
   const state = { keyword: '' };
   const records = []; // Supply this module's business data; escape user text with esc().
   const action = method => 'PCModules[' + JSON.stringify(moduleName) + '].' + method + '()';
+  // Register synchronously, then initialize. The loader awaits ready and displays
+  // its rejection reason. Never write persistent business data at module top level.
+  const ready = Promise.resolve().then(initialize);
+
+  async function initialize() {
+    // Load business data here when needed. Use IndexedDB for growing records;
+    // migrate existing data once and update UI state only after a successful commit.
+    // See the spec's initialization/storage section and tools/test_loading.cjs.
+  }
 
   function render() {
     const rows = records.filter(row => !state.keyword || String(row.name).includes(state.keyword));
@@ -17,6 +26,7 @@ window.PCModules[__MODULE_KEY__] = (() => {
   }
 
   return {
+    ready,
     render,
     search() {
       state.keyword = document.querySelector('#pc-__MODULE_NAME__-keyword').value.trim();

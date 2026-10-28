@@ -144,18 +144,89 @@ class BuildChecks(unittest.TestCase):
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
         with redirect_stdout(io.StringIO()):
-            module.create('inventory', '库存', entry=True)
+            module.create('inventory-probe', '库存', entry=True)
         self.build()
-        self.assertTrue((self.root / 'pc-inventory.html').is_file())
+        self.assertTrue((self.root / 'pc-inventory-probe.html').is_file())
         with self.assertRaisesRegex(SystemExit, '已存在'):
-            module.create('inventory','库存')
+            module.create('inventory-probe','库存')
         file = self.root / 'share/routes.json'
         config = json.loads(file.read_text())
-        for source in ['vendor/vue-3.5.13.js','pages/customer/index.js','pages/inventory/../../js/core.js']:
-            config['modules']['inventory']['scripts'] = [source]
+        for source in ['vendor/vue-3.5.13.js','pages/customer/index.js','pages/inventory-probe/../../js/core.js']:
+            config['modules']['inventory-probe']['scripts'] = [source]
             file.write_text(json.dumps(config))
             with self.assertRaisesRegex(SystemExit, 'sources must stay'):
                 self.build()
+
+    def test_inventory_entry_isolates_navigation_and_keeps_shared_assets(self):
+        self.build()
+
+        def config(filename):
+            html = (self.root / filename).read_text()
+            return json.loads(re.search(r'window.PC_ASSETS=(.*?);\(function', html).group(1))
+
+        main, inventory = config('pc.html'), config('inventory.html')
+        self.assertNotIn('supply-chain', main['modules'])
+        self.assertIn('complaint-solutions', main['modules'])
+        self.assertEqual(set(inventory['modules']), {'supply-chain', 'inventory-core', 'inventory-clinical'})
+        self.assertEqual(inventory['modules']['supply-chain']['dependencies'], ['inventory-core'])
+        self.assertEqual(inventory['modules']['inventory-clinical']['dependencies'], ['supply-chain'])
+        self.assertEqual(inventory['defaultRoute'], 'sc-services')
+        inventory_routes = {route for module in inventory['modules'].values() for route in module['routes']}
+        main_items = {item[0] for group in main['navigation'] for item in group['items']}
+        inventory_items = {item[0] for group in inventory['navigation'] for item in group['items']}
+        self.assertFalse(main_items & inventory_routes)
+        self.assertEqual(inventory_items, inventory_routes)
+        self.assertTrue(all(group['items'] for group in main['navigation'] + inventory['navigation']))
+        self.assertEqual(main['routeRedirects'], {route: 'inventory.html' for route in inventory_routes})
+        self.assertEqual(inventory['routeRedirects'], {})
+        for field in ('scripts', 'styles', 'shellStyles'):
+            self.assertEqual(main[field], inventory[field])
+        for filename, entry in [('pc.html', main), ('inventory.html', inventory)]:
+            for module in entry['modules'].values():
+                self.assertTrue((self.root / module['script']).is_file(), filename)
+
+    def test_module_dependencies_are_validated_and_included_in_first_load(self):
+        manifest = self.build()
+        self.assertGreater(manifest['firstRouteGzipBytes']['inventory-clinical'], manifest['firstRouteGzipBytes']['supply-chain'])
+        file = self.root / 'share/routes.json'
+        original = file.read_text()
+        for dependencies in [['missing-module'], ['inventory-clinical']]:
+            config = json.loads(original)
+            config['modules']['inventory-core']['dependencies'] = dependencies
+            file.write_text(json.dumps(config))
+            with self.assertRaises(SystemExit):
+                self.build()
+        file.write_text(original)
+        entries = self.root / 'share/entries.json'
+        config = json.loads(entries.read_text())
+        config['inventory.html']['modules'].remove('inventory-core')
+        entries.write_text(json.dumps(config))
+        with self.assertRaises(SystemExit):
+            self.build()
+
+    def test_entry_scope_and_redirect_errors_are_rejected(self):
+        modules = {'home': {'routes': ['home']}, 'stock': {'routes': ['stock']}}
+        for entry, message in [
+            ({'route': 'home', 'modules': ['missing']}, 'invalid modules'),
+            ({'route': 'home', 'excludeModules': ['missing']}, 'invalid excludeModules'),
+            ({'route': 'home', 'modules': ['home', 'home']}, 'invalid modules'),
+            ({'route': 'home', 'modules': ['home'], 'excludeModules': []}, 'not both'),
+            ({'route': 'stock', 'modules': ['home']}, 'outside its module scope'),
+        ]:
+            with self.subTest(entry=entry), self.assertRaisesRegex(SystemExit, message):
+                self.builder.entry_scopes({'pc.html': entry}, modules)
+
+        for target in ['https://example.com', '../pc-stock.html', 'missing.html', 'pc.html']:
+            entries = {'pc.html': {'route': 'home', 'modules': ['home'], 'redirectModules': {'stock': target}},
+                       'pc-stock.html': {'route': 'stock', 'modules': ['stock']}}
+            scopes = self.builder.entry_scopes(entries, modules)
+            with self.subTest(target=target), self.assertRaisesRegex(SystemExit, 'invalid module redirect'):
+                self.builder.entry_redirects(entries, modules, scopes)
+
+        entries = {'pc.html': {'route': 'home', 'redirectModules': {'stock': 'pc-stock.html'}},
+                   'pc-stock.html': {'route': 'stock', 'modules': ['stock']}}
+        with self.assertRaisesRegex(SystemExit, 'invalid module redirect'):
+            self.builder.entry_redirects(entries, modules, self.builder.entry_scopes(entries, modules))
 
 
 if __name__ == '__main__':

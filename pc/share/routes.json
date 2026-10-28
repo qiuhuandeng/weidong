@@ -83,6 +83,124 @@
       ],
       "styles": [],
       "routes": []
+    },
+    "supply-chain": {
+      "scripts": [
+        "pages/supply-chain/catalog.js",
+        "pages/supply-chain/index.js",
+        "pages/supply-chain/operations.js",
+        "pages/supply-chain/assurance.js",
+        "pages/supply-chain/workflows.js"
+      ],
+      "styles": [],
+      "routes": [
+        "sc-services",
+        "sc-skus",
+        "sc-boms",
+        "sc-equipment",
+        "sc-cards",
+        "sc-prices",
+        "sc-purchases",
+        "sc-suppliers",
+        "sc-procurement",
+        "sc-inventory",
+        "sc-warehouses",
+        "sc-transfers",
+        "sc-counts",
+        "sc-losses",
+        "sc-expiry",
+        "sc-controlled",
+        "sc-sales",
+        "sc-quality",
+        "sc-finance",
+        "sc-reports",
+        "sc-alerts",
+        "sc-org",
+        "sc-access",
+        "sc-dicts"
+      ],
+      "dependencies": [
+        "inventory-core"
+      ]
+    },
+    "inventory-core": {
+      "scripts": [
+        "pages/inventory-core/storage.js",
+        "pages/inventory-core/model.js",
+        "pages/inventory-core/units.js",
+        "pages/inventory-core/operations.js",
+        "pages/inventory-core/commerce.js",
+        "pages/inventory-core/assurance.js",
+        "pages/inventory-core/workflows.js",
+        "pages/inventory-core/analytics.js"
+      ],
+      "styles": [],
+      "routes": []
+    },
+    "inventory-clinical": {
+      "scripts": [
+        "pages/inventory-clinical/model.js",
+        "pages/inventory-clinical/index.js"
+      ],
+      "styles": [],
+      "routes": [
+        "sc-treatments",
+        "sc-internal",
+        "sc-trays",
+        "sc-execution"
+      ],
+      "dependencies": [
+        "supply-chain"
+      ]
+    },
+    "group-approval": {
+      "scripts": [
+        "pages/group-approval/storage.js",
+        "pages/group-approval/ui.js",
+        "pages/group-approval/app.js",
+        "pages/group-approval/configuration.js",
+        "pages/group-approval/oa-runtime.js",
+        "pages/group-approval/management.js",
+        "pages/group-approval/index.js"
+      ],
+      "styles": [
+        "pages/group-approval/style.css"
+      ],
+      "routes": [
+        "group-approval",
+        "group-workbench",
+        "group-list",
+        "group-organization",
+        "group-statistics",
+        "group-mobile"
+      ],
+      "dependencies": [
+        "group-approval-data"
+      ]
+    },
+    "group-approval-designer": {
+      "scripts": [
+        "pages/group-approval-designer/designer.js",
+        "pages/group-approval-designer/index.js"
+      ],
+      "styles": [],
+      "routes": [
+        "group-rules"
+      ],
+      "dependencies": [
+        "group-approval"
+      ]
+    },
+    "group-approval-data": {
+      "scripts": [
+        "pages/group-approval-data/timing.js",
+        "pages/group-approval-data/form-model.js",
+        "pages/group-approval-data/engine.js",
+        "pages/group-approval-data/seed.js",
+        "pages/group-approval-data/index.js"
+      ],
+      "styles": [],
+      "routes": []
     }
   },
   "navigation": [
@@ -104,6 +222,41 @@
           "complaints",
           "投诉处理",
           "file"
+        ]
+      ]
+    },
+    {
+      "group": "集团审批",
+      "items": [
+        [
+          "group-workbench",
+          "审批工作台",
+          "file"
+        ],
+        [
+          "group-list",
+          "审批列表",
+          "file"
+        ],
+        [
+          "group-rules",
+          "规则配置",
+          "settings"
+        ],
+        [
+          "group-organization",
+          "组织与人员",
+          "users"
+        ],
+        [
+          "group-statistics",
+          "审批统计",
+          "grid"
+        ],
+        [
+          "group-mobile",
+          "移动端演示",
+          "phone"
         ]
       ]
     },
@@ -199,6 +352,196 @@
           "refunds",
           "退款管理",
           "wallet"
+        ]
+      ]
+    },
+    {
+      "group": "商品中心",
+      "items": [
+        [
+          "sc-services",
+          "服务项目管理",
+          "file"
+        ],
+        [
+          "sc-skus",
+          "物料 / 存货管理",
+          "file"
+        ],
+        [
+          "sc-boms",
+          "BOM 配方管理",
+          "file"
+        ],
+        [
+          "sc-equipment",
+          "仪器档案",
+          "file"
+        ],
+        [
+          "sc-cards",
+          "卡项 / 套餐",
+          "file"
+        ],
+        [
+          "sc-prices",
+          "价格体系",
+          "file"
+        ]
+      ]
+    },
+    {
+      "group": "采购管理",
+      "items": [
+        [
+          "sc-purchases",
+          "采购单据",
+          "file"
+        ],
+        [
+          "sc-suppliers",
+          "供应商管理",
+          "file"
+        ],
+        [
+          "sc-procurement",
+          "采购对账",
+          "file"
+        ]
+      ]
+    },
+    {
+      "group": "库存管理",
+      "items": [
+        [
+          "sc-inventory",
+          "库存查询",
+          "file"
+        ],
+        [
+          "sc-warehouses",
+          "仓位管理",
+          "file"
+        ],
+        [
+          "sc-transfers",
+          "调拨管理",
+          "file"
+        ],
+        [
+          "sc-counts",
+          "盘点管理",
+          "file"
+        ],
+        [
+          "sc-losses",
+          "损耗报损",
+          "file"
+        ],
+        [
+          "sc-expiry",
+          "批号效期管理",
+          "file"
+        ],
+        [
+          "sc-controlled",
+          "管制药品管理",
+          "file"
+        ]
+      ]
+    },
+    {
+      "group": "院内执行",
+      "items": [
+        [
+          "sc-treatments",
+          "治疗单与领料",
+          "file"
+        ],
+        [
+          "sc-internal",
+          "院内出库与退料",
+          "file"
+        ],
+        [
+          "sc-trays",
+          "针剂配台",
+          "file"
+        ],
+        [
+          "sc-execution",
+          "按量使用与核对",
+          "file"
+        ]
+      ]
+    },
+    {
+      "group": "销售与消耗",
+      "items": [
+        [
+          "sc-sales",
+          "销售与项目消耗",
+          "file"
+        ]
+      ]
+    },
+    {
+      "group": "质量与合规",
+      "items": [
+        [
+          "sc-quality",
+          "质量追溯与处置",
+          "file"
+        ]
+      ]
+    },
+    {
+      "group": "财务对账",
+      "items": [
+        [
+          "sc-finance",
+          "进销存财务对账",
+          "file"
+        ]
+      ]
+    },
+    {
+      "group": "报表中心",
+      "items": [
+        [
+          "sc-reports",
+          "经营分析报表",
+          "file"
+        ]
+      ]
+    },
+    {
+      "group": "预警中心",
+      "items": [
+        [
+          "sc-alerts",
+          "库存与合规预警",
+          "file"
+        ]
+      ]
+    },
+    {
+      "group": "系统设置",
+      "items": [
+        [
+          "sc-org",
+          "组织架构",
+          "file"
+        ],
+        [
+          "sc-access",
+          "权限与审批",
+          "file"
+        ],
+        [
+          "sc-dicts",
+          "基础字典",
+          "file"
         ]
       ]
     }

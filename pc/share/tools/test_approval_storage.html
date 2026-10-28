@@ -1,0 +1,98 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>集团审批存储检查</title>
+<h1>集团审批存储检查</h1>
+<p>通过本地 HTTP 服务打开。使用随机测试数据库和内存中的旧数据，不读写业务存储；完成后自动清理测试数据。</p>
+<ol id="results"></ol>
+<script src="../pages/group-approval-data/timing.js"></script>
+<script src="../pages/group-approval-data/form-model.js"></script>
+<script src="../pages/group-approval-data/engine.js"></script>
+<script src="../pages/group-approval-data/seed.js"></script>
+<script>
+// A reusable native IndexedDB regression, independent of the full UI or CDP.
+const query=new URLSearchParams(location.search), run=query.get('run')||crypto.randomUUID();
+const mode=query.get('mode')||'pc', receiver=query.has('receiver');
+query.set('run',run);query.set('mode',mode);history.replaceState(null,'','?'+query);
+const key='weid.pc.group-approval.v1', legacy='meiye.group-approval.prototype.v1';
+const testKey='weid-storage-test-'+run, databaseName='weid-approval-test-'+run+'-'+mode;
+const NativeBroadcastChannel=window.BroadcastChannel;
+window.BroadcastChannel=class extends NativeBroadcastChannel {constructor(name){super(name+'-test-'+run+'-'+mode)}};
+const connections=[], nativeOpen=IDBFactory.prototype.open;
+IDBFactory.prototype.open=function(name,...args){
+  if(name!=='weid-pc-group-approval-v1')throw Error('Unexpected database: '+name);
+  const request=nativeOpen.call(this,databaseName,...args);
+  request.addEventListener('success',()=>connections.push(request.result));return request;
+};
+const nativePut=IDBObjectStore.prototype.put;
+IDBObjectStore.prototype.put=function(...args){if(window.failWrite)throw new DOMException('No space','QuotaExceededError');return nativePut.apply(this,args)};
+const fixture=GroupSeed.create();fixture.revision=7;fixture.requests[0].title='原审批数据保留核对';
+const oldData=JSON.stringify(fixture), nativeGet=Storage.prototype.getItem, nativeSet=Storage.prototype.setItem, nativeRemove=Storage.prototype.removeItem;
+const sourceData=mode==='pc'?JSON.stringify({...fixture,revision:3,requests:fixture.requests.map((r,i)=>i?r:{...r,title:'中台记录不得覆盖 PC 记录'})}):oldData;
+// Intercept the exact business keys before loading the real persistence code.
+// The browser's actual localStorage is never used for these fixtures.
+Storage.prototype.getItem=function(k){if(this===localStorage){if(k===key)return mode==='pc'?oldData:null;if(k===legacy)return sourceData;throw Error('Unexpected localStorage read: '+k)}return nativeGet.call(this,k)};
+Storage.prototype.setItem=function(k,v){if(this===localStorage)throw new DOMException('No space','QuotaExceededError');return nativeSet.call(this,k,v)};
+Storage.prototype.removeItem=function(k){if(this===localStorage)throw Error('Business data must not be deleted');return nativeRemove.call(this,k)};
+</script>
+<script src="../pages/group-approval/storage.js"></script>
+<script src="../pages/group-approval/app.js"></script>
+<script>
+const results=[], check=(ok,text)=>{if(!ok)throw Error(text);results.push((mode==='pc'?'PC 旧数据：':'中台旧数据：')+text)};
+let frame;
+function message(type){return new Promise((resolve,reject)=>{
+  const timer=setTimeout(()=>{removeEventListener('message',handler);reject(Error('跨窗口同步超时：'+type))},8000);
+  function handler(event){if(event.source===frame?.contentWindow&&event.data?.type===type){clearTimeout(timer);removeEventListener('message',handler);resolve(event.data)}}
+  addEventListener('message',handler);
+})}
+async function cleanup(){
+  if(frame){const closed=message('closed');frame.contentWindow.postMessage({type:'close'},location.origin);await closed;frame.remove();frame=null}
+  connections.forEach(db=>db.close());
+  await new Promise((resolve,reject)=>{const request=indexedDB.deleteDatabase(databaseName);request.onsuccess=resolve;request.onerror=()=>reject(request.error);request.onblocked=()=>reject(Error('测试数据库仍被占用'))});
+}
+async function verify(){
+  await PCGroupStorage.initialize();GA.load();
+  if(receiver){
+    PCGroupStorage.subscribe(()=>parent.postMessage({type:'changed',revision:PCGroupStorage.current.revision},location.origin));
+    addEventListener('message',event=>{if(event.source===parent&&event.data?.type==='close'){connections.forEach(db=>db.close());parent.postMessage({type:'closed'},location.origin)}});
+    parent.postMessage({type:'ready'},location.origin);return;
+  }
+  const progress=JSON.parse(sessionStorage.getItem(testKey)||'{"phase":"write","results":[]}');
+  if(progress.phase==='reload'){
+    check(GA.state.requests.some(r=>r.title==='容量满时保存的草稿'),'刷新后草稿保留且不重复迁移');
+    check(GA.state.requests.some(r=>r.events.some(e=>e.note?.includes('保存审批核对'))),'刷新后审批记录保留');
+    await cleanup();const completed=[...progress.results,...results];
+    if(mode==='pc'){
+      sessionStorage.setItem(testKey,JSON.stringify({phase:'write',results:completed}));
+      query.set('mode','legacy');location.replace('?'+query);return;
+    }
+    sessionStorage.removeItem(testKey);
+    history.replaceState(null,'',location.pathname);
+    for(const text of completed){const li=document.createElement('li');li.textContent='通过：'+text;document.querySelector('#results').append(li)}
+    document.body.dataset.complete='true';document.title=completed.length+' 项通过 · 集团审批存储检查';return;
+  }
+  check(GA.state.revision===7&&GA.state.requests[0].title==='原审批数据保留核对','已有数据完整迁移');
+  frame=document.createElement('iframe');frame.hidden=true;
+  frame.src='?run='+encodeURIComponent(run)+'&mode='+mode+'&receiver=1';
+  const ready=message('ready');document.body.append(frame);await ready;
+  const count=GA.state.requests.length, synced=message('changed');
+  await GA.mutate(s=>GA.E.submit(s,'admin',{templateId:'expense',title:'容量满时保存的草稿',company:'hq',department:'finance',values:{}},true));
+  check(GA.state.requests.length===count+1,'localStorage 全部写入失败时仍可保存草稿');
+  check((await synced).revision===GA.state.revision,'localStorage 已满时其他窗口仍收到更新');
+  const pending=GA.state.requests.find(r=>GA.E.pendingFor(r,'admin'));
+  await GA.mutate(s=>GA.E.act(s,'admin',pending.id,GA.E.current(pending).type==='handling'?'complete':'approve',{note:'保存审批核对'}));
+  check(GA.state.requests.find(r=>r.id===pending.id).events.some(e=>e.note?.includes('保存审批核对')),'容量满时审批处理仍可提交');
+  check(localStorage.getItem(key)===(mode==='pc'?oldData:null)&&localStorage.getItem(legacy)===sourceData,'两个原存储键均保留');
+  const before=JSON.stringify(GA.state);window.failWrite=true;let failed=false;
+  try{await GA.mutate(s=>{s.requests[0].title='不应保存'})}catch{failed=true}finally{window.failWrite=false}
+  check(failed&&JSON.stringify(GA.state)===before,'写入失败不污染已保存状态');
+  const a=structuredClone(await PCGroupStorage.read()),b=structuredClone(a),revision=a.revision;a.revision++;b.revision++;
+  const commits=await Promise.allSettled([PCGroupStorage.write(a,revision),PCGroupStorage.write(b,revision)]);
+  check(commits.filter(x=>x.status==='fulfilled').length===1&&commits.filter(x=>x.status==='rejected').length===1,'拒绝并发的旧版本覆盖');
+  const closed=message('closed');frame.contentWindow.postMessage({type:'close'},location.origin);await closed;frame.remove();frame=null;
+  sessionStorage.setItem(testKey,JSON.stringify({phase:'reload',results:[...progress.results,...results]}));location.reload();
+}
+verify().catch(async error=>{
+  const pre=document.createElement('pre');pre.textContent=error.stack;document.body.append(pre);document.body.dataset.complete='failed';
+  if(!receiver){try{await cleanup()}catch{}sessionStorage.removeItem(testKey)}
+});
+</script>

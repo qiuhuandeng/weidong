@@ -1,0 +1,49 @@
+<!doctype html>
+<!-- Generated PC entry: share/tools/build.py -->
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WEID微动 · 系统管理后台</title>
+<style>
+/* PC design tokens. Shared by every PC entry; never imported by other systems. */
+:root {
+  --pc-primary:#409eff; --pc-primary-hover:#66b1ff; --pc-page:#f0f2f5;
+  --pc-text:#606266; --pc-title:#303133; --pc-muted:#909399;
+  --pc-border:#dcdfe6; --pc-line:#ebeef5; --pc-radius:4px;
+  --pc-sidebar:160px; --pc-header:50px; --pc-gap:12px; --pc-font:13px; --pc-control:32px; --pc-search-control:28px;
+  --pc-table-line:20px; --pc-table-padding:6px 8px; --pc-form-gap:14px;
+  --pc-search-padding:16px 20px; --pc-search-row-gap:12px; --pc-search-actions-gap:16px; --pc-search-field-width:280px;
+  --pc-tab-height:44px; --pc-tab-gap:24px; --pc-tab-padding:0 16px;
+  --blue:var(--pc-primary); --blue-hover:var(--pc-primary-hover); --blue-light:#ecf5ff;
+  --ink:var(--pc-title); --muted:var(--pc-muted); --line:var(--pc-line); --bg:var(--pc-page);
+  --green:#67c23a; --orange:#e6a23c; --red:#f56c6c; --radius:4px; --shadow:none;
+  --el-color-primary:var(--pc-primary); --el-color-primary-light-3:#79bbff;
+  --el-font-size-base:var(--pc-font); --el-font-size-small:12px; --el-border-radius-base:4px;
+  --vxe-ui-font-color:#606266; --vxe-ui-font-primary-color:#409eff;
+  --vxe-ui-table-border-color:#e8eaec; --vxe-ui-table-header-background-color:#f8f8f9;
+  --vxe-ui-table-row-hover-background-color:#f5f7fa; --vxe-ui-font-size-default:var(--pc-font);
+  --ui-control-height:28px; --ui-filter-padding:var(--pc-search-padding); --ui-filter-height:60px;
+  --ui-control-gap:12px; --ui-head-padding:8px 12px; --ui-head-height:44px;
+  --ui-pagination-padding:8px 10px; --ui-table-cell-padding:var(--pc-table-padding);
+  --ui-table-line-height:var(--pc-table-line); --ui-table-secondary-font:12px; --ui-table-secondary-gap:0;
+  --ui-table-link-height:24px; --ui-table-link-padding:0px;
+}
+/* First paint uses the same shell geometry and colors as theme.css. */
+@layer pc-business {
+*{box-sizing:border-box}body{margin:0;background:var(--pc-page);color:var(--pc-text);font:var(--pc-font)/1.55 "Helvetica Neue",Helvetica,"PingFang SC","Microsoft YaHei",Arial,sans-serif}button,input,select,textarea{font:inherit}button{cursor:pointer}svg.icon{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}.sidebar{position:fixed;inset:0 auto 0 0;width:var(--pc-sidebar);background:#304156;color:#bfcbd9;display:flex;flex-direction:column;z-index:30;overflow:hidden}.brand{height:var(--pc-header);min-height:var(--pc-header);padding:0 18px;display:flex;align-items:center;background:#2b2f3a}.brand-name{font-size:20px;font-weight:600;color:white;white-space:nowrap}.brand-name span{font-size:18px;font-weight:500}.brand-mark,.brand-sub{display:none}.body{margin-left:var(--pc-sidebar)}.topbar{height:var(--pc-header);padding:0 20px;background:#fff;display:flex;align-items:center;justify-content:space-between;box-shadow:0 1px 4px #00152914}.row,.crumb,.top-tools{display:flex;align-items:center;gap:10px}.crumb b{color:#97a8be}.icon-btn{border:0;background:transparent;color:var(--pc-text)}.avatar{display:flex;align-items:center;justify-content:center;background:var(--pc-primary);color:#fff;border-radius:4px}.main{padding:var(--pc-gap)}#nav{padding:0;flex:1;min-height:0;overflow:auto;scrollbar-width:none;scrollbar-gutter:auto}#nav::-webkit-scrollbar{display:none;width:0;height:0}.nav-group-toggle,.nav-item{width:100%;border:0;background:transparent;text-align:left;display:flex;align-items:center;gap:9px;min-height:40px;font-size:var(--pc-font);color:#bfcbd9}.nav-group-toggle{padding:9px 16px;justify-content:space-between}.nav-group-heading{display:flex;align-items:center;gap:8px}.nav-group-items{background:#1f2d3d}.nav-group-items .nav-item{padding:9px 12px 9px 36px;border-left:2px solid transparent}.nav-item.active{background:#3b5069;color:var(--pc-primary);border-left-color:var(--pc-primary)}.nav-group.is-collapsed .nav-group-items{display:none}.app.sidebar-collapsed .sidebar{width:64px}.app.sidebar-collapsed .body{margin-left:64px}#toast:not(.show){display:none}#role[hidden]{display:none}
+@media(max-width:760px){.sidebar{transform:translateX(-100%)}.sidebar.open{transform:none}.body{margin-left:0}}
+}
+.pc-loading{min-height:160px;display:flex;align-items:center;justify-content:center;gap:16px;background:#fff;border-radius:4px;color:var(--pc-muted);font-size:var(--pc-font)}.pc-loading button{padding:6px 12px;border:1px solid #dcdfe6;border-radius:4px;background:#fff;color:var(--pc-primary)}
+
+</style>
+<script defer fetchpriority="high" src="share/dist/js/app.0f3256d8d0c0b9c6.js" onerror="PC_BOOT_FAILED()"></script>
+<script>window.PC_ASSETS={"scripts":["share/dist/js/vendor.27618b08a27e7019.js","share/dist/js/components.8800ee812d30868a.js"],"styles":["share/dist/css/business.7d50a32ca6672788.css","share/dist/css/vendor.eb8773a535d3b413.css","share/dist/css/theme.98ed2ef85054e28d.css"],"shellStyles":["share/dist/css/business.7d50a32ca6672788.css","share/dist/css/theme.98ed2ef85054e28d.css"],"defaultRoute":"sc-services","modules":{"supply-chain":{"routes":["sc-services","sc-skus","sc-boms","sc-equipment","sc-cards","sc-prices","sc-purchases","sc-suppliers","sc-procurement","sc-inventory","sc-warehouses","sc-transfers","sc-counts","sc-losses","sc-expiry","sc-controlled","sc-sales","sc-quality","sc-finance","sc-reports","sc-alerts","sc-org","sc-access","sc-dicts"],"script":"share/dist/js/supply-chain.0fd1bed289778ee6.js","styles":[],"requiresUI":true,"dependencies":["inventory-core"]},"inventory-core":{"routes":[],"script":"share/dist/js/inventory-core.a978ab25143d62e7.js","styles":[],"requiresUI":true,"dependencies":[]},"inventory-clinical":{"routes":["sc-treatments","sc-internal","sc-trays","sc-execution"],"script":"share/dist/js/inventory-clinical.cfa7c42d9038642d.js","styles":[],"requiresUI":true,"dependencies":["supply-chain"]}},"navigation":[{"group":"商品中心","items":[["sc-services","服务项目管理","file"],["sc-skus","物料 / 存货管理","file"],["sc-boms","BOM 配方管理","file"],["sc-equipment","仪器档案","file"],["sc-cards","卡项 / 套餐","file"],["sc-prices","价格体系","file"]]},{"group":"采购管理","items":[["sc-purchases","采购单据","file"],["sc-suppliers","供应商管理","file"],["sc-procurement","采购对账","file"]]},{"group":"库存管理","items":[["sc-inventory","库存查询","file"],["sc-warehouses","仓位管理","file"],["sc-transfers","调拨管理","file"],["sc-counts","盘点管理","file"],["sc-losses","损耗报损","file"],["sc-expiry","批号效期管理","file"],["sc-controlled","管制药品管理","file"]]},{"group":"院内执行","items":[["sc-treatments","治疗单与领料","file"],["sc-internal","院内出库与退料","file"],["sc-trays","针剂配台","file"],["sc-execution","按量使用与核对","file"]]},{"group":"销售与消耗","items":[["sc-sales","销售与项目消耗","file"]]},{"group":"质量与合规","items":[["sc-quality","质量追溯与处置","file"]]},{"group":"财务对账","items":[["sc-finance","进销存财务对账","file"]]},{"group":"报表中心","items":[["sc-reports","经营分析报表","file"]]},{"group":"预警中心","items":[["sc-alerts","库存与合规预警","file"]]},{"group":"系统设置","items":[["sc-org","组织架构","file"],["sc-access","权限与审批","file"],["sc-dicts","基础字典","file"]]}],"routeRedirects":{}};(function(c){var r=location.hash.slice(1).split('?')[0]||c.defaultRoute;if(Object.hasOwn(c.routeRedirects,r))return;var m=Object.values(c.modules).find(function(m){return m.routes.includes(r)})||Object.values(c.modules).find(function(m){return m.routes.includes(c.defaultRoute)});[[(m.requiresUI?c.scripts:[]).concat(m.script),'script'],[(m.requiresUI?c.styles:c.shellStyles).concat(m.styles),'style']].forEach(function(g){g[0].forEach(function(url){var l=document.createElement('link');l.rel='preload';l.as=g[1];l.href=url;l.dataset.pcPreload='';document.head.appendChild(l)})})})(window.PC_ASSETS);window.PC_BOOT_FAILED=function(error){function show(){var main=document.getElementById('main');main.removeAttribute('aria-busy');main.innerHTML='<div class="pc-loading" role="alert"><span></span><button type="button" onclick="location.reload()">重新加载</button></div>';main.querySelector('span').textContent=error&&error.message?'页面加载失败：'+error.message:'页面资源加载失败，请重新加载后重试。'}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',show,{once:true});else show()};window.PC_BOOT_TIMER=setTimeout(function(){if(!window.PCApp)PC_BOOT_FAILED()},30000);</script>
+</head>
+<body>
+<div class="app"><aside class="sidebar" id="sidebar"><div class="brand"><div class="brand-mark" id="brandMark"></div><div><div class="brand-name" aria-label="WEID微动">WEID<span>微动</span></div><div class="brand-sub">系统管理后台</div></div></div><nav class="nav" id="nav"></nav></aside><div class="body"><header class="topbar"><div class="row"><button class="icon-btn mobile-toggle" onclick="toggleSidebar()" aria-label="展开或收起菜单">☰</button><div class="crumb" id="crumb"></div></div><div class="top-tools"><select id="role" hidden class="role-select" aria-label="切换演示角色"><option>总部运营</option><option>门店店长</option><option>总部财务</option><option>系统管理员</option><option>咨询师</option></select><div class="avatar" style="width:28px;height:28px">张</div></div></header><main id="main" class="main" aria-busy="true"><div class="pc-loading" role="status">正在加载…</div></main></div></div>
+<div id="mergeDrawers"></div><div id="modal"></div><div id="toast" role="status" aria-live="polite"></div>
+
+<noscript>请启用 JavaScript 后使用系统。</noscript>
+</body>
+</html>

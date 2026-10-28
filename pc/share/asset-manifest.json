@@ -1,16 +1,23 @@
 {
-  "entryBytes": 9436,
+  "entryBytes": 11491,
   "entries": {
-    "pc.html": 9436
+    "pc.html": 11491,
+    "inventory.html": 10006
   },
-  "sharedGzipBytes": 1273254,
+  "sharedGzipBytes": 1273976,
   "preferredFontBytes": 28440,
   "firstRouteGzipBytes": {
-    "customer": 1455758,
-    "management": 1332824,
-    "complaints": 1315367,
-    "home": 50069,
-    "complaint-solutions": 1281866
+    "customer": 1456993,
+    "management": 1334059,
+    "complaints": 1316602,
+    "home": 51169,
+    "complaint-solutions": 1283101,
+    "supply-chain": 1370117,
+    "inventory-core": 1323516,
+    "inventory-clinical": 1387601,
+    "group-approval": 1348643,
+    "group-approval-designer": 1368638,
+    "group-approval-data": 1297185
   },
   "files": {
     "js/vendor.27618b08a27e7019.js": {
@@ -18,10 +25,10 @@
       "gzipBytes": 1089614,
       "sha256": "27618b08a27e7019e7085048ae95121c06888913a38f5b5a0d5b198933eabddc"
     },
-    "js/components.190ea2b6d5331eb3.js": {
-      "bytes": 32054,
-      "gzipBytes": 10156,
-      "sha256": "190ea2b6d5331eb3c0d717865ec244bb86d6419007d22c288e9a7442fa11c0e4"
+    "js/components.8800ee812d30868a.js": {
+      "bytes": 32453,
+      "gzipBytes": 10291,
+      "sha256": "8800ee812d30868ab45fd4ede1b2c889238b685bb428b34a08b87a85c3d04d0e"
     },
     "css/business.7d50a32ca6672788.css": {
       "bytes": 167514,
@@ -63,15 +70,15 @@
       "gzipBytes": 99336,
       "sha256": "eb8773a535d3b4135a077277e6b335aec732c671140ea3084d4e76abacda07d3"
     },
-    "css/theme.62955847fdfd87a7.css": {
-      "bytes": 25241,
-      "gzipBytes": 6378,
-      "sha256": "62955847fdfd87a75b4d9084129dc98675fd17767919ab40b9146078eced7cff"
+    "css/theme.98ed2ef85054e28d.css": {
+      "bytes": 25789,
+      "gzipBytes": 6512,
+      "sha256": "98ed2ef85054e28d13846cbae043405fb3756d353e2e1aef263f1cbeddc61eb2"
     },
-    "js/app.16e755aeb5418d1f.js": {
-      "bytes": 21744,
-      "gzipBytes": 7877,
-      "sha256": "16e755aeb5418d1f72b9cfd121ec474acaec6ff546ef2419b24c4d0f71ef16f9"
+    "js/app.0f3256d8d0c0b9c6.js": {
+      "bytes": 23264,
+      "gzipBytes": 8330,
+      "sha256": "0f3256d8d0c0b9c66f5dd537a1a70f21df11957ee1d19f008337ae820f54bbfb"
     },
     "js/customer.271cd9b5fff3381e.js": {
       "bytes": 601260,
@@ -102,6 +109,41 @@
       "bytes": 14670,
       "gzipBytes": 4640,
       "sha256": "7c4c3dfb60b1222588bfa3bde1fec6b74059e3d56a657e01ea712853c657869c"
+    },
+    "js/supply-chain.0fd1bed289778ee6.js": {
+      "bytes": 150047,
+      "gzipBytes": 46601,
+      "sha256": "0fd1bed289778ee6532fd37b80a71eab7133f88b0fb1781dd56d72090515eae6"
+    },
+    "js/inventory-core.a978ab25143d62e7.js": {
+      "bytes": 143755,
+      "gzipBytes": 45055,
+      "sha256": "a978ab25143d62e7da5c9717075093dbee5121ac6cea32e4c415675781a4e4b4"
+    },
+    "js/inventory-clinical.cfa7c42d9038642d.js": {
+      "bytes": 57297,
+      "gzipBytes": 17484,
+      "sha256": "cfa7c42d9038642d399645b48136d4eaa465334e5a621bf8bb4645bc2912b4b1"
+    },
+    "js/group-approval.cdcc02c2930a80a6.js": {
+      "bytes": 151300,
+      "gzipBytes": 46604,
+      "sha256": "cdcc02c2930a80a69f7d18ff5209a90db2eb0f122b9022e78124c89f0f91a930"
+    },
+    "css/group-approval.90e5476b18361dc4.css": {
+      "bytes": 26593,
+      "gzipBytes": 4854,
+      "sha256": "90e5476b18361dc4a289f0f76aebe1ff3c7ff6b883c1ee21a04eb649b584de07"
+    },
+    "js/group-approval-designer.dd040327562ae9b5.js": {
+      "bytes": 62556,
+      "gzipBytes": 19995,
+      "sha256": "dd040327562ae9b5cf53ed61d2dd3d6e4b025eeac36e063ed8ae424b9eca7602"
+    },
+    "js/group-approval-data.6511232bdc366ee8.js": {
+      "bytes": 56449,
+      "gzipBytes": 18724,
+      "sha256": "6511232bdc366ee89f46d707b602da75e9ac66547164b52e18050e2db8bcc960"
     }
   }
 }

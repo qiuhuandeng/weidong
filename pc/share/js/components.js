@@ -87,6 +87,9 @@ window.PCUI = (() => {
     const controlId = (source.id || 'pc-control-' + ++sequence) + '-control';
     const boolean=kind === 'switch' || choice;
     const value = ref(boolean ? source.checked : source.value);
+    // Business bulk actions update the retained native value before synchronizing
+    // the visible company control, just as dependent selectors already do.
+    controlStates.set(source,()=>{value.value=boolean ? source.checked : source.value;});
     if(choice)choices.set(source,value);
     const update = next => {
       value.value = next;
@@ -361,11 +364,12 @@ window.PCUI = (() => {
     source.dataset.pcTabs='true';
     source.addEventListener('keydown',event=>{
       const current=event.target.closest('.pc-tab');
-      if(!current || current.parentElement!==source || current.hasAttribute('onkeydown') || !['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
+      const vertical=source.getAttribute('aria-orientation')==='vertical',previousKey=vertical?'ArrowUp':'ArrowLeft',nextKey=vertical?'ArrowDown':'ArrowRight';
+      if(!current || current.parentElement!==source || current.hasAttribute('onkeydown') || ![previousKey,nextKey,'Home','End'].includes(event.key))return;
       const enabled=[...source.children].filter(el=>el.matches('.pc-tab:not(:disabled)'));
       if(!enabled.length)return;
       event.preventDefault();
-      const index=enabled.indexOf(current),nextIndex=event.key==='Home'?0:event.key==='End'?enabled.length-1:(index+(event.key==='ArrowRight'?1:-1)+enabled.length)%enabled.length;
+      const index=enabled.indexOf(current),nextIndex=event.key==='Home'?0:event.key==='End'?enabled.length-1:(index+(event.key===nextKey?1:-1)+enabled.length)%enabled.length;
       const root=source.closest(scope),groupIndex=root?[...root.querySelectorAll('.pc-tabs')].indexOf(source):-1;
       pendingTabFocus={root,groupIndex};
       enabled[nextIndex].click();

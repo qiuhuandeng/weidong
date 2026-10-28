@@ -16,13 +16,20 @@ window.PCApp = (() => {
     if (cache.has(url)) return cache.get(url);
     const promise = new Promise((resolve, reject) => {
       const node = document.createElement(type === 'script' ? 'script' : 'link');
-      const failed = () => { clearTimeout(timeout); cache.delete(url); node.remove(); reject(new Error('资源加载失败：' + url)); };
-      const timeout = setTimeout(failed, 30000);
+      const cleanup = () => { clearTimeout(timeout); window.removeEventListener('error', executionFailed); };
+      const failed = error => { cleanup(); cache.delete(url); node.remove(); reject(error); };
+      // A downloaded script can throw before registering its module. Preserve
+      // that cause instead of reporting a missing module or a network failure.
+      const executionFailed = event => {
+        if (event.filename === node.src) failed(event.error || new Error(event.message));
+      };
+      const timeout = setTimeout(() => failed(new Error('资源加载超时：' + url)), 30000);
       if (type === 'script') { node.src = url; node.async = !ordered; }
       else { node.rel = 'stylesheet'; node.href = url; }
       node.dataset.pcAsset = type;
-      node.onload = () => { clearTimeout(timeout); resolve(node); };
-      node.onerror = failed;
+      if (type === 'script') window.addEventListener('error', executionFailed);
+      node.onload = () => { cleanup(); resolve(node); };
+      node.onerror = () => failed(new Error('资源加载失败：' + url));
       if (type === 'style') {
         // A shell-only route may load the theme before vendor styles are needed.
         // Preserve the same cascade order on every navigation and failed-load retry.
@@ -56,6 +63,16 @@ window.PCApp = (() => {
   function load(name) {
     if (modules.has(name)) return modules.get(name);
     const module = config.modules[name];
+    if (!module) return Promise.reject(new Error('页面依赖未登记：' + name));
+    if (module.dependencies?.length) {
+      const promise = Promise.all(module.dependencies.map(load)).then(() => loadOwn(name, module));
+      const guarded = promise.catch(error => { modules.delete(name); throw error; });
+      modules.set(name, guarded);
+      return guarded;
+    }
+    return loadOwn(name, module);
+  }
+  function loadOwn(name, module) {
     preload(module.script, 'script');
     // Insert after the shared scripts immediately, so the browser can stream-parse
     // this module while dependencies download. async=false keeps execution ordered.
@@ -63,9 +80,13 @@ window.PCApp = (() => {
       ? Promise.all(config.shellStyles.map(url => resource(url, 'style')))
       : common();
     const promise = Promise.all([dependencies, ...module.styles.map(url => resource(url, 'style')), resource(module.script, 'script', module.requiresUI !== false)])
-      .then(() => {
+      .then(async () => {
         if (!window.PCModules[name]) throw new Error('页面模块未就绪：' + name);
-        return window.PCModules[name];
+        const instance = window.PCModules[name];
+        // Some business modules hydrate persistent data asynchronously.
+        await instance.ready;
+        if (typeof instance.render !== 'function') throw new Error('页面初始化未完成：' + name);
+        return instance;
       }).catch(error => { modules.delete(name); throw error; });
     modules.set(name, promise);
     return promise;
@@ -79,6 +100,13 @@ window.PCApp = (() => {
   async function navigate() {
     const turn = ++navigation;
     let path = location.hash.slice(1).split('?')[0] || config.defaultRoute;
+    const destination = Object.hasOwn(config.routeRedirects || {}, path) ? config.routeRedirects[path] : null;
+    if (destination) {
+      activeModule?.leave?.();
+      window.PCUI?.closeDialog();
+      location.replace(destination + location.search + location.hash);
+      return;
+    }
     if (!routeModules.has(path)) path = config.defaultRoute;
     if (!location.hash || !routeModules.has(location.hash.slice(1).split('?')[0])) {
       history.replaceState(null, '', '#' + path);
@@ -105,7 +133,7 @@ window.PCApp = (() => {
     } catch (error) {
       if (turn !== navigation) return;
       console.error('[PC loading]', error);
-      window.PC_BOOT_FAILED();
+      window.PC_BOOT_FAILED(error);
     }
   }
   function redraw() {

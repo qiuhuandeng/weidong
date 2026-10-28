@@ -23,6 +23,42 @@ def read(filename):
     return (ROOT / filename).read_text()
 
 
+def entry_scopes(entries, modules):
+    """Select an entry's module registry before emitting routes and navigation."""
+    scopes = {}
+    for filename, entry in entries.items():
+        if 'modules' in entry and 'excludeModules' in entry:
+            raise SystemExit(f'{filename}: use modules or excludeModules, not both')
+        for field in ('modules', 'excludeModules'):
+            names = entry.get(field, [])
+            if (not isinstance(names, list) or
+                    any(not isinstance(name, str) or name not in modules for name in names) or
+                    len(set(names)) != len(names)):
+                raise SystemExit(f'{filename}: invalid {field}')
+        selected = entry.get('modules', list(modules))
+        scopes[filename] = [name for name in selected if name not in entry.get('excludeModules', [])]
+        if not any(entry['route'] in modules[name]['routes'] for name in scopes[filename]):
+            raise SystemExit(f'{filename}: default route is outside its module scope')
+    return scopes
+
+
+def entry_redirects(entries, modules, scopes):
+    """Only allow local, registered destinations that really own each old route."""
+    redirects = {}
+    for filename, entry in entries.items():
+        mapping = entry.get('redirectModules', {})
+        if not isinstance(mapping, dict):
+            raise SystemExit(f'{filename}: invalid redirectModules')
+        redirects[filename] = {}
+        for name, target in mapping.items():
+            if (name not in modules or name in scopes[filename] or
+                    not isinstance(target, str) or target not in entries or
+                    name not in scopes[target]):
+                raise SystemExit(f'{filename}: invalid module redirect {name}')
+            redirects[filename].update({route: target for route in modules[name]['routes']})
+    return redirects
+
+
 def build():
     manifest = json.loads(read('vendor/manifest.json'))
     for filename, expected in manifest['files'].items():
@@ -30,6 +66,13 @@ def build():
             raise SystemExit(f'Vendor checksum mismatch: {filename}')
     routes = json.loads(read('routes.json'))
     entries = json.loads(read('entries.json'))
+    def check_dependencies(name, chain=()):
+        if name in chain or name not in routes['modules']:
+            raise SystemExit('Invalid or circular module dependency: ' + ' -> '.join((*chain, name)))
+        for dependency in routes['modules'][name].get('dependencies', []):
+            check_dependencies(dependency, (*chain, name))
+    for name in routes['modules']:
+        check_dependencies(name)
     all_routes = [route for module in routes['modules'].values() for route in module['routes']]
     if len(set(all_routes)) != len(all_routes) or routes['defaultRoute'] not in all_routes:
         raise SystemExit('Duplicate route or missing default route')
@@ -37,8 +80,8 @@ def build():
         raise SystemExit('entries.json must retain pc.html')
     for filename, entry in entries.items():
         # Keep the builder away from index, zhongtai, V3 and arbitrary file paths.
-        if not re.fullmatch(r'pc(?:-[a-z0-9]+)*\.html', filename):
-            raise SystemExit(f'PC entry must be pc.html or pc-<name>.html: {filename}')
+        if filename != 'inventory.html' and not re.fullmatch(r'pc(?:-[a-z0-9]+)*\.html', filename):
+            raise SystemExit(f'PC entry must be pc.html, inventory.html or pc-<name>.html: {filename}')
         if entry['route'] not in all_routes:
             raise SystemExit(f'Entry route has no module: {filename}')
         target = PROJECT / filename
@@ -48,6 +91,12 @@ def build():
         for route, *_ in group['items']:
             if route not in all_routes:
                 raise SystemExit(f'Navigation route has no module: {route}')
+    scopes = entry_scopes(entries, routes['modules'])
+    for filename, selected in scopes.items():
+        for name in selected:
+            if any(dep not in selected for dep in routes['modules'][name].get('dependencies', [])):
+                raise SystemExit(filename + ': missing module dependency for ' + name)
+    redirects = entry_redirects(entries, routes['modules'], scopes)
     OUT.mkdir(parents=True, exist_ok=True)
     report = {}
     pending = {}
@@ -119,17 +168,25 @@ def build():
             raise SystemExit(f'{name} exceeds compressed module budget: {size:,} > {budget:,}. Split the business module; do not raise the limit to bypass this check.')
         if 'requiresUI' in module and not isinstance(module['requiresUI'], bool):
             raise SystemExit(f'{name} requiresUI must be a boolean')
-        modules[name] = {'routes': module['routes'], 'script': module_js, 'styles': module_css, 'requiresUI': module.get('requiresUI', True)}
+        modules[name] = {'routes': module['routes'], 'script': module_js, 'styles': module_css, 'requiresUI': module.get('requiresUI', True), 'dependencies': module.get('dependencies', [])}
     shell_styles = [styles[0], styles[2]]
-    config = {'defaultRoute': routes['defaultRoute'], 'navigation': routes['navigation'], 'scripts': scripts, 'styles': styles, 'shellStyles': shell_styles, 'modules': modules}
+    config = {'scripts': scripts, 'styles': styles, 'shellStyles': shell_styles}
     template = read('templates/entry.html').replace('<!-- pc-critical -->', '<style>\n' + read('css/tokens.css') + read('css/critical.css') + '\n</style>')
     # Discover the selected route's assets before downloading/executing the shell.
     # Preload does not block first paint like a stylesheet link would.
-    hints = """(function(c){var r=location.hash.slice(1).split('?')[0]||c.defaultRoute,m=Object.values(c.modules).find(function(m){return m.routes.includes(r)})||Object.values(c.modules).find(function(m){return m.routes.includes(c.defaultRoute)});[[(m.requiresUI?c.scripts:[]).concat(m.script),'script'],[(m.requiresUI?c.styles:c.shellStyles).concat(m.styles),'style']].forEach(function(g){g[0].forEach(function(url){var l=document.createElement('link');l.rel='preload';l.as=g[1];l.href=url;l.dataset.pcPreload='';document.head.appendChild(l)})})})(window.PC_ASSETS);"""
-    fallback = """window.PC_BOOT_FAILED=function(){function show(){var main=document.getElementById('main');main.removeAttribute('aria-busy');main.innerHTML='<div class="pc-loading" role="alert"><span>页面加载失败，请检查网络后重试。</span><button type="button" onclick="location.reload()">重新加载</button></div>'}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',show,{once:true});else show()};window.PC_BOOT_TIMER=setTimeout(function(){if(!window.PCApp)PC_BOOT_FAILED()},30000);"""
+    hints = """(function(c){var r=location.hash.slice(1).split('?')[0]||c.defaultRoute;if(Object.hasOwn(c.routeRedirects,r))return;var m=Object.values(c.modules).find(function(m){return m.routes.includes(r)})||Object.values(c.modules).find(function(m){return m.routes.includes(c.defaultRoute)});[[(m.requiresUI?c.scripts:[]).concat(m.script),'script'],[(m.requiresUI?c.styles:c.shellStyles).concat(m.styles),'style']].forEach(function(g){g[0].forEach(function(url){var l=document.createElement('link');l.rel='preload';l.as=g[1];l.href=url;l.dataset.pcPreload='';document.head.appendChild(l)})})})(window.PC_ASSETS);"""
+    fallback = """window.PC_BOOT_FAILED=function(error){function show(){var main=document.getElementById('main');main.removeAttribute('aria-busy');main.innerHTML='<div class="pc-loading" role="alert"><span></span><button type="button" onclick="location.reload()">重新加载</button></div>';main.querySelector('span').textContent=error&&error.message?'页面加载失败：'+error.message:'页面资源加载失败，请重新加载后重试。'}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',show,{once:true});else show()};window.PC_BOOT_TIMER=setTimeout(function(){if(!window.PCApp)PC_BOOT_FAILED()},30000);"""
     pages = {}
     for filename, entry in entries.items():
-        entry_config = {**config, 'defaultRoute': entry['route']}
+        selected_modules = {name: modules[name] for name in scopes[filename]}
+        selected_routes = {route for module in selected_modules.values() for route in module['routes']}
+        navigation = []
+        for group in routes['navigation']:
+            items = [item for item in group['items'] if item[0] in selected_routes]
+            if items:
+                navigation.append({**group, 'items': items})
+        entry_config = {**config, 'defaultRoute': entry['route'], 'modules': selected_modules,
+                        'navigation': navigation, 'routeRedirects': redirects[filename]}
         config_json = json.dumps(entry_config, ensure_ascii=False, separators=(',', ':')).replace('<', '\\u003c')
         html = template.replace('<!-- pc-assets -->', '<script defer fetchpriority="high" src="' + app + '" onerror="PC_BOOT_FAILED()"></script>\n<script>window.PC_ASSETS=' + config_json + ';' + hints + fallback + '</script>')
         if len(html.encode()) > ENTRY_BUDGET:
@@ -141,10 +198,18 @@ def build():
     shared_size = compressed([app, *scripts, *styles]) + font_size
     if shared_size > SHARED_GZIP_BUDGET:
         raise SystemExit(f'Shared assets exceed budget: {shared_size:,} > {SHARED_GZIP_BUDGET:,}')
+    def dependency_assets(name, seen=None):
+        seen = set() if seen is None else seen
+        if name in seen:
+            return []
+        seen.add(name)
+        module = modules[name]
+        return [module['script'], *module['styles'], *(asset for dep in module['dependencies'] for asset in dependency_assets(dep, seen))]
+
     first_sizes = {}
     for name, module in modules.items():
         common_size = shared_size if module['requiresUI'] else compressed([app, *shell_styles])
-        first_sizes[name] = common_size + max(len(gzip.compress(html.encode(), mtime=0)) for html in pages.values()) + compressed([module['script'], *module['styles']])
+        first_sizes[name] = common_size + max(len(gzip.compress(html.encode(), mtime=0)) for html in pages.values()) + compressed(dependency_assets(name))
         if first_sizes[name] > FIRST_ROUTE_GZIP_BUDGET:
             raise SystemExit(f'{name} first-load budget exceeded: {first_sizes[name]:,} > {FIRST_ROUTE_GZIP_BUDGET:,}')
     for filename, data in pending.items():
@@ -159,7 +224,7 @@ def build():
         (PROJECT / filename).write_text(html)
     print(f'Built {len(pages)} PC entries; pc.html: {len(pages["pc.html"].encode()):,} bytes; {len(report)} versioned assets. Shared gzip: {shared_size:,} bytes.')
     for name, size in first_sizes.items():
-        print(f'  {name}: first load gzip {size:,} bytes (only this business module)')
+        print(f'  {name}: first load gzip {size:,} bytes (including required business dependencies)')
 
 
 if __name__ == '__main__':
