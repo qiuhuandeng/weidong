@@ -1,6 +1,6 @@
 # WEID微动 · PC 后台 UI 规范
 
-版本 1.25 · 2026年10月28日 · 适用入口：PC 子项目 `pc/pc.html`、`pc/inventory.html`
+版本 1.28 · 2026年10月29日 · 适用入口：PC 子项目 `pc/pc.html`、`pc/inventory.html`
 
 本规范位于 `pc/docs/`，由仓库根目录 `AGENTS.md` 指向。下文源码路径与构建命令以 PC 子项目根目录 `pc/` 为基准；可在仓库根目录运行 `python3 pc/share/tools/build.py`。文档链接按当前文件位置解析。
 
@@ -78,9 +78,32 @@
 | 文档中的页面搜索 | ByPageSearch → 公共 ByForm 搜索组合 | 当前 v3 包未导出 ByPageSearch；继续使用已有公共兼容方案，不调用不存在的组件 |
 | 日期 / 日期时间 / 时间 / 月份、单选 / 复选、开关、按钮、状态标签 | 同版本 ElDatePicker / ElTimePicker / ElRadio / ElCheckbox / ElSwitch / ElButton / ElTag | 已有公共接入；`datetime-local` 映射 ElDatePicker 的 datetime，业务值 `YYYY-MM-DDTHH:mm`，展示 `YYYY-MM-DD HH:mm`；沿用公司主题，不自绘基础控件 |
 | 内容页签、分层业务抽屉 | `pageTabs()` / `tabs()`、现有公共抽屉入口 | 项目已确认的公共组合；默认横向，显式 `aria-orientation="vertical"` 支持左右栏；按本规范保留路由、焦点与草稿 |
+| 产品内容富文本 | `textarea[data-pc-richtext]` → 公共 contenteditable 编辑器；工具栏 ElButton / ElDropdown，源码 ByCommonInput，设置弹窗 ByDialog / ByForm | 公司固定包及同版本 Element Plus 未提供富文本编辑器，公共层组合现有控件；仅显式声明字段启用，不改变普通文本域 |
+| 文件选择按钮 | `input[type=file][data-pc-upload]` → 公共 `fileInput()` + 同版本 ElButton | 显式启用，属性值为按钮文案；保留原生选择器、accept / multiple、业务 change 事件与读取逻辑 |
+| 分类树导航 | `[data-pc-tree]` → 同版本 `ElTree` | 公司包未导出，公共入口已接入；选中 / 展开状态由业务保存 |
+| 部门 / 门店层级多选 | `[data-pc-hierarchy]` → `ElCascaderPanel` + `ByForm / ByCommonInput` + `ElCheckbox / ElTag` | 公司包未导出级联树；公共组合支持批量搜索与选中汇总 |
+| 展开式门店筛选 | `[data-pc-options]` → `ByForm + ElCheckTag + ElButton` | 公共入口已接入；大区 / 区域 / 门店联动由业务维护 |
 | 其他未列出的新组件 | 先查公司文档，再核对本地导出与同版本 Element Plus | 按上方流程完成选型、公共封装、规范补全及实际验收后使用 |
 
 目录是选型入口，不能代替具体组件的 API 文档。不得因为某组件与现有控件名称相近就直接替换；要核对真实业务能力及值、事件、插槽的兼容性。已有日历、关系对比等业务结构按对应章节保留，其内部基础控件仍需接入公共组件。
+
+### 分类树、部门级联与门店选项筛选
+
+- 公共 `[data-pc-tree]` 接入固定版本 Element Plus `ElTree`，业务提供 JSON `nodes / value / expanded / label`。通过 `pc-tree-select`、`pc-tree-expand` 保存选中值及展开分支；分类可到任意层级，不将父子同名节点合并。
+- 公共 `[data-pc-hierarchy]` 接入 `ElCascaderPanel`（多选、父子关联、叶节点值），搜索使用 `ByForm / ByCommonInput`，全选使用 `ElCheckbox`，右侧已选项使用 `ElTag`。支持清除、逐项移除、搜索结果全选；完整选中子树时右侧汇总为父节点，持久化仍保存叶节点。业务传入 `nodes / value / query / entityLabel` 并接收 `pc-hierarchy-change / pc-hierarchy-query`；部门与可维护门店共用该能力。
+- 层级选择按组件容器宽度布局：大于 960px 时已选项在右侧；不超过 960px 时已选项在下方横向排列，超出 140px 高度后内部滚动。窄抽屉优先给多级目录完整可用宽度，不缩窄列宽或隐藏末级；搜索仍为固定 280px。该规则同用于部门权限、可维护门店和页面内部门配置。
+- 批量名称输入复用 `ByCommonInput.showBatchInput` 的真实弹出输入框；支持换行、逗号、分号、空格分隔，查询匹配任一名称。不是独立实现的批量选择组件，也不改变普通输入。
+- `[data-pc-options]` 为大区、区域、门店等大量可见选项的显式筛选入口：`ByForm + ElCheckTag + ElButton`，每组独立一行、支持全部 / 多选 / 展开收起。JSON 配置 `key / label / options / value / expanded`，通过 `pc-options-change / pc-options-expand` 交由业务维护联动及草稿。它不替代普通 280px 下拉或既有单行状态组选项规则。
+- 表格可通过 `data-pc-table-name` 显式传入公司 `ByTable.name`，启用该组件原生列宽记忆与“重置列宽”；使用稳定且业务独立的名称，未声明的表格不变，不另造重置按钮。读取失败或缓存格式不兼容时保留原数据、使用默认列宽并显示真实错误；保存失败在表格下显示原因，不能静默清空缓存。
+- 固定公司包未导出 Tree / Cascader，故复用同版本 Element Plus 2.9.3；上述公共组合不新增依赖、不改变其他页面。2026年10月29日公司在线文档读取失败，已核对本地固定包的 `ByCommonInput.showBatchInput`、`ByTable.name` 和 Element Plus 真实导出；在线文档项仍待可访问时核对。
+
+### 产品内容富文本
+
+- 公共入口为 `share/js/components.js` 的 `richText` 适配器及 `PCUI.sanitizeRichText`，视觉统一在 `share/css/theme.css`。基础产品与上架产品的内容介绍声明 `textarea[data-pc-richtext]`；保留原 textarea 的字段、ID 和冒泡 input 事件，业务仍保存 HTML 字符串。普通文本域不启用。
+- 最小编辑高度 240px，沿用公司边框、圆角和字体；工具栏可换行。撤销、重做、加粗、斜体、下划线直接展示；其余格式按“文字格式 / 段落 / 插入”收纳，查找替换、源码、预览、全屏独立成组。原有 35 项操作全部保留。菜单采用同版本 ElDropdown / ElDropdownMenu / ElDropdownItem 的 click、command 和 disabled；展开菜单及工具弹窗前记忆编辑选区，执行命令时恢复。按钮由同版本 ElButton 实例承载，设置输入及确认沿用公司表单 / 弹窗；禁用或只读时禁止内容修改。
+- 图片本地读取为 data URL，仅接受 PNG / JPEG / WebP，单张最多 2 MB，读取失败保留正文；没有上传到旧后台。源码与粘贴 HTML 通过标签 / 属性白名单清理，移除脚本、事件和不安全链接；音视频仅支持直接 http(s) 地址，不执行第三方 iframe 嵌入脚本。
+- 参考来源：[公司组件文档](https://static.service.4ba.cn/by-components/) 与本地固定 1.1.26 包导出。2026年10月29日在线文档读取失败，因此不宣称在线 API 已复核；该包的 8 个导出不含富文本，采用本节公共组合，不增加 UI 依赖。验证入口为 `pc.html#sales-basics` 与 `#sales-listings`，交付时说明实际完成的富文本交互检查。
+- 菜单 API 参考 [Element Plus Dropdown 官方文档](https://element-plus.org/en-US/component/dropdown.html)，同时核对本地 2.9.3 的真实导出、command、trigger、hideOnClick 与 disabled。图片资料通过 `data-pc-upload` 显式启用公司主题按钮，原文件输入隐藏并保留在公共宿主内；原业务负责图片格式、大小校验、预览和移除，不新增上传端点或自动提交。
 
 ### 新页面的组件交付记录
 

@@ -201,6 +201,76 @@
       ],
       "styles": [],
       "routes": []
+    },
+    "refund-risk": {
+      "scripts": [
+        "pages/refund-risk/model.js",
+        "pages/refund-risk/seed.js",
+        "pages/refund-risk/storage.js",
+        "pages/refund-risk/app.js",
+        "pages/refund-risk/views.js",
+        "pages/refund-risk/index.js"
+      ],
+      "styles": [
+        "pages/refund-risk/style.css"
+      ],
+      "routes": [
+        "refund-risk"
+      ],
+      "requiresUI": false
+    },
+    "stock-management": {
+      "scripts": [
+        "pages/stock-management/model.js",
+        "pages/stock-management/storage.js",
+        "pages/stock-management/exchange.js",
+        "pages/stock-management/ui.js",
+        "pages/stock-management/lists.js",
+        "pages/stock-management/documents.js",
+        "pages/stock-management/catalog.js",
+        "pages/stock-management/tasks.js",
+        "pages/stock-management/imports.js",
+        "pages/stock-management/index.js"
+      ],
+      "styles": [
+        "pages/stock-management/style.css"
+      ],
+      "routes": [
+        "stock-reports",
+        "stock-ledger",
+        "stock-transfers",
+        "stock-inbound",
+        "stock-outbound",
+        "stock-purchases",
+        "stock-tasks",
+        "stock-warehouses",
+        "stock-products",
+        "stock-categories"
+      ]
+    },
+    "product-center": {
+      "dependencies": [
+        "stock-management"
+      ],
+      "scripts": [
+        "pages/product-center/model.js",
+        "pages/product-center/listing-model.js",
+        "pages/product-center/organization.js",
+        "pages/product-center/catalog.js",
+        "pages/product-center/listings.js",
+        "pages/product-center/prices.js",
+        "pages/product-center/index.js"
+      ],
+      "styles": [
+        "pages/product-center/style.css"
+      ],
+      "routes": [
+        "sales-basics",
+        "sales-multiple",
+        "sales-listings",
+        "sales-prices"
+      ],
+      "gzipBudget": 40000
     }
   },
   "navigation": [
@@ -352,6 +422,11 @@
           "refunds",
           "退款管理",
           "wallet"
+        ],
+        [
+          "refund-risk",
+          "退款风险看板",
+          "file"
         ]
       ]
     },
@@ -541,6 +616,86 @@
         [
           "sc-dicts",
           "基础字典",
+          "file"
+        ]
+      ]
+    },
+    {
+      "group": "库存",
+      "items": [
+        [
+          "stock-reports",
+          "库存报表",
+          "file"
+        ],
+        [
+          "stock-ledger",
+          "出入库明细",
+          "file"
+        ],
+        [
+          "stock-transfers",
+          "库存调拨",
+          "file"
+        ],
+        [
+          "stock-inbound",
+          "产品入库",
+          "file"
+        ],
+        [
+          "stock-outbound",
+          "产品出库",
+          "file"
+        ],
+        [
+          "stock-purchases",
+          "采购管理",
+          "file"
+        ],
+        [
+          "stock-tasks",
+          "任务中心",
+          "file"
+        ],
+        [
+          "stock-warehouses",
+          "仓库管理",
+          "file"
+        ],
+        [
+          "stock-products",
+          "产品管理",
+          "file"
+        ],
+        [
+          "stock-categories",
+          "分类管理",
+          "file"
+        ]
+      ]
+    },
+    {
+      "group": "产品",
+      "items": [
+        [
+          "sales-basics",
+          "基础产品",
+          "file"
+        ],
+        [
+          "sales-multiple",
+          "多选产品",
+          "file"
+        ],
+        [
+          "sales-listings",
+          "产品上架",
+          "file"
+        ],
+        [
+          "sales-prices",
+          "产品售价表（新版）",
           "file"
         ]
       ]

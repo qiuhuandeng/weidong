@@ -1,0 +1,29 @@
+/* Product category/navigation structure only; all controls use PCUI. */
+.sales-layout{display:grid;grid-template-columns:220px minmax(0,1fr);gap:var(--pc-gap);align-items:start}
+.sales-layout.is-category-hidden{grid-template-columns:minmax(0,1fr)}
+.sales-category-tree{position:sticky;top:0;max-height:calc(100vh - 100px);overflow:auto;padding:12px 8px}
+.sales-main{min-width:0;display:flex;flex-direction:column;gap:var(--pc-gap)}
+.sales-category-caption{display:flex;align-items:center;gap:12px;background:var(--el-bg-color);padding:8px 12px;margin-bottom:calc(-1 * var(--pc-gap))}
+.sales-main>.pc-tabs{margin-bottom:calc(-1 * var(--pc-gap))}
+.sales-store-search .query-module{margin:0;border:0;box-shadow:none}
+@media(max-width:1000px){.sales-layout{grid-template-columns:170px minmax(0,1fr)}.sales-layout.is-category-hidden{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:640px){.sales-layout{grid-template-columns:minmax(0,1fr)}.sales-category-tree{position:static;max-height:220px}}
+
+/* Product drawer information hierarchy; control specifications remain shared. */
+.sales-drawer-content{display:flex;flex-direction:column;gap:var(--pc-gap);min-width:0}
+.sales-drawer-content>.stock-section,.sales-spec>.stock-section{margin:0}
+.sales-drawer-content>.stock-summary{margin-bottom:0}
+.sales-drawer-content>.stock-section+.stock-section{border-top:1px solid var(--pc-line);padding-top:var(--pc-gap)}
+.sales-photo-field{display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-width:0}
+.sales-photo-field .stock-photos:empty{display:none}
+.sales-photo-item{display:flex;flex-direction:column;align-items:center;gap:4px}
+.sales-photo-item a{display:flex;align-items:center;justify-content:center}
+.sales-field-hint{margin:0;color:var(--pc-muted);font-size:12px;line-height:1.6}
+.sales-drawer-content .pc-field-content>.sales-field-hint{margin-top:6px}
+.sales-table-actions{margin-top:var(--pc-gap)}
+.sales-drawer-content .sales-table-actions+.ub-form{margin-top:var(--pc-gap)}
+.sales-spec+.sales-spec{margin-top:var(--pc-gap);padding-top:var(--pc-gap);border-top:1px solid var(--pc-line)}
+.sales-spec .stock-section .stock-section{margin-bottom:0}
+.sales-config-targets{color:var(--pc-text);line-height:1.7}
+.sales-config-targets summary{cursor:pointer;color:var(--pc-primary)}
+.sales-config-targets p{margin:8px 0 0}

@@ -1,0 +1,13 @@
+@layer pc-business {
+/* Product category/navigation structure only; all controls use PCUI. */
+.sales-layout{display:grid;grid-template-columns:220px minmax(0,1fr);gap:var(--pc-gap);align-items:start}
+.sales-layout.is-category-hidden{grid-template-columns:minmax(0,1fr)}
+.sales-category-tree{position:sticky;top:0;max-height:calc(100vh - 100px);overflow:auto;padding:12px 8px}
+.sales-main{min-width:0;display:flex;flex-direction:column;gap:var(--pc-gap)}
+.sales-category-caption{display:flex;align-items:center;gap:12px;background:var(--el-bg-color);padding:8px 12px;margin-bottom:calc(-1 * var(--pc-gap))}
+.sales-main>.pc-tabs{margin-bottom:calc(-1 * var(--pc-gap))}
+.sales-store-search .query-module{margin:0;border:0;box-shadow:none}
+@media(max-width:1000px){.sales-layout{grid-template-columns:170px minmax(0,1fr)}.sales-layout.is-category-hidden{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:640px){.sales-layout{grid-template-columns:minmax(0,1fr)}.sales-category-tree{position:static;max-height:220px}}
+
+}

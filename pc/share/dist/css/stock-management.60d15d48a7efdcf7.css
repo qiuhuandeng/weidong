@@ -1,0 +1,23 @@
+@layer pc-business {
+/* Business layouts only. Controls, tables, tabs, gaps and drawers use PCUI. */
+.stock-module .stock-error{color:var(--danger,#f56c6c);white-space:pre-wrap;line-height:1.6;margin:12px 0}
+.stock-module .stock-error:empty{display:none}
+.stock-drawer .stock-section{margin-block:var(--pc-gap,12px)}
+.stock-drawer .stock-section-head{display:flex;align-items:center;justify-content:space-between;gap:var(--pc-gap,12px);margin-bottom:var(--pc-gap,12px)}
+.stock-drawer .stock-section-head h3{font-size:14px;margin:0}
+.stock-drawer .stock-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;line-height:1.7;margin-bottom:12px}
+.stock-drawer .stock-summary>div{display:flex;gap:12px;min-width:0;overflow-wrap:anywhere}
+.stock-drawer .stock-summary span{color:var(--text-secondary,#909399);flex:none}
+.stock-drawer .stock-comment{padding-block:12px;border-bottom:1px solid var(--border,#dcdfe6)}
+.stock-drawer .stock-comment p{white-space:pre-wrap;overflow-wrap:anywhere}
+.stock-drawer .stock-comment small{color:var(--text-secondary,#909399)}
+.stock-drawer .stock-choice-list{max-height:340px;overflow:auto;display:grid;gap:12px;padding:12px 0}
+.stock-drawer .stock-pickers{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.stock-drawer .stock-photos{display:flex;flex-wrap:wrap;gap:12px}
+.stock-drawer .stock-photos img{width:80px;height:80px;object-fit:contain}
+.stock-drawer .stock-pick-footer{display:flex;align-items:center;gap:12px}
+.stock-drawer .stock-inline{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.stock-module input[type=file]{max-width:100%}
+@media(max-width:600px){.stock-drawer .stock-summary,.stock-drawer .stock-pickers{grid-template-columns:1fr}}
+
+}

@@ -227,7 +227,7 @@ window.PCUI = (() => {
       return {field,title,width,minWidth:Number(cell.dataset.pcMinWidth) || 110,fixed:last?'right':undefined,showOverflow:false,
         slots:{default:field,header:field+'Header'}};
     });
-    wrapper.classList.add('pc-table'); wrapper.dataset.pcIsland = 'table';
+    wrapper.classList.add('pc-table'); wrapper.classList.toggle('pc-table-named',!!source.dataset.pcTableName); wrapper.dataset.pcIsland = 'table';
     wrapper.replaceChildren();
     const minHeight=source.hasAttribute('data-pc-min-height')&&Number.isFinite(Number(source.dataset.pcMinHeight))?Math.max(0,Number(source.dataset.pcMinHeight)):160;
     const gridOptions = {columns,data:rows,border:true,round:true,align:['left','center','right'].includes(source.dataset.pcAlign)?source.dataset.pcAlign:'center',size:'small',autoHeight:true,
@@ -235,7 +235,57 @@ window.PCUI = (() => {
       mergeCells:rows.filter(row=>row.full).map(row=>({row:row.id,col:0,rowspan:1,colspan:heads.length})),
       rowConfig:{height:'auto',isHover:true},columnConfig:{resizable:true},
       showOverflow:false,emptyText:empty?.textContent.trim() || '暂无符合条件的数据',scrollX:{enabled:false},scrollY:{enabled:false}};
-    mount(wrapper, {render: () => h(ByComponentsV3.components.ByTable,{gridOptions,autoHeight:true},slots)});
+    let tableName=source.dataset.pcTableName||'',storageMessage;
+    const storageError=error=>{
+      if(!storageMessage){storageMessage=document.createElement('p');storageMessage.className='pc-table-storage-error';storageMessage.setAttribute('role','alert');wrapper.after(storageMessage);}
+      storageMessage.textContent='列宽配置未能保存或读取，原配置已保留：'+(error.message||String(error));
+    };
+    if(tableName)try{const cached=JSON.parse(localStorage.getItem(tableName)||'[]');if(!Array.isArray(cached)||cached.some(x=>!x||typeof x.field!=='string'||!Number.isFinite(Number(x.width))||Number(x.width)<=0))throw Error('列宽配置格式不兼容');}catch(error){storageError(error);tableName='';}
+    mount(wrapper, {setup(){
+      if(source.dataset.pcTableName)Vue.onErrorCaptured(error=>{storageError(error);failures.push(String(error));console.error('[PCUI table]',error);return false;});
+      return () => h(ByComponentsV3.components.ByTable,{gridOptions,autoHeight:true,name:tableName},slots);
+    }});
+  }
+
+  // Explicit opt-in business navigation and hierarchy selection. The company
+  // package has no tree/cascader export; use its pinned Element Plus peer.
+  function tree(source) {
+    const config=JSON.parse(source.dataset.pcTree);source.dataset.pcReady='tree';
+    const expanded=new Set(config.expanded||[]);
+    const emit=(type,value)=>source.dispatchEvent(new CustomEvent(type,{bubbles:true,detail:value}));
+    mount(source,{render:()=>h(ElementPlus.ElTree,{data:config.nodes,nodeKey:'value',props:{label:'label',children:'children'},currentNodeKey:config.value,defaultExpandedKeys:[...expanded],highlightCurrent:true,expandOnClickNode:false,
+      onNodeClick:node=>emit('pc-tree-select',node.value),onNodeExpand:node=>{expanded.add(node.value);emit('pc-tree-expand',[...expanded]);},onNodeCollapse:node=>{expanded.delete(node.value);emit('pc-tree-expand',[...expanded]);},'aria-label':config.label||'分类'})});
+  }
+  function hierarchy(source) {
+    const config=JSON.parse(source.dataset.pcHierarchy);source.dataset.pcReady='hierarchy';source.classList.add('pc-hierarchy');
+    const entity=config.entityLabel||'部门',selected=ref([...(config.value||[])]),query=ref(config.query||''),all=[];
+    const walk=(nodes,path=[])=>nodes.forEach(n=>{const labels=[...path,n.label];if(n.children?.length)walk(n.children,labels);else if(!n.disabled)all.push({...n,path:labels.join(' / ')});});walk(config.nodes);
+    const emit=(type,detail)=>source.dispatchEvent(new CustomEvent(type,{bubbles:true,detail}));
+    const update=value=>{selected.value=[...new Set(value)];emit('pc-hierarchy-change',selected.value);};
+    const filtered=()=>{const terms=query.value.trim().toLowerCase().split(/[\n,，;；\s]+/).filter(Boolean);return all.filter(n=>!terms.length||terms.some(term=>n.path.toLowerCase().includes(term)));};
+    const leaves=n=>n.children?.length?n.children.flatMap(leaves):n.disabled?[]:[n.value];
+    const compact=nodes=>nodes.flatMap(n=>{const ids=leaves(n);return ids.length&&ids.every(id=>selected.value.includes(id))?[n]:n.children?.length?compact(n.children):[];});
+    const toggleAll=checked=>{const ids=filtered().map(n=>n.value),next=new Set(selected.value);ids.forEach(id=>checked?next.add(id):next.delete(id));update([...next]);};
+    mount(source,{render:()=>h('div',{class:'pc-hierarchy-layout'},[
+      h('div',{class:'pc-hierarchy-picker'},[
+        h('div',{class:'pc-hierarchy-search'},[
+          h(ByComponentsV3.components.ByForm,{modelValue:{},formItems:[{type:'custom',field:'query',label:entity+'名称',colLayout:{span:24}}],labelWidth:'auto',labelSuffix:'：',otherOptions:{submit:false,reset:false}},{query:()=>h(ByComponentsV3.components.ByCommonInput,{modelValue:query.value,'onUpdate:modelValue':v=>{query.value=v;emit('pc-hierarchy-query',v);},placeholder:'请输入名称搜索',showBatchInput:true,batchInputPlaceholder:'请输入名称，多个名称用换行、逗号、分号、空格分隔',clearable:true,size:'small','aria-label':entity+'名称'})}),
+          h(ElementPlus.ElCheckbox,{modelValue:filtered().length>0&&filtered().every(n=>selected.value.includes(n.value)),indeterminate:filtered().some(n=>selected.value.includes(n.value))&&!filtered().every(n=>selected.value.includes(n.value)),'onUpdate:modelValue':toggleAll},()=>query.value?'全选搜索结果':'全选')]),
+        query.value?h('div',{class:'pc-hierarchy-results',role:'group','aria-label':entity+'搜索结果'},filtered().length?filtered().map(n=>h(ElementPlus.ElCheckbox,{key:n.value,modelValue:selected.value.includes(n.value),'onUpdate:modelValue':checked=>update(checked?[...selected.value,n.value]:selected.value.filter(x=>x!==n.value))},()=>n.path)):h(ElementPlus.ElEmpty,{description:'暂无匹配'+entity,imageSize:50})):
+          h(ElementPlus.ElCascaderPanel,{modelValue:selected.value,'onUpdate:modelValue':update,options:config.nodes,props:{multiple:true,emitPath:false,checkStrictly:false,expandTrigger:'click'},'aria-label':entity+'层级选择'})]),
+      h('aside',{class:'pc-hierarchy-selected','aria-label':'已选'+entity},[
+        h('div',{class:'pc-hierarchy-selected-head'},['已选（'+compact(config.nodes).length+'）',h(ElementPlus.ElButton,{link:true,type:'primary',disabled:!selected.value.length,onClick:()=>update([])},()=> '清除')]),
+        h('div',{class:'pc-hierarchy-selected-list'},selected.value.length?compact(config.nodes).map(n=>h(ElementPlus.ElTag,{key:n.value,closable:true,type:'info',onClose:()=>{const ids=leaves(n);update(selected.value.filter(x=>!ids.includes(x)));}},()=>n.label)):h(ElementPlus.ElEmpty,{description:'暂无选中项',imageSize:50}))])])});
+  }
+  function optionFilters(source) {
+    const config=JSON.parse(source.dataset.pcOptions);source.dataset.pcReady='options';source.classList.add('pc-option-filters');
+    const selected=Vue.reactive(Object.fromEntries(config.map(x=>[x.key,[...(x.value||[])]]))),expanded=Vue.reactive(Object.fromEntries(config.map(x=>[x.key,!!x.expanded])));
+    const emit=(type,detail)=>source.dispatchEvent(new CustomEvent(type,{bubbles:true,detail}));
+    const slots=Object.fromEntries(config.map(item=>[item.key,()=>h('div',{class:'pc-option-filter-line'},[
+      h(ElementPlus.ElCheckTag,{checked:!selected[item.key].length,onChange:()=>{selected[item.key]=[];emit('pc-options-change',{key:item.key,value:[]});}},()=> '全部'),
+      h('div',{class:['pc-option-filter-values',expanded[item.key]?'is-expanded':'']},item.options.map(o=>h(ElementPlus.ElCheckTag,{key:o.value,checked:selected[item.key].includes(o.value),onChange:checked=>{const next=checked?[...selected[item.key],o.value]:selected[item.key].filter(v=>v!==o.value);selected[item.key]=next;emit('pc-options-change',{key:item.key,value:next});}},()=>o.label))),
+      item.options.length>6?h(ElementPlus.ElButton,{link:true,type:'primary','aria-label':(expanded[item.key]?'收起':'展开')+item.label,'aria-expanded':expanded[item.key],onClick:()=>{expanded[item.key]=!expanded[item.key];emit('pc-options-expand',{key:item.key,value:expanded[item.key]});}},()=>expanded[item.key]?'收起':'展开'):null]) ]));
+    mount(source,{render:()=>h(ByComponentsV3.components.ByForm,{formItems:config.map(x=>({type:'custom',field:x.key,label:x.label,colLayout:{span:24}})),modelValue:{},labelWidth:'auto',labelSuffix:'：',rowAttrs:{gutter:0},otherOptions:{submit:false,reset:false}},slots)});
   }
 
   function query(source) {
@@ -384,6 +434,9 @@ window.PCUI = (() => {
     for(const [source] of controlStates)if(!source.isConnected)controlStates.delete(source);
     for(const [host,observer] of searchObservers)if(!host.isConnected){observer.disconnect();searchObservers.delete(host);}
     document.querySelectorAll(scope).forEach(root => {
+      root.querySelectorAll('[data-pc-tree]').forEach(el=>{if(eligible(el))tree(el);});
+      root.querySelectorAll('[data-pc-hierarchy]').forEach(el=>{if(eligible(el))hierarchy(el);});
+      root.querySelectorAll('[data-pc-options]').forEach(el=>{if(eligible(el))optionFilters(el);});
       root.querySelectorAll('.query-module .filterbar').forEach(el => { if(eligible(el)) query(el); });
       root.querySelectorAll('.ap-query .ap-search').forEach(el=>{if(eligible(el)){el.classList.add('filterbar');el.parentElement.classList.add('query-module');query(el);}});
       root.querySelectorAll('[role=tablist],.page-tabs,.merge-rule-tabs,.ap-tabs,.mh-tabs,.mh-person-tabs,.tabs').forEach(el=>{if(eligible(el))tabs(el);});
@@ -396,6 +449,8 @@ window.PCUI = (() => {
       root.querySelectorAll('label.switch > input[type="checkbox"]').forEach(el => {if(eligible(el))nativeControl(el,'switch');});
       root.querySelectorAll('input[type="checkbox"],input[type="radio"]').forEach(el => {if(eligible(el))nativeControl(el,el.type);});
       root.querySelectorAll('input[type="date"],input[type="time"],input[type="month"],input[type="datetime-local"]').forEach(el => {if(eligible(el))nativeControl(el,'date');});
+      root.querySelectorAll('input[type="file"][data-pc-upload]').forEach(el=>{if(eligible(el))fileInput(el);});
+      root.querySelectorAll('textarea[data-pc-richtext]').forEach(el=>{if(eligible(el))richText(el);});
       root.querySelectorAll('input,textarea').forEach(el => { if(eligible(el)) input(el); });
       root.querySelectorAll('select').forEach(el => { if(eligible(el)) select(el); });
     });
@@ -403,6 +458,101 @@ window.PCUI = (() => {
       const {root,groupIndex}=pendingTabFocus;pendingTabFocus=undefined;
       root?.querySelectorAll('.pc-tabs')[groupIndex]?.querySelector('.pc-tab[aria-selected=true]')?.focus({preventScroll:true});
     }
+  }
+  // Explicit opt-in keeps native file handling and business change events intact.
+  function fileInput(source){
+    const host=island(source,'upload','inline-flex');host.dataset.pcReady='upload';
+    const label=source.dataset.pcUpload||source.getAttribute('aria-label')||'选择文件';
+    mount(host,{render:()=>h(ElementPlus.ElButton,{class:'btn',disabled:source.disabled,onClick:()=>source.click()},()=>label)});
+    source.hidden=true;source.tabIndex=-1;source.setAttribute('data-pc-ready','upload-value');host.append(source);
+  }
+  // Opt-in rich text field. The pinned company package has no editor export.
+  // Toolbar and dialogs use the same Element Plus / ByDialog instances as PCUI.
+  function sanitizeRichText(value){
+    const template=document.createElement('template');template.innerHTML=String(value||'');
+    const allowed=new Set('P BR DIV SPAN B STRONG I EM U S STRIKE SUB SUP UL OL LI BLOCKQUOTE H1 H2 H3 H4 HR TABLE THEAD TBODY TR TH TD A IMG PRE CODE VIDEO AUDIO SOURCE'.split(' '));
+    for(const el of [...template.content.querySelectorAll('*')]){
+      if(!allowed.has(el.tagName)){if(/SCRIPT|STYLE|IFRAME|OBJECT|EMBED|FORM/.test(el.tagName))el.remove();else el.replaceWith(...el.childNodes);continue;}
+      for(const attr of [...el.attributes]){
+        const key=attr.name.toLowerCase(),value=attr.value;
+        if(key==='href'&&el.tagName==='A'&&/^(https?:|mailto:|#)/i.test(value))continue;
+        if(key==='src'&&el.tagName==='IMG'&&/^(https?:\/\/|data:image\/(?:png|jpeg|webp);base64,)/i.test(value))continue;
+        if(key==='src'&&/^(VIDEO|AUDIO|SOURCE)$/.test(el.tagName)&&/^https?:\/\//i.test(value))continue;
+        if(key==='controls'&&/^(VIDEO|AUDIO)$/.test(el.tagName))continue;
+        if(key==='id'&&/^[a-zA-Z][\w-]*$/.test(value))continue;
+        if(['alt','title','colspan','rowspan'].includes(key))continue;
+        if(key==='style'){
+          const safe=[...el.style].filter(k=>['color','background-color','text-align','font-size','font-weight','font-style','text-decoration','text-decoration-line','padding-left','break-after'].includes(k)).map(k=>k+':'+el.style.getPropertyValue(k)).join(';');el.setAttribute('style',safe);continue;
+        }
+        el.removeAttribute(attr.name);
+      }
+      if(el.tagName==='A'){el.rel='noopener noreferrer';el.target='_blank';}
+    }
+    return template.innerHTML;
+  }
+  function richText(source){
+    if(source.closest('.pc-richtext'))return;
+    const host=island(source,'richtext','block');host.dataset.pcReady='richtext';
+    const readOnly=source.disabled||source.readOnly;
+    let editor,selection,codeMode=false,raw=source.value,upload;
+    const emit=()=>{source.value=codeMode?sanitizeRichText(raw):sanitizeRichText(editor.innerHTML);source.dispatchEvent(new Event('input',{bubbles:true}));};
+    const remember=()=>{const sel=window.getSelection();if(sel?.rangeCount&&editor.contains(sel.anchorNode))selection=sel.getRangeAt(0).cloneRange();};
+    const restore=()=>{editor.focus();if(selection&&editor.contains(selection.commonAncestorContainer)){const sel=window.getSelection();sel.removeAllRanges();sel.addRange(selection);}};
+    const command=(cmd,value)=>{if(readOnly||codeMode||!host.isConnected)return;restore();document.execCommand('styleWithCSS',false,true);document.execCommand(cmd,false,value);remember();emit();};
+    const ask=(title,label,done)=>{remember();dialog({title,content:'<div class="ub-form"><div class="field"><label>'+escape(label)+'</label><input id="pc-rich-value" aria-label="'+escape(label)+'"></div></div>',buttons:[{text:'取消',action:closeDialog},{text:'确定',primary:true,action:()=>{const v=document.querySelector('#pc-rich-value')?.value||'';closeDialog();setTimeout(()=>done(v),310);}}]});};
+    const tools=[['撤销','undo'],['重做','redo'],['加粗','bold'],['斜体','italic'],['下划线','underline'],['删除线','strikeThrough'],['下标','subscript'],['上标','superscript'],['左对齐','justifyLeft'],['居中','justifyCenter'],['右对齐','justifyRight'],['无序列表','insertUnorderedList'],['有序列表','insertOrderedList'],['增加缩进','indent'],['减少缩进','outdent'],['引用','formatBlock','blockquote'],['分隔线','insertHorizontalRule'],['清除格式','removeFormat']];
+    mount(host,{setup(){
+      const code=ref(false),full=ref(false);
+      const toolbar=()=>{
+        const buttons=[
+          ...tools.map(([label,cmd,v])=>h(ElementPlus.ElButton,{class:'btn',disabled:readOnly||code.value,onMousedown:e=>e.preventDefault(),onClick:()=>command(cmd,v)},()=>label)),
+          ...[
+            ['链接','链接地址',v=>{if(!/^(https?:\/\/|mailto:|#)/i.test(v))return toast('请输入有效链接');command('createLink',v);} ],
+            ['图片','图片地址',v=>{if(!/^https?:\/\//i.test(v))return toast('请输入 http 或 https 图片地址');command('insertImage',v);} ],
+            ['表格','行数 × 列数',v=>{const [r,c]=v.split(/[x×*]/).map(Number);if(!Number.isInteger(r)||!Number.isInteger(c)||r<1||c<1||r>30||c>12)return toast('请输入 1–30 行和 1–12 列，如 3×4');command('insertHTML','<table><tbody>'+Array.from({length:r},()=>'<tr>'+Array.from({length:c},()=>'<td><br></td>').join('')+'</tr>').join('')+'</tbody></table><p><br></p>');}],
+            ['文字颜色','颜色（如 #333333）',v=>{if(!CSS.supports('color',v))return toast('请输入有效颜色');command('foreColor',v);}],
+            ['背景颜色','颜色（如 #ffff00）',v=>{if(!CSS.supports('color',v))return toast('请输入有效颜色');command('hiliteColor',v);}],
+            ['标题格式','格式（p / h1 / h2 / h3 / h4）',v=>{if(!/^(p|h[1-4])$/.test(v))return toast('请输入 p 或 h1–h4');command('formatBlock',v);}],
+            ['代码示例','代码',v=>command('insertHTML','<pre><code>'+escape(v)+'</code></pre><p><br></p>')],
+            ['锚点','锚点名称',v=>{if(!/^[a-zA-Z][\w-]*$/.test(v))return toast('锚点以英文字母开头，可含数字和连字符');command('insertHTML','<span id="'+escape(v)+'">'+escape(v)+'</span>');}],
+            ['媒体','音视频地址',v=>{if(!/^https?:\/\//i.test(v))return toast('请输入 http 或 https 音视频地址');command('insertHTML','<video controls src="'+escape(v)+'"></video>');}],
+            ['表情','表情符号',v=>command('insertText',v)]
+          ].map(([label,prompt,action])=>h(ElementPlus.ElButton,{class:'btn',disabled:readOnly||code.value,onClick:()=>ask(label,prompt,action)},()=>label)),
+          h(ElementPlus.ElButton,{class:'btn',disabled:readOnly||code.value,onClick:()=>{remember();upload.click();}},()=> '上传图片'),
+          h(ElementPlus.ElButton,{class:'btn',disabled:readOnly||code.value,onClick:()=>command('insertHTML','<hr style="break-after:page"><p><br></p>')},()=> '分页符'),
+          h(ElementPlus.ElButton,{class:'btn',disabled:readOnly||code.value,onClick:()=>command('insertText',new Date().toLocaleString('zh-CN',{hour12:false}))},()=> '日期时间'),
+          h(ElementPlus.ElButton,{class:'btn',disabled:readOnly||code.value,onClick:()=>{remember();dialog({title:'查找与替换',content:'<div class="ub-form"><div class="field"><label>查找</label><input id="pc-rich-find" aria-label="查找内容"></div><div class="field"><label>替换为</label><input id="pc-rich-replace" aria-label="替换内容"></div></div>',buttons:[{text:'关闭',action:closeDialog},{text:'全部替换',primary:true,action:()=>{const a=document.querySelector('#pc-rich-find').value,b=document.querySelector('#pc-rich-replace').value;if(!a)return;const walker=document.createTreeWalker(editor,NodeFilter.SHOW_TEXT);let node,count=0;while(node=walker.nextNode()){const chunks=node.textContent.split(a);count+=chunks.length-1;node.textContent=chunks.join(b);}emit();toast('已替换 '+count+' 处');}}]});}},()=> '查找替换'),
+          h(ElementPlus.ElButton,{class:'btn',onClick:()=>{if(!code.value){remember();raw=sanitizeRichText(editor.innerHTML);}else{editor.innerHTML=sanitizeRichText(raw);}code.value=!code.value;codeMode=code.value;emit();}},()=>code.value?'可视编辑':'源代码'),
+          h(ElementPlus.ElButton,{class:'btn',onClick:()=>dialog({title:'内容预览',content:'<div class="pc-richtext-preview">'+sanitizeRichText(source.value)+'</div>',wide:true,buttons:[{text:'关闭',action:closeDialog}]})},()=> '预览'),
+          h(ElementPlus.ElButton,{class:'btn',onClick:()=>full.value=!full.value},()=>full.value?'退出全屏':'全屏')
+        ];
+        const byLabel=new Map(buttons.map(button=>[button.children.default(),button]));
+        const menu=(label,labels)=>h(ElementPlus.ElDropdown,{trigger:'click',placement:'bottom-start',onCommand:name=>byLabel.get(name).props.onClick(),onVisibleChange:visible=>{if(visible)remember();}}, {
+          default:()=>h(ElementPlus.ElButton,{class:'btn',disabled:readOnly||code.value,onMousedown:remember},()=>h('span',{class:'pc-button-content'},[label,h('span',{'aria-hidden':'true',innerHTML:icon('down')})])),
+          dropdown:()=>h(ElementPlus.ElDropdownMenu,null,()=>labels.map(name=>h(ElementPlus.ElDropdownItem,{command:name,disabled:byLabel.get(name).props.disabled},()=>name)))
+        });
+        return h('div',{class:'pc-richtext-toolbar',role:'toolbar','aria-label':'内容格式'},[
+          h('div',{class:'pc-richtext-tools',role:'group','aria-label':'常用格式'},['撤销','重做','加粗','斜体','下划线'].map(name=>byLabel.get(name))),
+          h('div',{class:'pc-richtext-tools',role:'group','aria-label':'更多格式'},[
+            menu('文字格式',['删除线','下标','上标','文字颜色','背景颜色','标题格式','清除格式']),
+            menu('段落',['左对齐','居中','右对齐','无序列表','有序列表','增加缩进','减少缩进','引用']),
+            menu('插入',['链接','图片','上传图片','表格','代码示例','锚点','媒体','表情','分隔线','分页符','日期时间'])
+          ]),
+          h('div',{class:'pc-richtext-tools pc-richtext-views',role:'group','aria-label':'编辑工具'},['查找替换',code.value?'可视编辑':'源代码','预览',full.value?'退出全屏':'全屏'].map(name=>byLabel.get(name)))
+        ]);
+      };
+      return()=>h(Vue.Teleport,{to:'body',disabled:!full.value},[h('div',{class:['pc-richtext-frame',full.value?'is-fullscreen':''],role:full.value?'dialog':undefined,'aria-label':full.value?'内容编辑器':undefined,'aria-modal':full.value?'true':undefined,onKeydown:e=>{
+        if(!full.value)return;
+        if(e.key==='Escape'){e.stopPropagation();full.value=false;}
+        if(e.key==='Tab'){const items=[...e.currentTarget.querySelectorAll('button:not(:disabled),input:not([hidden]),textarea,[contenteditable="true"]')].filter(x=>x.getClientRects().length);if(e.shiftKey&&document.activeElement===items[0]){e.preventDefault();items.at(-1)?.focus();}else if(!e.shiftKey&&document.activeElement===items.at(-1)){e.preventDefault();items[0]?.focus();}}
+      }},[
+        toolbar(),
+        h('input',{ref:el=>upload=el,type:'file',hidden:true,accept:'image/png,image/jpeg,image/webp',onChange:async e=>{const file=e.target.files[0];if(!file)return;if(!/^image\/(png|jpeg|webp)$/.test(file.type)||file.size>2*1024*1024){toast('请选择不超过 2 MB 的 PNG、JPEG 或 WebP 图片');return;}const reader=new FileReader();reader.onload=()=>command('insertImage',reader.result);reader.onerror=()=>toast('图片读取失败，请重新选择');reader.readAsDataURL(file);e.target.value='';}}),
+        h('div',{ref:el=>{if(el&&!editor){editor=el;el.innerHTML=sanitizeRichText(raw);}},contenteditable:!readOnly,role:'textbox','aria-multiline':'true','aria-label':source.getAttribute('aria-label')||'内容介绍',class:'pc-richtext-content',style:{display:code.value?'none':''},onInput:emit,onMouseup:remember,onKeyup:remember,onKeydown:e=>{if(e.key==='Escape'&&full.value){e.stopPropagation();full.value=false;}},onPaste:e=>{e.preventDefault();command('insertHTML',sanitizeRichText(e.clipboardData.getData('text/html')||escape(e.clipboardData.getData('text/plain')).replace(/\n/g,'<br>')));}}),
+        code.value?h(ByComponentsV3.components.ByCommonInput,{type:'textarea',rows:12,disabled:readOnly,modelValue:raw,'aria-label':'内容源代码','onUpdate:modelValue':v=>{raw=v;emit();}}):null
+      ])]);
+    }});
+    source.hidden=true;source.setAttribute('data-pc-ready','rich-value');source.tabIndex=-1;host.append(source);
   }
   function schedule() { if(!scheduled) { scheduled=true;queueMicrotask(sweep); } }
   function start() {
@@ -435,9 +585,9 @@ window.PCUI = (() => {
     syncDrawerInteraction();schedule();
   }
   function closeDialog(){if(!activeDialog)return false;const state=activeDialog;if(state.timer)return true;state.host.classList.add('is-closing');state.visible.value=false;state.timer=setTimeout(()=>disposeDialog(state),300);return true;}
-  function isPopupOpen(){return [...document.querySelectorAll('.el-popper')].some(el=>el.getClientRects().length && getComputedStyle(el).visibility!=='hidden');}
+  function isPopupOpen(){return !!document.querySelector('.pc-richtext-frame.is-fullscreen')||[...document.querySelectorAll('.el-popper')].some(el=>el.getClientRects().length && getComputedStyle(el).visibility!=='hidden');}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
   function syncControl(source){controlStates.get(source)?.();}
   function focusControl(source){const host=source?.closest('.pc-island');(source?.hidden?host?.querySelector('input:not([hidden]),button,[tabindex="0"]'):source)?.focus({preventScroll:true});}
-  return {version:'1.2.0',vendorVersion:'1.1.26',mount,sweep,confirm,dialog,closeDialog,isPopupOpen,syncControl,focusControl,registerPager:(name,action)=>pagerActions.set(name,action),failures,get mountedCount(){return mounted.size;}};
+  return {version:'1.2.0',vendorVersion:'1.1.26',mount,sweep,confirm,dialog,closeDialog,isPopupOpen,syncControl,focusControl,sanitizeRichText,registerPager:(name,action)=>pagerActions.set(name,action),failures,get mountedCount(){return mounted.size;}};
 })();

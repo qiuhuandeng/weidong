@@ -1,23 +1,26 @@
 {
-  "entryBytes": 11491,
+  "entryBytes": 13013,
   "entries": {
-    "pc.html": 11491,
+    "pc.html": 13013,
     "inventory.html": 10006
   },
-  "sharedGzipBytes": 1273976,
+  "sharedGzipBytes": 1281030,
   "preferredFontBytes": 28440,
   "firstRouteGzipBytes": {
-    "customer": 1456993,
-    "management": 1334059,
-    "complaints": 1316602,
-    "home": 51169,
-    "complaint-solutions": 1283101,
-    "supply-chain": 1370117,
-    "inventory-core": 1323516,
-    "inventory-clinical": 1387601,
-    "group-approval": 1348643,
-    "group-approval-designer": 1368638,
-    "group-approval-data": 1297185
+    "customer": 1464498,
+    "management": 1341633,
+    "complaints": 1324107,
+    "home": 52395,
+    "complaint-solutions": 1290606,
+    "supply-chain": 1377622,
+    "inventory-core": 1331021,
+    "inventory-clinical": 1395106,
+    "group-approval": 1356148,
+    "group-approval-designer": 1376143,
+    "group-approval-data": 1304690,
+    "refund-risk": 79755,
+    "stock-management": 1319587,
+    "product-center": 1340421
   },
   "files": {
     "js/vendor.27618b08a27e7019.js": {
@@ -25,10 +28,10 @@
       "gzipBytes": 1089614,
       "sha256": "27618b08a27e7019e7085048ae95121c06888913a38f5b5a0d5b198933eabddc"
     },
-    "js/components.8800ee812d30868a.js": {
-      "bytes": 32453,
-      "gzipBytes": 10291,
-      "sha256": "8800ee812d30868ab45fd4ede1b2c889238b685bb428b34a08b87a85c3d04d0e"
+    "js/components.c66a3b12d99572f0.js": {
+      "bytes": 52886,
+      "gzipBytes": 16570,
+      "sha256": "c66a3b12d99572f01b8d6b07342d46136427cd09afd0ba34542e68cbab138eb3"
     },
     "css/business.7d50a32ca6672788.css": {
       "bytes": 167514,
@@ -70,10 +73,10 @@
       "gzipBytes": 99336,
       "sha256": "eb8773a535d3b4135a077277e6b335aec732c671140ea3084d4e76abacda07d3"
     },
-    "css/theme.98ed2ef85054e28d.css": {
-      "bytes": 25789,
-      "gzipBytes": 6512,
-      "sha256": "98ed2ef85054e28d13846cbae043405fb3756d353e2e1aef263f1cbeddc61eb2"
+    "css/theme.e744fce8769eedd1.css": {
+      "bytes": 29990,
+      "gzipBytes": 7287,
+      "sha256": "e744fce8769eedd111e4a923a1017d9a9acb9832672760c856a6e38b32e245b9"
     },
     "js/app.0f3256d8d0c0b9c6.js": {
       "bytes": 23264,
@@ -85,10 +88,10 @@
       "gzipBytes": 178532,
       "sha256": "271cd9b5fff3381e7dfe19f7f43fd661c0f4cb971baa0ab617dd8b3495bfcc46"
     },
-    "js/management.8963f4c8ece63100.js": {
-      "bytes": 181787,
-      "gzipBytes": 55598,
-      "sha256": "8963f4c8ece6310092dd634ac9aed0fdb8232fd3b433cf6547ceea1525e8626a"
+    "js/management.ddc9fae0bd57f9a9.js": {
+      "bytes": 181916,
+      "gzipBytes": 55667,
+      "sha256": "ddc9fae0bd57f9a998bfdf483915f8fcf5a98c74c288899d390a8c1067234e89"
     },
     "js/complaints.e1acb503fc3ba659.js": {
       "bytes": 117870,
@@ -144,6 +147,36 @@
       "bytes": 56449,
       "gzipBytes": 18724,
       "sha256": "6511232bdc366ee89f46d707b602da75e9ac66547164b52e18050e2db8bcc960"
+    },
+    "js/refund-risk.454a5adb76123701.js": {
+      "bytes": 71886,
+      "gzipBytes": 24012,
+      "sha256": "454a5adb76123701f92b49665318f23fec8f9b36d41f2d837eb191586d145012"
+    },
+    "css/refund-risk.68a9f0867ad0d344.css": {
+      "bytes": 14328,
+      "gzipBytes": 3737,
+      "sha256": "68a9f0867ad0d344e202a2a91aa5ed2b8438195b375d5d8dab3b4813a94da75d"
+    },
+    "js/stock-management.d3e24c6e1cf09fe1.js": {
+      "bytes": 112420,
+      "gzipBytes": 32975,
+      "sha256": "d3e24c6e1cf09fe1122f56c479ef0e458cc49578847d193062a74a5f8c799f9b"
+    },
+    "css/stock-management.60d15d48a7efdcf7.css": {
+      "bytes": 1724,
+      "gzipBytes": 646,
+      "sha256": "60d15d48a7efdcf767335c3fc5bd8330ab8fef800e883dc50d0c84bb05843f5f"
+    },
+    "js/product-center.57cd94f1496a9c99.js": {
+      "bytes": 61518,
+      "gzipBytes": 20038,
+      "sha256": "57cd94f1496a9c990a3f81ecaf0a3c907e42ef81a327bec8cd71877ae39398bc"
+    },
+    "css/product-center.c70fa209b771d0e9.css": {
+      "bytes": 2363,
+      "gzipBytes": 796,
+      "sha256": "c70fa209b771d0e9e39c7f9566806c5abb199cab25f98a3784408e3b805b13d8"
     }
   }
 }
