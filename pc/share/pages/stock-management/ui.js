@@ -1,7 +1,7 @@
 /* Inventory UI uses existing PCUI islands; only inventory-specific layout lives here. */
 window.StockPC=(()=>{
   const M=WeidStockModel,db=WeidStockStorage.create(),E=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const pages={'stock-reports':'库存报表','stock-ledger':'出入库明细','stock-transfers':'库存调拨','stock-inbound':'产品入库','stock-outbound':'产品出库','stock-purchases':'采购管理','stock-tasks':'任务中心','stock-warehouses':'仓库管理','stock-products':'产品管理','stock-categories':'分类管理'};
+  const pages={'stock-reports':'库存报表','stock-ledger':'出入库明细','stock-transfers':'库存调拨','stock-inbound':'物料入库','stock-outbound':'物料出库','stock-purchases':'采购管理','stock-tasks':'任务中心','stock-warehouses':'仓库管理','stock-products':'物料管理','stock-categories':'分类管理'};
   const state={active:false,route:'stock-reports',pages:{},layers:[],busy:false,error:null,exportRows:[],exportHeads:[],opener:null};
   const S={M,db,E,pages,state,views:{},drawers:{},actions:{},get data(){return db.current;},get page(){return state.pages[state.route]||(state.pages[state.route]={tab:'',filters:{},applied:{},page:1,size:10,selected:[]});},get top(){return state.layers.at(-1);}};
   S.button=(text,action,id='',extra='',cls='',disabled=false)=>'<button type="button" class="btn '+cls+'" data-stock-action="'+E(action)+'" data-stock-id="'+E(id)+'" data-stock-extra="'+E(extra)+'"'+(disabled?' disabled':'')+'>'+E(text)+'</button>';

@@ -5,14 +5,14 @@ window.RefundRiskSeed = (asOf) => {
   const names=['林悦','陈敏','赵宁','周晴','沈佳','许岚','李晨','王琳','何静','刘洋','孙颖','徐宁','张怡','郭欣','梁欣','宋佳'];
   const projects=['面部护理疗程','身体护理套餐','头皮养护疗程','储值充值'];
   areas.forEach(([district,area,ns])=>ns.forEach(name=>{const i=stores.length,id='sample-s'+i;stores.push({id,name,district,area,category:i%3?'成熟综合店':'新开综合店'});people.push({id:'sample-sales'+i,name:names[i],role:'seller',storeId:id},{id:'sample-service'+i,name:names[(i+5)%16]+' · 技师',role:'service',storeId:id});}));
-  people.push({id:'sample-audit',name:'财务审核组',role:'auditor',storeId:null});
+  people.push({id:'sample-customer-service',name:'售后客服组',role:'applicant',storeId:null},{id:'sample-audit',name:'财务审核组',role:'auditor',storeId:null});
   let sequence=0;
   function request(o,at,kind='normal',amount=o.paidCents){
     if(at>asOf)return;
-    const id='S-RF'+String(++sequence).padStart(5,'0'),manual=kind==='path',pending=kind==='intent';
-    const a={id,orderId:o.id,amountCents:amount,submittedAt:at+' 10:20:00',applicantId:o.sellerId,applicantName:people.find(p=>p.id===o.sellerId).name,operatorStoreId:o.storeId,reason:kind==='intent'?'客户申请退卡':kind==='rights'?'疗程调整':'客户行程变更',manualCents:manual?amount:0,originalSelectedCents:manual?0:amount,eligibleOriginalCents:amount,auditorId:'sample-audit',approvedAt:at+' 14:10:00',commissionOverdueCents:kind==='rights'?Math.round(amount*.08):0,refundedRightsUsable:kind==='rights',verification:kind==='intent'?{result:'denied',by:'总部客服',at:at+' 11:20:00',note:'回访客户表示未要求退款，需进一步核实。'}:null,phoneChangedAt:kind==='intent'?M.addDays(at,-1):'',source:'sample'};
+    const id='S-RF'+String(++sequence).padStart(5,'0'),manual=kind==='manual',pending=kind==='intent';
+    const a={id,orderId:o.id,amountCents:amount,submittedAt:at+' 10:20:00',applicantId:manual?'sample-customer-service':o.sellerId,applicantName:manual?'售后客服组':people.find(p=>p.id===o.sellerId).name,operatorStoreId:o.storeId,reason:kind==='intent'?'客户申请退卡':kind==='rights'?'疗程调整':'客户行程变更',manualCents:manual?amount:0,originalSelectedCents:manual?0:amount,eligibleOriginalCents:amount,auditorId:'sample-audit',approvedAt:at+' 14:10:00',commissionOverdueCents:kind==='rights'?Math.round(amount*.08):0,refundedRightsUsable:kind==='rights',verification:manual?{result:'confirmed',by:'售后客服组',at:at+' 11:20:00',channel:'电话回访',note:'已电话确认客户申请退款及收款信息。'}:kind==='intent'?{result:'denied',by:'总部客服',at:at+' 11:20:00',note:'回访客户表示未要求退款，需进一步核实。'}:null,phoneChangedAt:kind==='intent'?M.addDays(at,-1):'',source:'sample'};
     applications.push(a);
-    tasks.push({id:id+'-1',applicationId:id,amountCents:amount,method:manual?'transfer':'original',status:pending?'pending':'success',completedAt:pending?'':at+' 15:30:00',channel:'微信支付',recipient:manual?'收款人待核实':'原付款来源',recipientAccount:manual?'**** 4826':'原交易账户',history:[]});
+    tasks.push({id:id+'-1',applicationId:id,amountCents:amount,method:manual?'transfer':'original',status:pending?'pending':'success',completedAt:pending?'':at+' 15:30:00',channel:'微信支付',recipient:manual?'客户确认的收款人':'原付款来源',recipientAccount:manual?'**** 4826':'原交易账户',history:[]});
     return a;
   }
   stores.forEach((s,i)=>{
@@ -21,7 +21,7 @@ window.RefundRiskSeed = (asOf) => {
       if(at>asOf)continue;
       const id=`S-OD-${i}-${mo+3}-${j}`,o={id,customerId:'S-C'+i+'-'+j,customerName:names[(i+j)%16].slice(0,1)+'女士',storeId:s.id,paidAt:at,paidCents:[98000,168000,298000,500000][(j+i)%4],project:projects[(i+j)%4],sellerId:'sample-sales'+i,serviceId:'sample-service'+i,payerKey:'sample-payer:'+i+':'+j,consumed:j%3,remaining:10-j%3,commissionCents:0};
       orders.push(o);
-      if(j%(i===0?4:i===4?5:9)===0)request(o,M.addDays(at,3+j%12),(i===2||i===4)&&j===0?'path':i===6&&j===0?'rights':'normal',j%2?o.paidCents:Math.round(o.paidCents*.6));
+      if(j%(i===0?4:i===4?5:9)===0)request(o,M.addDays(at,3+j%12),(i===2||i===4)&&j===0?'manual':i===6&&j===0?'rights':'normal',j%2?o.paidCents:Math.round(o.paidCents*.6));
     }
   });
   // Evidence-rich recent examples are independent orders, not edits to a real ledger.

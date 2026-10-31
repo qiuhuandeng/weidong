@@ -36,7 +36,7 @@
   function basic(s,v){
     const c=validate(s),p=copy(v);assert(p.name?.trim(),'请填写产品名称。');p.name=p.name.trim();assert(['服务','商品'].includes(p.type),'请选择产品类型。');assert(p.category,'请选择所属分类。');p.duration=amount(p.duration,'耗时');p.price=amount(p.price,'单项实收价格');p.trayRatio=amount(p.trayRatio,'配台占比');assert(p.trayRatio<=100,'配台占比不能超过 100%。');
     assert(!c.basics.some(x=>x.id!==p.id&&x.name===p.name),'基础产品名称已存在。');
-    const seen=new Set();p.materials.forEach(x=>{const k=M.key(x.pid,x.sid);assert(!seen.has(k),'同一库存规格不能重复关联。');seen.add(k);assert(M.product(s,x.pid)&&M.spec(s,x.pid,x.sid),'关联的库存产品或规格不存在，请重新选择。');x.qty=positive(x.qty,'单次服务消耗次数');});
+    const seen=new Set();p.materials.forEach(x=>{const k=M.key(x.pid,x.sid);assert(!seen.has(k),'同一库存规格不能重复关联。');seen.add(k);assert(M.product(s,x.pid)&&M.spec(s,x.pid,x.sid),'关联的库存产品或规格不存在，请重新选择。');assert(x.unit,'请确认关联物料的用量单位。');x.qty=positive(x.qty,'每份物料数量');x.conversion=M.conversion(s,x.pid,x.sid,x.unit);x.baseQty=M.convert(x.qty,x.conversion,false);});
     p.stores=p.type==='商品'?[]:[...new Set(p.stores||[])];p.stores.forEach(id=>assert(P.storeCatalog(s).some(x=>x.id===id),'可维护门店不存在。'));p.fee=fee(p.fee);
     p.id=p.id||M.uid('BASE');p.no=p.no||++c.sequence;p.updatedAt=M.now();p.trays=p.trays||[];
     const at=c.basics.findIndex(x=>x.id===p.id);at<0?c.basics.unshift(p):c.basics.splice(at,1,p);return p.id;

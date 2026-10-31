@@ -228,6 +228,7 @@
         "pages/stock-management/lists.js",
         "pages/stock-management/documents.js",
         "pages/stock-management/catalog.js",
+        "pages/stock-management/materials.js",
         "pages/stock-management/tasks.js",
         "pages/stock-management/imports.js",
         "pages/stock-management/index.js"
@@ -640,12 +641,12 @@
         ],
         [
           "stock-inbound",
-          "产品入库",
+          "物料入库",
           "file"
         ],
         [
           "stock-outbound",
-          "产品出库",
+          "物料出库",
           "file"
         ],
         [
@@ -665,7 +666,7 @@
         ],
         [
           "stock-products",
-          "产品管理",
+          "物料管理",
           "file"
         ],
         [

@@ -122,6 +122,7 @@ input[type=checkbox]:not(.el-checkbox__original),input[type=radio]:not(.el-radio
 .pc-table .vxe-cell{padding:var(--pc-table-padding);line-height:var(--pc-table-line);min-height:36px;max-width:100%;overflow:visible}
 .pc-table .vxe-header--column .vxe-cell{padding:var(--pc-table-padding);font-size:var(--pc-font);font-weight:600;color:#606266}
 .pc-table .pc-cell{min-width:0;line-height:var(--pc-table-line)}.pc-table .ub-ellipsis{max-width:100%}
+.pc-table .pc-cell .pc-select{min-width:0;width:100%}
 .pc-table .pc-cell .pc-block{display:block;line-height:var(--pc-table-line)}
 .pc-table .btn.el-button.pc-multiline{height:auto;min-height:24px;white-space:normal;line-height:var(--pc-table-line);text-align:left}
 .pc-table .btn.el-button.pc-multiline .pc-button-content{white-space:normal;line-height:var(--pc-table-line);text-align:left}

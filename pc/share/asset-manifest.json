@@ -4,23 +4,23 @@
     "pc.html": 13013,
     "inventory.html": 10006
   },
-  "sharedGzipBytes": 1281030,
+  "sharedGzipBytes": 1281034,
   "preferredFontBytes": 28440,
   "firstRouteGzipBytes": {
-    "customer": 1464498,
-    "management": 1341633,
-    "complaints": 1324107,
-    "home": 52395,
-    "complaint-solutions": 1290606,
-    "supply-chain": 1377622,
-    "inventory-core": 1331021,
-    "inventory-clinical": 1395106,
-    "group-approval": 1356148,
-    "group-approval-designer": 1376143,
-    "group-approval-data": 1304690,
-    "refund-risk": 79755,
-    "stock-management": 1319587,
-    "product-center": 1340421
+    "customer": 1464509,
+    "management": 1341644,
+    "complaints": 1324118,
+    "home": 52406,
+    "complaint-solutions": 1290617,
+    "supply-chain": 1377633,
+    "inventory-core": 1331032,
+    "inventory-clinical": 1395117,
+    "group-approval": 1356159,
+    "group-approval-designer": 1376154,
+    "group-approval-data": 1304701,
+    "refund-risk": 80818,
+    "stock-management": 1330870,
+    "product-center": 1352071
   },
   "files": {
     "js/vendor.27618b08a27e7019.js": {
@@ -73,10 +73,10 @@
       "gzipBytes": 99336,
       "sha256": "eb8773a535d3b4135a077277e6b335aec732c671140ea3084d4e76abacda07d3"
     },
-    "css/theme.e744fce8769eedd1.css": {
-      "bytes": 29990,
-      "gzipBytes": 7287,
-      "sha256": "e744fce8769eedd111e4a923a1017d9a9acb9832672760c856a6e38b32e245b9"
+    "css/theme.a83bfe18593d4ff6.css": {
+      "bytes": 30044,
+      "gzipBytes": 7291,
+      "sha256": "a83bfe18593d4ff6e79cd6df7af66e39771c1ece14c1493d47e625c11811d319"
     },
     "js/app.0f3256d8d0c0b9c6.js": {
       "bytes": 23264,
@@ -148,30 +148,30 @@
       "gzipBytes": 18724,
       "sha256": "6511232bdc366ee89f46d707b602da75e9ac66547164b52e18050e2db8bcc960"
     },
-    "js/refund-risk.454a5adb76123701.js": {
-      "bytes": 71886,
-      "gzipBytes": 24012,
-      "sha256": "454a5adb76123701f92b49665318f23fec8f9b36d41f2d837eb191586d145012"
+    "js/refund-risk.1a9b2e5ee52ab7f6.js": {
+      "bytes": 75390,
+      "gzipBytes": 25064,
+      "sha256": "1a9b2e5ee52ab7f6ef60fdf6a23ae49d2f5f1c5ae90ced879bb6c26208311dbe"
     },
     "css/refund-risk.68a9f0867ad0d344.css": {
       "bytes": 14328,
       "gzipBytes": 3737,
       "sha256": "68a9f0867ad0d344e202a2a91aa5ed2b8438195b375d5d8dab3b4813a94da75d"
     },
-    "js/stock-management.d3e24c6e1cf09fe1.js": {
-      "bytes": 112420,
-      "gzipBytes": 32975,
-      "sha256": "d3e24c6e1cf09fe1122f56c479ef0e458cc49578847d193062a74a5f8c799f9b"
+    "js/stock-management.36375de7db86ff52.js": {
+      "bytes": 150647,
+      "gzipBytes": 44247,
+      "sha256": "36375de7db86ff522d06783335e734af79af49b000b1618d64a5d8f48362c413"
     },
     "css/stock-management.60d15d48a7efdcf7.css": {
       "bytes": 1724,
       "gzipBytes": 646,
       "sha256": "60d15d48a7efdcf767335c3fc5bd8330ab8fef800e883dc50d0c84bb05843f5f"
     },
-    "js/product-center.57cd94f1496a9c99.js": {
-      "bytes": 61518,
-      "gzipBytes": 20038,
-      "sha256": "57cd94f1496a9c990a3f81ecaf0a3c907e42ef81a327bec8cd71877ae39398bc"
+    "js/product-center.80b8056d70179538.js": {
+      "bytes": 62456,
+      "gzipBytes": 20405,
+      "sha256": "80b8056d701795385aa3b7b57061c4c9db1d1a651d1e6a046f775e5cf3ada438"
     },
     "css/product-center.c70fa209b771d0e9.css": {
       "bytes": 2363,

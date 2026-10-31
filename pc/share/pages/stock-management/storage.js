@@ -25,7 +25,7 @@
       if(initializing)return initializing;
       initializing=open().then(db=>new Promise((resolve,reject)=>{
         const tx=db.transaction(STORE,'readwrite'),store=tx.objectStore(STORE),r=store.get(KEY);let value,error;
-        r.onsuccess=()=>{try{value=r.result===undefined?M.seed():M.validate(r.result);if(r.result===undefined)store.add(value,KEY);}catch(e){error=e;tx.abort();}};
+        r.onsuccess=()=>{try{const version=r.result?.materialVersion;value=r.result===undefined?M.seed():M.validate(r.result);if(r.result===undefined)store.add(value,KEY);else if(version!==value.materialVersion){value.revision++;store.put(value,KEY);}}catch(e){error=e;tx.abort();}};
         tx.oncomplete=()=>resolve(accept(value));tx.onabort=tx.onerror=()=>reject(error||failure('库存初始化失败',tx.error));
       })).catch(e=>{initializing=null;throw e;});
       return initializing;
