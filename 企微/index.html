@@ -1,0 +1,581 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>新后台｜企微客服中台</title>
+<style>
+:root{--brand:#2b5fec;--brand-2:#1e4ed8;--brand-soft:#eef4ff;--bg:#f5f7fb;--panel:#fff;--line:#e5e9f0;--line-2:#d8e0ec;--text:#172033;--muted:#667085;--sub:#98a2b3;--green:#059669;--orange:#d97706;--red:#dc2626;--purple:#7c3aed;--primary:60px;--secondary:220px;--top:56px;--shadow:0 10px 30px rgba(16,24,40,.06)}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;font:13px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;color:var(--text);background:var(--bg)}button,input,select{font:inherit}button{cursor:pointer}.app{height:100vh;min-width:1200px;display:grid;grid-template-columns:var(--primary) var(--secondary) minmax(0,1fr);background:var(--bg)}.primary{background:#182334;color:#93a2b8;display:flex;flex-direction:column;align-items:center;border-right:1px solid rgba(255,255,255,.06)}.mark{width:36px;height:36px;margin-top:16px;border:0;border-radius:10px;background:#3b6df6;color:#fff;font-weight:800;box-shadow:0 7px 16px rgba(43,95,236,.32)}.primary-list{width:100%;margin-top:20px;padding:0 6px;display:flex;flex-direction:column;gap:7px}.primary-item{width:48px;height:56px;border:0;border-radius:10px;background:transparent;color:#95a3b8;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:10px;line-height:1.2}.primary-item i,.help i{font-style:normal;font-size:17px;line-height:1}.primary-item:hover,.help:hover{background:rgba(255,255,255,.08);color:#e2e8f0}.primary-item.active{background:#2f63ed;color:#fff;box-shadow:0 7px 18px rgba(43,95,236,.26)}.help{width:34px;height:34px;margin:auto 0 17px;border:0;border-radius:8px;background:transparent;color:#91a0b5}.secondary{background:#fff;border-right:1px solid var(--line);overflow:auto;padding:0 10px 18px}.sub-brand{height:72px;margin:0 -10px;padding:0 18px;border-bottom:1px solid #edf0f4;display:flex;align-items:center;gap:11px}.sub-logo{width:34px;height:34px;border-radius:9px;background:#eef3ff;color:var(--brand);display:grid;place-items:center;font-weight:800}.sub-brand strong{display:block;font-size:15px;line-height:1.25}.sub-brand span{display:block;margin-top:4px;color:var(--sub);font-size:11px}.context{padding:17px 10px 11px}.context span{display:block;color:var(--sub);font-size:10px;letter-spacing:.5px;margin-bottom:4px}.context strong{display:block;font-size:16px}.context small{display:block;color:var(--sub);font-size:11px;margin-top:3px}.sub-list{padding-top:12px;display:flex;flex-direction:column;gap:3px}.sub-link{height:38px;width:100%;font-size:12px;border:0;border-radius:7px;background:transparent;color:#536076;text-align:left;display:flex;align-items:center;gap:10px;padding:0 11px;position:relative}.sub-link i{width:19px;text-align:center;color:#8b98ab;font-style:normal}.sub-link:hover{background:#f5f7fa;color:#25324a}.sub-link.active{background:#edf2ff;color:var(--brand);font-weight:650}.sub-link.active i{color:var(--brand)}
+.shell{height:100vh;min-width:0;display:flex;flex-direction:column;overflow:hidden}.top{height:var(--top);flex:0 0 auto;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 24px}.crumb{font-size:13px;color:var(--sub)}.crumb b{color:#475467}.top-actions{display:flex;align-items:center;gap:8px}.global-search{width:210px;height:34px;border:1px solid var(--line);background:#f9fafb;border-radius:7px;color:var(--sub);text-align:left;padding:0 10px}.icon-button{width:34px;height:34px;border:0;background:transparent;border-radius:7px;color:#5d6677}.icon-button:hover{background:#f3f4f6}.avatar-admin{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:#dbe7ff;color:var(--brand);font-weight:700}.main{flex:1;min-height:0;overflow:hidden}.view{height:100%;min-height:0;display:none}.view.active{display:flex}.blank{background:#f8f9fb}.session-page{padding:16px 20px 20px;flex-direction:column;gap:14px;overflow:hidden}.page-head{flex:0 0 auto;display:flex;align-items:flex-start;justify-content:space-between}.page-head h1{font-size:22px;line-height:1.2;margin:0 0 5px}.page-head p{margin:0;color:var(--muted);font-size:13px}.readonly{height:30px;display:inline-flex;align-items:center;gap:6px;padding:0 10px;border:1px solid #cfe0ff;border-radius:7px;color:#315ca8;background:#f7faff;font-size:12px}.filter-card{flex:0 0 auto;background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 14px;box-shadow:var(--shadow)}.filter-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.dimension{height:36px;display:inline-flex;align-items:center;padding:3px;border-radius:8px;background:#f3f5f8;border:1px solid #edf0f4}.dimension button{height:28px;border:0;border-radius:6px;background:transparent;color:#667085;padding:0 12px}.dimension button.active{background:#fff;color:var(--brand);font-weight:650;box-shadow:0 1px 3px rgba(16,24,40,.12)}.control{height:36px;border:1px solid var(--line-2);border-radius:7px;background:#fff;color:#344054;padding:0 10px;outline:0}.control:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(43,95,236,.09)}.select-main{width:196px}.select-filter{width:154px}.search-field{width:248px;position:relative}.search-field i{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--sub);font-style:normal}.search-field input{width:100%;padding-left:32px}.date-pair{display:grid;grid-template-columns:1fr 18px 1fr;align-items:center;gap:7px;width:272px}.date-pair span{text-align:center;color:#98a2b3}.date-control{width:100%}.filter-spacer{flex:1 1 auto}.filter-actions{display:flex;justify-content:flex-end;gap:8px}.clear-btn{height:36px;border:0;background:transparent;color:#667085;padding:0 5px}.clear-btn:hover{color:var(--brand)}.search-btn{height:36px;border:1px solid var(--brand);border-radius:7px;background:var(--brand);color:#fff;padding:0 16px;display:inline-flex;align-items:center;justify-content:center;gap:6px}.search-btn:hover{background:var(--brand-2)}.filter-summary{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);color:#667085;font-size:12px}.summary-tag{height:24px;display:inline-flex;align-items:center;gap:5px;padding:0 8px;border-radius:5px;background:#f3f6fb;color:#475467}.workspace{min-height:0;flex:1 1 0;display:grid;grid-template-columns:338px minmax(0,1fr);background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;box-shadow:var(--shadow)}.result-pane{min-width:0;min-height:0;border-right:1px solid var(--line);display:flex;flex-direction:column;overflow:hidden}.result-head{height:52px;flex:0 0 auto;padding:0 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;background:#fff}.result-title{display:flex;align-items:center;gap:7px;font-weight:650}.result-count{min-width:22px;height:20px;padding:0 6px;border-radius:10px;background:#eef3ff;color:var(--brand);font-size:12px;display:grid;place-items:center}.sort{border:0;background:transparent;color:#667085;font-size:12px}.conversation-list{min-height:0;flex:1;overflow-y:auto;overflow-x:hidden}.conversation{width:100%;min-height:94px;border:0;border-bottom:1px solid #eef1f5;background:#fff;padding:12px;text-align:left;display:grid;grid-template-columns:42px 1fr;gap:10px;position:relative}.conversation:hover{background:#fafcff}.conversation.active{background:#eef4ff}.conversation.active:before{content:"";position:absolute;inset:9px auto 9px 0;width:3px;background:var(--brand);border-radius:0 3px 3px 0}.avatar{width:42px;height:42px;border-radius:10px;display:grid;place-items:center;color:#fff;font-weight:750;background:#64748b}.avatar.round{width:40px;height:40px;border-radius:50%}.avatar.s1{background:#9a6a55}.avatar.s2{background:#475569}.avatar.s3{background:#81576b}.avatar.s4{background:#4f7c91}.avatar.s5{background:#9b6f8a}.avatar.staff{background:#a16207}.conv-main{min-width:0}.conv-line{display:flex;align-items:center;justify-content:space-between;gap:8px}.conv-name{font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.conv-time{flex:0 0 auto;font-size:11px;color:var(--sub)}.conv-account{margin-top:2px;color:#667085;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.conv-preview{margin-top:5px;color:#667085;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.conv-tags{margin-top:7px;display:flex;gap:5px;flex-wrap:wrap}.mini-tag{height:20px;display:inline-flex;align-items:center;border-radius:4px;padding:0 6px;background:#f2f4f7;color:#667085;font-size:10px}.mini-tag.blue{background:#eef4ff;color:#315ca8}.mini-tag.green{background:#ecfdf3;color:#047857}.mini-tag.orange{background:#fff7ed;color:#c2410c}.mini-tag.purple{background:#f5f3ff;color:#6d28d9}.mini-tag.red{background:#fef2f2;color:#dc2626}.empty{display:none;place-items:center;height:100%;padding:30px;color:var(--sub);text-align:center}.empty.show{display:grid}.viewer{min-width:0;min-height:0;display:flex;flex-direction:column;background:#f7f9fc;overflow:hidden}.viewer-head{min-height:56px;flex:0 0 auto;padding:0 14px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:16px}.customer-head{display:flex;align-items:center;gap:9px;min-width:0}.customer-copy{min-width:0}.customer-title{display:flex;align-items:center;gap:7px}.customer-title strong{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.relation-tag{height:20px;display:inline-flex;align-items:center;border-radius:4px;padding:0 6px;background:#fef2f2;color:#dc2626;font-size:10px}.customer-meta{margin-top:2px;color:#8490a3;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.viewer-actions{display:flex;align-items:center;gap:8px}.message-search{height:32px;width:188px;border:1px solid var(--line);border-radius:7px;background:#f9fafb;position:relative}.message-search i{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--sub);font-style:normal}.message-search input{width:100%;height:100%;border:0;background:transparent;padding:0 9px 0 29px;outline:0;font-size:12px}.review-btn{height:32px;border:1px solid var(--line-2);border-radius:7px;background:#fff;color:#475467;padding:0 10px;display:inline-flex;align-items:center;gap:6px}.review-btn.done{border-color:#abefc6;background:#ecfdf3;color:#047857}.viewer-subhead{min-height:32px;flex:0 0 auto;padding:0 14px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;color:#667085;font-size:11px}.viewer-subhead strong{color:#344054}.message-area{min-height:0;flex:1 1 0;overflow-y:auto;overflow-x:hidden;padding:12px 18px 20px}.date-divider{height:22px;display:flex;align-items:center;justify-content:center;color:var(--sub);font-size:10px;margin:0 0 8px}.date-divider:before,.date-divider:after{content:"";width:44px;height:1px;background:#e5e9ef;margin:0 10px}.message{display:flex;align-items:flex-start;gap:7px;margin-bottom:12px}.message.self{justify-content:flex-end}.message .avatar{width:28px;height:28px;border-radius:50%;flex:0 0 auto}.message-body{max-width:min(560px,68%)}.message.self .message-body{text-align:right}.message-meta{height:16px;display:flex;align-items:center;gap:6px;color:var(--sub);font-size:9px;margin:0 3px 3px}.message.self .message-meta{justify-content:flex-end}.source{height:16px;display:inline-flex;align-items:center;border-radius:4px;padding:0 5px;background:#eef3ff;color:var(--brand);font-size:9px}.source.wecom{background:#f5f3ff;color:var(--purple)}.source.platform{background:#f2f4f7;color:#667085}.sender-name{color:#667085;font-weight:600}.bubble{display:inline-block;text-align:left;border:1px solid #e1e7ef;border-radius:5px 12px 12px 12px;background:#fff;color:#344054;padding:8px 11px;line-height:1.55;font-size:12px;box-shadow:0 1px 2px rgba(16,24,40,.03);word-break:break-word}.message.self .bubble{border-color:#bdd6ff;border-radius:12px 5px 12px 12px;background:#edf5ff}.delivery{margin:3px 3px 0;color:var(--sub);font-size:9px}.delivery.failed{color:#dc2626}.bubble mark{background:#fff1a8;color:inherit;border-radius:2px;padding:0 1px}.audit-footer{height:34px;flex:0 0 auto;background:#fff;border-top:1px solid var(--line);padding:0 14px;display:flex;align-items:center;justify-content:space-between;color:var(--sub);font-size:10px}.toast{position:fixed;right:24px;top:72px;z-index:100;min-width:220px;border:1px solid #d9e4db;border-left:3px solid var(--green);border-radius:8px;background:#fff;box-shadow:0 12px 28px rgba(16,24,40,.14);padding:11px 14px;transform:translateX(320px);opacity:0;transition:.22s}.toast.show{transform:none;opacity:1}::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#cbd3df;border-radius:99px}::-webkit-scrollbar-thumb:hover{background:#aeb8c7}@media(max-width:1280px){:root{--secondary:204px}.workspace{grid-template-columns:310px minmax(0,1fr)}.message-area{padding-left:16px;padding-right:16px}.select-main{width:174px}.search-field{width:220px}.select-filter{width:140px}}
+.session-page{gap:10px;padding-top:10px}.workspace{position:relative}.result-pane{position:relative;overflow:visible}.result-toolbar{height:104px;padding:10px 14px 12px;display:block}.toolbar-title-line{height:34px;display:flex;align-items:center;justify-content:space-between;gap:8px}.dimension-tabs{height:34px;flex:0 0 auto;padding:3px;border-radius:8px;background:#f3f5f8}.dimension-tabs button{height:28px;padding:0 11px;font-size:12px}.toolbar-search-line{display:flex;align-items:center;gap:8px;margin-top:8px}.toolbar-search-line .search-field{flex:1;width:auto;min-width:0}.toolbar-search-line .sort-current{height:34px;min-width:92px;padding:0 9px}.toolbar-search-line .control{height:34px;border-radius:7px;background:#fff;font-size:12px}.ui-icon{width:16px;height:16px;display:inline-block;vertical-align:-3px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.mark .ui-icon{width:21px;height:21px;stroke-width:2.2}.sub-logo .ui-icon{width:19px;height:19px}.primary-item .ui-icon{width:18px;height:18px}.sub-link .ui-icon,.menu-icon{width:18px;height:18px;flex:0 0 18px}.icon-button .ui-icon,.help .ui-icon,.avatar-admin .ui-icon{width:17px;height:17px}.search-field .ui-icon,.message-search .ui-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--sub);width:16px;height:16px}.filter-trigger{width:36px;height:34px;border-radius:8px;border:1px solid #d8e2f0;background:#fff;color:#57708b;display:grid;place-items:center;position:relative}.filter-trigger:hover,.filter-trigger.is-open{background:#eef4ff;border-color:#c9dfff;color:var(--brand)}.filter-trigger.has-filter:after{content:"";position:absolute;right:6px;top:6px;width:6px;height:6px;border-radius:50%;background:var(--brand)}.sort-current{height:28px;min-width:96px;gap:5px;flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;border-radius:7px;border:1px solid #dde7f4;background:#fff;color:#52657b;font-size:12px;font-weight:700;padding:0 10px}.sort-current:hover,.sort-current.is-open{color:var(--brand);background:#eef4ff;border-color:#c9dfff}.sort-current .ui-icon{width:13px;height:13px;color:#738399}.filter-card{position:absolute;left:12px;top:96px;width:312px;z-index:30;display:none;background:#fff;border:1px solid var(--line);border-radius:10px;padding:0;box-shadow:0 18px 42px rgba(16,24,40,.16);overflow:hidden}.filter-card.open{display:block}.filter-popover-head{height:42px;padding:0 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);font-size:13px;color:#1f2937}.filter-popover-head span{font-weight:650}.filter-card .clear-btn{height:32px;color:var(--brand);font-size:12px;font-weight:650;padding:0 6px}.filter-card .filter-row{display:block;padding:12px 12px 4px;max-height:520px;overflow:auto}.filter-section{margin-bottom:12px}.filter-caption{margin-bottom:8px;color:#7a8594;font-size:12px;font-weight:600}.filter-card .select-main,.filter-card .select-filter,.filter-card .date-pair{width:100%}.filter-chip-row{display:flex;flex-wrap:wrap;gap:8px}.filter-chip{height:29px;min-width:51px;border-radius:7px;padding:0 11px;border:1px solid #d8e3f2;background:#fff;color:#506173;font-size:12px;font-weight:600}.filter-chip.active{color:var(--brand);background:#eaf3ff;border-color:#c9deff}.filter-card .control{height:32px;border-radius:7px;font-size:12px}.filter-card .date-pair{grid-template-columns:1fr 18px 1fr}.filter-card .filter-actions{padding:2px 0 8px}.filter-card .search-btn{height:34px;width:100%;border-radius:8px;font-size:13px;font-weight:700}.filter-card .filter-summary{margin:0;padding:9px 12px;border-top:1px solid var(--line);background:#f8fafc;font-size:11px}.sort-popover{position:absolute;right:12px;top:96px;width:172px;z-index:31;display:none;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 18px 42px rgba(16,24,40,.16);overflow:hidden}.sort-popover.open{display:block}.sort-option{width:100%;height:42px;border:0;border-bottom:1px solid var(--line);background:#fff;color:#344054;font-size:12px;font-weight:650;padding:0 12px;display:flex;align-items:center;justify-content:space-between;text-align:left}.sort-option:last-child{border-bottom:0}.sort-option:hover{background:#f7fbff}.sort-option .ui-icon{visibility:hidden;color:var(--brand);width:14px;height:14px}.sort-option.active{color:var(--brand);background:#f7fbff}.sort-option.active .ui-icon{visibility:visible}.conversation-list{position:relative;z-index:1}.list-load-state{height:42px;display:flex;align-items:center;justify-content:center;color:var(--sub);font-size:11px;background:#fff}.viewer{position:relative;z-index:0}@media(max-width:1280px){.result-toolbar{height:104px}.filter-card{width:286px}.sort-popover{width:160px}.dimension-tabs button{padding:0 6px}.toolbar-search-line .sort-current{min-width:86px;padding:0 7px}.sort-current{min-width:90px;padding:0 8px}}
+.staff-page{padding:16px;flex-direction:column;gap:12px;overflow:hidden;background:#f8faff}.account-header{flex:0 0 auto;display:flex;align-items:flex-start;justify-content:space-between;gap:16px}.account-header h1{margin:0 0 5px;font-size:18px;line-height:1.2}.account-header p{margin:0;color:var(--muted);font-size:12px}.account-top-actions{display:flex;align-items:center;gap:8px}.light-btn,.primary-btn{height:30px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:0 10px;font-size:12px;font-weight:550}.light-btn{border:1px solid var(--line-2);background:#fff;color:#344054}.light-btn:hover{background:#f8fafc;color:var(--brand)}.primary-btn{border:1px solid var(--brand);background:var(--brand);color:#fff}.primary-btn:hover{background:var(--brand-2)}.account-toolbar{flex:0 0 auto;min-height:48px;border:1px solid var(--line);border-radius:8px;background:#fff;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 12px}.account-toolbar-main{display:flex;align-items:center;gap:10px;min-width:0}.account-search{width:260px;position:relative}.account-search .ui-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--sub);width:16px;height:16px}.account-search .control{width:100%;height:30px;padding-left:31px;font-size:12px}.view-switch{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden;background:#fff}.view-switch button{width:30px;height:28px;border:0;border-right:1px solid var(--line);background:#fff;color:#8a95a5}.view-switch button:last-child{border-right:0}.view-switch button.active{background:#eef4ff;color:var(--brand)}.account-grid{min-height:0;flex:1;display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));grid-auto-rows:max-content;align-content:start;gap:12px;overflow:auto;padding:2px 2px 12px}
+.account-tabs{flex:0 0 auto;display:flex;gap:24px;border-bottom:1px solid var(--line)}
+.account-tab{position:relative;display:flex;align-items:center;gap:7px;height:35px;padding:0 2px 9px;border:0;background:transparent;color:#64748b;font-size:12px;white-space:nowrap}
+.account-tab:hover{color:var(--brand)}
+.account-tab.active{color:var(--brand);font-weight:600}
+.account-tab.active:after{content:"";position:absolute;bottom:-1px;left:0;right:0;height:2px;background:var(--brand);border-radius:2px}
+.account-tab-count{font-size:11px;color:#8490a3;font-variant-numeric:tabular-nums}
+.account-tab.active .account-tab-count{color:var(--brand)}
+.account-tab:focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-radius:4px}
+.staff-card{min-width:0;border:1px solid #dfe6ef;border-radius:10px;background:#fff;box-shadow:0 2px 4px rgba(24,39,66,.025);display:flex;flex-direction:column;overflow:hidden;transition:border-color .18s,box-shadow .18s}
+.staff-card:hover{border-color:#c1cfe3;box-shadow:0 6px 20px rgba(24,39,66,.055)}
+.staff-card-main{flex:1;padding:16px 16px 24px}
+.staff-card-head{min-width:0;display:flex;gap:9px;align-items:center}
+.staff-avatar{width:32px;height:32px;flex:0 0 32px;border-radius:10px;display:grid;place-items:center;font-size:13px;font-weight:600;color:#5074b6;background:#eaf1ff}
+.staff-avatar.yellow{color:#947749;background:#f6f0e5}
+.staff-avatar.blue{color:#5074b6;background:#eaf1ff}
+.staff-avatar.red{color:#8c72b2;background:#f1edfc}
+.staff-title{min-width:0;flex:1;display:flex;flex-direction:column;align-items:flex-start;gap:3px}
+.staff-title strong{max-width:100%;font-size:13px;font-weight:600;line-height:1.45;color:#25344b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.staff-binding{max-width:100%;font-size:11px;line-height:1.4;overflow-wrap:anywhere}
+.staff-binding-label{color:#748197}
+.staff-binding-names{min-width:0;color:#43516a;overflow-wrap:anywhere}.staff-binding .staff-binding-names{color:#748197}
+.staff-binding-names.unbound{color:#7b8799}
+.staff-card-actions{min-height:40px;flex:0 0 auto;border-top:1px solid #eff1f5;display:flex;align-items:center;justify-content:space-between;gap:6px;padding:5px 12px}
+.workbench-btn{height:28px;border:0;border-radius:6px;background:transparent;color:var(--brand);padding:0 5px;font-size:12px;font-weight:550;display:inline-flex;align-items:center;gap:5px;transition:background .15s,color .15s}
+.workbench-btn .ui-icon{width:14px;height:14px;stroke-width:1.7}
+.workbench-btn:hover{background:var(--brand-soft);color:var(--brand)}
+.workbench-btn:active{background:#e1eaff;color:var(--brand)}
+.workbench-btn:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+.rare-menu{flex:0 0 28px;width:28px;height:28px;border:0;border-radius:6px;background:transparent;color:#8c98aa;display:grid;place-items:center}
+.rare-menu:hover{background:#f3f5f8;color:#475467}
+.staff-card-actions button:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+.account-empty{grid-column:1/-1;display:none;place-items:center;min-height:240px;color:var(--sub);text-align:center}
+.account-empty.show{display:grid}
+@media(max-width:1220px){.account-search{width:240px}}
+
+.account-grid.is-list{display:block;padding:0;border:1px solid var(--line);border-radius:10px;background:#fff}
+.staff-table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:12px;text-align:left}
+.staff-table th{position:sticky;top:0;z-index:1;background:#f7faff;color:#536176;font-weight:500;height:40px;padding:0 14px;border-bottom:1px solid var(--line)}
+.staff-table td{height:52px;padding:8px 14px;border-bottom:1px solid #eff1f5;color:#43516a;overflow-wrap:anywhere}
+.staff-table tbody tr:last-child td{border-bottom:0}.staff-table tbody tr:hover{background:#fafcff}
+.staff-table .staff-card-head{gap:9px}
+.staff-table-name{min-width:0;font-size:13px;font-weight:600;color:#25344b;overflow-wrap:anywhere}
+.staff-row-actions{display:flex;align-items:center;gap:6px}.staff-table .number{font-variant-numeric:tabular-nums}
+.account-state{display:inline-flex;align-items:center;gap:5px;width:max-content;padding:2px 7px;border-radius:5px;font-size:11px;line-height:17px;font-weight:500;color:var(--brand);background:#edf4ff;white-space:nowrap}.account-state:before{content:"";width:5px;height:5px;border-radius:50%;background:currentColor}.account-state.disabled{color:#ad7832;background:#fff5e8}
+.workbench-btn:disabled{color:#a5adba;cursor:not-allowed;background:transparent}
+.staff-action-menu{position:fixed;z-index:60;width:132px;padding:5px;background:#fff;border:1px solid var(--line);border-radius:8px;box-shadow:0 8px 28px rgba(24,39,66,.13)}
+.staff-action-menu[hidden]{display:none}.staff-action-menu button{display:flex;align-items:center;gap:9px;width:100%;height:34px;padding:0 10px;border:0;border-radius:5px;background:transparent;color:#475467;text-align:left;font-size:12px}
+.staff-action-menu button:hover,.staff-action-menu button:focus-visible{background:#f1f5fb;outline:none}.staff-action-menu button.danger{color:#c94848}.staff-action-menu button.danger:hover{background:#fff3f3}.staff-action-menu .ui-icon{width:14px;height:14px}
+.staff-dialog{width:400px;max-width:calc(100vw - 40px);padding:0;border:1px solid var(--line);border-radius:12px;color:var(--text);box-shadow:0 24px 80px rgba(16,24,40,.2)}
+.staff-dialog::backdrop{background:rgba(24,35,52,.28)}.staff-dialog-head{display:flex;align-items:center;justify-content:space-between;padding:17px 20px;border-bottom:1px solid #eff1f5}.staff-dialog-head h2{margin:0;font-size:16px;font-weight:600}
+.staff-dialog-body{padding:20px}.staff-dialog-body p{margin:0;line-height:1.8;color:#667085;font-size:13px;overflow-wrap:anywhere}
+.staff-form-field{display:flex;flex-direction:column;gap:7px;margin-bottom:16px;color:#536176;font-size:12px}.staff-form-field:last-child{margin-bottom:0}.staff-form-field .control{width:100%;height:34px;font-size:13px}.staff-form-field small{font-size:11px;color:#98a2b3}
+.staff-dialog-actions{display:flex;justify-content:flex-end;gap:8px;padding:14px 20px;border-top:1px solid #eff1f5;background:#fafbfc}.staff-dialog .danger-btn{background:#c94848;border-color:#c94848}.staff-dialog .danger-btn:hover{background:#b33d3d}
+.staff-dialog.is-account-form{width:640px}
+.staff-form-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px 20px}
+.staff-form-grid .staff-form-field{margin:0}.staff-form-grid label{font-weight:550;color:#475467}.staff-required{color:#dc2626;margin-left:3px}
+@media(max-width:640px){.staff-form-grid{grid-template-columns:minmax(0,1fr)}}
+
+/* WeCom accounts */
+.wecom-page{padding:16px;flex-direction:column;gap:12px;overflow:hidden;background:#f8faff}
+.wecom-page .account-toolbar-main,.staff-page .account-toolbar-main{flex-wrap:wrap}.wecom-page .account-search,.staff-page .account-search{width:270px}.wecom-company{height:30px;width:156px;font-size:12px}
+.wecom-tabs{display:flex;gap:24px;flex:0 0 auto;border-bottom:1px solid var(--line)}
+.wecom-tab{height:35px;position:relative;display:flex;align-items:center;gap:7px;padding:0 2px 9px;border:0;background:transparent;color:#64748b;font-size:12px;white-space:nowrap}
+.wecom-tab.active{color:var(--brand);font-weight:600}.wecom-tab.active:after{content:"";position:absolute;bottom:-1px;left:0;right:0;height:2px;border-radius:2px;background:var(--brand)}
+.wecom-tab-count{font-size:11px;color:#8490a3;font-variant-numeric:tabular-nums}.wecom-tab.active .wecom-tab-count{color:var(--brand)}
+.wecom-results{flex:1;min-height:0;overflow:auto;background:#fff;border:1px solid var(--line);border-radius:10px}
+.wecom-results.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));grid-auto-rows:minmax(224px,max-content);align-content:start;gap:12px;padding:2px 2px 12px;background:transparent;border:0;border-radius:0}
+.wecom-card{min-width:0;display:flex;flex-direction:column;min-height:212px;overflow:hidden;border:1px solid #dfe6ef;border-radius:10px;background:#fff;box-shadow:0 2px 4px rgba(24,39,66,.025)}
+.wecom-card:hover{border-color:#c1cfe3;box-shadow:0 6px 20px rgba(24,39,66,.055)}
+.wecom-card-body{flex:1;padding:16px}.wecom-identity{min-width:0;display:flex;align-items:center;gap:9px}.wecom-name-block{min-width:0;flex:1}
+.wecom-name{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;font-weight:600;color:#25344b}.wecom-id{display:block;margin-top:3px;font:11px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;color:#748197;overflow-wrap:anywhere}
+.wecom-avatar{flex:0 0 32px;width:32px;height:32px;border-radius:10px;display:grid;place-items:center;background:#eaf1ff;color:#5074b6;font-size:13px;font-weight:600}.wecom-avatar.purple{background:#f1edfc;color:#8c72b2}.wecom-avatar.sand{background:#f6f0e5;color:#947749}
+.wecom-status{display:inline-flex;align-items:center;gap:5px;width:max-content;padding:2px 7px;border-radius:5px;font-size:11px;line-height:17px;font-weight:500;color:#6e798a;background:#f0f3f7;white-space:nowrap}
+.wecom-status:before{content:"";width:5px;height:5px;border-radius:50%;background:currentColor}.wecom-status.online{color:var(--brand);background:#edf4ff}.wecom-status.offline{color:#ad7832;background:#fff5e8}.wecom-status.pending{color:#738198;background:#f0f3f8}.wecom-status.disabled:before{display:none}
+.wecom-card-status,.staff-card-status{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:15px}.wecom-status-note{font-size:11px;color:#7c8798;white-space:nowrap}
+.wecom-meta,.staff-meta{margin:12px 0 0;display:grid;grid-template-columns:62px minmax(0,1fr);gap:6px 8px;align-items:center;font-size:12px}.wecom-meta dt,.staff-meta dt{color:#748197}.wecom-meta dd,.staff-meta dd{margin:0;color:#43516a;overflow-wrap:anywhere}.wecom-meta time,.staff-meta time,.staff-table time{font-size:11px;font-variant-numeric:tabular-nums}
+.wecom-archive{font-size:11px;color:#748197}.wecom-archive.enabled{color:#4775c8}
+.wecom-actions{display:flex;align-items:center;gap:6px;white-space:nowrap}.wecom-card>.wecom-actions{flex:0 0 auto;padding:5px 12px;border-top:1px solid #eff1f5;min-height:40px}.wecom-card>.wecom-actions .rare-menu{margin-left:auto}
+.wecom-cloud-btn{height:28px;display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:0 5px;border:0;border-radius:6px;background:transparent;font-size:12px;white-space:nowrap}.wecom-cloud-btn{color:var(--brand);font-weight:550}.wecom-cloud-btn .ui-icon{width:14px;height:14px}.wecom-cloud-btn:hover{background:var(--brand-soft)}
+.wecom-table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:12px;text-align:left}.wecom-table th{position:sticky;top:0;z-index:1;padding:0 14px;height:40px;background:#f7faff;border-bottom:1px solid var(--line);color:#536176;font-weight:500}.wecom-table td{height:66px;padding:10px 14px;border-bottom:1px solid #eff1f5;color:#43516a}.wecom-table tr:last-child td{border-bottom:0}.wecom-table tbody tr:hover{background:#fafcff}.wecom-table .wecom-status-note{display:block;margin-top:4px;font-size:10px}.wecom-table time{font-size:11px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.wecom-empty{display:grid;place-items:center;min-height:220px;grid-column:1/-1;text-align:center;font-size:12px;color:#748197}.wecom-empty strong{display:block;margin-bottom:6px;color:#536176;font-size:13px;font-weight:500}
+.wecom-dialog{width:440px;max-width:calc(100vw - 40px);padding:0;border:1px solid var(--line);border-radius:12px;color:var(--text);box-shadow:0 24px 80px rgba(16,24,40,.2)}.wecom-dialog::backdrop{background:rgba(24,35,52,.28)}.wecom-dialog.cloud{width:660px}.wecom-dialog [hidden]{display:none}.wecom-dialog .wecom-meta{grid-template-columns:96px 1fr;gap:14px;margin:0}.wecom-dialog .wecom-status{vertical-align:middle}
+.wecom-cloud-summary{display:flex;justify-content:space-between;align-items:center;padding-bottom:16px;gap:16px}.wecom-cloud-placeholder{min-height:238px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px;text-align:center;border:1px solid #e1e9f7;border-radius:8px;background:#f7faff}.wecom-cloud-placeholder>.ui-icon{width:34px;height:34px;color:#7194db;stroke-width:1.4;margin-bottom:14px}.wecom-cloud-placeholder strong{font-size:14px;font-weight:550}.wecom-cloud-placeholder p{max-width:340px;margin:8px 0 0;font-size:12px;color:#748197;line-height:1.7}
+.wecom-page button:focus-visible{outline:2px solid var(--brand);outline-offset:2px}.wecom-dialog-body{padding:20px}.wecom-confirm-copy{margin:0;font-size:13px;line-height:1.8;color:#536176}
+@media(max-width:1280px){.wecom-tabs,.account-tabs{gap:20px}.wecom-table td,.wecom-table th,.staff-table td,.staff-table th{padding-left:10px;padding-right:10px}.wecom-actions{gap:3px}.wecom-page .account-search,.staff-page .account-search{width:240px}}
+
+.account-pagination{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:44px;padding:7px 12px;border:1px solid var(--line);border-radius:8px;background:#fff;font-size:12px;color:#64748b}
+.pagination-summary{white-space:nowrap;font-variant-numeric:tabular-nums}.pagination-controls{display:flex;align-items:center;gap:12px}.pagination-size{height:28px;min-width:92px;padding:0 7px;border:1px solid var(--line-2);border-radius:6px;background:#fff;color:#536176;font-size:12px}
+.pagination-pages{display:flex;align-items:center;gap:4px}.pagination-pages button{min-width:28px;height:28px;padding:0 7px;border:1px solid transparent;border-radius:6px;background:transparent;color:#64748b;font-size:12px;font-variant-numeric:tabular-nums;display:grid;place-items:center}.pagination-pages button:hover:not(:disabled){background:#f0f5ff;color:var(--brand)}.pagination-pages button[aria-current="page"]{background:#edf4ff;border-color:#dce7ff;color:var(--brand);font-weight:600}.pagination-pages button:disabled{color:#b8c0cd;cursor:default}.pagination-pages .ui-icon{width:13px;height:13px}.pagination-gap{padding:0 3px;color:#98a2b3}.account-pagination button:focus-visible,.pagination-size:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+</style>
+</head>
+<body>
+<div class="app">
+  <nav class="primary" aria-label="一级菜单">
+    <button class="mark" data-view="workbench" aria-label="企微客服中台"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v13A2.5 2.5 0 0 1 17.5 21h-11A2.5 2.5 0 0 1 4 18.5z"/><path d="M8 8h8M8 12h5M8 16h8"/></svg></button>
+    <div class="primary-list" id="primaryList"></div>
+    <button class="help" title="帮助"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.7 2.7 0 1 1 4.2 2.2c-1 .7-1.7 1.2-1.7 2.3"/><path d="M12 17h.01"/></svg></button>
+  </nav>
+  <aside class="secondary">
+    <div class="sub-brand"><div class="sub-logo"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21h16"/><path d="M6 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16"/><path d="M9 7h2M13 7h2M9 11h2M13 11h2M9 15h2M13 15h2"/></svg></div><div><strong>企微客服中台</strong><span>管理后台</span></div></div>
+    <nav class="sub-list" id="subList" aria-label="二级菜单"></nav>
+  </aside>
+  <section class="shell">
+    <header class="top">
+      <div class="crumb"><span id="crumbGroup">客服</span>&nbsp; / &nbsp;<b id="crumbPage">会话管理</b></div>
+      <div class="top-actions"><button class="global-search">搜索功能 <span style="float:right">K</span></button><button class="icon-button" title="帮助"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.7 2.7 0 1 1 4.2 2.2c-1 .7-1.7 1.2-1.7 2.3"/><path d="M12 17h.01"/></svg></button><button class="icon-button" title="通知"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 17H9"/><path d="M18 14v-3a6 6 0 0 0-12 0v3l-2 3h16z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg></button><div class="avatar-admin"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M5 21a7 7 0 0 1 14 0"/></svg></div></div>
+    </header>
+    <main class="main">
+      <section class="view blank" id="view-workbench"></section>
+      <section class="view wecom-page" id="view-wecom">
+        <header class="account-header"><div><h1>企微帐号</h1><p id="wecomResultText" aria-live="polite"></p></div><button class="light-btn" id="wecomRefresh"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 0 0-15-6.7L3 8M3 3v5h5M3 12a9 9 0 0 0 15 6.7L21 16M16 16h5v5"/></svg>刷新状态</button></header>
+        <section class="account-toolbar" aria-label="企微帐号筛选">
+          <div class="account-toolbar-main"><div class="account-search"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="wecomSearch" class="control" placeholder="搜索帐号名称 / 企微 ID" aria-label="搜索帐号名称或企微 ID"></div><select id="wecomCompany" class="control wecom-company" aria-label="企业主体"><option value="all">全部企业主体</option></select><button class="light-btn" id="wecomClear">重置</button></div>
+          <div class="view-switch" aria-label="企微帐号视图切换"><button title="列表视图" aria-label="企微帐号列表视图" aria-pressed="false" data-wecom-layout="list"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg></button><button class="active" title="卡片视图" aria-label="企微帐号卡片视图" aria-pressed="true" data-wecom-layout="cards"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></button></div>
+        </section>
+        <nav id="wecomTabs" class="wecom-tabs" role="tablist" aria-label="企微在线状态"></nav>
+        <section id="wecomResults" class="wecom-results" role="tabpanel" aria-labelledby="wecom-tab-all" tabindex="0"></section>
+        <nav id="wecomPagination" class="account-pagination" aria-label="企微帐号分页"></nav>
+      </section>
+      <section class="view staff-page active" id="view-staff">
+        <header class="account-header">
+          <div><h1>客服帐号</h1><p><span id="accountResultText" aria-live="polite"></span></p></div>
+          <div class="account-top-actions">
+            <button class="light-btn" data-toast="已刷新客服帐号"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 0 0-15-6.7L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 15 6.7L21 16"/><path d="M16 16h5v5"/></svg>刷新</button>
+            <button class="primary-btn" id="staffAddBtn"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>新增客服帐号</button>
+          </div>
+        </header>
+        <section class="account-toolbar">
+          <div class="account-toolbar-main">
+            <div class="account-search"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="staffSearch" class="control" placeholder="搜索客服姓名 / 微动员工" aria-label="搜索客服姓名或微动员工"></div>
+            <button id="staffSearchBtn" class="light-btn">搜索</button>
+          </div>
+          <div class="account-top-actions">
+            <div class="view-switch" aria-label="视图切换"><button class="active" title="卡片视图" data-staff-layout="cards" aria-pressed="true"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></button><button title="列表视图" data-staff-layout="list" aria-pressed="false"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01"/></svg></button></div>
+            <button class="light-btn" data-toast="已导出当前结果"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>导出当前结果</button>
+          </div>
+        </section>
+        <nav class="account-tabs" role="tablist" aria-label="客服业务分类">
+          <button id="staff-tab-sales" class="account-tab active" role="tab" aria-selected="true" aria-controls="staffAccountGrid" data-staff-category="sales">线上销售<span class="account-tab-count" aria-hidden="true"></span></button>
+          <button id="staff-tab-store" class="account-tab" role="tab" aria-selected="false" aria-controls="staffAccountGrid" tabindex="-1" data-staff-category="store">线下门店<span class="account-tab-count" aria-hidden="true"></span></button>
+        </nav>
+        <section id="staffAccountGrid" class="account-grid" role="tabpanel" aria-labelledby="staff-tab-sales" tabindex="0"></section>
+        <nav id="staffPagination" class="account-pagination" aria-label="客服帐号分页"></nav>
+      </section>
+      <section class="view session-page" id="view-session">
+        <section class="workspace">
+          <div class="result-pane">
+            <div class="result-head result-toolbar">
+              <div class="toolbar-title-line"><div class="dimension dimension-tabs" role="tablist"><button data-dimension="staff" class="active">按客服帐号</button><button data-dimension="account">按企微帐号</button></div><button id="filterToggle" class="filter-trigger" title="高级筛选" aria-label="高级筛选"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18l-7 8v6l-4 2v-8z"/></svg></button></div>
+              <div class="toolbar-search-line">
+                <div class="search-field"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="conversationSearch" class="control" placeholder="搜索"></div>
+                <button id="sortToggle" class="sort-current" title="排序方式"><span id="sortLabel">跟进优先</span><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+              </div>
+            </div>
+            <section id="filterCard" class="filter-card" aria-label="会话筛选" onclick="event.stopPropagation()">
+              <div class="filter-popover-head"><span>筛选</span><button id="clearFilters" class="clear-btn">重置</button></div>
+              <div class="filter-row">
+                <div class="filter-section"><div class="filter-caption">账号范围</div><select id="dimensionSelect" class="control select-main" aria-label="客服帐号"><option value="all">全部客服帐号</option></select></div>
+                <div class="filter-section"><div class="filter-caption">回复状态</div><div class="filter-chip-row"><button id="quickAll" class="filter-chip quick-chip active" data-quick="all">全部</button><button id="quickPending" class="filter-chip quick-chip" data-quick="pending">未回复</button></div></div>
+                <div class="filter-section"><div class="filter-caption">开口状态</div><div class="filter-chip-row"><button class="filter-chip active" data-filter-type="opening" data-filter-value="all">全部</button><button class="filter-chip" data-filter-type="opening" data-filter-value="opened">已开口</button><button class="filter-chip" data-filter-type="opening" data-filter-value="unopened">未开口</button></div></div>
+                <div class="filter-section"><div class="filter-caption">消息时间</div><div class="date-pair"><input id="startDate" class="control date-control" type="date" value="2026-06-01" title="开始日期"><span>至</span><input id="endDate" class="control date-control" type="date" value="2026-06-30" title="结束日期"></div></div>
+                <div class="filter-section"><div class="filter-caption">消息来源</div><select id="sourceFilter" class="control select-filter"><option value="all">全部消息来源</option><option value="ai">AI回复</option><option value="wecom">企微端</option><option value="platform">平台端</option></select></div>
+                <div class="filter-section"><div class="filter-caption">客户状态</div><div class="filter-chip-row"><button class="filter-chip active" data-filter-type="deal" data-filter-value="all">全部</button><button class="filter-chip" data-filter-type="deal" data-filter-value="未成交">未成交</button><button class="filter-chip" data-filter-type="deal" data-filter-value="已付款">已付款</button><button class="filter-chip" data-filter-type="deal" data-filter-value="待定中">待定中</button><button class="filter-chip" data-filter-type="deal" data-filter-value="待排客">待排客</button><button class="filter-chip" data-filter-type="deal" data-filter-value="已排客">已排客</button><button class="filter-chip" data-filter-type="deal" data-filter-value="已超时">已超时</button><button class="filter-chip" data-filter-type="deal" data-filter-value="已到店">已到店</button><button class="filter-chip" data-filter-type="deal" data-filter-value="已完成">已完成</button><button class="filter-chip" data-filter-type="deal" data-filter-value="已流退">已流退</button></div></div>
+                <div class="filter-section"><div class="filter-caption">客户关系</div><select id="relationFilter" class="control select-filter"><option value="all">全部客户关系</option><option value="normal">正常客户</option><option value="deleted">已删除</option></select></div>
+                <div class="filter-actions"><button id="applyFilters" class="search-btn">筛选</button></div>
+              </div>
+              <div class="filter-summary"><span>当前范围：</span><span id="dimensionSummary" class="summary-tag">全部客服帐号</span><span id="dateSummary" class="summary-tag">2026-06-01 至 2026-06-30</span></div>
+            </section>
+            <div id="sortPopover" class="sort-popover" onclick="event.stopPropagation()">
+              <button class="sort-option active" data-sort="follow">跟进优先 <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg></button>
+              <button class="sort-option" data-sort="recent">最近活跃 <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg></button>
+              <button class="sort-option" data-sort="reply">最后回复时间 <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg></button>
+              <button class="sort-option" data-sort="rounds">对话轮次最多 <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg></button>
+            </div>
+            <div id="conversationList" class="conversation-list"></div>
+            <div id="emptyState" class="empty"><div>未找到匹配会话<br><small>请调整筛选条件后重试</small></div></div>
+          </div>
+          <div class="viewer">
+            <div class="viewer-head">
+              <div class="customer-head"><div id="activeAvatar" class="avatar round s1"></div><div class="customer-copy"><div class="customer-title"><strong id="activeName">--</strong><span id="relationTag" class="relation-tag">已删除</span></div><div id="activeMeta" class="customer-meta">--</div></div></div>
+            </div>
+            <div class="viewer-subhead"><span>归属企微：<strong id="accountName">--</strong> · 客服：<strong id="staffName">--</strong></span><span id="messageCount">0 条消息</span></div>
+            <div id="messageArea" class="message-area"></div>
+            <div class="audit-footer"><span>管理员仅可查看授权范围内的会话</span><span id="lastSync">数据同步于 11:18</span></div>
+          </div>
+        </section>
+      </section>
+      <section class="view blank" id="view-ai"></section>
+      <section class="view blank" id="view-rules"></section>
+      <section class="view blank" id="view-drill"></section>
+      <section class="view blank" id="view-alert"></section>
+      <section class="view blank" id="view-device"></section>
+      <section class="view blank" id="view-enterprise"></section>
+    </main>
+  </section>
+</div>
+<div id="staffActionMenu" class="staff-action-menu" role="menu" aria-label="帐号操作" hidden></div>
+<dialog id="staffDialog" class="staff-dialog" aria-labelledby="staffDialogTitle">
+ <form id="staffDialogForm">
+  <div class="staff-dialog-head"><h2 id="staffDialogTitle"></h2><button type="button" class="icon-button" id="staffDialogClose" aria-label="关闭">×</button></div>
+  <div id="staffDialogBody" class="staff-dialog-body"></div>
+  <div class="staff-dialog-actions"><button type="button" class="light-btn" id="staffDialogCancel">取消</button><button type="submit" class="primary-btn" id="staffDialogSubmit">保存</button></div>
+ </form>
+</dialog>
+<div id="wecomActionMenu" class="staff-action-menu" role="menu" aria-label="企微帐号操作" hidden></div>
+<dialog id="wecomDialog" class="wecom-dialog" aria-labelledby="wecomDialogTitle"><div class="staff-dialog-head"><h2 id="wecomDialogTitle"></h2><button type="button" class="icon-button" id="wecomDialogClose" aria-label="关闭企微帐号弹窗">×</button></div><div id="wecomDialogBody" class="wecom-dialog-body"></div><div class="staff-dialog-actions"><button type="button" class="light-btn" id="wecomDialogCancel">关闭</button><button type="button" class="primary-btn" id="wecomDialogConfirm" hidden>确定</button></div></dialog>
+<div id="toast" class="toast">已更新复盘状态</div>
+<script>
+const menuGroups={
+  service:{label:'客服',desc:'客户服务与会话',icon:'message',items:[['workbench','layout','工作台'],['wecom','building','企微帐号'],['staff','users','客服帐号'],['session','messages','会话管理']]},
+  strategy:{label:'策略',desc:'AI 与自动化策略',icon:'sliders',items:[['ai','bot','AI 回复策略'],['rules','shield','接管规则'],['drill','send','发送演练'],['alert','bell','告警通道']]},
+  device:{label:'设备',desc:'设备、云机与权限',icon:'server',items:[['device','phone','设备与云机'],['enterprise','lock','企业与权限']]}
+};
+const conversations=[
+ {id:'jua',name:'刦26.3.20 Jua',avatar:'J',tone:'s1',account:'子画',accountId:'zhua',staff:'沈思思',date:'2026-06-11',time:'11:02',relation:'deleted',opening:'opened',status:'未成交',rounds:2,reviewed:false,reply:'pending',preview:'夏天折扣终点黄金周期…',messages:[
+  {side:'other',time:'11:02:10',content:'犹豫一千次，不如行动一次！<br><br>不去尝试，拿什么看到效果？专注做十多年，技术效果不会让你失望。<br><br>到店赠送美白补水一次。'},
+  {side:'self',source:'ai',time:'11:02:10',content:'您关注的是补水美白项目，对吗？这边可以先帮您锁定今天的体验名额。'},
+  {side:'self',source:'wecom',time:'11:02:18',content:'夏天折扣终点黄金周期<br><br>六一特惠价只需 <strong style="color:#e11d48">179元</strong><br><br>预留名额长期有效不涨价<br><br>定金10元即可登记'},
+  {side:'self',source:'platform',time:'11:02:36',content:'图片消息未送达',failed:'客户已删除，发送失败'}]},
+ {id:'top',name:'26.06.10#TOP',avatar:'T',tone:'s2',account:'子画',accountId:'zhua',staff:'林晓宇',date:'2026-06-11',time:'11:14',relation:'normal',opening:'opened',status:'已付款',rounds:3,reviewed:true,reply:'replied',preview:'门店位置：厦门百草德雷站',messages:[{side:'other',time:'11:10:00',content:'你好，请问厦门百草德雷站在哪里？'},{side:'self',source:'platform',time:'11:14:00',content:'门店位置：厦门百草德雷站。地图定位已发送，期待您的光临！'}]},
+ {id:'luo',name:'骆姐',avatar:'骆',tone:'s3',account:'王智杰',accountId:'wang',staff:'沈思思',date:'2026-06-11',time:'10:06',relation:'normal',opening:'opened',status:'未成交',rounds:1,reviewed:false,reply:'pending',preview:'可以的，我这边打字跟您确认',messages:[{side:'other',time:'10:05:00',content:'我没有听到语音，能打字吗？'},{side:'self',source:'platform',time:'10:06:20',content:'可以的，我这边打字跟您确认。您主要想了解项目价格还是门店位置？'}]},
+ {id:'kai',name:'开10.3',avatar:'开',tone:'s4',account:'周晓盈',accountId:'zhou',staff:'林晓宇',date:'2026-06-11',time:'09:52',relation:'normal',opening:'opened',status:'已到店',rounds:4,reviewed:true,reply:'replied',preview:'收到，已帮您登记下午两点的席位',messages:[{side:'other',time:'09:50:00',content:'我们明天下午两点过去，能帮我们预约一个老师吗？'},{side:'self',source:'ai',time:'09:52:00',content:'收到！已帮您登记明天下午两点的席位。'}]},
+ {id:'two',name:'2.26',avatar:'2',tone:'s5',account:'周晓盈',accountId:'zhou',staff:'顾明',date:'2026-06-09',time:'16:41',relation:'normal',opening:'opened',status:'已排客',rounds:2,reviewed:false,reply:'replied',preview:'这个是门店位置您看看对不对',messages:[{side:'other',time:'16:38:00',content:'你们门店到底在几楼啊？'},{side:'self',source:'wecom',time:'16:41:00',content:'这个是门店位置您看看对不对，是在商场三楼电梯口右转。'}]},
+ {id:'nine',name:'9.27',avatar:'9',tone:'s4',account:'王智杰',accountId:'wang',staff:'林晓宇',date:'2026-06-08',time:'09:34',relation:'normal',opening:'unopened',status:'已流退',rounds:0,reviewed:false,reply:'pending',preview:'[图片消息]',messages:[{side:'other',time:'09:34:00',content:'[图片消息]'}]}
+];
+const moreNames=['阿敏','小乔','方女士','陈老师','林姐','赵先生','美美','刘颖','晨晨','许小姐','郑女士','小吴','黄姐','甜甜','苏宁','王可','蓝蓝','杨老师','Maggie','July','安安','周周','小雨','Nina','韩女士','罗先生','贝贝','晴晴','Ada','唐女士','可乐','小琳'];
+const morePreviews=['想问下今天还能预约吗','价格可以再发我一下吗','我先看下位置，晚点回复','补水和美白哪个适合我','已经付定金了，麻烦登记','刚才图片没打开','明天下午有空位吗','这个活动到什么时候结束','需要带朋友一起过去','我皮肤比较敏感能做吗','门店离地铁近不近','能不能安排女老师','体验一次大概多久','我想先了解套餐内容','客服还在吗'];
+const moreStatuses=['未成交','待定中','已付款','已排客','已到店','已流退'];
+conversations.push(...moreNames.map((name,i)=>{
+ const account=['子画','王智杰','周晓盈'][i%3],accountId=['zhua','wang','zhou'][i%3],staff=['沈思思','林晓宇','顾明'][i%3],source=['ai','platform','wecom'][i%3],status=moreStatuses[i%moreStatuses.length],day=String(30-i%28).padStart(2,'0'),hour=String(18-i%9).padStart(2,'0'),minute=String((i*7)%60).padStart(2,'0'),rounds=i%6,preview=morePreviews[i%morePreviews.length];
+ return {id:'mock'+i,name,avatar:name[0],tone:'s'+(i%5+1),account,accountId,staff,date:'2026-06-'+day,time:`${hour}:${minute}`,relation:i%9===0?'deleted':'normal',opening:i%7===0?'unopened':'opened',status,rounds,reviewed:i%4===0,reply:i%3===0?'pending':'replied',preview,messages:[{side:'other',time:`${hour}:${minute}:00`,content:preview},{side:'self',source,time:`${hour}:${String((Number(minute)+2)%60).padStart(2,'0')}:00`,content:source==='ai'?'收到，我先帮您确认适合的体验方案。':source==='platform'?'可以的，我这边给您登记并同步门店。':'活动信息已发送，您可以先看下详情。'}]};
+}));
+const serviceAccounts=[
+ {name:'程华静',avatar:'程',tone:'yellow',type:'线上销售',reception:643,employees:['程华静']},
+ {name:'白思静',avatar:'白',tone:'blue',type:'线上销售',reception:625,employees:['白思静']},
+ {name:'罗学聪',avatar:'罗',tone:'red',type:'线上销售',reception:192,employees:['罗学聪','肖加珠']},
+ {name:'超级客服',avatar:'超',tone:'blue',type:'ai员工',category:'sales',reception:9582,employees:[]},
+ {name:'沈思思',avatar:'沈',tone:'yellow',type:'门店老师',reception:321,employees:['沈思思','Sisi Shen']},
+ {name:'林晓宇',avatar:'林',tone:'blue',type:'线上销售',reception:276,employees:['林晓宇']},
+ {name:'顾明',avatar:'顾',tone:'yellow',type:'线上销售',reception:138,employees:['顾明','Gu Ming']},
+ {name:'周可欣',avatar:'周',tone:'red',type:'门店老师',reception:89,employees:['周可欣']},
+ {name:'叶子晴',avatar:'叶',tone:'blue',type:'线上销售',reception:77,employees:['叶子晴']},
+ {name:'王敏',avatar:'王',tone:'yellow',type:'门店老师',reception:66,employees:['王敏','Mina Wang']},
+ {name:'陈安安',avatar:'陈',tone:'red',type:'线上销售',reception:42,employees:[]},
+ {name:'许佳',avatar:'许',tone:'blue',type:'门店老师',reception:35,employees:['许佳']},
+ {name:'李梦',avatar:'李',tone:'yellow',type:'线上销售',reception:18,employees:['李梦']}
+];
+const staffLoginIds=['chenghuajin','baisijing','123213123','system-default-cs','shensisi','linxiaoyu','guming','zhoukexin','yeziqing','wangmin','chenanan','xujia','limeng'];
+serviceAccounts.forEach((account,index)=>{account.id='staff-'+index;account.login=staffLoginIds[index];account.enabled=true;account.lastActive='09/19 17:34'});
+let nextStaffId=serviceAccounts.length;
+const accountPaging={staff:{page:1,size:16,listSize:8,cardSize:16,total:0},wecom:{page:1,size:16,listSize:8,cardSize:16,total:0}};
+let staffCategory='sales',staffLayout='cards',staffMenuTrigger=null,staffDialogAction=null;
+const staffCategoryLabels={sales:'线上销售',store:'线下门店'};
+function accountCategory(account){return account.category||(account.type==='线上销售'?'sales':account.type==='门店老师'?'store':null)}
+const PAGE_SIZE=10;
+let activeGroup='service',activeView='staff',dimension='staff',openingFilter='all',dealFilter='all',quickStatus='all',sortMode='follow',activeId='jua',visible=[],loadedCount=PAGE_SIZE;
+const $=s=>document.querySelector(s),$$=s=>document.querySelectorAll(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function icon(name){const paths={message:'<path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/>',messages:'<path d="M21 14a4 4 0 0 1-4 4H9l-5 3V7a4 4 0 0 1 4-4h9a4 4 0 0 1 4 4z"/><path d="M8 9h8M8 13h5"/>',layout:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 10v10"/>',building:'<path d="M4 21h16"/><path d="M6 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16"/><path d="M9 7h2M13 7h2M9 11h2M13 11h2M9 15h2"/>',users:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9"/><path d="M16 3.1a4 4 0 0 1 0 7.8"/>',sliders:'<path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3"/><path d="M2 14h4M10 8h4M18 16h4"/>',bot:'<rect x="5" y="7" width="14" height="12" rx="3"/><path d="M12 7V4"/><circle cx="9" cy="13" r="1"/><circle cx="15" cy="13" r="1"/><path d="M9 17h6"/>',shield:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m9 12 2 2 4-4"/>',send:'<path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/>',bell:'<path d="M15 17H9"/><path d="M18 14v-3a6 6 0 0 0-12 0v3l-2 3h16z"/><path d="M10 20a2 2 0 0 0 4 0"/>',server:'<rect x="3" y="4" width="18" height="7" rx="2"/><rect x="3" y="13" width="18" height="7" rx="2"/><path d="M7 8h.01M7 17h.01"/>',phone:'<rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/>',lock:'<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',external:'<path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>',edit:'<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>',power:'<path d="M12 2v10"/><path d="M18.4 6.6a9 9 0 1 1-12.8 0"/>',trash:'<path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/>',more:'<circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>'};return `<svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true">${paths[name]||paths.message}</svg>`}
+function findGroupByView(view){return Object.keys(menuGroups).find(k=>menuGroups[k].items.some(i=>i[0]===view))||'service'}
+function renderMenu(){const primary=$('#primaryList');primary.innerHTML=Object.entries(menuGroups).map(([key,g])=>`<button class="primary-item ${key===activeGroup?'active':''}" data-group="${key}">${icon(g.icon)}<span>${g.label}</span></button>`).join('');const group=menuGroups[activeGroup];$('#subList').innerHTML=group.items.map(i=>`<button class="sub-link ${i[0]===activeView?'active':''}" data-view="${i[0]}"><span class="menu-icon">${icon(i[1])}</span><span>${i[2]}</span></button>`).join('');$$('.primary-item').forEach(btn=>btn.onclick=()=>{activeGroup=btn.dataset.group;activeView=menuGroups[activeGroup].items[0][0];showView(activeView)});$$('.sub-link').forEach(btn=>btn.onclick=()=>showView(btn.dataset.view))}
+function showView(view){activeView=view;activeGroup=findGroupByView(view);$$('.view').forEach(v=>v.classList.toggle('active',v.id==='view-'+view));const group=menuGroups[activeGroup],item=group.items.find(i=>i[0]===view);$('#crumbGroup').textContent=group.label;$('#crumbPage').textContent=item?item[2]:'工作台';renderMenu();location.hash=view}
+function unique(field){return [...new Set(conversations.map(c=>c[field]))]}
+function populateDimensionSelect(){const sel=$('#dimensionSelect');const prev=sel.value;const field=dimension==='account'?'account':'staff';const label=dimension==='account'?'企微帐号':'客服帐号';sel.setAttribute('aria-label',label);sel.innerHTML=`<option value="all">全部${label}</option>`+unique(field).map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('');if([...sel.options].some(o=>o.value===prev))sel.value=prev}
+function hasSource(c,source){return source==='all'||c.messages.some(m=>m.source===source)}
+const sortLabels={follow:'跟进优先',recent:'最近活跃',reply:'最后回复时间',rounds:'对话轮次最多'};
+function stamp(c){return new Date(`${c.date}T${c.time}:00`).getTime()}
+function sortVisible(list){const copy=[...list];copy.sort((a,b)=>{if(sortMode==='rounds')return b.rounds-a.rounds||stamp(b)-stamp(a);if(sortMode==='reply')return stamp(b)-stamp(a);if(sortMode==='recent')return stamp(b)-stamp(a);return Number(!b.reviewed)-Number(!a.reviewed)||Number(b.reply==='pending')-Number(a.reply==='pending')||stamp(b)-stamp(a)});return copy}
+function advancedFilterActive(){return quickStatus!=='all'||$('#dimensionSelect').value!=='all'||openingFilter!=='all'||dealFilter!=='all'||$('#startDate').value!=='2026-06-01'||$('#endDate').value!=='2026-06-30'||$('#sourceFilter').value!=='all'||$('#relationFilter').value!=='all'}
+function syncToolbar(){const filterBtn=$('#filterToggle'),sortBtn=$('#sortToggle');$('#quickAll').classList.toggle('active',quickStatus==='all');$('#quickPending').classList.toggle('active',quickStatus==='pending');$('#sortLabel').textContent=sortLabels[sortMode]||sortLabels.follow;if(filterBtn){filterBtn.classList.toggle('is-open',$('#filterCard').classList.contains('open'));filterBtn.classList.toggle('has-filter',advancedFilterActive())}if(sortBtn)sortBtn.classList.toggle('is-open',$('#sortPopover').classList.contains('open'));$$('.sort-option').forEach(btn=>btn.classList.toggle('active',btn.dataset.sort===sortMode));$$('[data-filter-type="opening"]').forEach(btn=>btn.classList.toggle('active',btn.dataset.filterValue===openingFilter));$$('[data-filter-type="deal"]').forEach(btn=>btn.classList.toggle('active',btn.dataset.filterValue===dealFilter))}
+function closePanels(){let changed=false;['#filterCard','#sortPopover'].forEach(sel=>{const el=$(sel);if(el&&el.classList.contains('open')){el.classList.remove('open');changed=true}});if(changed)syncToolbar()}
+function applyFilters(){const selected=$('#dimensionSelect').value,q=$('#conversationSearch').value.trim().toLowerCase(),start=$('#startDate').value,end=$('#endDate').value,source=$('#sourceFilter').value,relation=$('#relationFilter').value;visible=sortVisible(conversations.filter(c=>{const dimValue=dimension==='account'?c.account:c.staff;const hay=(c.name+c.account+c.staff+c.preview+c.messages.map(m=>m.content.replace(/<[^>]+>/g,'')).join('')).toLowerCase();return(selected==='all'||dimValue===selected)&&(quickStatus==='all'||c.reply==='pending')&&(openingFilter==='all'||c.opening===openingFilter)&&(!q||hay.includes(q))&&(!start||c.date>=start)&&(!end||c.date<=end)&&hasSource(c,source)&&(dealFilter==='all'||c.status===dealFilter)&&(relation==='all'||c.relation===relation)}));loadedCount=PAGE_SIZE;if(!visible.some(c=>c.id===activeId))activeId=visible[0]?.id||null;renderList();renderActive();const scope=selected==='all'?(dimension==='account'?'全部企微帐号':'全部客服帐号'):selected;$('#dimensionSummary').textContent=scope;$('#dateSummary').textContent=(start||'不限')+' 至 '+(end||'不限');syncToolbar()}
+function serviceMode(c){return c.messages.some(m=>m.side==='self'&&(m.source==='platform'||m.source==='wecom'))?'人工':'ai'}
+function loadMoreConversations(){const list=$('#conversationList');if(!list||loadedCount>=visible.length)return;if(list.scrollTop+list.clientHeight>=list.scrollHeight-80){loadedCount=Math.min(loadedCount+PAGE_SIZE,visible.length);renderList(true)}}
+function renderList(keepScroll=false){
+ const list=$('#conversationList'),count=$('#resultCount');
+ const scrollTop=keepScroll?list.scrollTop:0;
+ if(count)count.textContent=visible.length;
+ $('#emptyState').classList.toggle('show',!visible.length);
+ list.style.display=visible.length?'block':'none';
+ const shown=visible.slice(0,loadedCount);
+ list.innerHTML=shown.map(c=>{
+  const mode=serviceMode(c);
+  return `<button class="conversation ${c.id===activeId?'active':''}" data-id="${c.id}"><span class="avatar ${c.tone}">${esc(c.avatar)}</span><span class="conv-main"><span class="conv-line"><span class="conv-name">${esc(c.name)}</span><span class="conv-time">${c.date.slice(5).replace('-','/')} ${c.time}</span></span><span class="conv-account">${esc(c.account)} · ${esc(c.staff)}</span><span class="conv-preview">${esc(c.preview)}</span><span class="conv-tags"><span class="mini-tag blue">对话 ${c.rounds} 轮</span><span class="mini-tag ${['已流退','已超时'].includes(c.status)?'red':c.status==='未成交'?'orange':'green'}">${esc(c.status)}</span><span class="mini-tag ${mode==='ai'?'blue':'purple'}">${mode}</span></span></span></button>`;
+ }).join('')+(visible.length?`<div class="list-load-state">${shown.length<visible.length?'滚动加载更多':'已加载全部'}</div>`:'');
+ list.scrollTop=keepScroll?scrollTop:0;
+ $$('.conversation').forEach(btn=>btn.onclick=()=>{activeId=btn.dataset.id;renderList(true);renderActive()})
+}
+function sourceLabel(s){return s==='ai'?'AI回复':s==='wecom'?'企微端':s==='platform'?'平台端':'客户'}
+function highlight(html,q){if(!q)return html;const safe=esc(q).replace(/[.*+?^${}()|[\]\\]/g,'\\$&');return html.replace(new RegExp(`(?![^<]*>)(${safe})`,'gi'),'<mark>$1</mark>')}
+function renderActive(){
+ const c=conversations.find(x=>x.id===activeId);
+ if(!c){$('#activeAvatar').textContent='';$('#activeName').textContent='--';$('#activeMeta').textContent='--';$('#relationTag').style.display='none';$('#accountName').textContent='--';$('#staffName').textContent='--';$('#messageCount').textContent='0 条消息';$('#messageArea').innerHTML='<div class="empty show"><div>选择一条会话查看详情</div></div>';return}
+ $('#activeAvatar').className='avatar round '+c.tone;$('#activeAvatar').textContent=c.avatar;$('#activeName').textContent=c.name;$('#relationTag').style.display=c.relation==='deleted'?'inline-flex':'none';$('#activeMeta').textContent=`客户 ID·${c.id.toUpperCase()} · ${c.date} · 对话 ${c.rounds} 轮`;$('#accountName').textContent=c.account;$('#staffName').textContent=c.staff;$('#messageCount').textContent=c.messages.length+' 条消息';
+ const q='';
+ $('#messageArea').innerHTML=`<div class="date-divider">${c.date}</div>`+c.messages.map(m=>{
+  const self=m.side==='self';
+  const source=m.source?`<span class="source ${m.source}">${sourceLabel(m.source)}</span>`:'';
+  const sender=m.source==='platform'?`<span class="sender-name">${esc(m.sender||c.staff)}</span>`:'';
+  const delivery=self?`<div class="delivery ${m.failed?'failed':''}">${m.failed?esc(m.failed):'已发送'}</div>`:'';
+  const body=`<div class="message-body"><div class="message-meta">${source}${sender}<span>${m.time}</span></div><div class="bubble">${highlight(m.content,q)}</div>${delivery}</div>`;
+  const av=`<span class="avatar ${c.tone}">${esc(c.avatar)}</span>`;
+  return `<div class="message ${self?'self':''}">${self?body:av+body}</div>`;
+ }).join('');
+ $('#messageArea').scrollTop=0
+}
+function notify(text){const t=$('#toast');t.textContent=text;t.classList.add('show');clearTimeout(notify.timer);notify.timer=setTimeout(()=>t.classList.remove('show'),1800)}
+function staffAccountState(a){return `<span class="account-state ${a.enabled?'':'disabled'}">${a.enabled?'已启用':'已禁用'}</span>`}
+function staffActionButtons(a){return `<button class="workbench-btn" data-staff-action="workbench" data-id="${a.id}" ${a.enabled?'':'disabled title="帐号已禁用"'}>工作台${icon('external')}</button><button class="rare-menu" title="更多操作" aria-label="${esc(a.name)} 更多操作" aria-haspopup="menu" aria-expanded="false" aria-controls="staffActionMenu" data-staff-action="more" data-id="${a.id}">${icon('more')}</button>`}
+function closeStaffMenu(restoreFocus=false){
+ const menu=$('#staffActionMenu');if(!menu)return;
+ menu.hidden=true;
+ if(staffMenuTrigger){staffMenuTrigger.setAttribute('aria-expanded','false');if(restoreFocus&&staffMenuTrigger.isConnected)staffMenuTrigger.focus()}
+ staffMenuTrigger=null;
+}
+function openStaffMenu(button,account){
+ if(staffMenuTrigger===button){closeStaffMenu(true);return}
+ closeStaffMenu();staffMenuTrigger=button;
+ const menu=$('#staffActionMenu');menu.dataset.id=account.id;
+ menu.innerHTML=`<button role="menuitem" data-account-action="edit">${icon('edit')}编辑</button><button role="menuitem" class="danger" data-account-action="delete">${icon('trash')}删除</button><button role="menuitem" data-account-action="toggle">${icon('power')}${account.enabled?'禁用':'启用'}</button>`;
+ menu.hidden=false;button.setAttribute('aria-expanded','true');
+ const rect=button.getBoundingClientRect(),height=menu.offsetHeight;
+ menu.style.left=Math.max(8,Math.min(rect.right-menu.offsetWidth,innerWidth-menu.offsetWidth-8))+'px';
+ menu.style.top=(rect.bottom+height+8>innerHeight?Math.max(8,rect.top-height-5):rect.bottom+5)+'px';
+ menu.querySelector('button').focus();
+}
+function openStaffDialog(action,account){
+ closeStaffMenu(true);
+ const isCreate=action==='create',isForm=isCreate||action==='edit',isDelete=action==='delete';
+ if(isCreate)account={name:'',login:'',type:staffCategory==='store'?'门店老师':'线上销售',enabled:true};
+ staffDialogAction={action,id:account.id};
+ $('#staffDialog').classList.toggle('is-account-form',isForm);
+ $('#staffDialogTitle').textContent=isCreate?'新增客服帐号':isForm?'编辑客服帐号':isDelete?'删除客服帐号':account.enabled?'禁用客服帐号':'启用客服帐号';
+ $('#staffDialogSubmit').textContent=isCreate?'创建帐号':isForm?'保存':isDelete?'删除':account.enabled?'禁用':'启用';
+ $('#staffDialogSubmit').classList.toggle('danger-btn',isDelete);
+ $('#staffDialogBody').innerHTML=isForm?`<div class="staff-form-grid">
+  <div class="staff-form-field"><label for="staffEditName">客服名称<span class="staff-required" aria-hidden="true">*</span></label><input id="staffEditName" name="staff-name" class="control" required maxlength="40" value="${esc(account.name)}" placeholder="请输入客服名称" autocomplete="off"></div>
+  <div class="staff-form-field"><label for="staffEditType">客服类型</label><select id="staffEditType" class="control">${['线上销售','门店老师','ai员工'].map(type=>`<option value="${type}" ${account.type===type?'selected':''}>${type==='ai员工'?'AI 员工':type}</option>`).join('')}</select></div>
+  <div class="staff-form-field"><label for="staffEditLogin">登录账号名称<span class="staff-required" aria-hidden="true">*</span></label><input id="staffEditLogin" name="staff-login" class="control" required maxlength="64" value="${esc(account.login)}" placeholder="例如 cs-001" autocomplete="off" spellcheck="false"></div>
+  <div class="staff-form-field"><label for="staffEditPassword">登录密码（可选）</label><input id="staffEditPassword" name="staff-password" type="password" class="control" minlength="6" maxlength="128" placeholder="至少 6 位" autocomplete="new-password" ${isCreate?'':'aria-describedby="staffPasswordHint"'}>${isCreate?'':'<small id="staffPasswordHint">留空则不修改原密码</small>'}</div>
+ </div>`:`<p>${isDelete?'确定删除「'+esc(account.name)+'」？删除后，该帐号将从列表中移除。':account.enabled?'确定禁用「'+esc(account.name)+'」？禁用后将无法进入工作台，可随时重新启用。':'确定重新启用「'+esc(account.name)+'」？启用后可进入工作台。'}</p>`;
+ if(isForm)$('#staffDialogBody').querySelectorAll('input').forEach(input=>input.oninput=()=>input.setCustomValidity(''));
+ $('#staffDialog').showModal();
+ if(isForm)$('#staffEditName').focus();else $('#staffDialogCancel').focus();
+}
+function accountUsesCards(kind){return (kind==='staff'?staffLayout:wecomLayout)==='cards'}
+function accountPageSize(kind){
+ const state=accountPaging[kind];if(!accountUsesCards(kind))return state.listSize;
+ const grid=$(kind==='staff'?'#staffAccountGrid':'#wecomResults');
+ if(grid.clientWidth){const columns=getComputedStyle(grid).gridTemplateColumns.trim().split(/\s+/);if(columns.every(column=>/^\d+(\.\d+)?px$/.test(column)))return columns.length*4}
+ return state.cardSize;
+}
+function renderAccountPagination(kind,total){
+ const state=accountPaging[kind],size=accountPageSize(kind);state.total=total;
+ if(size!==state.size){state.page=Math.floor((state.page-1)*state.size/size)+1;state.size=size}
+ if(accountUsesCards(kind))state.cardSize=size;
+ const pageCount=Math.max(1,Math.ceil(total/state.size));state.page=Math.max(1,Math.min(state.page,pageCount));
+ const start=(state.page-1)*state.size;
+ const nearby=new Set([1,pageCount,...Array.from({length:5},(_,i)=>state.page+i-2)]);
+ const pages=pageCount<=7?Array.from({length:pageCount},(_,i)=>i+1):[...nearby].filter(p=>p>=1&&p<=pageCount).sort((a,b)=>a-b);
+ let previous=0;
+ const numbers=pages.map(page=>{const gap=previous&&page-previous>1?'<span class="pagination-gap" aria-hidden="true">…</span>':'';previous=page;return gap+`<button type="button" data-page="${page}" aria-label="第 ${page} 页" ${page===state.page?'aria-current="page"':''} ${total?'':'disabled'}>${page}</button>`}).join('');
+ $('#'+kind+'Pagination').innerHTML=`<span class="pagination-summary" aria-live="polite">共 ${total} 条${total?` · 第 ${start+1}–${Math.min(start+state.size,total)} 条`:''}</span><div class="pagination-controls">${accountUsesCards(kind)?`<span class="pagination-card-size">每页 4 行 · ${state.size} 条</span>`:`<select class="pagination-size" aria-label="每页条数">${[8,16,32,64].map(size=>`<option value="${size}" ${size===state.size?'selected':''}>${size} 条 / 页</option>`).join('')}</select>`}<div class="pagination-pages"><button type="button" data-page="${state.page-1}" aria-label="上一页" ${state.page===1?'disabled':''}><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg></button>${numbers}<button type="button" data-page="${state.page+1}" aria-label="下一页" ${state.page===pageCount?'disabled':''}><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m10 6 6 6-6 6"/></svg></button></div></div>`;
+ return start;
+}
+function refreshAccountPage(kind){
+ if(kind==='staff'){renderStaffAccounts();$('#staffAccountGrid').scrollTop=0}
+ else{renderWecomAccounts();$('#wecomResults').scrollTop=0}
+}
+for(const kind of ['staff','wecom']){
+ const pager=$('#'+kind+'Pagination');
+ pager.onclick=e=>{const button=e.target.closest('button[data-page]');if(!button||button.disabled)return;accountPaging[kind].page=Number(button.dataset.page);refreshAccountPage(kind);pager.querySelector('[aria-current="page"]')?.focus()};
+ pager.onchange=e=>{if(!e.target.matches('.pagination-size'))return;const size=Number(e.target.value);if(![8,16,32,64].includes(size))return;accountPaging[kind].listSize=size;accountPaging[kind].page=1;refreshAccountPage(kind);pager.querySelector('select').focus()};
+}
+function renderStaffAccounts(){
+ const grid=$('#staffAccountGrid');
+ if(!grid)return;
+ grid.classList.toggle('is-list',staffLayout==='list');
+ closeStaffMenu();
+ const q=($('#staffSearch')?.value||'').trim().toLowerCase();
+ const filtered=serviceAccounts.filter(a=>accountCategory(a)===staffCategory&&(!q||(a.name+a.type+a.employees.join(' ')).toLowerCase().includes(q)));
+ const start=renderAccountPagination('staff',filtered.length),pageAccounts=filtered.slice(start,start+accountPaging.staff.size);
+ $$('.account-tab').forEach(tab=>{
+  const category=tab.dataset.staffCategory,selected=category===staffCategory;
+  tab.classList.toggle('active',selected);
+  tab.setAttribute('aria-selected',String(selected));
+  tab.tabIndex=selected?0:-1;
+  tab.querySelector('.account-tab-count').textContent=serviceAccounts.filter(a=>accountCategory(a)===category).length;
+ });
+ grid.setAttribute('aria-labelledby','staff-tab-'+staffCategory);
+ $('#accountResultText').textContent=staffCategoryLabels[staffCategory]+' · '+filtered.length+' 个客服帐号';
+ $$('[data-staff-layout]').forEach(btn=>{const active=btn.dataset.staffLayout===staffLayout;btn.classList.toggle('active',active);btn.setAttribute('aria-pressed',String(active))});
+ if(staffLayout==='list'){
+  grid.innerHTML=`<table class="staff-table" aria-label="${staffCategoryLabels[staffCategory]}客服帐号"><colgroup><col style="width:18%"><col style="width:20%"><col style="width:12%"><col style="width:10%"><col style="width:12%"><col style="width:13%"><col style="width:15%"></colgroup><thead><tr><th scope="col">客服姓名</th><th scope="col">微动员工</th><th scope="col">所属业务</th><th scope="col">已接待</th><th scope="col">帐号状态</th><th scope="col">最后活跃</th><th scope="col">操作</th></tr></thead><tbody>${pageAccounts.map(a=>`<tr data-account-id="${a.id}"><td><div class="staff-card-head"><span class="staff-table-name">${esc(a.name)}</span></div></td><td><span class="staff-binding-names ${a.employees.length?'':'unbound'}">${a.employees.length?esc(a.employees.join('、')):'未绑定'}</span></td><td>${staffCategoryLabels[accountCategory(a)]}</td><td class="number">${a.reception.toLocaleString('zh-CN')} 人</td><td>${staffAccountState(a)}</td><td><time>${esc(a.lastActive)}</time></td><td><div class="staff-row-actions">${staffActionButtons(a)}</div></td></tr>`).join('')}</tbody></table>${filtered.length?'':'<div class="account-empty show"><div>未找到匹配帐号<br><small>请调整搜索关键词</small></div></div>'}`;
+  return;
+ }
+ grid.innerHTML=pageAccounts.map(a=>{
+  const employees=a.employees.join('、');
+  return `<article class="staff-card" data-account-id="${a.id}" aria-label="${esc(a.name)}的客服帐号">
+   <div class="staff-card-main">
+    <div class="staff-card-head">
+     <div class="staff-title"><strong>${esc(a.name)}</strong><div class="staff-binding"><span class="staff-binding-label">微动：</span><span class="staff-binding-names ${employees?'':'unbound'}">${employees?esc(employees):'未绑定'}</span></div></div>
+    </div>
+    <div class="staff-card-status">${staffAccountState(a)}</div>
+    <dl class="staff-meta"><dt>已接待</dt><dd>${a.reception.toLocaleString('zh-CN')} 人</dd><dt>最后活跃</dt><dd><time>${esc(a.lastActive)}</time></dd></dl>
+   </div>
+   <div class="staff-card-actions">${staffActionButtons(a)}</div>
+  </article>`;
+ }).join('')+`<div class="account-empty ${filtered.length?'':'show'}"><div>未找到匹配账号<br><small>请调整搜索关键词</small></div></div>`;
+}
+$$('.dimension button').forEach(btn=>btn.onclick=()=>{dimension=btn.dataset.dimension;$$('.dimension button').forEach(x=>x.classList.toggle('active',x===btn));populateDimensionSelect();applyFilters()});
+$('#applyFilters').onclick=()=>{applyFilters();closePanels()};$('#dimensionSelect').onchange=applyFilters;$('#sourceFilter').onchange=applyFilters;$('#relationFilter').onchange=applyFilters;$('#conversationSearch').oninput=applyFilters;$('#startDate').onchange=applyFilters;$('#endDate').onchange=applyFilters;
+$('#conversationList').onscroll=loadMoreConversations;
+$('#filterToggle').onclick=e=>{e.stopPropagation();$('#sortPopover').classList.remove('open');$('#filterCard').classList.toggle('open');syncToolbar()};
+$('#sortToggle').onclick=e=>{e.stopPropagation();$('#filterCard').classList.remove('open');$('#sortPopover').classList.toggle('open');syncToolbar()};
+$$('.quick-chip').forEach(btn=>btn.onclick=()=>{quickStatus=btn.dataset.quick;applyFilters()});
+$$('.sort-option').forEach(btn=>btn.onclick=()=>{sortMode=btn.dataset.sort;closePanels();applyFilters()});
+$$('.filter-chip').forEach(btn=>btn.onclick=()=>{const type=btn.dataset.filterType;if(type==='opening')openingFilter=btn.dataset.filterValue;if(type==='deal')dealFilter=btn.dataset.filterValue;syncToolbar();applyFilters()});
+$$('.account-tab').forEach((tab,index)=>{
+ tab.onclick=()=>{staffCategory=tab.dataset.staffCategory;accountPaging.staff.page=1;refreshAccountPage('staff')};
+ tab.onkeydown=e=>{
+  const tabs=[...$$('.account-tab')];
+  const next=e.key==='ArrowRight'?(index+1)%tabs.length:e.key==='ArrowLeft'?(index+tabs.length-1)%tabs.length:e.key==='Home'?0:e.key==='End'?tabs.length-1:null;
+  if(next===null)return;
+  e.preventDefault();tabs[next].focus();tabs[next].click();
+ };
+});
+$('#staffSearch').oninput=$('#staffSearchBtn').onclick=()=>{accountPaging.staff.page=1;refreshAccountPage('staff')};
+$('#staffAccountGrid').onclick=e=>{
+ const btn=e.target.closest('[data-staff-action]');if(!btn)return;
+ const account=serviceAccounts.find(a=>a.id===btn.dataset.id);if(!account)return;
+ if(btn.dataset.staffAction==='more')openStaffMenu(btn,account);
+
+ else if(account.enabled)notify('已打开工作台：'+account.name);
+};
+$('#staffActionMenu').onclick=e=>{
+ const btn=e.target.closest('[data-account-action]');if(!btn)return;
+ const account=serviceAccounts.find(a=>a.id===$('#staffActionMenu').dataset.id);
+ if(account)openStaffDialog(btn.dataset.accountAction,account);
+};
+$('#staffActionMenu').onkeydown=e=>{
+ const items=[...$('#staffActionMenu').querySelectorAll('button')],index=items.indexOf(document.activeElement);
+ if(e.key==='Escape'){e.preventDefault();closeStaffMenu(true)}
+ else if(e.key==='Tab')closeStaffMenu();
+ else if(['ArrowDown','ArrowUp','Home','End'].includes(e.key)){
+  e.preventDefault();const next=e.key==='Home'?0:e.key==='End'?items.length-1:(index+(e.key==='ArrowDown'?1:items.length-1))%items.length;items[next].focus();
+ }
+};
+$('#staffAddBtn').onclick=()=>openStaffDialog('create');
+$('#staffDialogClose').onclick=$('#staffDialogCancel').onclick=()=>$('#staffDialog').close();
+$('#staffDialog').addEventListener('close',()=>{const password=$('#staffEditPassword');if(password)password.value=''});
+$('#staffDialogForm').onsubmit=e=>{
+ e.preventDefault();if(!staffDialogAction)return;
+ const {action,id}=staffDialogAction;let account=serviceAccounts.find(a=>a.id===id);
+ if(action!=='create'&&!account)return;
+ let message='';
+ if(action==='edit'||action==='create'){
+  const name=$('#staffEditName').value.trim(),login=$('#staffEditLogin').value.trim(),password=$('#staffEditPassword').value;
+  const invalid=(selector,message)=>{const input=$(selector);input.setCustomValidity(message);input.reportValidity()};
+  if(!name){invalid('#staffEditName','请填写客服名称');return}
+  if(!login){invalid('#staffEditLogin','请填写登录账号名称');return}
+  if(/\s/.test(login)){invalid('#staffEditLogin','登录账号名称不能包含空格');return}
+  if(serviceAccounts.some(a=>a.id!==id&&a.login.toLowerCase()===login.toLowerCase())){invalid('#staffEditLogin','该登录账号名称已存在，请使用其他名称');return}
+  if(password&&password.length<6){invalid('#staffEditPassword','登录密码至少 6 位');return}
+  if(action==='create'){
+   account={id:'staff-'+nextStaffId++,tone:'blue',reception:0,employees:[],enabled:true,lastActive:'—'};serviceAccounts.push(account);
+  }
+  account.name=name;account.avatar=Array.from(name)[0];account.login=login;
+  account.type=$('#staffEditType').value;account.category=account.type==='门店老师'?'store':'sales';
+  // This standalone prototype tracks configuration only; never retain a raw password.
+  if(password)account.passwordConfigured=true;
+  if(action==='create'){staffCategory=account.category;$('#staffSearch').value='';accountPaging.staff.page=Math.ceil(serviceAccounts.filter(a=>accountCategory(a)===staffCategory).length/accountPaging.staff.size)}
+  message=(action==='create'?'已创建客服帐号：':'已保存客服帐号：')+account.name;
+ }else if(action==='delete'){
+  serviceAccounts.splice(serviceAccounts.indexOf(account),1);message='已删除客服帐号：'+account.name;
+ }else{account.enabled=!account.enabled;message=(account.enabled?'已启用：':'已禁用：')+account.name}
+ $('#staffDialog').close();staffDialogAction=null;renderStaffAccounts();notify(message);
+ const trigger=$('#staffAccountGrid').querySelector(`[data-staff-action="more"][data-id="${account.id}"]`);(trigger||$('#staffAccountGrid')).focus();
+};
+$$('[data-toast]').forEach(btn=>btn.onclick=()=>notify(btn.dataset.toast));
+$$('[data-staff-layout]').forEach(btn=>btn.onclick=()=>{staffLayout=btn.dataset.staffLayout;renderStaffAccounts();$('#staffAccountGrid').scrollTop=0});
+document.addEventListener('click',e=>{if(!e.target.closest('#staffActionMenu,[data-staff-action="more"]'))closeStaffMenu()});
+window.addEventListener('resize',()=>closeStaffMenu());
+document.addEventListener('scroll',()=>closeStaffMenu(),true);
+document.addEventListener('click',closePanels);
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closePanels()});
+$('#clearFilters').onclick=()=>{$('#dimensionSelect').value='all';$('#startDate').value='2026-06-01';$('#endDate').value='2026-06-30';$('#sourceFilter').value='all';$('#relationFilter').value='all';dimension='staff';openingFilter='all';dealFilter='all';quickStatus='all';$$('.dimension button').forEach(x=>x.classList.toggle('active',x.dataset.dimension==='staff'));populateDimensionSelect();applyFilters()};
+$('.mark').onclick=()=>showView('workbench');
+const startHash=location.hash.replace('#','');if(startHash&&document.getElementById('view-'+startHash)){activeView=startHash;activeGroup=findGroupByView(startHash)}
+renderMenu();showView(activeView);populateDimensionSelect();applyFilters();renderStaffAccounts();
+
+// Demonstration data. Online state must come from observation, never from opening a cloud session.
+const wecomAccounts=[
+ {id:'DY9516',name:'敬虔战队9516',company:'黛伊',status:'disabled',archive:false,lastActive:'09/19 17:34',avatar:'敬'},
+ {id:'SL8006',name:'SL8006志鹏战队-白银钟',company:'瞬丽美',status:'online',archive:true,lastActive:'09/23 10:53',avatar:'白'},
+ {id:'DY8808',name:'雨晴战队-程华静DY8808',company:'黛伊',status:'pending',archive:true,lastActive:'09/23 10:53',avatar:'雨'},
+ {id:'SL1580',name:'志伟战队-刘敬林',company:'瞬丽美',status:'online',archive:true,lastActive:'09/23 10:39',avatar:'刘'},
+ {id:'SL0906',name:'雨晴战队-康桉-HD0906',company:'瞬丽美',status:'pending',archive:true,lastActive:'09/22 13:36',avatar:'雨'},
+ {id:'DY258',name:'文杰战队-张一鸣-DY258',company:'黛伊',status:'online',archive:true,lastActive:'09/22 17:00',avatar:'张'},
+ {id:'SCZX115',name:'恒漾医疗-丹妮',company:'思梦妍',status:'offline',archive:true,lastActive:'09/23 10:45',avatar:'恒'},
+ {id:'SL8005',name:'志鹏战队-叶柳英SL8005',company:'瞬丽美',status:'offline',archive:true,lastActive:'09/22 23:40',avatar:'叶'},
+ {id:'17379415416',name:'恒漾-于静',company:'思梦妍',status:'disabled',archive:false,lastActive:'09/23 09:16',avatar:'恒'},
+ {id:'SCZX118',name:'恒漾医疗眼袋-菲菲',company:'思梦妍',status:'disabled',archive:false,lastActive:'—',avatar:'菲'}
+];
+const wecomStatusLabels={all:'全部',online:'在线',offline:'离线',pending:'未观测',disabled:'已停用'};
+let wecomStatus='all',wecomLayout='cards',wecomMenuTrigger=null,wecomPendingAction=null;
+function wecomStatusBadge(a){return `<span class="wecom-status ${a.status}">${a.status==='pending'?'登录待确认':wecomStatusLabels[a.status]}</span>`}
+function wecomStatusNote(a){return a.status==='pending'?'登录状态尚未确认':a.status==='offline'?'企微当前不在线':''}
+function wecomIdentity(a){return `<div class="wecom-identity"><span class="wecom-avatar ${a.company==='黛伊'?'sand':a.company==='思梦妍'?'purple':''}" aria-hidden="true">${esc(a.avatar)}</span><div class="wecom-name-block"><strong class="wecom-name" title="${esc(a.name)}">${esc(a.name)}</strong><span class="wecom-id">${esc(a.id)}</span></div></div>`}
+function wecomArchive(a){return `<span class="wecom-archive ${a.archive?'enabled':''}">${a.archive?'已开启':'未开启'}</span>`}
+function wecomActionButtons(a){return `<button class="wecom-cloud-btn" data-wecom-action="cloud" data-id="${a.id}">${icon('phone')}登录云机</button><button class="rare-menu" data-wecom-action="more" data-id="${a.id}" aria-label="${esc(a.name)} 更多操作" aria-haspopup="menu" aria-expanded="false" aria-controls="wecomActionMenu">${icon('more')}</button>`}
+function renderWecomAccounts(){
+ const results=$('#wecomResults');results.classList.toggle('cards',wecomLayout==='cards');
+ closeWecomMenu();
+ const q=$('#wecomSearch').value.trim().toLowerCase(),company=$('#wecomCompany').value;
+ const scope=wecomAccounts.filter(a=>(company==='all'||a.company===company)&&(!q||(a.name+' '+a.id).toLowerCase().includes(q)));
+ const filtered=scope.filter(a=>wecomStatus==='all'||a.status===wecomStatus);
+ const start=renderAccountPagination('wecom',filtered.length),pageAccounts=filtered.slice(start,start+accountPaging.wecom.size);
+ $('#wecomResultText').textContent=`共 ${scope.length} 个帐号 · ${scope.filter(a=>a.status==='online').length} 个在线`;
+ const tabs=$('#wecomTabs');
+ if(!tabs.children.length)tabs.innerHTML=Object.entries(wecomStatusLabels).map(([key,label])=>`<button id="wecom-tab-${key}" class="wecom-tab" role="tab" data-wecom-status="${key}" aria-controls="wecomResults"><span>${label}</span><span class="wecom-tab-count" aria-hidden="true"></span></button>`).join('');
+ tabs.querySelectorAll('button').forEach(btn=>{const status=btn.dataset.wecomStatus,active=status===wecomStatus;btn.classList.toggle('active',active);btn.setAttribute('aria-selected',String(active));btn.tabIndex=active?0:-1;btn.querySelector('.wecom-tab-count').textContent=scope.filter(a=>status==='all'||a.status===status).length});
+ $$('[data-wecom-layout]').forEach(btn=>{const active=btn.dataset.wecomLayout===wecomLayout;btn.classList.toggle('active',active);btn.setAttribute('aria-pressed',String(active))});
+ results.setAttribute('aria-labelledby','wecom-tab-'+wecomStatus);
+ const empty='<div class="wecom-empty"><div><strong>暂无匹配的企微帐号</strong>请调整状态、企业主体或搜索关键词</div></div>';
+ if(wecomLayout==='cards'){
+  results.innerHTML=pageAccounts.map(a=>`<article class="wecom-card" data-wecom-id="${a.id}" aria-label="${esc(a.name)}"> <div class="wecom-card-body">${wecomIdentity(a)}<div class="wecom-card-status">${wecomStatusBadge(a)}<span class="wecom-status-note">${wecomStatusNote(a)}</span></div><dl class="wecom-meta"><dt>企业主体</dt><dd>${esc(a.company)}</dd><dt>会话存档</dt><dd>${wecomArchive(a)}</dd><dt>最后活跃</dt><dd><time>${a.lastActive}</time></dd></dl></div><div class="wecom-actions">${wecomActionButtons(a)}</div></article>`).join('')||empty;
+ }else{
+  results.innerHTML=`<table class="wecom-table" aria-label="企微帐号列表"><colgroup><col style="width:26%"><col style="width:12%"><col style="width:14%"><col style="width:10%"><col style="width:14%"><col style="width:24%"></colgroup><thead><tr><th scope="col">企微帐号信息</th><th scope="col">企业主体</th><th scope="col">在线状态</th><th scope="col">会话存档</th><th scope="col">最后活跃</th><th scope="col">操作</th></tr></thead><tbody>${pageAccounts.map(a=>`<tr data-wecom-id="${a.id}"><td>${wecomIdentity(a)}</td><td>${esc(a.company)}</td><td>${wecomStatusBadge(a)}${wecomStatusNote(a)?`<span class="wecom-status-note">${wecomStatusNote(a)}</span>`:''}</td><td>${wecomArchive(a)}</td><td><time>${a.lastActive}</time></td><td><div class="wecom-actions">${wecomActionButtons(a)}</div></td></tr>`).join('')}</tbody></table>${filtered.length?'':empty}`;
+ }
+}
+function closeWecomMenu(focus=false){const menu=$('#wecomActionMenu');if(!menu)return;menu.hidden=true;if(wecomMenuTrigger){wecomMenuTrigger.setAttribute('aria-expanded','false');if(focus&&wecomMenuTrigger.isConnected)wecomMenuTrigger.focus()}wecomMenuTrigger=null}
+function openWecomMenu(btn,a){
+ if(wecomMenuTrigger===btn){closeWecomMenu(true);return}closeWecomMenu();closeStaffMenu();wecomMenuTrigger=btn;
+ const menu=$('#wecomActionMenu');menu.dataset.id=a.id;menu.innerHTML=`<button role="menuitem" data-wecom-menu-action="relogin">${icon('external')}重新登录</button><button role="menuitem" data-wecom-menu-action="toggle">${icon('power')}${a.status==='disabled'?'启用':'停用'}</button>`;menu.hidden=false;btn.setAttribute('aria-expanded','true');
+ const r=btn.getBoundingClientRect();menu.style.left=Math.max(8,Math.min(r.right-menu.offsetWidth,innerWidth-menu.offsetWidth-8))+'px';menu.style.top=(r.bottom+menu.offsetHeight+8>innerHeight?Math.max(8,r.top-menu.offsetHeight-5):r.bottom+5)+'px';menu.querySelector('button').focus();
+}
+function openWecomDialog(action,a){
+ closeWecomMenu(true);wecomPendingAction={action,id:a.id};const cloud=action==='cloud'||action==='relogin';
+ $('#wecomDialog').classList.toggle('cloud',cloud);$('#wecomDialogTitle').textContent=cloud?(action==='relogin'?'重新登录企微':'登录云机'):a.status==='disabled'?'启用企微帐号':'停用企微帐号';
+ $('#wecomDialogConfirm').hidden=action!=='toggle';$('#wecomDialogCancel').textContent=action==='toggle'?'取消':'关闭';$('#wecomDialogConfirm').textContent=a.status==='disabled'?'启用':'停用';
+ $('#wecomDialogBody').innerHTML=cloud?`<div class="wecom-cloud-summary">${wecomIdentity(a)}${wecomStatusBadge(a)}</div><div class="wecom-cloud-placeholder">${icon('phone')}<strong>云机暂未接入</strong><p>接入云机后，可在此查看画面并完成企微登录。</p></div>`:`<p class="wecom-confirm-copy">${a.status==='disabled'?'启用「'+esc(a.name)+'」后，将等待重新确认企微登录状态。':'确定停用「'+esc(a.name)+'」？后续可在更多操作中重新启用。'}</p>`;
+ $('#wecomDialog').showModal();$('#wecomDialogCancel').focus();
+}
+$('#wecomCompany').innerHTML+=[...new Set(wecomAccounts.map(a=>a.company))].map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('');
+$('#wecomSearch').oninput=$('#wecomCompany').onchange=()=>{accountPaging.wecom.page=1;refreshAccountPage('wecom')};
+$('#wecomClear').onclick=()=>{$('#wecomSearch').value='';$('#wecomCompany').value='all';wecomStatus='all';accountPaging.wecom.page=1;refreshAccountPage('wecom')};
+$('#wecomRefresh').onclick=()=>{renderWecomAccounts();notify('已刷新企微帐号列表')};
+$$('[data-wecom-layout]').forEach(btn=>btn.onclick=()=>{wecomLayout=btn.dataset.wecomLayout;renderWecomAccounts();$('#wecomResults').scrollTop=0});
+$('#wecomTabs').onclick=e=>{const btn=e.target.closest('[data-wecom-status]');if(!btn)return;wecomStatus=btn.dataset.wecomStatus;accountPaging.wecom.page=1;refreshAccountPage('wecom')};
+$('#wecomTabs').onkeydown=e=>{const tabs=[...$('#wecomTabs').querySelectorAll('button')],index=tabs.indexOf(document.activeElement);if(index<0)return;const next=e.key==='ArrowRight'?(index+1)%tabs.length:e.key==='ArrowLeft'?(index+tabs.length-1)%tabs.length:e.key==='Home'?0:e.key==='End'?tabs.length-1:null;if(next!==null){e.preventDefault();tabs[next].focus();tabs[next].click()}};
+$('#wecomResults').onclick=e=>{const btn=e.target.closest('[data-wecom-action]');if(!btn)return;const a=wecomAccounts.find(a=>a.id===btn.dataset.id);if(!a)return;if(btn.dataset.wecomAction==='more')openWecomMenu(btn,a);else openWecomDialog(btn.dataset.wecomAction,a)};
+$('#wecomActionMenu').onclick=e=>{const btn=e.target.closest('[data-wecom-menu-action]');if(!btn)return;const a=wecomAccounts.find(a=>a.id===$('#wecomActionMenu').dataset.id);if(a)openWecomDialog(btn.dataset.wecomMenuAction,a)};
+$('#wecomActionMenu').onkeydown=e=>{const items=[...$('#wecomActionMenu').querySelectorAll('button')],index=items.indexOf(document.activeElement);if(e.key==='Escape'){e.preventDefault();closeWecomMenu(true)}else if(e.key==='Tab')closeWecomMenu();else if(['ArrowDown','ArrowUp','Home','End'].includes(e.key)){e.preventDefault();items[e.key==='Home'?0:e.key==='End'?items.length-1:(index+(e.key==='ArrowDown'?1:items.length-1))%items.length].focus()}};
+$('#wecomDialogClose').onclick=$('#wecomDialogCancel').onclick=()=>$('#wecomDialog').close();
+$('#wecomDialogConfirm').onclick=()=>{if(wecomPendingAction?.action!=='toggle')return;const a=wecomAccounts.find(a=>a.id===wecomPendingAction.id);if(!a)return;a.status=a.status==='disabled'?'pending':'disabled';$('#wecomDialog').close();renderWecomAccounts();notify((a.status==='disabled'?'已停用企微帐号：':'已启用，等待确认登录状态：')+a.name);const btn=$('#wecomResults').querySelector(`[data-wecom-action="more"][data-id="${a.id}"]`);(btn||$('#wecomResults')).focus()};
+document.addEventListener('click',e=>{if(!e.target.closest('#wecomActionMenu,[data-wecom-action="more"]'))closeWecomMenu()});
+document.addEventListener('scroll',()=>closeWecomMenu(),true);window.addEventListener('resize',()=>closeWecomMenu());
+renderWecomAccounts();
+const accountGridObserver=new ResizeObserver(entries=>{
+ for(const entry of entries){
+  const kind=entry.target.id==='staffAccountGrid'?'staff':'wecom';
+  if(entry.target.clientWidth&&accountUsesCards(kind)&&accountPageSize(kind)!==accountPaging[kind].size)refreshAccountPage(kind);
+ }
+});
+accountGridObserver.observe($('#staffAccountGrid'));accountGridObserver.observe($('#wecomResults'));
+</script>
+</body>
+</html>
