@@ -18,7 +18,7 @@
     "group-approval": 1356159,
     "group-approval-designer": 1376154,
     "group-approval-data": 1304701,
-    "refund-risk": 80818,
+    "refund-risk": 82546,
     "stock-management": 1330870,
     "product-center": 1352071
   },
@@ -148,10 +148,10 @@
       "gzipBytes": 18724,
       "sha256": "6511232bdc366ee89f46d707b602da75e9ac66547164b52e18050e2db8bcc960"
     },
-    "js/refund-risk.1a9b2e5ee52ab7f6.js": {
-      "bytes": 75390,
-      "gzipBytes": 25064,
-      "sha256": "1a9b2e5ee52ab7f6ef60fdf6a23ae49d2f5f1c5ae90ced879bb6c26208311dbe"
+    "js/refund-risk.3189ff790eafdcce.js": {
+      "bytes": 81992,
+      "gzipBytes": 26792,
+      "sha256": "3189ff790eafdccef1ee746593f6d85dc968cd7d70fe11dfa6eb0d7bb0012d77"
     },
     "css/refund-risk.68a9f0867ad0d344.css": {
       "bytes": 14328,
