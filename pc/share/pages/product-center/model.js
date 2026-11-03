@@ -44,6 +44,7 @@
   function multiple(s,v){
     const c=validate(s),p=copy(v);assert(p.name?.trim(),'请填写多选产品名称。');p.name=p.name.trim();assert(!c.multiples.some(x=>x.id!==p.id&&x.name===p.name),'多选产品名称已存在。');
     p.options=[...new Set(p.options||[])];assert(p.options.length,'请至少选择一个基础产品。');p.options.forEach(id=>assert(c.basics.some(x=>x.id===id),'可选基础产品不存在。'));
+    p.optionQuantities=Object.fromEntries(p.options.map(id=>{const qty=Number(p.optionQuantities?.[id]===undefined?1:p.optionQuantities[id]);assert(Number.isSafeInteger(qty)&&qty>0,'项目数量须为正整数。');return [id,qty];}));
     p.count=positive(p.count,'可选项目数');assert(Number.isInteger(p.count)&&p.count<=p.options.length,'可选项目数须为整数且不能超过可选项数量。');p.duration=amount(p.duration,'耗时');p.id=p.id||M.uid('MULTI');p.no=p.no||++c.sequence;p.updatedAt=M.now();
     const at=c.multiples.findIndex(x=>x.id===p.id);at<0?c.multiples.unshift(p):c.multiples.splice(at,1,p);return p.id;
   }

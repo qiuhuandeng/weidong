@@ -27,3 +27,7 @@
 .sales-config-targets{color:var(--pc-text);line-height:1.7}
 .sales-config-targets summary{cursor:pointer;color:var(--pc-primary)}
 .sales-config-targets p{margin:8px 0 0}
+
+/* The multiple-product dialog keeps its selected items beside their quantities. */
+.sales-multiple-editor .sales-multiple-options{display:flex;flex-direction:column;gap:var(--pc-gap);min-width:0}
+.sales-multiple-editor .sales-multiple-picker{display:flex;align-items:center;gap:var(--pc-gap);min-width:0}

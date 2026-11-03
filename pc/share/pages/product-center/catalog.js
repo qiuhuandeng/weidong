@@ -12,7 +12,7 @@
   };
   S.views['sales-multiple']=()=>{
     const rows=S.sales.multiples.filter(x=>S.matches(x.name,S.page.applied.name));
-    return S.search([S.filter('名称','name')])+S.panel('多选产品',S.paged([['ID',x=>x.no],['名称',x=>E(x.name),190],['可选项',x=>x.options.map(id=>E(S.salesBasic(id)?.name||'—')).join('<br>'),300],['可选项目数',x=>x.count,120],['耗时（分钟）',x=>x.duration,120],['更新时间',x=>E(x.updatedAt),170],['操作',x=>L('编辑','salesMultiple',x.id),100,true]],rows),B('新增多选产品','salesMultiple','','','primary'));
+    return S.search([S.filter('名称','name')])+S.panel('多选产品',S.paged([['ID',x=>x.no],['名称',x=>E(x.name),190],['可选项',x=>x.options.map(id=>E(S.salesBasic(id)?.name||'—')+' × '+E(x.optionQuantities?.[id]??1)).join('<br>'),300],['可选项目数',x=>x.count,120],['耗时（分钟）',x=>x.duration,120],['更新时间',x=>E(x.updatedAt),170],['操作',x=>L('编辑','salesMultiple',x.id),100,true]],rows),B('新增多选产品','salesMultiple','','','primary'));
   };
   S.actions.salesBasic=id=>S.open('salesBasic',{value:M.copy(S.salesBasic(id)||P.basicDefault())},id?'编辑基础产品':'新增基础产品',1120);
   S.salesPhotos=(v,key,multiple=false)=>'<div class="sales-photo-field"><div class="stock-photos">'+(multiple?v[key]:v[key]?[{src:v[key],name:'缩略图'}]:[]).map((x,i)=>'<div class="sales-photo-item"><a href="'+E(x.src)+'" target="_blank" rel="noopener"><img src="'+E(x.src)+'" alt="'+E(x.name)+'"></a>'+L('移除','salesImageRemove',key,String(i))+'</div>').join('')+'</div><input type="file" accept="image/png,image/jpeg,image/webp" '+(multiple?'multiple':'')+' aria-label="上传'+(multiple?'效果图':'缩略图')+'" data-pc-upload="'+(multiple?'添加效果图':v[key]?'更换缩略图':'上传缩略图')+'" data-stock-action="salesImage" data-stock-id="'+key+'"><p class="sales-field-hint">PNG / JPG / WebP，单张不超过 2 MB'+(multiple?'；一次最多添加 6 张':'')+'</p></div>';
@@ -65,11 +65,61 @@
   S.actions.salesTrayAdd=()=>{S.top.data.value.push({id:'',type:''});S.actions.drawRefresh();};
   S.actions.salesTrayRemove=id=>{S.top.data.value.splice(Number(id),1);S.actions.drawRefresh();};
   S.actions.salesSaveTrays=()=>S.run('sales.trays',{ids:S.top.data.ids,value:S.top.data.value},()=>S.close());
-  S.actions.salesMultiple=id=>S.open('salesMultiple',{value:M.copy(S.sales.multiples.find(x=>x.id===id)||{name:'',options:[],count:1,duration:0,thumbnail:''})},id?'编辑多选产品':'新增多选产品',860);
-  S.drawers.salesMultiple=l=>{
-    const v=l.data.value;
-    return {body:S.section('基本信息',S.form([F('名称',I('多选产品名称',v.name,'value.name'),true),F('耗时（分钟）',I('耗时（分钟）',v.duration,'value.duration','number'),true),S.salesWideField('可选项',C('可选基础产品',S.sales.basics.map(x=>[x.id,x.name]),v.options,'value.options','multiple'),true),F('可选项目数',I('可选项目数',v.count,'value.count','number'),true)]))+S.section('图片资料',S.form([F('缩略图',S.salesPhotos(v,'thumbnail'))])),footer:B('取消','close')+B('确定','salesSaveMultiple','','','primary')};
+  S.actions.salesMultiple=async id=>{
+    const v=M.copy(S.sales.multiples.find(x=>x.id===id)||{name:'',options:[],count:1,duration:0,thumbnail:''}),revision=S.data.revision;
+    v.optionQuantities=Object.fromEntries(v.options.map(key=>[key,v.optionQuantities?.[key]===undefined?1:v.optionQuantities[key]]));
+    let pending=[],saving=false,reading=false,root;
+    // Keep this form's draft separate from the inventory drawer stack.
+    const controls=html=>html.replaceAll('data-stock-bind','data-sales-multiple-bind').replaceAll('data-stock-action','data-sales-multiple-action');
+    const integer=(label,value,bind)=>I(label,value,bind,'number').replace('min="0" step="0.001"','min="1" step="1" data-pc-stepper data-pc-precision="0" data-pc-step-strictly="true"');
+    const photos=()=>controls(S.salesPhotos(v,'thumbnail'));
+    const options=()=>controls('<div class="sales-multiple-options"><div class="sales-multiple-picker">'+C('选择添加项目',S.sales.basics.filter(x=>!v.options.includes(x.id)).map(x=>[x.id,x.name]),pending,'pending','multiple placeholder="请选择项目，可搜索"')+B('添加','add')+'</div>'+S.table([['项目名称',key=>E(S.salesBasic(key)?.name||'—'),130],['数量',key=>integer((S.salesBasic(key)?.name||'项目')+'数量',v.optionQuantities[key],'qty.'+key),150],['操作',key=>L('移除','remove',key),70]],v.options)+'</div>');
+    const active=()=>root?.isConnected&&!root.closest('.is-closing');
+    const error=message=>{if(!active())return;const el=root.querySelector('[data-sales-multiple-error]');el.textContent=message;el.hidden=!message;if(message)el.scrollIntoView({block:'nearest'});};
+    const refresh=part=>{root.querySelector('[data-sales-multiple-'+part+']').innerHTML=part==='options'?options():photos();PCUI.sweep();};
+    const save=async()=>{
+      if(saving||S.state.busy)return;
+      if(reading){error('缩略图正在读取，请稍后保存。');return;}
+      if(pending.length){error('请先添加已选择的项目，或清除待添加项。');return;}
+      saving=true;S.state.busy=true;error('');
+      try{await S.db.commit('sales.multiple',{value:M.copy(v)},revision);if(active())PCUI.closeDialog();S.state.error=null;S.render();toast('已保存');}
+      catch(e){error(e.message);}
+      finally{saving=false;S.state.busy=false;}
+    };
+    PCUI.dialog({title:id?'编辑多选产品':'新增多选产品',content:'<div class="sales-multiple-editor" data-sales-multiple-editor>'+controls(S.form([
+      S.salesWideField('名称',I('多选产品名称',v.name,'name'),true),
+      S.salesWideField('缩略图','<div data-sales-multiple-photos>'+photos()+'</div>'),
+      S.salesWideField('可选项','<div data-sales-multiple-options>'+options()+'</div>',true),
+      S.salesWideField('可选项目数',integer('可选项目数',v.count,'count'),true),
+      S.salesWideField('耗时（分钟）',I('耗时（分钟）',v.duration,'duration','number'),true)
+    ]))+'<p class="stock-error" data-sales-multiple-error role="alert" hidden></p></div>',buttons:[{text:'取消',action:()=>{if(!saving)PCUI.closeDialog();}},{text:'确定',primary:true,action:save}]});
+    await Vue.nextTick();
+    root=document.querySelector('[data-sales-multiple-editor]');
+    const bind=event=>{
+      const el=event.target;if(!el.matches('input,select,textarea')||!el.dataset.salesMultipleBind)return;
+      const key=el.dataset.salesMultipleBind,value=el.type==='number'?(el.value===''?'':Number(el.value)):el.value;
+      if(key==='pending')pending=[...el.selectedOptions].map(x=>x.value);
+      else if(key.startsWith('qty.'))v.optionQuantities[key.slice(4)]=value;
+      else v[key]=value;
+    };
+    root.addEventListener('input',bind);root.addEventListener('change',bind);
+    root.addEventListener('click',event=>{
+      const el=event.target.closest('button[data-sales-multiple-action]');if(!el||saving||reading)return;
+      const action=el.dataset.salesMultipleAction;error('');
+      if(action==='add'){
+        if(!pending.length){error('请选择要添加的项目。');return;}
+        pending.forEach(key=>{if(!v.options.includes(key)){v.options.push(key);v.optionQuantities[key]=1;}});pending=[];refresh('options');
+      }else if(action==='remove'){
+        const key=el.dataset.stockId;v.options=v.options.filter(x=>x!==key);delete v.optionQuantities[key];refresh('options');
+      }else if(action==='salesImageRemove'){v.thumbnail='';refresh('photos');}
+    });
+    root.addEventListener('change',async event=>{
+      const el=event.target;if(!el.matches('input[type="file"]')||saving||reading)return;
+      reading=true;error('');
+      try{const images=await S.readImages(el.files);if(active()){v.thumbnail=images[0]?.src||v.thumbnail;refresh('photos');}}
+      catch(e){error(e.message);el.value='';}
+      finally{reading=false;}
+    });
   };
-  S.actions.salesSaveMultiple=()=>S.run('sales.multiple',{value:S.top.data.value},()=>S.close());
   document.addEventListener('input',event=>{const el=event.target,m=/^value\.materials\.(\d+)\.qty$/.exec(el.dataset?.stockBind||'');if(m&&S.top?.type==='salesBasic'){const i=Number(m[1]),x=S.top.data.value.materials[i],preview=document.querySelector('#stock-layer-'+(S.state.layers.length-1)+' [data-stock-bom-preview="'+i+'"]');if(preview)preview.textContent=x.unit?S.unitPreview(x.pid,x.sid,x.unit,x.qty):'待确认单位';}});
 })(StockPC,WeidSalesModel);

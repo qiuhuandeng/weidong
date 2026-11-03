@@ -55,6 +55,7 @@
       ]
     },
     "complaints": {
+      "dependencies": ["complaint-detail"],
       "scripts": [
         "pages/complaints/business.js",
         "pages/complaints/index.js"
@@ -76,6 +77,12 @@
       "routes": [
         "home"
       ]
+    },
+    "complaint-detail": {
+      "requiresUI": false,
+      "scripts": ["pages/complaint-detail/index.js"],
+      "styles": ["pages/complaint-detail/style.css"],
+      "routes": []
     },
     "complaint-solutions": {
       "scripts": [

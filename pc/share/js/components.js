@@ -40,6 +40,26 @@ window.PCUI = (() => {
   }
   function eligible(node) { return node.isConnected && !node.closest(excluded) && !node.closest('[data-pc-ready]'); }
 
+  function actionMenu(source) {
+    const actions=[...source.children].filter(item=>item.matches('button')&&!item.hidden);
+    if(!actions.length){source.remove();return;}
+    const label=source.dataset.pcMenu||'更多',host=island(source,'menu','inline-flex');
+    host.dataset.pcReady='menu';
+    mount(host,{render:()=>h(ElementPlus.ElDropdown,{
+      trigger:'click',placement:'top-end',hideOnClick:true,
+      onCommand:index=>{
+        const action=actions[index];
+        if(!host.isConnected||host.closest('[inert]')||!action||action.disabled)return;
+        host.querySelector('.el-dropdown > button')?.focus({preventScroll:true});
+        action.click();
+      }
+    },{
+      default:()=>h(ElementPlus.ElButton,{nativeType:'button'},()=>[label,h('span',{class:'el-icon--right',innerHTML:icon('down')})]),
+      dropdown:()=>h(ElementPlus.ElDropdownMenu,{},()=>actions.map((action,index)=>h(ElementPlus.ElDropdownItem,{command:index,disabled:action.disabled},()=>action.textContent)))
+    })});
+    source.hidden=true;source.setAttribute('aria-hidden','true');host.append(source);
+  }
+
   function button(source) {
     // Company dialogs already own Vue click listeners; never remount them as
     // legacy markup, which would discard those listeners.
@@ -58,6 +78,7 @@ window.PCUI = (() => {
 
   function input(source) {
     if (source.closest('.el-input,.el-textarea,.el-select,.el-date-editor,.pc-input')) return;
+    if (source.type === 'number' && source.hasAttribute('data-pc-stepper')) return numberInput(source);
     if (!['text','search','number','tel','email','url','password'].includes(source.type) && source.tagName !== 'TEXTAREA') return;
     const size=source.closest('.query-module') ? 'small' : 'default';
     const properties = attrs(source, ['value','class','style','disabled','readonly']);
@@ -75,6 +96,26 @@ window.PCUI = (() => {
     if (source.className) control.className += ' ' + source.className;
     restoreEvents(source, control);
     if (focused) control.focus({preventScroll:true});
+  }
+
+  function numberInput(source) {
+    const focused=document.activeElement===source,host=island(source,'number','inline-flex');
+    host.dataset.pcReady='number';host.style.cssText+=source.style.cssText;
+    const controlId=(source.id||'pc-number-'+ ++sequence)+'-control';
+    const read=()=>source.value===''?undefined:Number(source.value);
+    const readOptions=()=>({min:source.min!==''?Number(source.min):-Infinity,max:source.max!==''?Number(source.max):Infinity,
+      step:Number(source.step)>0?Number(source.step):1,stepStrictly:source.dataset.pcStepStrictly==='true',
+      precision:source.hasAttribute('data-pc-precision')?Number(source.dataset.pcPrecision):undefined,
+      disabled:source.disabled,readonly:source.readOnly});
+    const value=ref(read()),options=ref(readOptions());
+    controlStates.set(source,()=>{value.value=read();options.value=readOptions();});
+    mount(host,{render:()=>h(ElementPlus.ElInputNumber,{...options.value,id:controlId,modelValue:value.value,
+      size:host.closest('.query-module')?'small':'default',ariaLabel:source.getAttribute('aria-label')||source.name||'数量',
+      placeholder:source.getAttribute('placeholder')||'',controls:true,'data-pc-ready':'number',
+      'onUpdate:modelValue':next=>{value.value=next;source.value=next==null?'':String(next);source.dispatchEvent(new Event('input',{bubbles:true}));source.dispatchEvent(new Event('change',{bubbles:true}));}})});
+    source.hidden=true;source.tabIndex=-1;source.classList.add('pc-native-value');source.setAttribute('aria-hidden','true');host.append(source);
+    if(source.id)document.querySelectorAll('label').forEach(label=>{if(label.htmlFor===source.id)label.htmlFor=controlId;});
+    if(focused)host.querySelector('input:not([hidden])')?.focus({preventScroll:true});
   }
 
   function nativeControl(source, kind) {
@@ -445,6 +486,7 @@ window.PCUI = (() => {
       root.querySelectorAll('[data-pc-pager]:not([data-pc-island])').forEach(pager);
       root.querySelectorAll('.pagination:not([data-pc-island])').forEach(el=>{if(eligible(el))legacyPager(el);});
       root.querySelectorAll('.pill').forEach(el=>{if(eligible(el))tag(el);});
+      root.querySelectorAll('[data-pc-menu]').forEach(el=>{if(eligible(el))actionMenu(el);});
       root.querySelectorAll('button.btn').forEach(el => { if(eligible(el)) button(el); });
       root.querySelectorAll('label.switch > input[type="checkbox"]').forEach(el => {if(eligible(el))nativeControl(el,'switch');});
       root.querySelectorAll('input[type="checkbox"],input[type="radio"]').forEach(el => {if(eligible(el))nativeControl(el,el.type);});

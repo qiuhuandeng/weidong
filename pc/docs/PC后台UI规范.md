@@ -69,6 +69,7 @@
 | --- | --- | --- |
 | 搜索区、编辑表单 | ByForm；`queryModule` / `query()`、`field` / `form()` | 已有公共接入；沿用标签、固定宽度、留白和分层草稿 |
 | 文本、数字、关键词、文本域 | ByCommonInput；`input()` | 已有公共接入；复用搜索 28px / 表单 32px 尺寸 |
+| 带加减按钮的数字计数器 | `input[type=number][data-pc-stepper]` → 公共 `numberInput()` / 同版本 ElInputNumber | 已有公共接入；仅声明字段启用，支持 min / max / step、`data-pc-precision` 和 `data-pc-step-strictly="true"`，保留原字段及 input / change 事件 |
 | 下拉、可搜索多选、少量状态选项 | ByCommonSelector；`select()` | 已有公共接入；`multiple` 保留数组值，`data-filterable` 开启搜索；动态禁用 / 选项通过 `PCUI.syncControl` 同步；状态宽度与下拉回退由公共层处理 |
 | 列表、抽屉明细表格 | ByTable；`table` / `tableHTML` / `list` → `table()` | 已有公共接入；列定义、数据和业务操作由页面提供 |
 | 分页 | ByPager；`pager()` / `legacyPager()`、`PCUI.registerPager` | 已有公共接入；主列表和选择抽屉各自保存页码、页大小和筛选状态 |
@@ -77,6 +78,7 @@
 | 批量查询选择 | ByBatchQuerySelector | 包已导出，尚未在公共适配器接入；首次使用需核对输入、解析、回填、清空及禁用行为后封装 |
 | 文档中的页面搜索 | ByPageSearch → 公共 ByForm 搜索组合 | 当前 v3 包未导出 ByPageSearch；继续使用已有公共兼容方案，不调用不存在的组件 |
 | 日期 / 日期时间 / 时间 / 月份、单选 / 复选、开关、按钮、状态标签 | 同版本 ElDatePicker / ElTimePicker / ElRadio / ElCheckbox / ElSwitch / ElButton / ElTag | 已有公共接入；`datetime-local` 映射 ElDatePicker 的 datetime，业务值 `YYYY-MM-DDTHH:mm`，展示 `YYYY-MM-DD HH:mm`；沿用公司主题，不自绘基础控件 |
+| 操作下拉菜单 | `[data-pc-menu="更多"]` → 公共 `actionMenu()` / 同版本 ElDropdown、ElDropdownMenu、ElDropdownItem、ElButton | 公司固定包未导出独立菜单组件；仅声明的操作组启用，保留原按钮事件，由业务决定可用操作 |
 | 内容页签、分层业务抽屉 | `pageTabs()` / `tabs()`、现有公共抽屉入口 | 项目已确认的公共组合；默认横向，显式 `aria-orientation="vertical"` 支持左右栏；按本规范保留路由、焦点与草稿 |
 | 产品内容富文本 | `textarea[data-pc-richtext]` → 公共 contenteditable 编辑器；工具栏 ElButton / ElDropdown，源码 ByCommonInput，设置弹窗 ByDialog / ByForm | 公司固定包及同版本 Element Plus 未提供富文本编辑器，公共层组合现有控件；仅显式声明字段启用，不改变普通文本域 |
 | 文件选择按钮 | `input[type=file][data-pc-upload]` → 公共 `fileInput()` + 同版本 ElButton | 显式启用，属性值为按钮文案；保留原生选择器、accept / multiple、业务 change 事件与读取逻辑 |
@@ -86,6 +88,13 @@
 | 其他未列出的新组件 | 先查公司文档，再核对本地导出与同版本 Element Plus | 按上方流程完成选型、公共封装、规范补全及实际验收后使用 |
 
 目录是选型入口，不能代替具体组件的 API 文档。不得因为某组件与现有控件名称相近就直接替换；要核对真实业务能力及值、事件、插槽的兼容性。已有日历、关系对比等业务结构按对应章节保留，其内部基础控件仍需接入公共组件。
+
+### 操作下拉菜单
+
+- 在 `data-pc-menu="更多"` 容器内提供普通业务按钮，公共适配器挂载同版本 ElDropdown / ElDropdownMenu / ElDropdownItem；触发器为 ElButton，沿用公司主题和默认按钮尺寸，无独立业务菜单样式。空组不显示入口。
+- 默认点击展开、向上右对齐（空间不足由组件调整）、选中后收起；禁用项不可执行，保留键盘选择及 Escape 关闭行为。选择时调用原按钮事件，先恢复触发器焦点，供子抽屉返回；卸载时同时清理浮层。业务抽屉有键盘拦截时，应先判断 `PCUI.isPopupOpen()`，让已展开菜单处理键盘事件。
+- 首次使用：投诉详情底部操作。主按钮优先级及可用菜单项由投诉业务提供，公共层不判断工单状态；其余页面未声明时不受影响。
+- 2026年11月3日公司文档无法访问，按固定包的真实导出与现有富文本菜单实现核对，参考 [Element Plus Dropdown 官方文档](https://element-plus.org/en-US/component/dropdown.html) 的 `trigger`、`placement`、`hide-on-click`、`command`、`disabled`；不升级依赖。公司在线示例待恢复后再核对。
 
 ### 分类树、部门级联与门店选项筛选
 
@@ -235,6 +244,8 @@ ByForm 使用公共固定宽度条件项和自动换行布局，禁止恢复百�
 输入框和文本域使用公司 ByCommonInput，下拉 / 展开枚举使用公司 ByCommonSelector；底层继承 Element Plus。日期、时间、开关使用 ElDatePicker、ElTimePicker、ElSwitch；配置表单复选框使用 ElCheckbox，按钮使用 ElButton。日期值保持 YYYY-MM-DD，时间值保持 HH:mm，提交前后不转换业务时区。表格批量勾选、选择抽屉及配置单选同样使用 ElCheckbox / ElRadio，保留原字段、互斥分组及事件；月份使用 ElDatePicker 的 month 模式和 YYYY-MM 值。日历保留专用结构，但其中的基础选择控件不豁免组件接入。不得新增原生控件皮肤，新 Vue 表单直接使用 ElCheckbox / ElRadioGroup。隐藏兼容字段不算可见 UI 组件。
 
 必填红星、横向标签、placeholder 和 aria-label 一并保留；缺失只读信息显示“—”。标签应关联真实可交互控件。隐藏原生字段仅用于兼容现有 ID、FormData 和事件读取，不可成为可聚焦或重复朗读的控件。
+
+需要加减按钮的数字字段显式声明 `data-pc-stepper`，由公共适配器挂载固定 Element Plus 2.9.3 的 `ElInputNumber`，使用左右减 / 加按钮，沿用表单 32px / 搜索 28px 高度。整数数量使用 `min="1" step="1" data-pc-precision="0" data-pc-step-strictly="true"`；普通数字输入继续使用 ByCommonInput，不自动增加按钮。保留手动输入、键盘加减、最小 / 最大值禁用、原字段绑定及 `PCUI.syncControl` 同步，取消仍仅丢弃当前表单草稿。2026年11月2日公司文档站读取失败；已核对本地固定包：ByCommonInput 仅代理 ElInput，未提供计数按钮；ByForm 的 inputNumber 类型使用 ElInputNumber，独立字段沿用同版本基础组件。在线示例待可访问时核对。
 
 公司组件的默认校验不代替业务校验。保留原来的必填、范围、审核条件、只读及禁用逻辑；不要为视觉统一加新的隐藏门槛。保存成功才写入当前业务数据；取消不提交当前层草稿。
 

@@ -98,6 +98,7 @@ body {font-family:"Helvetica Neue",Helvetica,"PingFang SC","Hiragino Sans GB","M
 .btn.el-button.primary:disabled{color:white;background:#a0cfff;border-color:#a0cfff}
 .pc-button-content{display:inline-flex;align-items:center;gap:5px}.btn.el-button .icon{width:14px;height:14px}
 .pc-input,.pc-select{min-width:0;max-width:100%;vertical-align:middle;flex:1;width:100%}
+.pc-number{min-width:0;max-width:100%;width:100%;vertical-align:middle;flex:1}.pc-number .el-input-number{width:100%;height:var(--pc-control);line-height:var(--pc-control);font-size:var(--pc-font)}.pc-number .el-input{--el-input-height:var(--pc-control);font-size:var(--pc-font)}
 .pc-select{min-width:130px;width:160px;flex:0 1 180px}.pc-query-field>.pc-select{width:100%;flex:1;min-width:0}
 .pc-input .by-common-input-container,.pc-input .el-input,.pc-input .el-textarea,.pc-select>div,.pc-select .el-select{width:100%;min-width:0}
 .pc-input .el-input__wrapper{padding:1px 11px;background:white;border-radius:4px;box-shadow:0 0 0 1px #dcdfe6 inset}
@@ -114,6 +115,7 @@ input[type=checkbox]:not(.el-checkbox__original),input[type=radio]:not(.el-radio
 .pc-date{width:160px;max-width:100%;min-width:0}.pc-date .el-date-editor.el-input{width:100%;height:var(--pc-control)}.pc-date .el-input__inner{border:0;box-shadow:none;padding:0;height:calc(var(--pc-control) - 2px);font-size:var(--pc-font)}.pc-date .el-input__wrapper{padding:1px 11px;border-radius:4px}
 .pc-form .pc-date{width:100%}.mr-date .pc-date{flex:1;min-width:140px}.pc-date .el-popper{z-index:3100}
 .pc-table{overflow:visible!important;max-height:none;min-height:0;margin:0 10px;width:calc(100% - 20px);border:0;border-radius:5px}
+.pc-form .pc-table{margin:0;width:100%}
 .pc-table table{min-width:0!important;max-width:none;table-layout:fixed;border-collapse:separate;line-height:var(--pc-table-line);font-size:var(--pc-font)}
 .pc-table th,.pc-table td{position:static!important;box-shadow:none!important;padding:0!important;border:0;white-space:normal;color:#606266;background:transparent;font-size:var(--pc-font);font-weight:400}
 .pc-table th{color:#606266;font-weight:600}.pc-table tr:hover>td{background:transparent}
