@@ -18,13 +18,21 @@ const followCode=fs.readFileSync(path.join(__dirname,'../pages/complaint-follow/
 vm.runInNewContext(followCode,context);
 const processCode=fs.readFileSync(path.join(__dirname,'../pages/complaint-detail/index.js'),'utf8');
 vm.runInNewContext(processCode,context);
-const hook = `window.testAPI={toCents,orderDateRange,filtered,matchingOrders,orderPickerState,orderPickerOrders,orderPickerView,selectPickerOrder,handlingMissing,validateCustomerSolution,solutionDraft,solutionTotals,solutionOrders,refundEntries,refundAvailable,solutionTools,solutionRead,recordAccept,recordRecognition,recordCompensation,recordFollow,followTools,recordClosure,hasHandlingScheme,canClose,responsibleOptions,complaintCSV,validHandlingFile,records,orders,persist,canAssess,STATUS_TABS,WORK_ORDER_STATUSES,CHANNELS,workOrderStatus,normalizeRecordStatus,statusScope,currentHandler,currentTask,detailActions,complaintRow,summary,phoneView,processingDepartment,processRecords,processView,select(id){main={record:records.find(r=>r.id===id)};return main.record;}};`;
+const hook = `window.testAPI={workflow,toCents,orderDateRange,filtered,matchingOrders,orderPickerState,orderPickerOrders,orderPickerView,selectPickerOrder,handlingMissing,validateCustomerSolution,solutionDraft,solutionTotals,solutionOrders,refundEntries,refundAvailable,solutionTools,solutionRead,recordAccept,recordRecognition,recordCompensation,recordFollow,followTools,recordClosure,hasHandlingScheme,canClose,responsibleOptions,complaintCSV,validHandlingFile,records,orders,persist,canAssess,STATUS_TABS,WORK_ORDER_STATUSES,CHANNELS,workOrderStatus,normalizeRecordStatus,statusScope,currentHandler,currentTask,detailActions,complaintRow,summary,phoneView,processingDepartment,processRecords,processView,select(id){main={record:records.find(r=>r.id===id)};return main.record;}};`;
 vm.runInNewContext(code.replace('  window.PCComplaints={mount,leave};',hook+'\n  window.PCComplaints={mount,leave};'),context);
 const a=context.window.testAPI;
 let count=0;
 const test=(name,run)=>{run();count++;console.log('PASS '+name)};
 const copy=o=>JSON.parse(JSON.stringify(o));
 test('seed contains all three channels and 23 complaints / 27 orders',()=>{assert.equal(a.records.length,23);assert.equal(a.orders.length,27);assert.deepEqual([...new Set(a.records.map(r=>r.channel))].sort(),['mini','staff','wechat'])});
+test('workflow owns status tabs, departments and action eligibility',()=>{
+  assert.deepEqual(copy(a.workflow.statuses.map(([status])=>status)),copy(a.WORK_ORDER_STATUSES));
+  assert.equal(a.workflow.department({status:'财务审批中'}),'财务');assert.equal(a.workflow.department({status:'待采购发货'}),'采购');
+  assert.deepEqual(copy(a.workflow.detailActions({status:'待处理'})),['reply','accept']);
+  assert.deepEqual(copy(a.workflow.detailActions({status:'客服已接单'})),['reply','handling','assessment']);
+  assert.ok(a.workflow.detailActions({status:'客服处理中'},{canClose:true}).includes('closure'));
+  assert.equal(a.workflow.can({status:'已结案'},'grade'),false);
+});
 test('PC writes only its own storage key',()=>assert.deepEqual([...storage.keys()],['weid.pc.complaints.v1']));
 test('money precision, invalid decimals, negatives and overflow',()=>{assert.equal(a.toCents('12.34'),1234);assert.equal(a.toCents('0.01'),1);for(const v of ['1.001','-1','1e3','Infinity','9007199254740992'])assert.equal(a.toCents(v),null)});
 test('date shortcuts handle leap year and week boundary',()=>{assert.deepEqual(copy(a.orderDateRange('lastMonth','2024-03-01')),{start:'2024-02-01',end:'2024-02-29'});assert.deepEqual(copy(a.orderDateRange('week','2026-10-22')),{start:'2026-10-19',end:'2026-10-25'})});
@@ -492,22 +500,22 @@ test('handling context shows customer identity without repeating complaint conte
   assert.ok(!compact.includes(r.content));assert.ok(!compact.includes('aria-label="投诉附件"'));assert.ok(!compact.includes('aria-label="发起信息"'));
   assert.ok(detail.includes(r.content));assert.equal(JSON.stringify(r),before);
 });
-test('one communication operation is selected and returning to the active form restores the radio choice',()=>{
+test('handling offers three mutually exclusive business operations',()=>{
   const helper=a.followTools(),options=Object.keys(helper.OPERATIONS);
-  assert.deepEqual([...options],['follow','compensation']);
-  for(const kind of options){const html=helper.operationChoice(kind);assert.equal((html.match(/type="radio"/g)||[]).length,2);assert.ok(html.includes('客服跟进中'));assert.ok(html.includes('已确认解决方案'));assert.ok(!html.includes('责任认定'));assert.equal((html.match(/ checked/g)||[]).length,1);assert.ok(html.includes(`value="${kind}" checked`));assert.ok(!html.includes('role="tab"'))}
+  assert.deepEqual([...options],['follow','compensation','closure']);
+  for(const kind of options){const html=helper.operationChoice(kind);assert.equal((html.match(/type="radio"/g)||[]).length,3);assert.ok(html.includes('方案未达成一致'));assert.ok(html.includes('已确认解决方案'));assert.ok(html.includes('已处理并结案'));assert.ok(!html.includes('责任认定'));assert.equal((html.match(/ checked/g)||[]).length,1);assert.ok(html.includes(`value="${kind}" checked`));assert.ok(!html.includes('role="tab"'))}
   const inputs=options.map(value=>({value,checked:value==='compensation'})),synced=[],previous=context.PCUI.syncControl;
   context.PCUI.syncControl=input=>synced.push(input.value);
   try{helper.resetOperation({kind:'follow',layer:{el:{querySelectorAll:()=>inputs}}});assert.equal(inputs.filter(input=>input.checked).length,1);assert.ok(inputs[0].checked);assert.deepEqual(synced,options)}finally{context.PCUI.syncControl=previous}
 });
-test('customer-service follow-up has two outcomes and only disagreement requires a configured reason',()=>{
+test('unresolved proposal requires a configured reason without a separate follow-up result',()=>{
   const helper=a.followTools(),r={...copy(record),status:'客服处理中',follows:[]};
-  assert.deepEqual(Object.values(helper.RESULTS),['客户已同意解决方案','未达成一致']);
-  const ongoing=helper.form(r,helper.draft(r)),agreed=helper.form(r,{...helper.draft(r),followResult:'agreed'});
-  assert.ok(!ongoing.includes('value="note"'));assert.ok(!ongoing.includes('value="unreachable"'));
-  assert.ok(!ongoing.includes('data-field="unresolvedReason" hidden'));assert.ok(agreed.includes('data-field="unresolvedReason" hidden'));
-  assert.ok(helper.validate(r,{files:[],followResult:'ongoing',unresolvedReason:''}).some(([name])=>name==='unresolvedReason'));
-  assert.equal(helper.validate(r,{files:[],followResult:'agreed',unresolvedReason:'removed'}).length,0);
+  const html=helper.form(r,helper.draft(r));
+  assert.ok(!html.includes('name="followResult"'));assert.ok(!html.includes('跟进结果'));
+  assert.ok(html.includes('data-field="unresolvedReason"'));assert.ok(html.includes('required aria-required="true"'));
+  assert.ok(helper.validate(r,{operation:'unresolved',files:[],unresolvedReason:''}).some(([name])=>name==='unresolvedReason'));
+  assert.equal(helper.validate(r,{operation:'unresolved',files:[],unresolvedReason:'解释说明'}).length,0);
+  assert.ok(helper.closureForm({note:''}).includes('确认后工单将进入已结案状态'));
 });
 test('reason choices track customer-demand configuration while saved reasons and legacy history remain stable',()=>{
   const dict=context.window.PCComplaintOptions,descriptor=Object.getOwnPropertyDescriptor(dict,'current'),options=dict.options;

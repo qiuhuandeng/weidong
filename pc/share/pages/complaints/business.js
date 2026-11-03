@@ -198,8 +198,9 @@
       <td>${statusTag(r.status)}</td>
       <td class="uc-fixed"><div class="uc-actions">${link('详情','detail',`data-id="${r.id}"`)}</div></td></tr>`;
   }
+  function statusCount(status){return records.filter(record=>workOrderStatus(record.status,record)===status).length}
   function renderList(){const rows=filtered(),pages=Math.max(1,Math.ceil(rows.length/pageSize));page=Math.min(page,pages);root.innerHTML=`
-    <section class="uc-search-card"><nav class="uc-list-tabs pc-tabs pc-tabs-with-search" role="tablist" aria-label="工单状态">${STATUS_TABS.map(([value,label],i)=>`<button type="button" class="uc-list-tab pc-tab" role="tab" id="uc-status-${i}" aria-controls="uc-list-panel" aria-selected="${(filters.status||'')===value}" tabindex="${(filters.status||'')===value?'0':'-1'}" data-uc="status-tab" data-status="${value}">${label}</button>`).join('')}</nav><div class="query-module"><form id="uc-search" class="filterbar">
+    <section class="uc-search-card"><nav class="uc-list-tabs pc-tabs pc-tabs-with-search" role="tablist" aria-label="工单状态">${STATUS_TABS.map(([value,label],i)=>{const count=value&&value!=='已结案'?` ${statusCount(value)}`:'';return `<button type="button" class="uc-list-tab pc-tab" role="tab" id="uc-status-${i}" aria-controls="uc-list-panel" aria-selected="${(filters.status||'')===value}" tabindex="${(filters.status||'')===value?'0':'-1'}" data-uc="status-tab" data-status="${value}">${label}${count}</button>`}).join('')}</nav><div class="query-module"><form id="uc-search" class="filterbar">
       ${complaintKeywordControl()}
       ${select('channel',Object.entries(CHANNELS),filterDraft.channel,'全部来源','aria-label="售后来源"')}
       ${select('level',LEVELS,filterDraft.level,'全部等级','aria-label="客诉等级"')}
