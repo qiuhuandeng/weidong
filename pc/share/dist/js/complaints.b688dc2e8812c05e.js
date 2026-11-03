@@ -32,7 +32,6 @@
   const WORK_ORDER_STATUSES=workflow.statuses.map(([status])=>status);
   const statusScope=status=>['待处理','客服已接单'].includes(workOrderStatus(status))?'pending':workOrderStatus(status)==='已结案'?'closed':'active';
   const STATUS_TABS=workflow.tabs;
-  const showProcessAction=workflow.showProcessAction;
   const canAssess=r=>workflow.can(r,'assess');
   const canFollow=r=>workflow.can(r,'follow');
   const canGrade=r=>workflow.can(r,'grade');
@@ -190,7 +189,6 @@
     return `<div class="pagination" data-pc-pager='${esc(JSON.stringify({total,page:current,size,sizes:[10,20,50],action:'complaints',scope}))}'></div>`;
   }
   function complaintRow(r){
-    const processAction=showProcessAction(filters.status)&&workOrderStatus(r.status)!=='已结案'?link('处理','process',`data-id="${r.id}"`):'';
     return `<tr><td class="uc-list-customer">${valueText(r.name).trim()?link(esc(r.name),'customer-detail',`data-customer="${esc(r.customerId||'')}" aria-label="查看客户详情：${esc(r.name)}"`):listValue('')}<span class="pc-block uc-block uc-muted">会员号 ${listValue(r.member)}</span><span class="pc-block uc-block uc-muted">${listValue(r.phone)}</span></td>
       <td class="uc-list-store-order"><span class="pc-block uc-block">${listValue(r.store)}</span><span class="pc-block uc-block">${r.linked.length?link(r.linked[0].id,'order-detail',`data-order="${esc(r.linked[0].id)}"`):listValue('')}</span>${r.linked.length>1?'<span class="pc-block uc-block uc-muted">共 '+r.linked.length+' 笔</span>':''}</td>
       <td>${listValue(CHANNELS[r.channel])}<span class="pc-block uc-block uc-muted">售后类型：${listValue(r.type)}</span><span class="pc-block uc-block uc-muted">${listValue(r.created?fmt(r.created):'')}</span></td>
@@ -198,10 +196,11 @@
       <td>${levelTag(r.level)}${level4Type(r)?'<span class="pc-block uc-block uc-muted">'+esc(level4Type(r))+'</span>':''}</td>
       <td>${listValue(valueText(r.department)||'待认定')}<span class="pc-block uc-block">责任人：${listValue(r.type==='闭店'?'无需填写':r.responsible)}</span></td>
       <td>${statusTag(r.status)}</td>
-      <td class="uc-fixed"><div class="uc-actions">${processAction}${link('详情','detail',`data-id="${r.id}"`)}</div></td></tr>`;
+      <td class="uc-fixed"><div class="uc-actions">${link('详情','detail',`data-id="${r.id}"`)}</div></td></tr>`;
   }
+  function statusCount(status){return records.filter(record=>workOrderStatus(record.status,record)===status).length}
   function renderList(){const rows=filtered(),pages=Math.max(1,Math.ceil(rows.length/pageSize));page=Math.min(page,pages);root.innerHTML=`
-    <section class="uc-search-card"><nav class="uc-list-tabs pc-tabs pc-tabs-with-search" role="tablist" aria-label="工单状态">${STATUS_TABS.map(([value,label],i)=>`<button type="button" class="uc-list-tab pc-tab" role="tab" id="uc-status-${i}" aria-controls="uc-list-panel" aria-selected="${(filters.status||'')===value}" tabindex="${(filters.status||'')===value?'0':'-1'}" data-uc="status-tab" data-status="${value}">${label}</button>`).join('')}</nav><div class="query-module"><form id="uc-search" class="filterbar">
+    <section class="uc-search-card"><nav class="uc-list-tabs pc-tabs pc-tabs-with-search" role="tablist" aria-label="工单状态">${STATUS_TABS.map(([value,label],i)=>{const count=value&&value!=='已结案'?` ${statusCount(value)}`:'';return `<button type="button" class="uc-list-tab pc-tab" role="tab" id="uc-status-${i}" aria-controls="uc-list-panel" aria-selected="${(filters.status||'')===value}" tabindex="${(filters.status||'')===value?'0':'-1'}" data-uc="status-tab" data-status="${value}">${label}${count}</button>`}).join('')}</nav><div class="query-module"><form id="uc-search" class="filterbar">
       ${complaintKeywordControl()}
       ${select('channel',Object.entries(CHANNELS),filterDraft.channel,'全部来源','aria-label="售后来源"')}
       ${select('level',LEVELS,filterDraft.level,'全部等级','aria-label="客诉等级"')}
@@ -215,7 +214,7 @@
       ].join(''):''}
       <div class="query-actions"><button class="btn primary" type="submit" form="uc-search">搜索</button>${btn('重置','reset')}${link(more?'收起筛选':'更多筛选','more','aria-expanded="'+more+'"')}</div>
     </form><div id="uc-query-error" class="uc-error" role="alert"></div></div></section>
-    <section class="panel content-module uc-card" role="tabpanel" id="uc-list-panel" aria-labelledby="uc-status-${STATUS_TABS.findIndex(([value])=>value===(filters.status||''))}"><div class="panel-head uc-card-head"><h3>投诉列表</h3><div class="uc-actions">${btn('配置','options-open')}${btn('导出','export')}</div></div>
+    <section class="panel content-module uc-card" role="tabpanel" id="uc-list-panel" aria-labelledby="uc-status-${STATUS_TABS.findIndex(([value])=>value===(filters.status||''))}"><div class="panel-head uc-card-head"><h3>投诉列表</h3><div class="uc-actions">${btn('新增工单','new-ticket','',true)}${btn('配置','options-open')}${btn('导出','export')}</div></div>
       <div class="table-wrap uc-table-wrap"><table class="uc-table uc-main-table" data-pc-align="left"><colgroup><col><col><col><col><col style="width:85px"><col><col style="width:125px"><col style="width:70px"></colgroup>
       <thead><tr>${['客户信息','关联订单 / 门店','售后来源 / 渠道','投诉内容','客诉等级','责任认定','工单状态','操作'].map((t,i)=>`<th data-pc-min-width="${[150,180,175,250,85,160,125,70][i]}"${i===7?' class="uc-fixed"':''}>${t}</th>`).join('')}</tr></thead>
       <tbody>${rows.length?rows.slice((page-1)*pageSize,page*pageSize).map(complaintRow).join(''):`<tr><td colspan="8">${empty('暂无符合条件的数据')}</td></tr>`}</tbody></table></div>
@@ -247,7 +246,7 @@
     requestAnimationFrame(()=>requestAnimationFrame(()=>{el.classList.add('show');el.querySelector('.uc-drawer').focus({preventScroll:true})}));return layer;
   }
   function closeLayer(force=false){const layer=layers.at(-1);if(!layer||layer.closing||layer.options?.saving)return;if(!force&&dirty(layer)){showDiscard(layer);return}layer.closing=true;layer.el.classList.remove('show');layer.el.classList.add('is-closing');setTimeout(()=>{if(!layers.includes(layer))return;layer.el.remove();layers.pop();if(main?.editor?.layer===layer)main.editor=null;if(layers.length){const parent=layers.at(-1);parent.el.inert=false;if(layer.parentView){parent.el.querySelector('.uc-drawer-body').scrollTop=layer.parentView.scroll;if(main?.layer===parent)setDetailTab(layer.parentView.tab)}}else{unlockBackground();main=null}if(layer.trigger?.isConnected)layer.trigger.focus({preventScroll:true});else if(layers.length)layers.at(-1).el.querySelector('.uc-drawer').focus({preventScroll:true});else root.querySelector('input,button')?.focus({preventScroll:true})},matchMedia('(prefers-reduced-motion: reduce)').matches?0:290)}
-  function dirty(layer){if(layer.options)return layer.options.saving||optionsDirty(layer.options);const e=main?.editor;return Boolean(e?.layer===layer&&(e.uploading||followTools().operationDirty(e)||(e.selectingOrders&&JSON.stringify(e.selection)!==e.selectionBaseline)))}
+  function dirty(layer){if(layer.options)return layer.options.saving||optionsDirty(layer.options);if(layer.creation){const form=layer.el.querySelector('[data-ticket-form]');return Boolean(form&&[...form.querySelectorAll('input,select,textarea')].some(control=>control.name&&control.value.trim()&&(control.name!=='channel'||control.value!=='hotline')))}const e=main?.editor;return Boolean(e?.layer===layer&&(e.uploading||followTools().operationDirty(e)||(e.selectingOrders&&JSON.stringify(e.selection)!==e.selectionBaseline)))}
   function showDiscard(layer,action='close'){layer.discardAction=action;const foot=layer.el.querySelector('.uc-drawer-foot');if(foot.querySelector('.uc-discard'))return;layer.oldFoot=foot.innerHTML;foot.innerHTML=`<div class="uc-discard" role="alert"><span>有尚未保存的修改，是否放弃？</span>${link('继续填写','keep')}${btn('放弃修改','discard')}</div>`;foot.querySelector('button').focus()}
   function restoreFoot(layer){if(layer.oldFoot){layer.el.querySelector('.uc-drawer-foot').innerHTML=layer.oldFoot;layer.oldFoot=null;layer.discardAction=null}}
   function recordById(id){return records.find(r=>r.id===id)}
@@ -289,6 +288,37 @@
   function openComplaint(id,tab='info'){
     if(layers.length)return;main={record:recordById(id),tab:detailTabKey(tab),scrollPositions:{},references:{payment:false},layer:null,editor:null};
     main.layer=openLayer('投诉详情','','');renderDetail();
+  }
+  function createTicketForm(){
+    const stores=[...new Set(records.map(record=>record.store).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'zh-CN'));
+    return `<div id="uc-create-ticket" class="ub-form" data-ticket-form>
+      ${field('createChannel','来源渠道',`<select id="uc-createChannel" name="channel" class="uc-input" aria-label="来源渠道">${Object.entries(CHANNELS).map(([value,label])=>`<option value="${esc(value)}"${value==='hotline'?' selected':''}>${esc(label)}</option>`).join('')}</select>`,false,'',true)}
+      ${field('createName','客户姓名',input('createName','','请输入客户姓名','text','name="name" autocomplete="name"'),true)}
+      ${field('createPhone','手机号',input('createPhone','','请输入手机号','tel','name="phone" inputmode="tel" autocomplete="tel"'),true)}
+      ${field('createStore','投诉门店',`<select id="uc-createStore" name="store" class="uc-input" aria-label="投诉门店"><option value="">请选择投诉门店</option>${stores.map(store=>`<option value="${esc(store)}">${esc(store)}</option>`).join('')}</select>`,true,'',true)}
+      ${field('createContent','投诉内容',`<textarea id="uc-createContent" name="content" class="uc-input" rows="6" maxlength="2000" placeholder="请输入投诉内容"></textarea>`,false,'',true)}
+    </div>`;
+  }
+  function openCreateTicket(){
+    if(layers.length)return;
+    const layer=openLayer('新增工单',createTicketForm(),`${btn('取消','dismiss')}${btn('提交工单','save-new-ticket','',true)}`);
+    layer.creation=true;
+  }
+  function saveNewTicket(){
+    const layer=layers.at(-1),scope=layer?.el,form=scope?.querySelector('[data-ticket-form]');
+    if(!layer?.creation||!form)return;
+    const values=Object.fromEntries([...form.querySelectorAll('input,select,textarea')].filter(control=>control.name).map(control=>[control.name,control.value.trim()]));
+    clearErrors(scope);
+    const missing=[['name','请输入客户姓名'],['phone','请输入手机号'],['store','请选择投诉门店']].filter(([name])=>!values[name]);
+    if(values.phone&&!/^1\d{10}$/.test(values.phone))missing.push(['phone','请输入11位手机号']);
+    if(missing.length){
+      missing.forEach(([name,message])=>error(scope,'create'+name[0].toUpperCase()+name.slice(1),message));
+      const control=scope.querySelector(`[name="${missing[0][0]}"]`);PCUI.focusControl(control);control?.scrollIntoView({block:'center'});return;
+    }
+    const numericIds=records.map(record=>Number(record.id)).filter(Number.isFinite),id=String((numericIds.length?Math.max(...numericIds):31000)+1),time=now();
+    const record={id,sourceId:'',customerId:'manual-'+id,name:values.name,phone:values.phone,member:'',customerWechat:'',store:values.store,channel:values.channel||'hotline',content:values.content,created:time,submitter:ACTOR,status:'待处理',handlingPlan:'',level:'',level4Type:'',department:'',type:'',firstContact:'',contactTime:'',complaintStore:values.store,customerDemand:'',customerStatement:values.content,responsible:'',reason:'',linked:[],files:[],follows:[],logs:[{time,actor:ACTOR,action:'新增工单',text:'手工创建工单，来源：'+(CHANNELS[values.channel]||'400 电话热线')}],messages:[]};
+    if(!persist([...records,record]))return;
+    closeLayer(true);page=1;renderList();toast('工单已提交，等待客服接单');
   }
   function detailReference(key,label,text,content,closedLabel='',actions=''){
     const expandable=key==='payment'&&Boolean(content),open=expandable?main.references[key]:true,id='uc-detail-reference-'+key;
@@ -559,8 +589,9 @@
   function handleClick(event){event.stopPropagation();const b=event.target.closest('[data-uc]');if(!b||b.disabled)return;const action=b.dataset.uc,layer=layers.at(-1);if(layer?.closing)return;
     if(action.startsWith('options-'))optionAction(action,b,layer);
     else if(action==='detail')openComplaint(b.dataset.id);
+    else if(action==='new-ticket')openCreateTicket();
+    else if(action==='save-new-ticket')saveNewTicket();
     else if(action==='order-detail')openOrderSnapshot(b.dataset.order);
-    else if(action==='process')openComplaint(b.dataset.id);
     else if(action==='customer-detail')openCustomerSnapshot(b.dataset.customer);
     else if(action==='toggle-phone')togglePhone(b);
     else if(action==='begin-handling')beginHandling();

@@ -7,25 +7,25 @@
   "sharedGzipBytes": 1281721,
   "preferredFontBytes": 28440,
   "firstRouteGzipBytes": {
-    "customer": 1465366,
-    "management": 1342501,
-    "complaints": 1346858,
-    "home": 52616,
-    "complaint-detail": 60782,
-    "complaint-fixtures": 56630,
-    "complaint-workflow": 53043,
-    "complaint-follow": 57302,
-    "complaint-options": 57406,
-    "complaint-solutions": 1291474,
-    "supply-chain": 1378490,
-    "inventory-core": 1331889,
-    "inventory-clinical": 1395974,
-    "group-approval": 1357016,
-    "group-approval-designer": 1377011,
-    "group-approval-data": 1305558,
-    "refund-risk": 82756,
-    "stock-management": 1331727,
-    "product-center": 1354310
+    "customer": 1465365,
+    "management": 1342500,
+    "complaints": 1347996,
+    "home": 52615,
+    "complaint-detail": 60781,
+    "complaint-fixtures": 56629,
+    "complaint-workflow": 53042,
+    "complaint-follow": 57301,
+    "complaint-options": 57405,
+    "complaint-solutions": 1291473,
+    "supply-chain": 1378489,
+    "inventory-core": 1331888,
+    "inventory-clinical": 1395973,
+    "group-approval": 1357015,
+    "group-approval-designer": 1377010,
+    "group-approval-data": 1305557,
+    "refund-risk": 82755,
+    "stock-management": 1331726,
+    "product-center": 1354309
   },
   "files": {
     "js/vendor.27618b08a27e7019.js": {
@@ -98,10 +98,10 @@
       "gzipBytes": 55667,
       "sha256": "ddc9fae0bd57f9a998bfdf483915f8fcf5a98c74c288899d390a8c1067234e89"
     },
-    "js/complaints.fa030d976646f375.js": {
-      "bytes": 106357,
-      "gzipBytes": 32927,
-      "sha256": "fa030d976646f375f6faf4655937ddc42cf0d6633f5589fd7c33513e52181511"
+    "js/complaints.b688dc2e8812c05e.js": {
+      "bytes": 110125,
+      "gzipBytes": 34066,
+      "sha256": "b688dc2e8812c05ea97b439415739b1a74b298f25671cc5fd62e258ec0e52c5f"
     },
     "css/complaints.4edb1ec48a78bb21.css": {
       "bytes": 13576,
