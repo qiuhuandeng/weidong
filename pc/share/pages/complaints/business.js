@@ -320,7 +320,7 @@
   function recordFollow(r,d,time){return followTools().record(r,d,time)}
   function hasHandlingScheme(r){return validPlan(r.handlingPlan)&&Boolean(r.assessedAt||(r.follows||[]).some(f=>['handling','assessment'].includes(f.kind)))}
   function canClose(r){return !r.suspension&&!r.legacySuspended&&['客服处理中','客服复核中'].includes(r.status)&&closureReady(r)}
-  function recordClosure(r,time){if(!canClose(r))return null;const beforeStatus=r.status;r.status='已结案';delete r.statusDetail;delete r.currentTask;r.handlingPlan='resolved';r.closedAt=time;r.closedBy=ACTOR;const entry={id:r.id+'-close-'+Date.now(),kind:'closure',time,actor:ACTOR,note:'已确认客诉处理完成，予以结案。',status:r.status,beforeStatus,...recognitionSnapshot(r),files:[]};r.follows.unshift(entry);return entry}
+  function recordClosure(r,time,note=''){if(!canClose(r))return null;const beforeStatus=r.status;r.status='已结案';delete r.statusDetail;delete r.currentTask;r.handlingPlan='resolved';r.closedAt=time;r.closedBy=ACTOR;const entry={id:r.id+'-close-'+Date.now(),kind:'closure',time,actor:ACTOR,note:String(note||'').trim()||'已确认客诉处理完成，予以结案。',status:r.status,beforeStatus,...recognitionSnapshot(r),files:[]};r.follows.unshift(entry);return entry}
   function replyAction(){return `<div class="uc-footer-reply">${btn('回复客户','reply-customer')}</div>`}
 
   function followPanel(r){return followTools().history(r)+(r.channel==='wechat'?wechatView(r):'')}
@@ -390,7 +390,7 @@
     const body=e.layer.el.querySelector('.uc-drawer-body'),scroll=resetScroll?0:body.scrollTop,small=e.kind==='reply',drawer=e.layer.el.querySelector('.uc-drawer');
     drawer.dataset.size=small?'small':'medium';drawer.style.setProperty('--archive-drawer-width',small?'560px':'860px');
     e.layer.el.querySelector('.uc-layer-top').innerHTML=e.handling?'':editorContext();body.classList.add('uc-editor-body');
-    let content=e.kind==='orders'?orderPickerView():e.kind==='assessment'?assessmentForm():e.kind==='compensation'?`<div id="uc-compensation-form" data-draft="compensation" novalidate>${solutionForm()}</div>`:e.kind==='reply'?replyForm():followForm();
+    let content=e.kind==='orders'?orderPickerView():e.kind==='assessment'?assessmentForm():e.kind==='compensation'?`<div id="uc-compensation-form" data-draft="compensation" novalidate>${solutionForm()}</div>`:e.kind==='closure'?followTools().closureForm(e.draft):e.kind==='reply'?replyForm():followForm();
     if(e.handling)content=`<section class="uc-detail-common" aria-label="工单概况">${summary(main.record,main.phoneVisible,true)}</section>`+(!e.followId&&canAssess(main.record)?followTools().operationChoice(e.kind):'')+`<section id="uc-operation-panel" aria-label="${followTools().OPERATIONS[e.kind][0]}">${content}</section>`;
     body.innerHTML=content;body.scrollTop=scroll;renderEditorFooter();
   }
@@ -498,10 +498,7 @@
     }catch(error){toast(error.message)}
   }
   function editFollowRecord(id){const f=main.record.follows.find(f=>f.id===id);if(followTools().editable(f))openEditor('follow',followTools().draft(main.record,f),id)}
-  function syncDraft(el){if(syncOptionDraft(el)||syncSolution(el))return;const e=main?.editor;if(e?.kind==='orders'&&el.closest('#uc-order-search')){readOrderSearch();updateOrderDateButtons();e.layer.el.querySelector('#uc-order-search-error').textContent='';return}if(!e||!el.closest('[data-draft]')||!Object.hasOwn(e.draft,el.name)||el.type==='radio'&&!el.checked)return;e.draft[el.name]=el.type==='checkbox'?[...e.layer.el.querySelectorAll('input[type="checkbox"][name="'+el.name+'"]:checked')].map(input=>input.value):el.multiple?[...el.selectedOptions].map(option=>option.value):el.value;el.removeAttribute('aria-invalid');e.layer.el.querySelector('#uc-'+el.name)?.removeAttribute('aria-invalid');const err=e.layer.el.querySelector('#uc-error-'+el.name);if(err)err.textContent='';if(e.kind==='follow'&&el.name==='followResult'){
-    const ongoing=e.draft.followResult==='ongoing';for(const name of ['unresolvedReason']){e.layer.el.querySelector('[data-field="'+name+'"]').hidden=!ongoing;e.layer.el.querySelector('#uc-error-'+name).textContent=''}
-    const reason=e.layer.el.querySelector('[name=unresolvedReason]');reason.required=ongoing;reason.setAttribute('aria-required',String(ongoing));PCUI.syncControl(reason);
-  }if(e.kind==='assessment'){
+  function syncDraft(el){if(syncOptionDraft(el)||syncSolution(el))return;const e=main?.editor;if(e?.kind==='orders'&&el.closest('#uc-order-search')){readOrderSearch();updateOrderDateButtons();e.layer.el.querySelector('#uc-order-search-error').textContent='';return}if(!e||!el.closest('[data-draft]')||!Object.hasOwn(e.draft,el.name)||el.type==='radio'&&!el.checked)return;e.draft[el.name]=el.type==='checkbox'?[...e.layer.el.querySelectorAll('input[type="checkbox"][name="'+el.name+'"]:checked')].map(input=>input.value):el.multiple?[...el.selectedOptions].map(option=>option.value):el.value;el.removeAttribute('aria-invalid');e.layer.el.querySelector('#uc-'+el.name)?.removeAttribute('aria-invalid');const err=e.layer.el.querySelector('#uc-error-'+el.name);if(err)err.textContent='';if(e.kind==='assessment'){
     if(el.name==='handlingPlan'){e.layer.el.querySelectorAll('[name=handlingPlan]').forEach(input=>input.removeAttribute('aria-invalid'));renderEditorFooter()}
     if(el.name==='department'){const type=e.layer.el.querySelector('[name=type]'),hasDepartment=multiValues(e.draft.department).length>0;type.disabled=!hasDepartment;if(!hasDepartment){e.draft.type='';type.value=''}type.options[0].textContent=hasDepartment?'请选择售后类型':'请先选择责任部门';PCUI.syncControl(type)}
     if(['department','type'].includes(el.name)){const responsible=e.layer.el.querySelector('[name=responsible]'),closed=e.draft.type==='闭店';responsible.disabled=!multiValues(e.draft.department).length||!e.draft.type||closed;responsible.required=!responsible.disabled;responsible.setAttribute('aria-required',String(responsible.required));responsible.closest('[data-field]').hidden=closed;e.layer.el.querySelector('#uc-error-responsible').textContent='';PCUI.syncControl(responsible)}
@@ -538,7 +535,15 @@
     if(!entry){toast('该记录已不可修改，请重新查看工单');return}
     const log=JSON.stringify({note:entry.note,communication:entry.communication});
     if(!commitRecord(next,e.followId?'修改跟进':'新增跟进',log))return;
-    const target=!e.followId&&entry.communication?.result==='agreed'?'plan':'follows';finishEditor(target);toast(target==='plan'?'沟通已记录，请填写并确认具体解决方案':'跟进已保存');
+    finishEditor('follows');toast('未达成原因已记录');
+  }
+  function saveClosure(){
+    const e=main?.editor;if(e?.kind!=='closure')return;
+    if(!canClose(main.record)){toast('请先完成责任认定及后续待办流程后再结案');return}
+    const next=clone(records),r=next.find(r=>r.id===main.record.id),entry=recordClosure(r,now(),e.draft.note);
+    if(!entry){toast('当前工单暂不可结案');return}
+    if(!commitRecord(next,'结案',entry.note))return;
+    finishEditor('follows');toast('工单已结案');
   }
   function askClosure(){if(!canClose(main.record))return;PCUI.confirm({title:'确认结案',content:'确认该客诉已处理完成并结案？',onConfirm:confirmClosure});}
   function confirmClosure(){const next=clone(records),r=next.find(r=>r.id===main.record.id);if(!recordClosure(r,now()))return;if(!commitRecord(next,'结案','已确认客诉处理完成'))return;main.layer.el.querySelector('.uc-drawer-foot button')?.focus();toast('客诉已结案')}
@@ -610,6 +615,7 @@
     else if(action.startsWith('solution-'))solutionAction(action,b);
     else if(action==='save-assessment')saveAssessment();
     else if(action==='save-compensation')saveCompensation();
+    else if(action==='save-closure')saveClosure();
     else if(action==='accept-case')askAccept();
     else if(action==='edit-grade')editGrade();
     else if(action==='begin-assessment')beginAssessment();

@@ -2,11 +2,11 @@
 window.PCModules['complaint-follow']={render(){},create({ACTOR,canAssess,canFollow,canGrade,LEVELS,LEVEL4_TYPES,error,clearErrors,markProcessing,recognitionSnapshot,clone,esc,fmt,field,input,select,detail,section,tag,link,btn,empty,events,filesView,draftFiles,solutionRead,level4Type,valueText,planText,valuesFrom,RECOGNITION_FIELDS,solutionDraft,assessmentChoices,dictionary}){
   const RESULTS={agreed:'客户已同意解决方案',ongoing:'未达成一致'};
   const LEGACY_REASONS={unreachable:'联系不上客户',amount:'客户不认可方案金额',method:'客户不接受处理方式',considering:'客户需要考虑，等待回复',internal:'等待内部核实或确认',other:'其他'};
-  const OPERATIONS={follow:['客服跟进中'],compensation:['已确认解决方案']};
+  const OPERATIONS={follow:['方案未达成一致'],compensation:['已确认解决方案'],closure:['已处理并结案']};
   const isCommunication=f=>f?.kind==='follow'&&['ongoing','agreed'].includes(f.communication?.result);
   const editable=f=>f&&(!f.kind||f.kind==='follow')&&f.actor===ACTOR;
-  function draft(r,f){return {note:f?.note||'',files:clone(f?.files||[]),followResult:f?.communication?.result||(f||!canAssess(r)?'note':'ongoing'),unresolvedReason:f?.communication?.reason||'',nextFollowAt:f?.communication?.nextFollowAt||'',reasonSource:f?f.communication?.reasonSource||'':'demands'}}
-  function operationDraft(kind,r){return kind==='follow'?draft(r):kind==='assessment'?{...valuesFrom(r,RECOGNITION_FIELDS),handlingPlan:r.handlingPlan||'',handlingFiles:clone(r.handlingFiles||[])}:{customerSolution:solutionDraft(r.customerSolution)}}
+  function draft(r,f){return {note:f?.note||'',files:clone(f?.files||[]),unresolvedReason:f?.communication?.reason||'',reasonSource:f?f.communication?.reasonSource||'':'demands'}}
+  function operationDraft(kind,r){return kind==='follow'?draft(r):kind==='closure'?{note:'',files:[]}:kind==='assessment'?{...valuesFrom(r,RECOGNITION_FIELDS),handlingPlan:r.handlingPlan||'',handlingFiles:clone(r.handlingFiles||[])}:{customerSolution:solutionDraft(r.customerSolution)}}
   function switchOperation(e,kind,r){
     e.operations??={};e.operations[e.kind]={draft:e.draft,baseline:e.baseline};
     const next=e.operations[kind]||{draft:operationDraft(kind,r)};
@@ -41,14 +41,14 @@ window.PCModules['complaint-follow']={render(){},create({ACTOR,canAssess,canFoll
       }
     }));
   }
-  function communication(d){const result=d.followResult??'note';return result==='note'?null:{result,reason:result==='ongoing'?d.unresolvedReason||'':'',nextFollowAt:result==='ongoing'?d.nextFollowAt||'':'',...(result==='ongoing'&&d.reasonSource!==''?{reasonSource:'demands'}:{})}}
+  function communication(d){const result=Object.hasOwn(d,'followResult')?d.followResult:'ongoing';return result==='note'?null:{result,reason:result==='ongoing'?d.unresolvedReason||'':'',nextFollowAt:result==='ongoing'?d.nextFollowAt||'':'',...(result==='ongoing'&&d.reasonSource!==''?{reasonSource:'demands'}:{})}}
   function reasonText(c){return c.reasonSource==='demands'?c.reason:LEGACY_REASONS[c.reason]||c.reason}
   function validate(r,d,old){
-    const errors=[],result=d.followResult??'note',value=communication(d),note=String(d.note||'').trim();
-    if(!canFollow(r))errors.push(['followResult','请先接单后再跟进']);
-    if(result!=='note'&&!Object.hasOwn(RESULTS,result))errors.push(['followResult','请选择本次跟进结果']);
-    if(old){if(!editable(old)||JSON.stringify(value)!==JSON.stringify(old.communication||null))errors.push(['followResult','进展变化请新增跟进记录']);}
-    else if(result!=='note'&&!canAssess(r))errors.push(['followResult','当前环节仅可补充跟进记录']);
+    const errors=[],result=Object.hasOwn(d,'followResult')?d.followResult:'ongoing',value=communication(d),note=String(d.note||'').trim();
+    if(!canFollow(r))errors.push(['unresolvedReason','请先接单后再跟进']);
+    if(result!=='note'&&!Object.hasOwn(RESULTS,result))errors.push(['unresolvedReason','当前本次操作不可保存跟进']);
+    if(old){if(!editable(old)||JSON.stringify(value)!==JSON.stringify(old.communication||null))errors.push(['unresolvedReason','进展变化请新增跟进记录']);}
+    else if(result!=='note'&&!canAssess(r))errors.push(['unresolvedReason','当前环节仅可补充跟进记录']);
     if(result==='ongoing'){
       if(!d.unresolvedReason||!old&&!dictionary.current.demands.includes(d.unresolvedReason))errors.push(['unresolvedReason','请选择配置中的未达成原因']);
       if(!old&&d.unresolvedReason==='其他'&&!note)errors.push(['note','请说明未达成方案的具体原因']);
@@ -83,7 +83,8 @@ window.PCModules['complaint-follow']={render(){},create({ACTOR,canAssess,canFoll
   }
   function metadata(f){const c=f.communication;if(!c)return '';return `<div class="uc-recognition-summary"><span>沟通结果：${esc(RESULTS[c.result]||c.result)}</span>${c.reason?`<span>未达成原因：${esc(reasonText(c))}</span>`:''}${c.nextFollowAt?`<span>下次跟进：${esc(fmt(c.nextFollowAt))}</span>`:''}</div>`}
   function overview(r){const f=current(r);if(!f)return '';const c=f.communication;return section('沟通进展',`<div class="uc-details">${detail('当前进展',RESULTS[c.result])}${detail('最近沟通',fmt(f.time))}${c.reason?detail('未达成原因',reasonText(c),true):''}${c.nextFollowAt?detail('下次跟进',fmt(c.nextFollowAt)):''}${detail('跟进人',f.actor)}</div>`,c.result==='agreed'&&canAssess(r)?link('填写解决方案','begin-compensation'):'')}
-  function form(r,d,f){const ongoing=d.followResult==='ongoing',controls=!f&&canAssess(r);return `<div id="uc-follow-form" class="ub-form" data-draft="follow" novalidate>${controls?field('followResult','跟进结果',select('followResult',Object.entries(RESULTS),d.followResult,'请选择跟进结果','required aria-required="true" aria-label="跟进结果"'),true)+field('unresolvedReason','未达成原因',select('unresolvedReason',dictionary.options('demands',d.unresolvedReason),d.unresolvedReason,'请选择主要原因','aria-label="未达成原因" '+(ongoing?'required aria-required="true"':'')),true).replace('data-field="unresolvedReason"','data-field="unresolvedReason"'+(ongoing?'':' hidden')):f?.communication?metadata(f):''}${field('note','跟进内容',`<textarea id="uc-note" name="note" class="uc-input uc-follow-note" rows="6" maxlength="2000" show-word-limit placeholder="记录客户反馈、本次沟通和下一步安排">${esc(d.note)}</textarea>`,false,'',true)}${field('followImages','图片',`<div><div class="uc-upload-row">${btn('添加图片','upload-follow','id="uc-followImages"')}<input type="file" id="uc-upload" accept="image/png,image/jpeg" multiple hidden data-upload="follow"><span class="uc-muted">最多 4 张，每张 5MB 以内</span></div><div id="uc-upload-list">${draftFiles(d.files)}</div></div>`)}</div>`}
+  function form(r,d,f){const controls=!f&&canAssess(r);return `<div id="uc-follow-form" class="ub-form" data-draft="follow" novalidate>${controls?field('unresolvedReason','未达成原因',select('unresolvedReason',dictionary.options('demands',d.unresolvedReason),d.unresolvedReason,'请选择主要原因','required aria-required="true" aria-label="未达成原因"'),true):f?.communication?metadata(f):''}${field('note','沟通内容',`<textarea id="uc-note" name="note" class="uc-input uc-follow-note" rows="6" maxlength="2000" show-word-limit placeholder="记录客户反馈、本次沟通和下一步安排">${esc(d.note)}</textarea>`,false,'',true)}${field('followImages','图片',`<div><div class="uc-upload-row">${btn('添加图片','upload-follow','id="uc-followImages"')}<input type="file" id="uc-upload" accept="image/png,image/jpeg" multiple hidden data-upload="follow"><span class="uc-muted">最多 4 张，每张 5MB 以内</span></div><div id="uc-upload-list">${draftFiles(d.files)}</div></div>`)}</div>`}
+  function closureForm(d){return `<div id="uc-closure-form" class="ub-form" data-draft="closure" novalidate><div class="uc-closure-note">确认后工单将进入已结案状态。</div>${field('note','结案说明',`<textarea id="uc-note" name="note" class="uc-input" rows="5" maxlength="1000" placeholder="填写本次处理结果（选填）">${esc(d.note)}</textarea>`,false,'',true)}</div>`}
   function operationChoice(active){return `<div class="uc-operation-choice"><div class="ub-form">${field('operation','本次操作',assessmentChoices('operation','本次操作（单选）',Object.entries(OPERATIONS).map(([key,[label]])=>[key,label]),active),false,'',true)}</div></div>`}
   function resetOperation(e){for(const input of e.layer.el.querySelectorAll('[name=operation]')){input.checked=input.value===e.kind;PCUI.syncControl(input)}}
   function editorFooter(e,totals=''){
@@ -92,6 +93,7 @@ window.PCModules['complaint-follow']={render(){},create({ACTOR,canAssess,canFoll
     if(e.kind==='reply')return cancel+btn('保存回复','save-reply',busy,true);
     if(e.kind==='assessment')return cancel+btn(e.draft.handlingPlan==='resolved'?'保存并结案':'保存责任认定','save-assessment',busy,true);
     if(e.kind==='compensation')return totals+cancel+btn('确认方案','save-compensation',busy,true);
+    if(e.kind==='closure')return cancel+btn('确认结案','save-closure',busy,true);
     return cancel+btn(e.followId?'保存修改':'保存跟进','save-follow',busy,true);
   }
   function history(r){return r.follows.length?events(r.follows,f=>{
@@ -104,5 +106,5 @@ window.PCModules['complaint-follow']={render(){},create({ACTOR,canAssess,canFoll
     if(f.kind==='closure')return `<div class="uc-event-title"><strong>${esc(f.actor)}</strong>${tag('结案','green')}</div><div class="uc-event-text">${esc(f.note||'未填写跟进内容')}</div>`;
     return `<div class="uc-event-title"><strong>${esc(f.actor)}</strong>${tag('沟通跟进')}${editable(f)?link('编辑','edit-follow-record',`data-follow="${esc(f.id)}" aria-label="编辑跟进 ${esc(fmt(f.time))}"`):''}</div>${metadata(f)}<div class="uc-event-text">${esc(f.note||'未填写跟进内容')}</div>${filesView(f.files||[],'follow',r.follows.indexOf(f))}${f.updatedAt?`<div class="uc-saved-meta">修改于 ${fmt(f.updatedAt)}</div>`:''}`;
   }):empty('暂无跟进记录')}
-  return {RESULTS,OPERATIONS,draft,operationDraft,switchOperation,operationDirty,gradeValue,gradeErrors,recordGrade,gradeDialog,validate,record,edit,current,overview,form,operationChoice,resetOperation,editorFooter,history,editable};
+  return {RESULTS,OPERATIONS,draft,operationDraft,switchOperation,operationDirty,gradeValue,gradeErrors,recordGrade,gradeDialog,validate,record,edit,current,overview,form,closureForm,operationChoice,resetOperation,editorFooter,history,editable};
 }};
