@@ -18,13 +18,13 @@ const followCode=fs.readFileSync(path.join(__dirname,'../pages/complaint-follow/
 vm.runInNewContext(followCode,context);
 const processCode=fs.readFileSync(path.join(__dirname,'../pages/complaint-detail/index.js'),'utf8');
 vm.runInNewContext(processCode,context);
-const hook = `window.testAPI={workflow,toCents,orderDateRange,filtered,matchingOrders,orderPickerState,orderPickerOrders,orderPickerView,selectPickerOrder,handlingMissing,validateCustomerSolution,solutionDraft,solutionTotals,solutionOrders,refundEntries,refundAvailable,solutionTools,solutionRead,recordAccept,recordRecognition,recordCompensation,recordFollow,followTools,recordClosure,hasHandlingScheme,canClose,responsibleOptions,complaintCSV,validHandlingFile,records,orders,persist,canAssess,STATUS_TABS,WORK_ORDER_STATUSES,CHANNELS,workOrderStatus,normalizeRecordStatus,statusScope,currentHandler,currentTask,detailActions,complaintRow,summary,phoneView,processingDepartment,processRecords,processView,select(id){main={record:records.find(r=>r.id===id)};return main.record;}};`;
+const hook = `window.testAPI={executionResultRecords,planPanel,workflow,toCents,orderDateRange,filtered,matchingOrders,orderPickerState,orderPickerOrders,orderPickerView,selectPickerOrder,handlingMissing,validateCustomerSolution,solutionDraft,solutionTotals,solutionOrders,refundEntries,refundAvailable,solutionTools,solutionRead,recordAccept,recordRecognition,recordCompensation,recordFollow,followTools,recordClosure,hasHandlingScheme,canClose,responsibleOptions,complaintCSV,validHandlingFile,records,orders,persist,canAssess,STATUS_TABS,WORK_ORDER_STATUSES,CHANNELS,workOrderStatus,normalizeRecordStatus,statusScope,currentHandler,currentTask,detailActions,complaintRow,summary,phoneView,processingDepartment,processRecords,processView,select(id){main={record:records.find(r=>r.id===id)};return main.record;}};`;
 vm.runInNewContext(code.replace('  window.PCComplaints={mount,leave};',hook+'\n  window.PCComplaints={mount,leave};'),context);
 const a=context.window.testAPI;
 let count=0;
 const test=(name,run)=>{run();count++;console.log('PASS '+name)};
 const copy=o=>JSON.parse(JSON.stringify(o));
-test('seed contains all three channels and 28 complaints / 32 orders',()=>{assert.equal(a.records.length,28);assert.equal(a.orders.length,32);assert.deepEqual([...new Set(a.records.map(r=>r.channel))].sort(),['mini','staff','wechat'])});
+test('seed contains all three channels and 37 complaints / 41 orders',()=>{assert.equal(a.records.length,37);assert.equal(a.orders.length,41);assert.deepEqual([...new Set(a.records.map(r=>r.channel))].sort(),['mini','staff','wechat'])});
 test('workflow owns status tabs, departments and action eligibility',()=>{
   assert.deepEqual(copy(a.workflow.statuses.map(([status])=>status)),copy(a.WORK_ORDER_STATUSES));
   assert.equal(a.workflow.department({status:'财务审批中'}),'财务');assert.equal(a.workflow.department({status:'待采购发货'}),'采购');
@@ -239,14 +239,24 @@ test('closed-store type skips responsibility and clears stale assignments only o
 test('responsibility options include departed staff, historical snapshots and selected missing names',()=>{const options=a.responsibleOptions(['当前显示但不在册'],[{name:'离职责任人',employmentStatus:'离职'}],[{responsible:['历史责任人'],follows:[{responsible:['跟进责任人'],before:{responsible:['调整前责任人']}}]}],[{consultant:'订单顾问',projects:[{operator:'操作老师'}]}]);const map=new Map(options);for(const n of ['当前显示但不在册','历史责任人','跟进责任人','调整前责任人','订单顾问','操作老师'])assert.equal(map.get(n),n);assert.equal(map.get('离职责任人'),'离职责任人（离职）');assert.equal(a.responsibleOptions().find(([name])=>name==='张宁')[1],'张宁（离职）')});
 test('handling attachment formats retain MIME verification',()=>{for(const f of [{name:'x.png',type:'image/png'},{name:'x.pdf',type:'application/pdf'},{name:'x.amr',type:''},{name:'x.m4a',type:'audio/x-m4a'}])assert.ok(a.validHandlingFile(f));for(const f of [{name:'x.exe',type:''},{name:'x.png',type:'application/pdf'},{name:'x.html',type:'text/html'}])assert.equal(a.validHandlingFile(f),false)});
 test('CSV preserves filtered rows, Chinese BOM, quotes and formula protection',()=>{const csv=a.complaintCSV([{...copy(record),name:'=1+1',content:'包含,逗号和\"引号\"'}]);assert.equal(csv[0],'\uFEFF');assert.equal(csv.split('\r\n').length,2);assert.ok(csv.includes("\"'=1+1\""));assert.ok(csv.includes('\"包含,逗号和\"\"引号\"\"\"'));assert.ok(csv.includes('\"已结案\"'))});
-test('department stages survive notes and cannot be closed or reset by customer service',()=>{
-  for(const status of ['财务审批中','采购审批中','待财务付款','待采购发货']){
-    const r={...copy(record),status};assert.equal(a.canClose(r),false);assert.equal(a.recordClosure(r,'2026-11-02 12:00'),null);
+test('all five downstream stages expose direct closure while notes preserve their status',()=>{
+  for(const status of ['财务审批中','采购审批中','待财务付款','待采购发货','客服复核中']){
+    const r={...copy(record),status,assessedAt:null,handlingPlan:'',department:'',responsible:[],customerSolution:null,execution:{index:0,steps:[{kind:'payment',type:'handling',done:false},{kind:'procurement',type:'handling',done:false}]}};
+    assert.equal(a.canClose(r),true);
     assert.equal(a.recordRecognition(r,draft,'2026-11-02 12:00'),null);assert.equal(r.status,status);
     {assert.ok(a.recordFollow(r,{note:'继续核实',files:[]},'2026-11-02 12:01'));assert.equal(r.status,status)}
-    assert.ok(!a.detailActions(r).includes('begin-assessment'));assert.ok(!a.detailActions(r).includes('close-case'));
+    assert.ok(!a.detailActions(r).includes('begin-assessment'));assert.ok(a.detailActions(r).includes('close-case'));
+    const execution=JSON.stringify(r.execution),entry=a.recordClosure(r,'2026-11-02 12:02','客户撤回诉求，无需继续办理');
+    assert.ok(entry);assert.equal(entry.beforeStatus,status);assert.equal(r.closedFromStatus,status);assert.equal(r.status,'已结案');assert.equal(JSON.stringify(r.execution),execution);
+    assert.equal(a.canClose(r),false);assert.ok(!a.detailActions(r).includes('close-case'));assert.ok(!a.processView(r).includes('is-current'));assert.ok(a.processView(r).includes('已终止'));
   }
-  const r={...copy(record),status:'客服复核中'};assert.ok(a.recordClosure(r,'2026-11-02 12:02'));assert.equal(r.status,'已结案');
+});
+test('direct closure does not invent completed approvals, payment or shipment in demo timelines',()=>{
+  const r=copy(a.records.find(item=>item.id==='31032'));
+  assert.ok(a.recordClosure(r,'2026-11-03 14:00','无需继续退款和发货'));
+  const html=a.processView(r);
+  assert.ok(html.includes('已终止'));assert.ok(!html.includes('is-current'));assert.ok(!html.includes('财务审批中操作结果'));assert.ok(!html.includes('待财务付款操作结果'));assert.ok(!html.includes('待采购发货操作结果'));
+  assert.ok(html.includes('无需继续退款和发货'));assert.ok(html.includes('11.03 14:00'));assert.equal(a.executionResultRecords(r).some(item=>['financeApproval','payment','procurement'].includes(item.stage)),false);
 });
 test('legacy labels normalize without losing the actual blocking issue or external status',()=>{
   for(const [old,status]of [['处理中','客服处理中'],['已完成','已结案'],['财务付款失败','待财务付款'],['采购部分发货','待采购发货'],['财务审批发起失败','财务审批中']]){
@@ -313,7 +323,7 @@ test('process history uses recorded transitions without inventing department wor
   assert.deepEqual(Array.from(rows,item=>item.title),['收到投诉','客服接单','开始处理']);
   assert.equal(rows[2].status,'客服处理中');assert.equal(a.processingDepartment(r),'财务');
   const html=a.summary(r)+a.processView(r);for(const value of ['待财务付款','财务甲','收款账户待核实'])assert.ok(html.includes(value));
-  assert.ok(!html.includes('客户沟通内容'));assert.ok(!html.includes('付款成功'));assert.equal(JSON.stringify(r),before);
+  assert.ok(html.includes('客户沟通内容'));assert.ok(!html.includes('付款成功'));assert.equal(JSON.stringify(r),before);
 });
 test('phone disclosure uses a supplied full number and remains masked by default without changing records',()=>{
   const r={...copy(a.records.find(r=>r.id==='31017')),fullPhone:'15900003076',status:'客服处理中'};
@@ -345,7 +355,7 @@ test('process displays the recorded route with current approval, future nodes an
     {id:'close',type:'handling',kind:'close',title:'客服复核'}
   ]}};
   const before=JSON.stringify(r),html=a.processView(r);
-  for(const value of ['已完成 1 / 4','售后办理','付款审批','付款办理','客服复核','财务甲','客服乙','审批中','已超时','完成于 2020-01-01 09:00','到达后分派','到达后开始计时','查看审批'])assert.ok(html.includes(value),value);
+  for(const value of ['已完成 1 / 4','售后办理','财务审批','财务付款','客服复核','财务甲','客服乙','财务审批中','已超时','01.01 09:00','到达后分派','查看审批'])assert.ok(html.includes(value),value);
   assert.equal((html.match(/aria-current="step"/g)||[]).length,1);
   assert.equal((html.match(/uc-process-node is-future/g)||[]).length,2);
   assert.ok(!html.includes('预计完成'));
@@ -358,33 +368,147 @@ test('legacy stages group customer-service actions and do not invent payment or 
     {kind:'accept',time:'2026-11-03 09:10',actor:'客服甲',beforeStatus:'待处理',status:'客服接单'}
   ]};
   const html=a.processView(r);
-  assert.ok(html.includes('已完成 0 / 1'));assert.ok(html.includes('售后办理'));
-  assert.ok(!html.includes('付款审批'));assert.ok(!html.includes('付款办理'));assert.ok(!html.includes('查看审批'));
+  assert.ok(html.includes('已完成 1 / 2'));assert.ok(html.includes('客服接单'));assert.ok(html.includes('售后办理'));
+  assert.ok(!html.includes('财务审批'));assert.ok(!html.includes('财务付款'));assert.ok(!html.includes('查看审批'));
   assert.ok(html.includes('办理时限待确认'));assert.ok(!html.includes('已超时'));
   const closed=a.processView({status:'已结案',closedAt:'2026-11-03 10:00',closedBy:'客服乙',follows:[]});
-  assert.ok(closed.includes('客服复核'));assert.ok(!closed.includes('售后办理'));assert.ok(closed.includes('流程已结束'));
+  assert.ok(closed.includes('客服复核'));assert.ok(!closed.includes('售后办理'));assert.ok(!closed.includes('流程已结束'));
 });
 test('local example flow shows completed, active and future stages while preserving saved complaint data',()=>{
   const r={...copy(a.records.find(r=>r.id==='31017')),status:'客服处理中',currentHandler:'客服甲',startedAt:'2026-11-03 09:30',customerSolution:null};
   const before=JSON.stringify(r),html=a.processView(r);
-  for(const value of ['已完成 1 / 5','客服接单','售后办理','付款审批','付款办理','客服复核','is-done','is-current','is-future','客服甲','完成于','到达后开始计时'])assert.ok(html.includes(value),value);
+  for(const value of ['已完成 2 / 9','待处理','客服已接单','客服处理中','客服复核中','已结案','is-done','is-current','is-future','客服甲'])assert.ok(html.includes(value),value);
+  assert.ok(html.includes('财务审批中'));assert.ok(html.includes('采购审批中'));assert.ok(html.includes('未开始'));
   assert.ok(!html.includes('示例流程'));
   assert.equal(JSON.stringify(r),before);
   assert.ok(!a.summary(r).includes('uc-ticket-progress'));assert.ok(a.summary(r).includes(r.content));
   for(const status of a.WORK_ORDER_STATUSES){
     const view=a.processView({...r,status});
     assert.equal((view.match(/aria-current="step"/g)||[]).length,status==='已结案'?0:1,status);
-    if(status==='已结案'){assert.ok(!view.includes('is-future'));assert.ok(view.includes('流程已结束'));}
+    if(status==='已结案'){assert.ok(!view.includes('is-future'));assert.ok(!view.includes('流程已结束'));}
   }
 });
 test('example routes include procurement branches without store handoff and leave actual workflow records authoritative',()=>{
   const own=copy(a.records.find(r=>r.id==='31017'));
-  for(const [status,node]of [['采购审批中','采购审批'],['待采购发货','采购办理']])assert.ok(a.processView({...own,status}).includes(node));
-  assert.ok(!a.processView({...own,customerId:'unrelated'}).includes('付款审批'));
+  for(const [status,node]of [['采购审批中','采购审批'],['待采购发货','采购发货']])assert.ok(a.processView({...own,status}).includes(node));
+  assert.ok(!a.processView({...own,customerId:'unrelated'}).includes('财务审批'));
   const actual={...own,execution:{index:0,steps:[{type:'handling',title:'真实办理节点',people:['实际办理人']}]}};
-  const html=a.processView(actual);assert.ok(html.includes('真实办理节点'));assert.ok(!html.includes('示例流程'));assert.ok(!html.includes('付款审批'));
+  const html=a.processView(actual);assert.ok(html.includes('真实办理节点'));assert.ok(!html.includes('示例流程'));assert.ok(!html.includes('财务审批'));
   const pending=a.processView({...own,status:'待处理',currentHandler:'',acceptedBy:'',startedBy:''});
-  assert.ok(pending.includes('已完成 0 / 5'));assert.ok(pending.includes('接单后开始计时'));
+  assert.ok(pending.includes('已完成 0 / 9'));assert.ok(pending.includes('提交人：'));assert.ok(pending.includes('10.19 17:05'));
+});
+test('each status has a complete lifecycle example with results only on reached nodes',()=>{
+  const examples=a.records.filter(r=>Number(r.id)>=31029&&Number(r.id)<=31037);
+  assert.equal(examples.length,9);
+  const result=(html,status)=>[...html.matchAll(/<li class="uc-process-node[\s\S]*?<\/li>/g)].map(match=>match[0]).find(node=>node.includes(`<strong class="uc-process-title">${status}</strong>`));
+  examples.forEach((record,index)=>{
+    assert.equal(record.status,a.WORK_ORDER_STATUSES[index]);
+    assert.ok(a.filtered({status:record.status}).some(row=>row.id===record.id));
+    const before=JSON.stringify(record),html=a.processView(record);
+    assert.equal((html.match(/<li class="uc-process-node/g)||[]).length,9);
+    assert.equal((html.match(/aria-current="step"/g)||[]).length,index===8?0:1);
+    for(const [stage,status]of a.WORK_ORDER_STATUSES.entries()){
+      const node=result(html,status);assert.ok(node,status);
+      if(stage>index)assert.ok(!node.includes('uc-process-results'),status+' future result');
+    }
+    if(index<3){assert.ok(!html.includes('已通过'));assert.ok(!html.includes('DEMO-SF'));}
+    if(index>=1)assert.ok(result(html,'客服已接单').includes('2级'));
+    if(index===2)for(const value of ['方案未达成一致','正和客户协商退款金额'])assert.ok(result(html,'客服处理中').includes(value));
+    if(index>=3)for(const value of ['已确认解决方案','退款金额','舒缓修护霜 50g × 2'])assert.ok(result(html,'客服处理中').includes(value));
+    if(index>=3)assert.ok(result(html,'财务审批中').includes(index===3?'审批中':'已通过'));
+    if(index>=4)assert.ok(result(html,'采购审批中').includes(index===4?'审批中':'已通过'));
+    if(index>=5)assert.ok(result(html,'待财务付款').includes(index===5?'待执行':'成功'));
+    if(index>=6)assert.ok(result(html,'待采购发货').includes(index===6?'待安排发货':'DEMO-SF-'+record.id));
+    if(index>=7)assert.ok(result(html,'客服复核中').includes(index===7?'商品签收待确认':'客户确认处理完成'));
+    if(index===8)assert.ok(result(html,'已结案').includes(record.closeNote));
+    assert.equal(JSON.stringify(record),before);
+  });
+  const closed=examples.at(-1),history=a.followTools().history(closed,a.executionResultRecords(closed));
+  for(const value of ['正和客户协商退款金额','退款金额','DEMO-PAY-'+closed.id,'DEMO-SF-'+closed.id,'客户确认处理完成',closed.closeNote])assert.ok(history.includes(value),value);
+});
+test('all old and new examples have dated results without skipped nodes, and intake shows only the submitter',()=>{
+  for(const saved of a.records){
+    for(const record of [copy(saved),{...copy(saved),status:'已结案'}]){
+      const before=JSON.stringify(record),html=a.processView(record),nodes=[...html.matchAll(/<li class="uc-process-node[\s\S]*?<\/li>/g)].map(match=>match[0]);
+      assert.equal(nodes.length,9,record.id);
+      for(const text of ['完成时间未记录','已跳过','无需办理','undefined'])assert.ok(!html.includes(text),record.id+': '+text);
+      assert.ok(nodes[0].includes('提交人：'));assert.ok(nodes[0].includes(record.submitter));assert.ok(!nodes[0].includes('uc-process-results'));
+      for(const node of nodes){
+        if(node.includes('is-done')||node.includes('is-current'))assert.match(node,/\d{2}\.\d{2} \d{2}:\d{2}/,record.id);
+        if(node!==nodes[0]&&(node.includes('is-done')||node.includes('is-current')))assert.ok(node.includes('uc-process-results'),record.id);
+        if(node.includes('is-future'))assert.ok(!node.includes('uc-process-results'),record.id);
+      }
+      assert.equal(JSON.stringify(record),before);
+    }
+  }
+  const old={...copy(a.records.find(r=>r.id==='31016')),status:'已结案'};
+  const history=a.followTools().history(old,a.executionResultRecords(old));
+  for(const text of ['财务审批','采购审批','财务付款','采购发货','客服复核','DEMO-SF-'+old.id])assert.ok(history.includes(text),text);
+});
+test('customer-service examples mirror unresolved communication and confirmed solution forms without replacing saved follow-ups',()=>{
+  const sales=record=>[...a.processView(record).matchAll(/<li class="uc-process-node[\s\S]*?<\/li>/g)].map(match=>match[0]).find(node=>node.includes('<strong class="uc-process-title">客服处理中</strong>'));
+  for(const [id,reason]of [['31004','正和客户协商退款金额'],['31005','无法联系上客户']]){
+    const r=a.records.find(record=>record.id===id),before=JSON.stringify(r),html=sales(r);
+    for(const value of ['本次操作','方案未达成一致','未达成原因',reason,'沟通内容'])assert.ok(html.includes(value),id+': '+value);
+    assert.equal(JSON.stringify(r),before);
+    assert.ok(a.followTools().history(r,a.executionResultRecords(r)).includes(reason));
+  }
+  const confirmed=sales(a.records.find(record=>record.id==='31009'));
+  for(const value of ['已确认解决方案','退款金额','置换商品','方案说明'])assert.ok(confirmed.includes(value));
+  assert.ok(!confirmed.includes('未达成原因'));
+  const saved={...copy(a.records.find(record=>record.id==='31004')),follows:[{kind:'follow',mock:false,time:'2026-11-03 15:00',beforeStatus:'客服处理中',status:'客服处理中',communication:{result:'ongoing',reason:'实际填写的原因',reasonSource:'demands'},note:'实际填写的沟通内容'}]};
+  const actual=sales(saved);assert.ok(actual.includes('实际填写的原因'));assert.ok(actual.includes('实际填写的沟通内容'));assert.ok(!actual.includes('已逐项说明已消费项目'));
+});
+test('node summaries use recorded grades, communication, confirmed solutions and execution results without attachments',()=>{
+  const proof={name:'付款凭证.png',data:'data:image/png;base64,eA=='};
+  const solution={handlingMethods:['refund','exchange'],refund:120000,exchangeItems:[{name:'修护霜',quantity:2}],delivery:{name:'客户',phone:'13800000000',address:'完整收货地址'}};
+  const r={status:'客服复核中',level:'4级',currentHandler:'客服甲',follows:[
+    {kind:'compensation',nodeId:'sales',time:'2026-11-03 11:00',actor:'客服甲',customerSolution:solution},
+    {kind:'follow',nodeId:'sales',time:'2026-11-03 10:30',actor:'客服甲',note:'客户尚在考虑方案',communication:{result:'ongoing',reason:'客户不接受金额',reasonSource:'demands'},files:[proof]},
+    {kind:'accept',nodeId:'intake',time:'2026-11-03 10:00',actor:'客服甲',level:'2级',files:[]}
+  ],payments:[
+    {nodeId:'payment',at:'2026-11-03 11:30',actor:'财务甲',result:'失败',amount:0,reason:'账户异常'},
+    {nodeId:'payment',at:'2026-11-03 12:00',actor:'财务甲',result:'成功',amount:120000,reference:'PAY-TEST-1',proof:[proof]}
+  ],handlingRecords:[
+    {nodeId:'ship',kind:'procurement',action:'shipment',at:'2026-11-03 12:30',actor:'采购甲',method:'总部发货',items:[{name:'修护霜',quantity:1}],trackingNumber:'SF-1',note:'首批备注'},
+    {nodeId:'ship',kind:'procurement',action:'shipment',at:'2026-11-03 13:00',actor:'采购甲',method:'总部发货',items:[{name:'修护霜',quantity:1}],trackingNumber:'SF-2',note:'第二批备注'}
+  ],execution:{index:6,steps:[
+    {id:'intake',kind:'intake',type:'handling',done:true},
+    {id:'sales',kind:'sales',type:'handling',done:true},
+    {id:'approval',kind:'financeApproval',type:'approval',done:true,result:'审批无需复制表单'},
+    {id:'payment',kind:'payment',type:'handling',done:true},
+    {id:'purchase',kind:'purchaseApproval',type:'approval',done:true},
+    {id:'ship',kind:'procurement',type:'handling',done:true},
+    {id:'review',kind:'close',type:'handling'}
+  ]}};
+  const before=JSON.stringify(r),html=a.processView(r);
+  for(const value of ['2级','已确认解决方案','退款','¥ 1,200.00','修护霜 × 2','成功','SF-2','客服复核中'])assert.ok(html.includes(value),value);
+  for(const value of ['4级','完整收货地址','付款凭证.png','data-uc="file"','账户异常','SF-1','审批无需复制表单'])assert.ok(!html.includes(value),value);
+  assert.ok(!html.includes('aria-label="财务审批操作结果"'));
+  const history=a.followTools().history(r,a.executionResultRecords(r));
+  for(const value of ['账户异常','PAY-TEST-1','付款凭证.png','payment-proof','SF-1','SF-2','首批备注','第二批备注','完整收货地址','客户不接受金额'])assert.ok(history.includes(value),value);
+  assert.equal(JSON.stringify(r),before);
+  r.follows.shift();const ongoing=a.processView(r);assert.ok(ongoing.includes('方案未达成一致'));assert.ok(ongoing.includes('客户不接受金额'));assert.ok(!ongoing.includes('付款凭证.png'));
+});
+test('review conclusions and missing results stay distinct, and repeated execution nodes bind their own records',()=>{
+  const r={status:'已结案',aftercareType:'客户退款',follows:[],payments:[
+    {nodeId:'pay-1',at:'2026-11-03 10:00',result:'成功',amount:10000},
+    {nodeId:'pay-2',at:'2026-11-03 11:00',result:'成功',amount:20000}
+  ],execution:{index:3,steps:[
+    {id:'pay-1',kind:'payment',type:'handling',done:true},
+    {id:'pay-2',kind:'payment',type:'handling',done:true},
+    {id:'review',kind:'close',type:'handling',done:true,completedAt:'2026-11-03 12:00',completedBy:'客服乙',result:'客户确认已到账，处理完成'}
+  ]}};
+  const html=a.processView(r);
+  assert.equal(html.split('¥ 100.00').length-1,1);assert.equal(html.split('¥ 200.00').length-1,1);
+  assert.ok(html.includes('已处理并结案'));assert.ok(html.includes('客户确认已到账，处理完成'));assert.ok(!html.includes('客户退款'));
+  const history=a.followTools().history(r,a.executionResultRecords(r));assert.ok(history.includes('客户退款'));assert.ok(history.includes('客户确认已到账，处理完成'));
+  const blank=a.processView({status:'待财务付款',follows:[],logs:[]});assert.ok(blank.includes('暂无操作结果'));assert.ok(!blank.includes('付款成功'));
+});
+test('plan sections keep independent empty content without filled or unfilled badges',()=>{
+  const r={...copy(a.records[0]),status:'客服已接单',handlingPlan:'',assessedAt:null,customerSolution:null,follows:[]};
+  const html=a.planPanel(r);assert.ok(html.includes('责任认定'));assert.ok(html.includes('跟进处理'));
+  assert.ok(!html.includes('>未填写</span>'));assert.ok(!html.includes('>已填写</span>'));assert.ok(html.includes('暂无责任认定'));assert.ok(html.includes('暂无跟进处理'));
 });
 test('suspension pauses node timing and closure does not mark unexecuted route nodes complete',()=>{
   const r={status:'已挂起',taskDeadline:'2020-01-01 10:00',execution:{index:0,steps:[
@@ -392,7 +516,7 @@ test('suspension pauses node timing and closure does not mark unexecuted route n
     {type:'handling',title:'付款办理'}
   ]}};
   const paused=a.processView(r);assert.ok(paused.includes('节点计时已暂停'));assert.ok(!paused.includes('已超时'));assert.ok(!paused.includes('查看审批'));
-  r.status='已结案';const closed=a.processView(r);assert.ok(!closed.includes('is-current'));assert.ok(!closed.includes('is-done'));assert.ok(!closed.includes('未开始'));assert.ok(closed.includes('无需办理'));
+  r.status='已结案';const closed=a.processView(r);assert.ok(!closed.includes('is-current'));assert.ok(!closed.includes('is-done'));assert.ok(!closed.includes('未开始'));assert.ok(!closed.includes('无需办理'));
 });
 test('status compatibility reads existing records at full quota without rewriting storage',()=>{
   const saved=copy(a.records);saved[0].status='财务付款失败';saved[1].status='处理中';saved[2].status='门店处理中';saved[2].currentHandler='店长甲';saved[2].acceptedBy='客服甲';saved[3].status='客服待结案';
@@ -475,9 +599,9 @@ test('old complaints receive pending examples once without resetting existing wo
   const existing=copy(a.records.filter(r=>Number(r.id)<31019));existing.forEach(r=>r.status='已结案');let raw=JSON.stringify(existing);
   const local={...context,window:{PCModules:{},addEventListener(){}},localStorage:{getItem:k=>k==='weid.pc.complaints.v1'?raw:null,setItem:(k,v)=>{assert.equal(k,'weid.pc.complaints.v1');raw=v}}};
   const boot=()=>{loadOptions(local);vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../pages/complaint-workflow/index.js'),'utf8'),local);vm.runInNewContext(processCode,local);vm.runInNewContext(followCode,local);vm.runInNewContext(code.replace('  window.PCComplaints={mount,leave};',hook+'\n  window.PCComplaints={mount,leave};'),local);return local.window.testAPI.records};
-  const loaded=boot();assert.equal(loaded.length,28);assert.ok(loaded.filter(r=>Number(r.id)<31019).every(r=>r.status==='已结案'));
+  const loaded=boot();assert.equal(loaded.length,37);assert.ok(loaded.filter(r=>Number(r.id)<31019).every(r=>r.status==='已结案'));
   for(const id of ['31019','31020','31021','31022','31023']){const r=loaded.find(r=>r.id===id);assert.equal(r.status,'待处理');assert.ok(r.level);assert.equal(r.follows.length,0);assert.equal(r.linked.length,1);assert.equal(r.customerSolution,undefined)}
-  const refreshed=boot();assert.equal(refreshed.length,28);assert.equal(refreshed.filter(r=>r.status==='待处理').length,5);
+  const refreshed=boot();assert.equal(refreshed.length,37);assert.equal(refreshed.filter(r=>r.status==='待处理').length,6);
   const pending=refreshed.filter(r=>Number(r.id)>=31021&&Number(r.id)<=31023);assert.deepEqual(copy(pending.map(r=>r.channel).sort()),['mini','staff','wechat']);
   for(const r of pending){assert.ok(r.files.length);assert.ok(local.window.testAPI.detailActions(r).includes('accept-case'));assert.ok(local.window.testAPI.recordAccept(r,'2026-11-03 11:00',{level:r.level}));}
   assert.ok(local.window.testAPI.persist(refreshed));
@@ -491,8 +615,10 @@ test('communication survives refresh and failed saves leave the persisted record
   const local={...context,window:{PCModules:{},addEventListener(){}},localStorage:{getItem:k=>k==='weid.pc.complaints.v1'?raw:null,setItem(){writes++;throw Error('QuotaExceededError')}}};
   loadOptions(local);vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../pages/complaint-workflow/index.js'),'utf8'),local);vm.runInNewContext(processCode,local);vm.runInNewContext(followCode,local);vm.runInNewContext(code.replace('  window.PCComplaints={mount,leave};',hook+'\n  window.PCComplaints={mount,leave};'),local);
   const api=local.window.testAPI;assert.equal(writes,0);assert.equal(api.followTools().current(api.records[0]).communication.reason,'正和客户协商退款金额');
+  assert.deepEqual(copy(api.records[0].communicationPeriods),copy(r.communicationPeriods));
   const changed=copy(api.records);api.recordFollow(changed[0],{note:'再次沟通',files:[],followResult:'ongoing',unresolvedReason:'无法联系上客户'},'2026-11-03 11:00');
   assert.equal(api.persist(changed),false);assert.equal(api.followTools().current(api.records[0]).communication.reason,'正和客户协商退款金额');
+  assert.deepEqual(copy(api.records[0].communicationPeriods),copy(r.communicationPeriods));
 });
 test('handling context shows customer identity without repeating complaint content or attachments',()=>{
   const r=a.records.find(r=>r.id==='31020'),before=JSON.stringify(r),compact=a.summary(r,false,true),detail=a.summary(r);
@@ -581,4 +707,87 @@ test('switching communication operations preserves both drafts and detects hidde
   helper.switchOperation(e,'follow',r);assert.equal(JSON.stringify(e.draft),follow);
   e.baseline=JSON.stringify(e.draft);assert.equal(helper.operationDirty(e),false);
 });
-console.log(`${count} business checks passed.`);
+test('duration configuration upgrades existing dictionaries without assigning arbitrary limits',()=>{
+  const dict=context.window.PCComplaintOptions,old={schema:1,revision:3,demands:['原因甲'],types:['门店服务']},before=JSON.stringify(old);
+  assert.deepEqual(copy(dict.validate(old).demandTimings),{});assert.equal(JSON.stringify(old),before);
+  assert.equal(dict.timingValue(''),null);assert.deepEqual(copy(dict.timingValue('24','hours')),{value:24,unit:'hours'});
+  for(const [value,unit]of [[0,'hours'],[-1,'days'],[1.5,'hours'],[1,'weeks'],['bad','hours']])assert.throws(()=>dict.timingValue(value,unit));
+  for(const timing of [{value:2},{value:0,unit:'hours'},{value:'2',unit:'hours'}])assert.throws(()=>dict.validate({...old,demandTimings:{原因甲:timing}}));
+  assert.throws(()=>dict.validate({...old,demandTimings:{已删除的原因:{value:2,unit:'hours'}}}));
+});
+test('level-specific day limits select only the matching grade and preserve legacy uniform settings',()=>{
+  const dict=context.window.PCComplaintOptions,config={...dict.current,demandTimings:{无法联系上客户:{byLevel:{'1级':3,'2级':2,'3级':1,'4级':0.5}}}};
+  assert.doesNotThrow(()=>dict.validate(config));
+  for(const [level,value]of [['1级',3],['2级',2],['3级',1],['4级',0.5]])assert.deepEqual(copy(dict.timingFor(config,'无法联系上客户',level)),{value,unit:'days'});
+  assert.equal(dict.timingFor(config,'无法联系上客户','5级'),null);assert.equal(dict.timingFor(config,'无法联系上客户',''),null);assert.equal(dict.timingFor(config,'其他','1级'),null);
+  for(const byLevel of [{'6级':1},{'1级':0},{'1级':-1},{'1级':'2'},{'1级':Infinity},null,[]])assert.throws(()=>dict.validate({...config,demandTimings:{无法联系上客户:{byLevel}}}));
+  assert.deepEqual(copy(dict.daysByLevel({value:12,unit:'hours'})),{'1级':0.5,'2级':0.5,'3级':0.5,'4级':0.5,'5级':0.5});
+  const descriptor=Object.getOwnPropertyDescriptor(dict,'current');Object.defineProperty(dict,'current',{get:()=>copy(config)});
+  try{
+    const draft={operation:'unresolved',unresolvedReason:'无法联系上客户',note:'等待客户回复',files:[]};
+    const make=level=>({...copy(record),status:'客服处理中',level,customerSolution:null,compensatedAt:null,follows:[],communicationPeriods:[]});
+    const low=make('1级'),high=make('4级'),unset=make('5级');
+    for(const r of [low,high,unset])a.recordFollow(r,draft,'2026-11-03 10:00');
+    assert.equal(low.communicationPeriods[0].dueAt,'2026-11-06 10:00');assert.equal(high.communicationPeriods[0].dueAt,'2026-11-03 22:00');assert.equal(unset.communicationPeriods[0].dueAt,'');
+    const period=low.communicationPeriods[0];low.level='4级';config.demandTimings.无法联系上客户.byLevel['1级']=5;
+    a.recordFollow(low,draft,'2026-11-03 11:00');assert.equal(low.communicationPeriods.length,1);assert.equal(period.level,'1级');assert.equal(period.dueAt,'2026-11-06 10:00');
+    assert.ok(a.followTools().history(low).includes('3 天（按 1级）'));
+  }finally{Object.defineProperty(dict,'current',descriptor)}
+});
+test('same-reason follow-ups preserve the original clock and configuration snapshot',()=>{
+  const dict=context.window.PCComplaintOptions,descriptor=Object.getOwnPropertyDescriptor(dict,'current');
+  let config={...dict.current,revision:2,demandTimings:{无法联系上客户:{value:24,unit:'hours'},正和客户协商退款金额:{value:2,unit:'days'}}};
+  Object.defineProperty(dict,'current',{get:()=>copy(config)});
+  try{
+    const r={...copy(record),status:'客服已接单',customerSolution:null,compensatedAt:null,follows:[],communicationPeriods:[]};
+    const draft={operation:'unresolved',reasonSource:'demands',unresolvedReason:'无法联系上客户',note:'未接听',files:[]};
+    const first=a.recordFollow(r,draft,'2026-11-03 10:00');assert.equal(r.communicationPeriods.length,1);
+    const period=r.communicationPeriods[0];assert.equal(period.dueAt,'2026-11-04 10:00');assert.equal(period.configRevision,2);
+    config.demandTimings.无法联系上客户={value:1,unit:'hours'};config.revision=3;
+    const repeated=a.recordFollow(r,{...draft,note:'再次拨打'},'2026-11-03 11:00');
+    assert.equal(repeated.communication.periodId,first.communication.periodId);assert.equal(r.communicationPeriods.length,1);assert.equal(period.dueAt,'2026-11-04 10:00');
+    const edited=a.followTools().draft(r,first);edited.note='补充说明';assert.ok(a.followTools().edit(r,first.id,edited,'2026-11-03 11:30'));assert.equal(period.startedAt,'2026-11-03 10:00');
+    a.recordFollow(r,{...draft,unresolvedReason:'正和客户协商退款金额'},'2026-11-03 12:00');
+    assert.equal(period.endedAt,'2026-11-03 12:00');assert.equal(period.endReason,'未达成原因变更');assert.equal(a.followTools().activePeriod(r).dueAt,'2026-11-05 12:00');
+    a.recordFollow(r,draft,'2026-11-03 13:00');assert.equal(r.communicationPeriods.length,3);assert.equal(a.followTools().activePeriod(r).dueAt,'2026-11-03 14:00');
+    assert.ok(a.followTools().history(r).includes('24 小时'));assert.ok(a.followTools().overview(r).includes('2026-11-03 14:00'));
+    assert.ok(a.recordCompensation(r,valid.value,'2026-11-03 13:30'));assert.equal(a.followTools().activePeriod(r),undefined);assert.equal(r.communicationPeriods[2].endReason,'已确认解决方案');
+  }finally{Object.defineProperty(dict,'current',descriptor)}
+});
+test('unset limits remain unset for an ongoing reason and closure finishes the interval',()=>{
+  const dict=context.window.PCComplaintOptions,descriptor=Object.getOwnPropertyDescriptor(dict,'current'),config={...dict.current,demandTimings:{}};
+  Object.defineProperty(dict,'current',{get:()=>copy(config)});
+  try{
+    const r={...copy(record),status:'客服处理中',customerSolution:null,handlingPlan:'unresolved',assessedAt:'2026-11-03 09:00',follows:[],communicationPeriods:[]};
+    const draft={operation:'unresolved',unresolvedReason:'无法联系上客户',note:'等待回复',files:[]};
+    a.recordFollow(r,draft,'2026-11-03 10:00');const period=r.communicationPeriods[0];assert.equal(period.timing,null);assert.equal(period.dueAt,'');
+    config.demandTimings.无法联系上客户={value:12,unit:'hours'};
+    a.recordFollow(r,draft,'2026-11-03 11:00');assert.equal(period.timing,null);assert.equal(r.communicationPeriods.length,1);
+    a.recordFollow(r,{note:'核对订单',files:[]},'2026-11-03 11:30');assert.equal(period.endedAt,'');
+    r.status='客服复核中';assert.ok(a.recordClosure(r,'2026-11-03 12:00','客户已确认完成'));assert.equal(period.endedAt,'2026-11-03 12:00');
+    const snapshot=JSON.stringify(r.communicationPeriods);a.recordFollow(r,{note:'结案后补充',files:[]},'2026-11-03 13:00');assert.equal(JSON.stringify(r.communicationPeriods),snapshot);
+  }finally{Object.defineProperty(dict,'current',descriptor)}
+});
+
+// Transaction-level dictionary checks use an isolated in-memory IDB double.
+// They never open or modify the user's browser database.
+async function checkOptionStorage(){
+  let saved={schema:1,revision:4,demands:['原因甲','原因乙'],types:['门店服务']},writeFailure=false;
+  const db={transaction(){
+    let candidate,aborted=false;const tx={abort(){aborted=true;queueMicrotask(()=>tx.onabort?.())},objectStore(){return {
+      get(){const request={};queueMicrotask(()=>{request.result=copy(saved);request.onsuccess?.();queueMicrotask(()=>{if(aborted)return;if(candidate)saved=candidate;tx.oncomplete?.()})});return request},
+      put(value){if(writeFailure){tx.error=Error('QuotaExceededError');tx.abort()}else candidate=copy(value)}
+    }}};return tx;
+  }};
+  const local={setTimeout,clearTimeout,indexedDB:{open(){const request={result:db};queueMicrotask(()=>request.onsuccess());return request}},window:{addEventListener(){}}};
+  const source=fs.readFileSync(path.join(__dirname,'../pages/complaint-options/storage.js'),'utf8');vm.runInNewContext(source,local);
+  const dict=local.window.PCComplaintOptions,initial=await dict.read();assert.deepEqual(copy(initial.demandTimings),{});assert.equal(saved.demandTimings,undefined);
+  const next={...copy(initial),demandTimings:{原因甲:{byLevel:{'1级':3,'2级':2,'4级':0.5}}}};await dict.save(next,4);assert.equal(saved.revision,5);
+  const fresh={...local,window:{addEventListener(){}}};vm.runInNewContext(source,fresh);assert.deepEqual(copy((await fresh.window.PCComplaintOptions.read()).demandTimings),copy(next.demandTimings));
+  await assert.rejects(dict.save({...next,demandTimings:{}},4),/其他页面/);assert.equal(saved.revision,5);assert.equal(dict.current.demandTimings.原因甲.byLevel['2级'],2);
+  writeFailure=true;await assert.rejects(dict.save({...next,demandTimings:{}},5),/QuotaExceededError/);assert.equal(saved.revision,5);assert.equal(dict.current.demandTimings.原因甲.byLevel['2级'],2);
+  writeFailure=false;saved={...saved,revision:6,demandTimings:{原因甲:{value:3,unit:'hours'}}};let notified=0;dict.subscribe(()=>notified++);await dict.refresh();assert.equal(dict.current.revision,6);assert.equal(notified,1);
+  const unavailable={setTimeout,clearTimeout,indexedDB:{open(){throw Error('SecurityError')}},window:{addEventListener(){}}};vm.runInNewContext(source,unavailable);await assert.rejects(unavailable.window.PCComplaintOptions.read(),/SecurityError/);assert.equal(unavailable.window.PCComplaintOptions.error,'SecurityError');
+  count++;console.log('PASS duration dictionaries preserve legacy data, reload, concurrent revisions and failed transactions');
+}
+checkOptionStorage().then(()=>console.log(`${count} business checks passed.`)).catch(error=>{console.error(error);process.exitCode=1});

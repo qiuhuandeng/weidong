@@ -60,5 +60,61 @@
     ['门店','门店服务','manager','2级','置换商品已确认，请按地址安排发货。','采购审批已通过，待采购按客户确认的地址安排发货。','待登记发货方式、物流单号及本次发货数量。',''],
     ['推广','广告宣传','promoter','2级','退款已到账，请客服回访确认处理结果。','财务已登记付款凭证，待客服联系客户确认到账和处理结果。','待核对付款结果并回访客户确认。','']
   ];
-  window.PCModules['complaint-fixtures']={render(){},customers,demoScenarios};
+  // One complete example per status. Existing customer records are never replaced.
+  const lifecycleStatuses=['待处理','客服已接单','客服处理中','财务审批中','采购审批中','待财务付款','待采购发货','客服复核中','已结案'];
+  const lifecycleCustomers=[['何女士','138****2901'],['郑女士','139****2902'],['冯女士','137****2903'],['蒋女士','136****2904'],['韩女士','135****2905'],['许先生','134****2906'],['宋女士','133****2907'],['沈女士','132****2908'],['陆女士','131****2909']];
+  const lifecycleContent=[
+    '客户反馈服务介绍与到店体验有差异，希望核对未消费项目并协商处理。',
+    '客服已接单并确认客诉等级，待进一步联系客户核实诉求。',
+    '客户暂不接受退款金额，客服正在沟通退款及商品置换方案。',
+    '客户已确认退款及商品置换方案，待财务审核退款金额。',
+    '财务审批已通过，待采购审核置换商品清单。',
+    '退款及置换方案均已审批通过，待财务执行退款。',
+    '退款已支付，待采购按确认的商品及数量安排发货。',
+    '退款已到账、商品已发货，客服正在核实客户是否签收及有无其他诉求。',
+    '退款已到账、商品已签收，客户确认处理完成，工单已结案。'
+  ];
+  lifecycleCustomers.forEach(([name,phone],i)=>{
+    customers.push([name,phone,'杭州上城店',['mini','staff','wechat'][i%3],lifecycleContent[i],`2026-11-03 13:${String(i).padStart(2,'0')}`,'客户本人',lifecycleStatuses[i],'门店','门店服务']);
+    demoScenarios.push(['门店','门店服务','manager','2级',lifecycleContent[i],'服务介绍与实际交付存在差异，门店解释及跟进不及时。','客户希望核对退款金额并确认置换商品。','客户确认退款到账、商品签收，同意结案。']);
+  });
+  function completeLifecycleExample(r,order){
+    const i=Number(r.id)-31029;if(i<0||i>=lifecycleStatuses.length)return false;
+    const actor='林晓（售后客服）',staff=['',actor,actor,'陆清（财务）','王珊（采购）','陈敏（财务）','李江（采购）',actor,actor];
+    const at=minutes=>new Date(Date.parse(r.created.replace(' ','T')+':00Z')+minutes*60000).toISOString().slice(0,16).replace('T',' ');
+    const add=(kind,minutes,data)=>r.follows.unshift({id:`${r.id}-lifecycle-${kind}-${minutes}`,kind,time:at(minutes),actor,files:[],mock:true,...data});
+    const status=lifecycleStatuses[i],refund=Math.min(120000,order.projects[0].paid),product={id:'repair-cream',productId:'repair-cream',name:'舒缓修护霜 50g',unitPrice:18000,quantity:2};
+    Object.assign(r,{status,level:'2级',linked:[{id:order.id,wechatId:order.bookingWechatId}],currentHandler:staff[i]});
+    if(i===0)return true;
+    Object.assign(r,{acceptedAt:at(5),acceptedBy:actor});
+    add('accept',5,{action:'客服接单',beforeStatus:'待处理',status:'客服已接单',level:r.level,note:'已接单，确认客诉等级为 2级。'});
+    if(i===1)return true;
+    Object.assign(r,{startedAt:at(10),startedBy:actor,department:['门店'],type:'门店服务',responsible:[order.manager],reason:'服务介绍与实际交付存在差异，门店解释及跟进不及时。',assessedAt:at(10),assessedBy:actor,handlingPlan:'unresolved'});
+    add('assessment',10,{action:'责任认定',beforeStatus:'客服已接单',status:'客服处理中',department:r.department,type:r.type,responsible:r.responsible,reason:r.reason,handlingPlan:r.handlingPlan});
+    add('follow',20,{beforeStatus:'客服处理中',status:'客服处理中',communication:{result:'ongoing',reason:'正和客户协商退款金额',reasonSource:'demands'},note:'客户认为退款金额偏低，已核对消费明细，继续协商退款及商品置换方案。'});
+    if(i===2)return true;
+    const item=order.projects[0],solution={detailsVersion:5,handlingMethods:['refund','exchange'],refund,refundOrders:[{orderId:order.id,store:order.store,customerName:r.name,refund,refundItems:[{itemId:item.id,name:item.name,quantity:item.quantity,consumedQuantity:0,refundedQuantity:0,reservedQuantity:0,remainingBefore:1,refundQuantity:1,remainingAfter:0,paid:item.paid,amount:refund}]}],exchangeItems:[product],delivery:{name:r.name,phone:r.phone,address:'杭州市上城区客户确认收货地址（示例）'},payout:{method:'wechat',name:r.name,account:'示例客户微信收款账户'},attachments:[]};
+    Object.assign(r,{customerSolution:solution,compensatedAt:at(30),compensatedBy:actor});
+    add('compensation',30,{action:'保存解决方案',beforeStatus:'客服处理中',status:'财务审批中',customerSolution:solution,note:'客户确认退款及商品置换方案。'});
+    for(const [step,minutes,action,next]of [[3,40,'财务审批','采购审批中'],[4,50,'采购审批','待财务付款']]){
+      if(i<step)continue;
+      const passed=i>step;
+      add('workflow',passed?minutes:minutes-5,{action,actor:staff[step],beforeStatus:lifecycleStatuses[step],status:passed?next:lifecycleStatuses[step],fields:[['审批结果',passed?'已通过':'审批中']],note:passed?(step===3?'退款金额及收款资料核对通过。':'置换商品及数量审核通过。'):'已提交审批，等待审批意见。'});
+    }
+    if(i>=5)add('workflow',55,{action:'财务付款',actor:staff[5],beforeStatus:'待财务付款',status:'待财务付款',fields:[['付款结果','待执行'],['待付金额',`¥ ${(refund/100).toFixed(2)}`]],note:'审批已通过，待财务执行付款。'});
+    if(i>=6){
+      r.payments=[{id:`${r.id}-payment`,nodeId:'example-payment',at:at(60),actor:staff[5],result:'成功',amount:refund,reference:`DEMO-PAY-${r.id}`,proof:[],mock:true}];
+      add('workflow',65,{action:'采购发货',actor:staff[6],beforeStatus:'待采购发货',status:'待采购发货',fields:[['发货内容',`${product.name} × 2`],['发货进度','待安排发货']],note:'退款已完成，待采购安排商品发货。'});
+    }
+    if(i>=7){
+      r.handlingRecords=[{id:`${r.id}-shipment`,nodeId:'example-procurement',kind:'procurement',action:'shipment',at:at(70),actor:staff[6],method:'总部发货',items:[product],trackingNumber:`DEMO-SF-${r.id}`,note:'按客户确认地址发货。',files:[],mock:true}];
+      add('workflow',80,{action:'客服复核',beforeStatus:'客服复核中',status:i===8?'已结案':'客服复核中',fields:[['复核结果',i===8?'客户确认处理完成':'退款已确认到账，商品签收待确认'],['客户反馈',i===8?'商品已签收，客户无其他诉求。':'客户确认退款已到账，等待签收置换商品。']],note:i===8?'客户确认退款到账、商品签收，同意结案。':'已核实退款到账，继续跟进商品签收。'});
+    }
+    if(i===8){
+      Object.assign(r,{closedAt:at(90),closedBy:actor,closeNote:'退款及商品置换已完成，客户确认无其他诉求，同意结案。',handlingPlan:'resolved'});
+      add('closure',90,{nodeId:'example-closed',beforeStatus:'客服复核中',status:'已结案',note:r.closeNote});
+    }
+    return true;
+  }
+  window.PCModules['complaint-fixtures']={render(){},customers,demoScenarios,completeLifecycleExample};
 })();

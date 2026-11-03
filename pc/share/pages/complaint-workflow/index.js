@@ -8,13 +8,15 @@ window.PCModules['complaint-workflow']={render(){},create({normalizeStatus}){
   const labels=Object.fromEntries(statuses),known=new Set(Object.keys(labels)),handlingOperations={follow:['方案未达成一致'],compensation:['已确认解决方案'],closure:['已处理并结案']};
   const state=record=>normalizeStatus(record.status,record);
   const active=record=>!record.suspension&&!record.legacySuspended;
+  const directClosureStatuses=['财务审批中','采购审批中','待财务付款','待采购发货','客服复核中'];
   function can(record,action){
     const value=state(record);if(!active(record))return false;
     if(action==='accept')return value==='待处理';
     if(action==='assess')return ['客服已接单','客服处理中'].includes(value);
     if(action==='follow')return known.has(value)&&value!=='待处理';
     if(action==='grade')return known.has(value)&&!['待处理','已结案'].includes(value);
-    if(action==='close')return ['客服处理中','客服复核中'].includes(value);
+    if(action==='closeDirectly')return directClosureStatuses.includes(value);
+    if(action==='close')return value==='客服处理中'||directClosureStatuses.includes(value);
     return false;
   }
   function detailActions(record,{canClose=false}={}){

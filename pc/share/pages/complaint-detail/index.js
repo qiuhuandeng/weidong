@@ -35,7 +35,7 @@ window.PCModules['complaint-detail']={render(){},create({btn,replyAction,canFoll
   }
   function informationView(r){
     const orders=r.linked.length?orderCards(r.linked,true,r.customerId):empty('暂未关联订单'),orderAction=r.status==='已结案'?'':link(r.linked.length?'调整订单':'关联订单','pick-orders');
-    return `<div class="uc-info-layout"><div class="uc-info-primary">${section('关联订单',orders,orderAction)}</div>${r.channel==='wechat'?detailReference('payment','微信支付',`订单 ${paymentMoney(r.paymentAmount)} · 申请退款 ${paymentMoney(r.refund)}`,paymentView(r),'查看支付资料'):''}</div>`;
+    return `<div class="uc-info-layout"><div class="uc-info-primary">${section('关联订单',orders,orderAction)}</div></div>`;
   }
   function orderCards(linked,linkOrders=false,customerId=''){
     const present=value=>value!==undefined&&value!==null&&value!=='',read=value=>esc(present(value)?value:'—'),
@@ -71,54 +71,93 @@ window.PCModules['complaint-detail']={render(){},create({btn,replyAction,canFoll
     }
     return rows.reverse().sort((a,b)=>String(a.time||'').replace('T',' ').localeCompare(String(b.time||'').replace('T',' ')));
   }
+  const stageForStatus=value=>({待处理:'intake',客服已接单:'sales',客服处理中:'sales',财务审批中:'financeApproval',采购审批中:'purchaseApproval',待财务付款:'payment',待采购发货:'procurement',客服复核中:'close',已结案:'close'})[workOrderStatus(value)];
+  const stageTitles={pending:'待处理',intake:'客服接单',sales:'售后办理',financeApproval:'财务审批',purchaseApproval:'采购审批',payment:'财务付款',procurement:'采购发货',close:'客服复核',closed:'已结案'};
+  const stageKind=node=>Object.hasOwn(stageTitles,node.kind)?node.kind:node.kind==='store_close'?'close':node.type==='approval'?(/采购/.test(node.title||node.templateId||'')||node.templateId==='approval-purchase'?'purchaseApproval':'financeApproval'):node.kind;
   // Read-only examples for this module's own fixtures. Never write an execution
   // route into storage or replace a real route received from workflow processing.
   function exampleProcess(r){
     if(!isDemoRecord(r)||r.execution?.steps?.length)return null;
     const status=workOrderStatus(r.status,r),closed=status==='已结案',paused=!!(r.suspension||r.legacySuspended||r.status==='已挂起');
-    const stage={待处理:'intake',客服已接单:'sales',客服处理中:'sales',财务审批中:'financeApproval',待财务付款:'payment',采购审批中:'purchaseApproval',待采购发货:'procurement',客服复核中:'close',已结案:'close'};
+    const stage={待处理:'pending',客服已接单:'intake',客服处理中:'sales',财务审批中:'financeApproval',采购审批中:'purchaseApproval',待财务付款:'payment',待采购发货:'procurement',客服复核中:'close',已结案:'closed'};
     const previous=(r.follows||[]).find(item=>item.beforeStatus&&stage[workOrderStatus(item.beforeStatus)]&&item.beforeStatus!=='已挂起');
     const current=stage[status]||(paused?stage[workOrderStatus(previous?.beforeStatus)]||'sales':'sales');
-    const methods=r.customerSolution?.methods||[],variant=(Number(r.id)-31001)%3;
-    const finance=['financeApproval','payment'].includes(current)||methods.includes('refund')||(!methods.length&&variant===1);
-    const purchase=['purchaseApproval','procurement'].includes(current)||methods.includes('exchange')||(!methods.length&&variant===2);
-    const keys=['intake','sales',...(finance?['financeApproval','payment']:[]),...(purchase?['purchaseApproval','procurement']:[]),'close'];
-    const titles={intake:'客服接单',sales:'售后办理',financeApproval:'付款审批',payment:'付款办理',purchaseApproval:'采购审批',procurement:'采购办理',close:'客服复核'};
-    const staff={intake:r.acceptedBy||r.startedBy||'林晓（售后客服）',sales:r.startedBy||r.assessedBy||'林晓（售后客服）',financeApproval:'陆清（财务）',payment:'陈敏（财务）',purchaseApproval:'王珊（采购）',procurement:'李江（采购）',close:r.closedBy||r.acceptedBy||'林晓（售后客服）'};
-    const timestamp=value=>typeof value==='number'?value:Date.parse(String(value||'').replace(' ','T')+(/(?:Z|[+-]\d{2}:\d{2})$/.test(String(value))?'':'+08:00'));
-    const created=timestamp(r.created);if(!Number.isFinite(created))return null;
-    const index=keys.indexOf(current),completed=closed?keys.length:index;
-    const boundary=Math.max(created,timestamp(closed?r.closedAt:r.transfer?.time||r.startedAt||r.acceptedAt||r.assessedAt)||created+Math.max(1,completed)*600000);
-    const steps=keys.map((key,i)=>({id:'example-'+key,title:titles[key],kind:key,type:key.endsWith('Approval')?'approval':'handling',
-      done:i<completed,people:i===index&&status==='待处理'?[]:i<=index||closed?[staff[key]]:key==='close'?[staff.close]:[],
-      completedAt:i<completed?created+(boundary-created)*(i+1)/completed:undefined}));
-    return {...r,execution:{index,steps},currentHandler:currentHandler(r)||(status==='待处理'?'':staff[current]),taskDeadline:r.transfer?r.taskDeadline:r.taskDeadline||(['待处理','客服已接单'].includes(status)?undefined:boundary+7200000)};
+    const keys=Object.values(stage),titles=Object.fromEntries(Object.entries(stage).map(([label,key])=>[key,label]));
+    const staff={pending:r.submitter||(r.logs||[]).find(item=>item.action==='收到投诉')?.actor||'客户本人',intake:r.acceptedBy||r.startedBy||'林晓（售后客服）',sales:r.startedBy||r.assessedBy||'林晓（售后客服）',financeApproval:'陆清（财务）',payment:'陈敏（财务）',purchaseApproval:'王珊（采购）',procurement:'李江（采购）',close:r.closedBy||r.acceptedBy||'林晓（售后客服）',closed:r.closedBy||'林晓（售后客服）'};
+    const index=keys.indexOf(current),closedFrom=closed?keys.indexOf(stage[r.closedFromStatus]):-1;
+    const completed=closedFrom>=0?closedFrom+(stage[r.closedFromStatus]==='close'?1:0):closed?keys.length:index;
+    const follows=r.follows||[],workflowRecord=key=>follows.find(item=>item.kind==='workflow'&&item.action===stageTitles[key]);
+    const parse=value=>typeof value==='number'?value:Date.parse(String(value||'').replace(' ','T')+(/(?:Z|[+-]\d{2}:\d{2})$/.test(String(value))?'':'+08:00'));
+    const known=[r.created,r.acceptedAt,r.compensatedAt,r.closedAt,...follows.map(item=>item.time)].map(parse).filter(Number.isFinite);
+    const origin=Number.isFinite(parse(r.created))?parse(r.created):known[0]||Date.parse('2026-11-03T09:00:00+08:00');
+    const stamps={pending:origin,intake:r.acceptedAt||follows.find(item=>item.kind==='accept')?.time,sales:r.compensatedAt,
+      financeApproval:workflowRecord('financeApproval')?.time,purchaseApproval:workflowRecord('purchaseApproval')?.time,
+      payment:r.payments?.filter(item=>item.result==='成功').at(-1)?.at,procurement:r.handlingRecords?.filter(item=>item.kind==='procurement').at(-1)?.at,
+      close:workflowRecord('close')?.time,closed:r.closedAt||follows.find(item=>item.kind==='closure')?.time};
+    const times=keys.map(key=>parse(stamps[key]));
+    // Fill only the read-only demonstration projection, keeping saved timestamps intact.
+    // Missing dates are interpolated between recorded events, never added to real routes.
+    for(let i=1;i<keys.length;i++)if(!Number.isFinite(times[i])){
+      const next=times.findIndex((value,j)=>j>i&&Number.isFinite(value));
+      times[i]=next>=0&&times[next]>=times[i-1]?times[i-1]+Math.floor((times[next]-times[i-1])/(next-i+1)):times[i-1]+5*60000;
+    }
+    const order=r.linked?.[0]?resolveLink(r.linked[0]).order:null,solution=r.customerSolution;
+    const refund=solution?.refund??Math.min(120000,Math.round(Number(order?.amount||1200)*100));
+    const products=(solution?.exchangeItems?.length?solution.exchangeItems:[{name:'舒缓修护霜 50g',quantity:2}]).map(item=>`${item.name||item.productId} × ${item.quantity}`).join('；');
+    const amount='¥ '+money(refund/100);
+    const communicationExamples=[
+      ['正和客户协商退款金额','客户认为退款金额偏低，已逐项说明已消费项目及可退金额，客户暂未同意，继续协商处理方案。'],
+      ['无法联系上客户','已拨打客户电话两次，均未接听；已通过微信留言说明处理方案，等待客户回复后继续沟通。']
+    ];
+    const exampleIndex=(Number(r.id)-31001)%3,[reason,communication]=communicationExamples[exampleIndex%2];
+    const salesPreview=!solution&&!follows.some(item=>item.kind==='compensation'&&item.customerSolution||item.kind==='follow'&&(item.communication||!item.mock&&item.note));
+    const steps=keys.map((key,i)=>{
+      const done=i<completed||closed&&key==='closed',terminated=closedFrom>=0&&!done,recorded=workflowRecord(key);
+      const resultFields={
+        intake:[['客诉等级',r.level||'2级']],
+        sales:done||exampleIndex===2?[['本次操作','已确认解决方案'],['处理方式','退款、商品置换'],['退款金额',amount],['置换商品',products,true],['方案说明','客户已确认退款金额及置换商品，待按方案办理退款和发货。',true]]:[['本次操作','方案未达成一致'],['未达成原因',reason,true],['沟通内容',communication,true]],
+        financeApproval:[['审批结果',done?'已通过':'审批中'],['审批意见',done?'退款金额及收款资料核对通过。':'等待财务审核退款方案。',true]],
+        purchaseApproval:[['审批结果',done?'已通过':'审批中'],['审批意见',done?'置换商品及数量审核通过。':'等待采购审核商品及数量。',true]],
+        payment:[['付款结果',done?'成功':'待执行'],[done?'实际金额':'待付金额',amount]],
+        procurement:[['发货进度',done?'已发货':'待安排发货'],['发货内容',products,true],...(done?[['发货方式','总部发货'],['物流单号','DEMO-SF-'+r.id]]:[])],
+        close:[['复核结果',done?'客户确认处理完成':'正在核对执行结果'],['客户反馈',done?'客户确认退款到账、商品签收，无其他诉求。':'待联系客户确认到账及商品签收。',true]],
+        closed:[['结案结果','已处理并结案'],['结案说明',r.closeNote||follows.find(item=>item.kind==='closure')?.note||'客户确认处理完成，同意结案。',true]]
+      }[key];
+      return {id:'example-'+key,title:titles[key],status:titles[key],kind:key,type:key.endsWith('Approval')?'approval':'handling',done,terminated,
+        demo:true,salesPreview:key==='sales'&&salesPreview,resultFields,people:done||i<=(closedFrom>=0?closedFrom:index)?[staff[key]]:[],startedAt:times[i],completedAt:done?times[i]:undefined,
+        approvalResult:key.endsWith('Approval')?(recorded?.fields?.find(([label])=>label==='审批结果')?.[1]||resultFields[0][1]):undefined,
+        result:key.endsWith('Approval')?(recorded?.note||resultFields[1][1]):undefined};
+    });
+    return {...r,execution:{index,steps},currentHandler:currentHandler(r)||(status==='待处理'?'':staff[current])};
   }
   // Read the executed route when available; legacy PC records retain only their
   // recorded stages. Saving a solution alone does not complete a workflow node.
   function processNodes(r){
     const status=workOrderStatus(r.status,r),closed=status==='已结案',paused=!!(r.suspension||r.legacySuspended||r.status==='已挂起');
     if(r.execution?.steps?.some(node=>['handling','approval'].includes(node.type))){
-      return r.execution.steps.flatMap((node,index)=>{
+      const expected=stageForStatus(status),at=r.execution.index,exact=r.execution.steps.findIndex(node=>node.status===status&&!node.done&&!node.skipped),matched=r.execution.steps.findIndex((node,index)=>index>=at&&!node.done&&!node.skipped&&stageKind(node)===expected),activeIndex=exact>=0?exact:matched<0?at:matched;
+      const rows=r.execution.steps.flatMap((node,index)=>{
         if(!['handling','approval'].includes(node.type))return [];
-        const current=!closed&&index===r.execution.index&&!node.done&&!node.skipped;
-        const state=node.skipped?'skipped':node.done?'done':current?(paused?'paused':'current'):node.returnedAt?'returned':closed?'skipped':'future';
-        return [{title:node.kind==='close'?'客服复核':current&&node.kind==='store'&&r.legacyStoreAssignment?'客服处理':node.title||'办理节点',state,current,type:node.type,
-          label:current?({'待处理':'待接单','客服已接单':'已接单','待财务付款':'待付款','待采购发货':'待发货','客服复核中':'复核中'})[status]:undefined,note:current?r.statusDetail||r.currentTask:'',
+        const current=!closed&&index===activeIndex&&!node.done&&!node.skipped;
+        const state=node.terminated?'terminated':node.skipped?'skipped':node.done?'done':current?(paused?'paused':'current'):node.returnedAt?'returned':closed?(r.closedFromStatus?'terminated':'skipped'):'future';
+        return [{id:node.id,key:stageKind(node),source:node,sourceIndex:index,startedAt:node.startedAt,title:node.status||stageTitles[stageKind(node)]||(current&&node.kind==='store'&&r.legacyStoreAssignment?'客服处理':node.title||'办理节点'),state,current,type:node.type,
+          label:current?status:node.conditional?'待方案确认':undefined,note:current?r.statusDetail||r.currentTask:'',
           people:current?currentHandler(r)||valueText(node.people):valueText(node.people)||node.completedBy||(node.kind==='close'?r.closedBy:'')||'',
           completedAt:node.completedAt||(node.kind==='close'&&node.done?r.closedAt:''),returnedAt:node.returnedAt,
           deadline:current?r.taskDeadline:node.deadline,reason:node.returnReason||'',external:node.external}];
       });
+      if(closed&&r.closedFromStatus&&!rows.some(node=>node.key==='closed'))rows.push({key:'closed',title:'已结案',state:'done',people:r.closedBy,completedAt:r.closedAt,type:'handling'});
+      return rows;
     }
-    const stage=value=>value&&({待处理:'sales',客服已接单:'sales',客服处理中:'sales',财务审批中:'financeApproval',采购审批中:'purchaseApproval',待财务付款:'payment',待采购发货:'procurement',客服复核中:'close',已结案:'close'})[workOrderStatus(value)];
-    const titles={sales:'售后办理',financeApproval:'付款审批',purchaseApproval:'采购审批',payment:'付款办理',procurement:'采购办理',close:'客服复核',paused:'工单办理'};
+    const stage=value=>value&&(r.closedFromStatus&&workOrderStatus(value)==='已结案'?'closed':stageForStatus(value));
+    const titles={...stageTitles,paused:'工单办理'};
     const rows=[];
     const arrive=(key,time='')=>{
       if(!key)return null;
       let row=rows.at(-1);
       if(row?.key!==key){
-        if(row){row.state='done';row.completedAt=time;}
-        row={key,title:titles[key],state:'current',people:'',type:key.endsWith('Approval')?'approval':'handling'};rows.push(row);
+        if(row){row.state=key==='closed'&&row.key!=='close'?'terminated':'done';if(row.state==='done')row.completedAt=time;}
+        row={key,startedAt:time,title:titles[key],state:'current',people:'',type:key.endsWith('Approval')?'approval':'handling'};rows.push(row);
       }
       return row;
     };
@@ -127,6 +166,7 @@ window.PCModules['complaint-detail']={render(){},create({btn,replyAction,canFoll
       const before=stage(item.beforeStatus),next=stage(item.status);
       if(!rows.length&&before&&before!==next)arrive(before);
       const row=arrive(next,item.time);
+      if(item.title==='客服接单'&&rows.find(item=>item.key==='intake'))rows.find(item=>item.key==='intake').people=item.actor||'';
       if(row&&['客服接单','开始处理','责任认定','结案'].includes(item.title)&&item.actor)row.people=item.actor;
     }
     const active=arrive(stage(status)||rows.at(-1)?.key||'paused');
@@ -134,18 +174,103 @@ window.PCModules['complaint-detail']={render(){},create({btn,replyAction,canFoll
     active.people=(closed?r.closedBy:currentHandler(r))||active.people;
     active.deadline=r.taskDeadline;active.note=r.statusDetail||r.currentTask;
     if(closed)active.completedAt=r.closedAt||processRecords(r).findLast(item=>item.status==='已结案')?.time||active.completedAt;
-    if(!closed&&!paused)active.label=({'待处理':'待接单','客服已接单':'已接单','待财务付款':'待付款','待采购发货':'待发货','客服复核中':'复核中'})[status]||status;
+    if(!closed&&!paused)active.label=status;
     return rows;
   }
+  function executionResultRecords(r){
+    const amount=value=>value!==undefined&&value!==null&&value!==''&&Number.isFinite(Number(value))?'¥ '+money(Number(value)/100):'';
+    const record=(data,stage,action,fields,brief,files=[],fileKind='',fileIndex='')=>({kind:'execution-result',nodeId:data.nodeId,stage,action,time:(data.time??data.at)?deadlineText(data.time??data.at):'',actor:data.actorName||data.actor||data.by||data.completedBy||'',fields:fields.filter(([,value])=>value!==undefined&&value!==null&&value!==''),brief,files,fileKind,fileIndex});
+    const result=(r.payments||[]).map((p,index)=>record(p,'payment','财务付款',[
+      ['付款结果',p.result],['实际金额',amount(p.amount)],['交易流水号',p.reference],['失败原因',p.reason,true]
+    ],['付款结果','实际金额','失败原因'],p.proof||[],'payment-proof',index));
+    for(const [index,s]of (r.handlingRecords||[]).entries())if(s.kind==='procurement'||s.action==='shipment')result.push(record(s,'procurement','采购发货',[
+      ['发货方式',s.method],['发货内容',(s.items||[]).map(item=>`${item.name||item.productId} × ${item.quantity}`).join('；'),true],['物流单号',s.trackingNumber],['交付单据号',s.reference],['备注',s.note,true]
+    ],['发货内容','发货方式','物流单号'],s.files||[],'handling-record',index));
+    for(const n of r.execution?.steps||[]){
+      const key=stageKind(n);
+      if(n.type==='approval'||!n.result||n.id&&result.some(item=>item.nodeId===n.id))continue;
+      if((r.follows||[]).some(item=>item.nodeId===n.id&&n.id||key==='close'&&item.kind==='closure'||key==='sales'&&item.kind==='compensation'))continue;
+      result.push(record({nodeId:n.id,time:n.completedAt,actor:n.completedBy||valueText(n.people)},key,stageTitles[key]||n.title,[
+        ...(key==='close'?[['复核结果',n.done?'已处理并结案':''],['售后类型',r.aftercareType]]:[]),[key==='close'?'结案说明':'处理说明',n.result,true]
+      ],key==='close'?['复核结果','结案说明']:['处理说明']));
+    }
+    const example=exampleProcess(r);
+    for(const [index,node]of (example?.execution.steps||[]).entries()){
+      if(!node.resultFields||!node.done&&index!==example.execution.index||node.kind==='pending')continue;
+      const kinds={intake:['accept'],sales:['handling','assessment','compensation','follow'],close:['closure'],closed:['closure']}[node.kind]||[];
+      const saved=(r.follows||[]).some(item=>kinds.includes(item.kind)||item.kind==='workflow'&&item.action===stageTitles[node.kind]);
+      if(saved&&!node.salesPreview||result.some(item=>item.stage===node.kind))continue;
+      result.push({...record({nodeId:node.id,time:node.completedAt||node.startedAt,actor:valueText(node.people)},node.kind,stageTitles[node.kind],node.resultFields,node.resultFields.map(([label])=>label)),mock:true});
+    }
+    return result;
+  }
+  function processResultView(r,node,rows){
+    if(node.key==='pending'||['future','skipped','terminated'].includes(node.state))return '';
+    const present=value=>value!==undefined&&value!==null&&value!=='';
+    const timestamp=value=>typeof value==='number'?value:Date.parse(String(value||'').replace(' ','T')+(/(?:Z|[+-]\d{2}:\d{2})$/.test(String(value))?'':'+08:00'));
+    const belongs=record=>{
+      if(record.nodeId)return record.nodeId===node.id;
+      const peers=rows.filter(row=>row.key===node.key);
+      if(peers.length===1)return true;
+      const time=timestamp(record.time??record.at);
+      return peers.find(row=>time>=timestamp(row.startedAt)&&(!row.completedAt||time<=timestamp(row.completedAt)))===node;
+    };
+    const amount=value=>present(value)&&Number.isFinite(Number(value))?'¥ '+money(Number(value)/100):'';
+    const primaryFields=new Set(['受理情况','客诉等级','调整后','本次操作','跟进结果','未达成原因','方案结果','退款金额','赔偿金额','审批结果','付款结果','待付金额','实际金额','发货内容','发货进度','复核结果','处理结果','结案结果']);
+    const fieldsView=fields=>`<dl class="uc-process-result-facts">${fields.filter(([,value])=>present(value)).map(([label,value,full])=>`<div class="${[full?'uc-full':'',primaryFields.has(label)?'is-primary':''].filter(Boolean).join(' ')}"><dt>${esc(label)}</dt><dd>${esc(valueText(value))}</dd></div>`).join('')}</dl>`;
+    const cards=[];
+    const add=(title,fields,record={})=>{
+      const body=fieldsView(fields),time=record.time??record.at;
+      cards.push({title,time:timestamp(time),html:`<article class="uc-process-result" aria-label="${esc(title)}结果摘要">${body}</article>`});
+    };
+    if(node.key==='closed')add('结案结果',[['结案结果','已处理并结案'],['结案说明',r.closeNote||(r.follows||[]).find(item=>item.kind==='closure')?.note,true]]);
+    if(node.type==='approval'){
+      if(!node.source?.approvalResult)return '';
+      add('审批结论',[['审批结果',node.source.approvalResult],['审批意见',node.source.result,true]]);
+    }
+    const methods=p=>p.handlingMethods||p.methods||[];
+    const solutionFields=p=>[
+      ['本次操作','已确认解决方案'],
+      ['处理方式',methods(p).map(key=>({refund:'退款',exchange:'商品置换',compensation:'赔偿',service:'继续服务'})[key]||key).join('、')||p.type],
+      ['退款金额',methods(p).includes('refund')||p.refund?amount(p.refund):''],
+      ['赔偿金额',p.compensation?amount(p.compensation):''],
+      ['置换商品',(p.exchangeItems||[]).map(item=>`${item.name||item.productId} × ${item.quantity}`).join('；'),true],
+      ['处理说明',p.content,true]
+    ];
+    const entryStage=entry=>entry.nodeId&&r.execution?.steps?.some(step=>step.id===entry.nodeId)?stageKind(r.execution.steps.find(step=>step.id===entry.nodeId)):entry.kind==='accept'?'intake':['handling','assessment','compensation','start'].includes(entry.kind)?'sales':entry.kind==='closure'?'close':entry.kind==='workflow'?({'财务付款':'payment','采购发货':'procurement','客服复核':'close','财务审批':'financeApproval','采购审批':'purchaseApproval'})[entry.action]:['follow','grading'].includes(entry.kind)||!entry.kind?(entry.beforeStatus||entry.status?stageForStatus(entry.beforeStatus||entry.status):'sales')||'sales':null;
+    const entries=(r.follows||[]).map((entry,index)=>({entry,index})).filter(({entry})=>!node.source?.salesPreview&&node.type!=='approval'&&entryStage(entry)===node.key&&belongs(entry));
+    for(const {entry:f,index}of entries){
+      if(f.kind==='accept')add('客服接单',[['客诉等级',f.level||'接单时等级未记录'],['风险类型',level4Type(f)]],f);
+      else if(f.kind==='grading')add('调整客诉等级',[['调整前',f.before?.level],['调整后',f.level],['风险类型',level4Type(f)]],f);
+      else if(['handling','assessment'].includes(f.kind))add('责任认定',[['责任认定',[valueText(f.department),valueText(f.responsible)].filter(Boolean).join(' · ')],['认定原因',f.reason,true],['处理结果',f.handlingPlan?planText(f.handlingPlan):'']],f);
+      else if(f.kind==='compensation'&&f.customerSolution)add('已确认解决方案',solutionFields(f.customerSolution),f);
+      else if(f.kind==='closure')add('客服复核结果',[['复核结果','已处理并结案'],['结案说明',f.note,true]],f);
+      else if(f.kind==='workflow')add(f.action||'办理记录',(f.fields||[]).slice(0,3),f);
+      else if(f.kind!=='start'){
+        const c=f.communication,reason=c?.reasonSource==='demands'?c.reason:({unreachable:'联系不上客户',amount:'客户不认可方案金额',method:'客户不接受处理方式',considering:'客户需要考虑，等待回复',internal:'等待内部核实或确认',other:'其他'})[c?.reason]||c?.reason;
+        add(node.key==='close'?'客服复核跟进':'沟通跟进',[['本次操作',({ongoing:'方案未达成一致',agreed:'客户已同意解决方案'})[c?.result]],['未达成原因',reason,true],['沟通内容',f.note,true]],f);
+      }
+    }
+    if(node.key==='intake'&&!node.source?.demo&&!entries.some(({entry})=>entry.kind==='accept')&&r.acceptedAt)add('客服接单',[['接单结果','客服已接单'],['客诉等级','接单时等级未记录']],{time:r.acceptedAt,actor:r.acceptedBy});
+    if(node.key==='sales'&&!entries.some(({entry})=>entry.kind==='compensation')&&r.customerSolution&&belongs({time:r.compensatedAt}))add('已确认解决方案',solutionFields(r.customerSolution),{time:r.compensatedAt,actor:r.compensatedBy});
+    for(const entry of executionResultRecords(r))if(node.type!=='approval'&&entry.stage===node.key&&belongs(entry))add(entry.action,entry.fields.filter(([label])=>entry.brief.includes(label)),entry);
+    if(!cards.length&&node.source?.result)add(node.key==='close'?'客服复核结果':'办理结果',[['处理结果',node.key==='close'&&node.state==='done'?'已处理并结案':''],['售后类型',node.key==='close'?r.aftercareType:''],[node.key==='close'?'结案说明':'处理说明',node.source.result,true]],{time:node.completedAt,actor:node.source.completedBy||node.people});
+    if(!cards.length&&node.key==='close'&&r.closedAt)add('结案结果',[['处理结果','已结案'],['结案说明',r.closeNote]],{time:r.closedAt,actor:r.closedBy});
+    if(!cards.length&&node.source?.resultFields)add(node.title,node.source.resultFields,{time:node.completedAt||node.startedAt});
+    const ordered=cards.sort((a,b)=>(a.time||0)-(b.time||0)),latest=ordered.at(-1),solution=node.key==='sales'?ordered.findLast(item=>item.title==='已确认解决方案'):null;
+    const visible=solution&&latest!==solution?[solution,latest]:latest?[latest]:[];
+    return `<div class="uc-process-results" aria-label="${esc(node.title)}操作结果">${visible.length?visible.map(item=>item.html).join(''):`<p class="uc-process-result-empty">${node.state==='done'?'未记录操作结果':'暂无操作结果'}</p>`}</div>`;
+  }
   function processTime(node,now){
-    const at=value=>esc(deadlineText(value));
-    if(node.state==='done')return node.completedAt?'完成于 '+at(node.completedAt):'完成时间未记录';
-    if(node.state==='future')return '到达后开始计时';
-    if(node.state==='skipped')return '无需办理';
-    if(node.state==='returned')return '退回于 '+at(node.returnedAt);
+    const at=value=>esc(deadlineText(value).replace(/^\d{4}-(\d{2})-(\d{2})[ T](\d{2}:\d{2}).*$/,'$1.$2 $3'));
+    if(node.key==='pending'&&node.state!=='paused')return at(node.startedAt||node.completedAt);
+    if(node.state==='done')return node.completedAt?at(node.completedAt):'完成时间未记录';
+    if(['future','skipped','terminated'].includes(node.state))return '';
+    if(node.state==='returned')return at(node.returnedAt);
     if(node.state==='paused')return '节点计时已暂停';
+    if(node.key==='intake'&&node.startedAt)return at(node.startedAt);
     const raw=node.deadline,deadline=typeof raw==='number'?raw:Date.parse(/^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}(:\d{2})?$/.test(raw||'')?raw.replace(' ','T')+'+08:00':raw);
-    if(!Number.isFinite(deadline))return node.label==='待接单'?'接单后开始计时':'办理时限待确认';
+    if(!Number.isFinite(deadline))return node.source?.demo?at(node.startedAt):node.label==='待处理'?'接单后开始计时':'办理时限待确认';
     const remaining=deadline-now,minutes=Math.max(1,Math.ceil(Math.abs(remaining)/60000)),hours=Math.floor(minutes/60),duration=(hours?hours+'小时':'')+(minutes%60?minutes%60+'分钟':'');
     return `<span class="uc-process-clock${remaining<0?' is-overdue':''}">${remaining<0?'已超时 ':'剩余 '}${duration}</span>`;
   }
@@ -153,12 +278,13 @@ window.PCModules['complaint-detail']={render(){},create({btn,replyAction,canFoll
     const example=exampleProcess(r),rows=processNodes(example||r),closed=workOrderStatus(r.status,r)==='已结案',now=Date.now();
     const marker=state=>state==='done'?'<path d="m5 10 3 3 7-7"/>':'<circle cx="10" cy="10" r="6"/><path d="M10 6v4l3 2"/>';
     const content=`<ol class="uc-process-list" aria-label="工单办理节点">${rows.map((node,index)=>{
-      const label=node.label||({done:'已完成',current:node.type==='approval'?'审批中':'办理中',future:'未开始',paused:'已暂停',returned:'已退回',skipped:'已跳过'})[node.state];
-      const people=node.people||(node.state==='future'?'到达后分派':node.label==='待接单'?'待接单':node.current?'待分派':'未记录');
+      const label=node.label||({done:'已完成',current:node.type==='approval'?'审批中':'办理中',future:'未开始',paused:'已暂停',returned:'已退回',skipped:'已跳过',terminated:'已终止'})[node.state];
+      const pending=node.key==='pending';
+      const people=valueText(pending?(r.submitter||(r.logs||[]).find(item=>item.action==='收到投诉')?.actor||node.people):node.people).replace(/[（(][^（）()]*[）)]/g,'').trim()||(node.state==='future'?'到达后分派':node.state==='terminated'?'未办理':node.label==='待处理'?'待接单':node.current?'待分派':'未记录');
       const url=node.external?.url,approvalURL=typeof url==='string'&&/^https?:\/\//i.test(url)?url:'';
-      return `<li class="uc-process-node is-${node.state}"${node.current?' aria-current="step"':''}><div class="uc-process-title"><span class="uc-process-marker" aria-hidden="true">${node.state==='done'||node.current?`<svg viewBox="0 0 20 20">${marker(node.state)}</svg>`:index+1}</span><div><strong>${esc(node.title)}</strong>${approvalURL?`<a class="uc-link" href="${esc(approvalURL)}" target="_blank" rel="noopener noreferrer">查看审批</a>`:''}</div></div><div class="uc-process-assignee"><span class="uc-process-label">处理人：</span>${esc(people)}</div><span class="uc-process-status"><span class="uc-process-label">状态：</span>${esc(label)}</span><div class="uc-process-time"><span class="uc-process-label">办理时间：</span>${processTime(node,now)}</div>${node.state==='returned'&&node.reason||node.note?`<p class="uc-process-note">${esc(node.state==='returned'?node.reason:node.note)}</p>`:''}</li>`;
+      return `<li class="uc-process-node is-${node.state}"${node.current?' aria-current="step"':''}><span class="uc-process-marker" aria-hidden="true">${node.state==='done'||node.current?`<svg viewBox="0 0 20 20">${marker(node.state)}</svg>`:index+1}</span><div class="uc-process-body"><div class="uc-process-heading"><strong class="uc-process-title">${esc(node.title)}</strong><div class="uc-process-time"><span class="uc-process-label">办理时间：</span>${processTime(node,now)}</div></div><div class="uc-process-people"><span class="uc-process-assignee"><span class="${pending?'uc-process-submitter-label':'uc-process-label'}">${pending?'提交人：':'处理人：'}</span>${esc(people)}</span><span class="uc-process-status"><span class="uc-process-label">状态：</span>${esc(label)}</span>${approvalURL?`<a class="uc-link" href="${esc(approvalURL)}" target="_blank" rel="noopener noreferrer">查看审批</a>`:''}</div>${node.state==='returned'&&node.reason||node.note?`<p class="uc-process-note">${esc(node.state==='returned'?node.reason:node.note)}</p>`:''}${processResultView(r,node,rows)}</div></li>`;
     }).join('')}</ol>`;
-    return section('处理流程',content,`<span class="uc-muted">${closed?'流程已结束':'已完成 '+rows.filter(node=>node.state==='done').length+' / '+rows.length}</span>`);
+    return `<div class="uc-info-primary">${section('处理流程',content,closed?'':`<span class="uc-muted">已完成 ${rows.filter(node=>node.state==='done').length} / ${rows.length}</span>`)}</div>`;
   }
-  return {summary,phoneView,informationView,orderCards,processingDepartment,processRecords,processView,detailActions,closureReady};
+  return {summary,phoneView,informationView,orderCards,processingDepartment,processRecords,processView,executionResultRecords,detailActions,closureReady};
 }};

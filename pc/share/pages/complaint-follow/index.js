@@ -47,7 +47,7 @@ window.PCModules['complaint-follow']={render(){},create({ACTOR,canAssess,canFoll
     const errors=[],result=Object.hasOwn(d,'followResult')?d.followResult:d.operation==='unresolved'?'ongoing':'note',value=communication(d),note=String(d.note||'').trim();
     if(!canFollow(r))errors.push(['unresolvedReason','请先接单后再跟进']);
     if(result!=='note'&&!Object.hasOwn(RESULTS,result))errors.push(['unresolvedReason','当前本次操作不可保存跟进']);
-    if(old){if(!editable(old)||JSON.stringify(value)!==JSON.stringify(old.communication||null))errors.push(['unresolvedReason','进展变化请新增跟进记录']);}
+    if(old){const previous=old.communication?{...old.communication}:null;if(previous)delete previous.periodId;if(!editable(old)||JSON.stringify(value)!==JSON.stringify(previous))errors.push(['unresolvedReason','进展变化请新增跟进记录']);}
     else if(result!=='note'&&!canAssess(r))errors.push(['unresolvedReason','当前环节仅可补充跟进记录']);
     if(result==='ongoing'){
       if(!d.unresolvedReason||!old&&!dictionary.current.demands.includes(d.unresolvedReason))errors.push(['unresolvedReason','请选择配置中的未达成原因']);
@@ -63,8 +63,28 @@ window.PCModules['complaint-follow']={render(){},create({ACTOR,canAssess,canFoll
     const beforeStatus=r.status,value=communication(d);
     if(value)markProcessing(r,time);
     const entry={id:r.id+'-'+Date.now()+'-'+r.follows.length,kind:'follow',time,actor:ACTOR,note:String(d.note||'').trim(),files:clone(d.files||[]),beforeStatus,status:r.status,...recognitionSnapshot(r)};
-    if(value)entry.communication=value;
+    if(value){entry.communication=value;if(value.result==='ongoing')value.periodId=startPeriod(r,value.reason,time,entry.id);else stopPeriod(r,time,'客户已同意解决方案')}
     r.follows.unshift(entry);return entry;
+  }
+  function activePeriod(r){return (r.communicationPeriods||[]).find(period=>!period.endedAt)}
+  function stopPeriod(r,time,result){
+    const period=activePeriod(r);if(!period)return;
+    period.endedAt=time;period.endReason=result;
+  }
+  function startPeriod(r,reason,time,id){
+    const active=activePeriod(r);if(active?.reason===reason)return active.id;
+    stopPeriod(r,time,'未达成原因变更');
+    const config=dictionary.current,timing=dictionary.timingFor(config,reason,r.level);
+    // Business timestamps are China local wall time; adding elapsed hours here
+    // keeps the persisted minute format and makes one day exactly 24 hours.
+    const dueAt=timing?new Date(Date.parse(time.replace(' ','T').slice(0,16)+':00Z')+timing.value*(timing.unit==='days'?86400000:3600000)).toISOString().slice(0,16).replace('T',' '):'';
+    const period={id,reason,level:r.level,startedAt:time,dueAt,timing,configRevision:config.revision??0,endedAt:'',endReason:''};
+    (r.communicationPeriods??=[]).push(period);return id;
+  }
+  function periodFields(r,f){
+    const period=(r.communicationPeriods||[]).find(item=>item.id===f?.communication?.periodId);
+    if(!period)return [];
+    return [['处理时效',dictionary.timingText(period.timing)+(period.level?'（按 '+period.level+'）':'')],['本轮开始',fmt(period.startedAt)],...(period.dueAt?[['处理截止',fmt(period.dueAt)]]:[]),...(period.endedAt?[['本轮结束',fmt(period.endedAt)+' · '+period.endReason]]:[])];
   }
   function edit(r,id,d,time){
     const f=r.follows.find(f=>f.id===id);if(!f||validate(r,d,f).length)return null;
@@ -81,9 +101,9 @@ window.PCModules['complaint-follow']={render(){},create({ACTOR,canAssess,canFoll
     }
     return null;
   }
-  function metadata(f){const c=f.communication;if(!c)return '';return `<div class="uc-recognition-summary"><span>沟通结果：${esc(RESULTS[c.result]||c.result)}</span>${c.reason?`<span>未达成原因：${esc(reasonText(c))}</span>`:''}${c.nextFollowAt?`<span>下次跟进：${esc(fmt(c.nextFollowAt))}</span>`:''}</div>`}
-  function overview(r){const f=current(r);if(!f)return '';const c=f.communication;return section('沟通进展',`<div class="uc-details">${detail('当前进展',RESULTS[c.result])}${detail('最近沟通',fmt(f.time))}${c.reason?detail('未达成原因',reasonText(c),true):''}${c.nextFollowAt?detail('下次跟进',fmt(c.nextFollowAt)):''}${detail('跟进人',f.actor)}</div>`,c.result==='agreed'&&canAssess(r)?link('填写解决方案','begin-compensation'):'')}
-  function form(r,d,f){const controls=!f&&canAssess(r);return `<div id="uc-follow-form" class="ub-form" data-draft="follow" novalidate>${controls?field('unresolvedReason','未达成原因',select('unresolvedReason',dictionary.options('demands',d.unresolvedReason),d.unresolvedReason,'请选择主要原因','required aria-required="true" aria-label="未达成原因"'),true):f?.communication?metadata(f):''}${field('note','沟通内容',`<textarea id="uc-note" name="note" class="uc-input uc-follow-note" rows="6" maxlength="2000" show-word-limit placeholder="记录客户反馈、本次沟通和下一步安排">${esc(d.note)}</textarea>`,false,'',true)}${field('followImages','图片',`<div><div class="uc-upload-row">${btn('添加图片','upload-follow','id="uc-followImages"')}<input type="file" id="uc-upload" accept="image/png,image/jpeg" multiple hidden data-upload="follow"><span class="uc-muted">最多 4 张，每张 5MB 以内</span></div><div id="uc-upload-list">${draftFiles(d.files)}</div></div>`)}</div>`}
+  function metadata(f,r){const c=f.communication;if(!c)return '';return `<div class="uc-recognition-summary"><span>沟通结果：${esc(RESULTS[c.result]||c.result)}</span>${c.reason?`<span>未达成原因：${esc(reasonText(c))}</span>`:''}${c.nextFollowAt?`<span>下次跟进：${esc(fmt(c.nextFollowAt))}</span>`:''}${periodFields(r,f).map(([label,value])=>`<span>${esc(label)}：${esc(value)}</span>`).join('')}</div>`}
+  function overview(r){const f=current(r);if(!f)return '';const c=f.communication;return section('沟通进展',`<div class="uc-details">${detail('当前进展',RESULTS[c.result])}${detail('最近沟通',fmt(f.time))}${c.reason?detail('未达成原因',reasonText(c),true):''}${c.nextFollowAt?detail('下次跟进',fmt(c.nextFollowAt)):''}${detail('跟进人',f.actor)}${periodFields(r,f).map(([label,value])=>detail(label,value)).join('')}</div>`,c.result==='agreed'&&canAssess(r)?link('填写解决方案','begin-compensation'):'')}
+  function form(r,d,f){const controls=!f&&canAssess(r);return `<div id="uc-follow-form" class="ub-form" data-draft="follow" novalidate>${controls?field('unresolvedReason','未达成原因',select('unresolvedReason',dictionary.options('demands',d.unresolvedReason),d.unresolvedReason,'请选择主要原因','required aria-required="true" aria-label="未达成原因"'),true):f?.communication?metadata(f,r):''}${field('note','沟通内容',`<textarea id="uc-note" name="note" class="uc-input uc-follow-note" rows="6" maxlength="2000" show-word-limit placeholder="记录客户反馈、本次沟通和下一步安排">${esc(d.note)}</textarea>`,false,'',true)}${field('followImages','图片',`<div><div class="uc-upload-row">${btn('添加图片','upload-follow','id="uc-followImages"')}<input type="file" id="uc-upload" accept="image/png,image/jpeg" multiple hidden data-upload="follow"><span class="uc-muted">最多 4 张，每张 5MB 以内</span></div><div id="uc-upload-list">${draftFiles(d.files)}</div></div>`)}</div>`}
   function closureForm(d){return `<div id="uc-closure-form" class="ub-form" data-draft="closure" novalidate><div class="uc-closure-note">确认后工单将进入已结案状态。</div>${field('note','结案说明',`<textarea id="uc-note" name="note" class="uc-input" rows="5" maxlength="1000" placeholder="填写本次处理结果（选填）">${esc(d.note)}</textarea>`,false,'',true)}</div>`}
   function operationChoice(active){return `<div class="uc-operation-choice"><div class="ub-form">${field('operation','本次操作',assessmentChoices('operation','本次操作（单选）',Object.entries(OPERATIONS).map(([key,[label]])=>[key,label]),active),false,'',true)}</div></div>`}
   function resetOperation(e){for(const input of e.layer.el.querySelectorAll('[name=operation]')){input.checked=input.value===e.kind;PCUI.syncControl(input)}}
@@ -96,16 +116,17 @@ window.PCModules['complaint-follow']={render(){},create({ACTOR,canAssess,canFoll
     if(e.kind==='closure')return cancel+btn('确认结案','save-closure',busy,true);
     return cancel+btn(e.followId?'保存修改':'保存跟进','save-follow',busy,true);
   }
-  function history(r){return r.follows.length?events(r.follows,f=>{
+  function history(r,executionResults=[]){const records=[...r.follows,...executionResults].sort((a,b)=>String(b.time||'').replace('T',' ').localeCompare(String(a.time||'').replace('T',' ')));return records.length?events(records,f=>{
+    if(f.kind==='execution-result')return `<div class="uc-event-title"><strong>${esc(f.actor||'未记录')}</strong>${tag(f.action,'blue')}</div><div class="uc-details">${f.fields.map(([label,value,full])=>detail(label,value,full)).join('')}</div>${filesView(f.files||[],f.fileKind,f.fileIndex)}`;
     if(f.kind==='grading')return `<div class="uc-event-title"><strong>${esc(f.actor)}</strong>${tag('修改客诉等级','blue')}</div><div class="uc-event-text">${esc([f.before?.level,level4Type(f.before||{})].filter(Boolean).join(' · ')||'未填写')} → ${esc([f.level,level4Type(f)].filter(Boolean).join(' · '))}</div>`;
     if(['assessment','handling'].includes(f.kind))return `<div class="uc-event-title"><strong>${esc(f.actor)}</strong>${tag(String(f.action||'').includes('修改')?'修改责任认定':'责任认定','blue')}</div><div class="uc-recognition-summary">${[f.department,f.type,f.responsible,f.level,level4Type(f)].map(valueText).filter(Boolean).map(value=>`<span>${esc(value)}</span>`).join('')}</div><div class="uc-event-text">责任原因：${esc(f.reason||'未填写')}</div>${f.handlingPlan?`<div class="uc-event-text">处理结果：${esc(planText(f.handlingPlan))}</div>`:''}${f.customerSolution?`<details class="uc-inline-details"><summary>查看解决方案</summary>${solutionRead(f.customerSolution,r.follows.indexOf(f))}</details>`:''}${filesView(f.handlingFiles||[],'handling-history',r.follows.indexOf(f))}<div class="uc-saved-meta">首次反馈：${esc(f.firstContact||'未填写')} · ${fmt(f.contactTime)}</div>`;
     if(f.kind==='transfer')return `<div class="uc-event-title"><strong>${esc(f.actor)}</strong><span>历史门店转派</span></div><div class="uc-event-text">${esc(f.store)} · ${esc(f.toHandler)}<br>转派原因：${esc(f.note)}</div>`;
     if(f.kind==='compensation')return `<div class="uc-event-title"><strong>${esc(f.actor)}</strong>${tag('解决方案','blue')}</div>${solutionRead(f.customerSolution,r.follows.indexOf(f))||'<span class="uc-muted">未选择处理方式</span>'}`;
     if(['accept','start'].includes(f.kind))return `<div class="uc-event-title"><strong>${esc(f.actor)}</strong>${tag(f.kind==='accept'?'客服接单':'开始处理','blue')}</div><div class="uc-event-text">${esc(f.note)}</div>`;
     if(f.kind==='reply')return `<div class="uc-event-title"><strong>${esc(f.actor)}</strong>${tag('回复客户','green')}</div>${f.note?`<div class="uc-event-text">${esc(f.note)}</div>`:''}${filesView(f.files||[],'follow',r.follows.indexOf(f))}`;
-    if(f.kind==='closure')return `<div class="uc-event-title"><strong>${esc(f.actor)}</strong>${tag('结案','green')}</div><div class="uc-event-text">${esc(f.note||'未填写跟进内容')}</div>`;
-    if(f.kind==='workflow')return `<div class="uc-event-title"><strong>${esc(f.actor)}</strong>${tag(f.action||'流程处理','blue')}</div>${(f.fields||[]).length?`<div class="uc-recognition-summary">${f.fields.map(([label,value])=>`<span>${esc(label)}：${esc(value)}</span>`).join('')}</div>`:''}<div class="uc-event-text">${esc(f.note||'未填写处理说明')}</div>`;
-    return `<div class="uc-event-title"><strong>${esc(f.actor)}</strong>${tag('沟通跟进')}${editable(f)?link('编辑','edit-follow-record',`data-follow="${esc(f.id)}" aria-label="编辑跟进 ${esc(fmt(f.time))}"`):''}</div>${metadata(f)}<div class="uc-event-text">${esc(f.note||'未填写跟进内容')}</div>${filesView(f.files||[],'follow',r.follows.indexOf(f))}${f.updatedAt?`<div class="uc-saved-meta">修改于 ${fmt(f.updatedAt)}</div>`:''}`;
+    if(f.kind==='closure')return `<div class="uc-event-title"><strong>${esc(f.actor)}</strong>${tag('结案','green')}</div><div class="uc-event-text">${esc(f.note||'未填写跟进内容')}</div>${filesView(f.files||[],'follow',r.follows.indexOf(f))}`;
+    if(f.kind==='workflow')return `<div class="uc-event-title"><strong>${esc(f.actor)}</strong>${tag(f.action||'流程处理','blue')}</div>${(f.fields||[]).length?`<div class="uc-recognition-summary">${f.fields.map(([label,value])=>`<span>${esc(label)}：${esc(value)}</span>`).join('')}</div>`:''}<div class="uc-event-text">${esc(f.note||'未填写处理说明')}</div>${filesView(f.files||[],'follow',r.follows.indexOf(f))}`;
+    return `<div class="uc-event-title"><strong>${esc(f.actor)}</strong>${tag('沟通跟进')}${editable(f)?link('编辑','edit-follow-record',`data-follow="${esc(f.id)}" aria-label="编辑跟进 ${esc(fmt(f.time))}"`):''}</div>${metadata(f,r)}<div class="uc-event-text">${esc(f.note||'未填写跟进内容')}</div>${filesView(f.files||[],'follow',r.follows.indexOf(f))}${f.updatedAt?`<div class="uc-saved-meta">修改于 ${fmt(f.updatedAt)}</div>`:''}`;
   }):empty('暂无跟进记录')}
-  return {RESULTS,OPERATIONS,draft,operationDraft,switchOperation,operationDirty,gradeValue,gradeErrors,recordGrade,gradeDialog,validate,record,edit,current,overview,form,closureForm,operationChoice,resetOperation,editorFooter,history,editable};
+  return {RESULTS,OPERATIONS,draft,operationDraft,switchOperation,operationDirty,gradeValue,gradeErrors,recordGrade,gradeDialog,validate,record,edit,current,activePeriod,stopPeriod,overview,form,closureForm,operationChoice,resetOperation,editorFooter,history,editable};
 }};
