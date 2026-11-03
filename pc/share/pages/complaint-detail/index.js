@@ -1,21 +1,19 @@
 /* Read-only complaint overview and progress. No workflow state or stored data is changed. */
-window.PCModules['complaint-detail']={render(){},create({btn,replyAction,canAssess,canClose,hasHandlingScheme,handlingMissing,icon,workOrderStatus,valueText,planText,detail,statusTag,currentHandler,currentTask,events,esc,empty,section,fmt,levelTag,level4Type,CHANNELS,interval,filesView,link,tag,resolveLink,orderProjects,money,iconFile,paymentView,paymentMoney,detailReference,isDemoRecord=()=>false}){
+window.PCModules['complaint-detail']={render(){},create({btn,replyAction,canFollow,canAssess,canGrade,canClose,hasHandlingScheme,handlingMissing,icon,workOrderStatus,valueText,planText,detail,statusTag,currentHandler,currentTask,events,esc,empty,section,fmt,levelTag,level4Type,CHANNELS,interval,filesView,link,tag,resolveLink,orderProjects,money,iconFile,paymentView,paymentMoney,detailReference,isDemoRecord=()=>false}){
   function closureReady(r){
     if(!hasHandlingScheme(r)||handlingMissing(r).length)return false;
     const pending=(r.execution?.steps||[]).some(node=>['handling','approval'].includes(node.type)&&!['intake','sales','close'].includes(node.kind)&&!node.done&&!node.skipped);
     return !pending&&(r.status==='客服复核中'||r.handlingPlan==='resolved'||Boolean(r.customerSolution?.methods?.length||r.customerSolution?.handlingMethods?.length));
   }
   function detailActions(r){
-    let primary=null,more=[];
-    const assess=['责任认定','begin-assessment'],solution=['解决方案','begin-compensation'],close=['结案','close-case'];
+    let primary=null,secondary=[];
     if(!r.suspension&&!r.legacySuspended){
       if(r.status==='待处理')primary=['客服接单','accept-case'];
-      else if(canAssess(r)){
-        primary=r.status==='客服已接单'||!hasHandlingScheme(r)||handlingMissing(r).length?assess:canClose(r)?close:solution;
-        more=[assess,solution].filter(action=>action!==primary);
-      }else if(canClose(r))primary=close;
+      else if(canFollow(r))primary=['跟进处理','begin-handling'];
+      if(canAssess(r))secondary.push(['责任认定','begin-assessment']);
+      if(canClose(r))secondary.push(['结案','close-case']);
     }
-    return replyAction()+(more.length?`<span data-pc-menu="更多">${more.map(([label,action])=>btn(label,action)).join('')}</span>`:'')+(primary?btn(primary[0],primary[1],'',true):'');
+    return replyAction()+secondary.map(([label,action])=>btn(label,action)).join('')+(primary?btn(primary[0],primary[1],'',true):'');
   }
   function deadlineText(value){
     if(!value)return '—';
@@ -28,12 +26,17 @@ window.PCModules['complaint-detail']={render(){},create({btn,replyAction,canAsse
     const masked=/[*＊•]/.test(recorded)?recorded:full?digits.slice(0,3)+'****'+digits.slice(-4):recorded||'—';
     return {value:revealed&&full?full:masked,canReveal:Boolean(full),hasPhone:Boolean(recorded||full)};
   }
-  function summary(r,phoneVisible=false){
+  function gradeBadge(r){
+    const editable=canGrade(r),color={'1级':'success','2级':'primary','3级':'warning','4级':'danger','5级':'danger'}[r.level]||'info';
+    const badge=`<span class="uc-grade-badge" style="--uc-grade:var(--el-color-${color});--uc-grade-bg:var(--el-color-${color}-light-9);--uc-grade-line:var(--el-color-${color}-light-7)"><span class="uc-grade-caption">客诉等级</span><span class="uc-grade-value"><strong>${esc(r.level?.replace('级','')||'—')}</strong><span>级</span>${editable?icon('edit'):''}</span></span>`;
+    return editable?link(badge,'edit-grade',`aria-label="修改客诉等级，当前${esc(r.level)}" title="点击修改客诉等级"`).replace('btn text uc-link','btn text uc-link uc-grade-trigger'):badge;
+  }
+  function summary(r,phoneVisible=false,compact=false){
     const customer=r.customerId?link(`<strong>${esc(r.name||'未关联客户')}</strong>`,'customer-detail',`data-customer="${esc(r.customerId)}" aria-label="查看客户详情：${esc(r.name||'未关联客户')}"`):`<strong>${esc(r.name||'未关联客户')}</strong>`;
     const phone=phoneView(r,phoneVisible),phoneAction=phone.hasPhone?link(phoneVisible?'收起号码':'查看完整号码','toggle-phone',`aria-expanded="${phoneVisible}" aria-controls="uc-phone-value"`):'';
     const statement=valueText(r.customerStatement).trim(),complaintStore=r.complaintStore||r.store;
-    const feedback=[[r.firstContact,'首次联系人',r.firstContact],[r.contactTime,'客户投诉时间',r.contactTime?fmt(r.contactTime):''],[r.contactTime,'上报间隔',r.contactTime?interval(r):''],[r.complaintStore&&r.store&&r.complaintStore!==r.store,'工单原门店',r.store]].filter(([show])=>show);
-    return `<div class="uc-ticket-overview"><header class="uc-info-customer"><span class="uc-info-avatar" aria-hidden="true">${esc(Array.from(r.name||'客')[0])}</span><div class="uc-info-identity"><div class="uc-info-contact">${customer}<div class="uc-info-phone"><span class="uc-info-phone-number" id="uc-phone-value">${esc(phone.value)}</span>${phoneAction}</div></div><div class="uc-info-context"><span>会员号 ${esc(r.member||'—')}</span></div></div><div class="uc-ticket-identifiers"><div class="uc-actions">${statusTag(r.status)}${levelTag(r.level)}${level4Type(r)?'<span class="uc-muted">'+esc(level4Type(r))+'</span>':''}</div><span>工单号：${esc(r.id)}</span></div></header><section class="uc-info-complaint-body" aria-label="投诉内容"><p class="uc-info-content">${esc(r.content||'未填写投诉内容')}</p>${statement&&statement!==valueText(r.content).trim()?`<div class="uc-complaint-statement"><div class="uc-info-caption">客户陈述</div><p class="uc-info-content">${esc(statement)}</p></div>`:''}${r.files?.length?`<div class="uc-info-attachments" aria-label="投诉附件">${filesView(r.files,'original')}</div>`:''}${feedback.length?`<div class="uc-info-feedback uc-complaint-meta">${feedback.map(([,label,value])=>`<span>${label}：${esc(value)}</span>`).join('')}</div>`:''}</section><footer class="uc-complaint-origin uc-complaint-meta" aria-label="发起信息"><span>${icon('clock')}<span>发起时间：${esc(r.created?fmt(r.created):'—')}</span></span><span>${icon('users')}<span>发起人：${esc(r.submitter||'—')}</span></span><span>来源渠道：${esc(CHANNELS[r.channel]||'—')}</span>${complaintStore?`<span>投诉门店：${esc(complaintStore)}</span>`:''}</footer></div>`;
+    const feedback=[[r.customerDemand,'客户诉求',r.customerDemand],[r.firstContact,'首次联系人',r.firstContact],[r.contactTime,'客户投诉时间',r.contactTime?fmt(r.contactTime):''],[r.contactTime,'上报间隔',r.contactTime?interval(r):''],[r.complaintStore&&r.store&&r.complaintStore!==r.store,'工单原门店',r.store]].filter(([show])=>show);
+    return `<div class="uc-ticket-overview"><header class="uc-info-customer"><span class="uc-info-avatar" aria-hidden="true">${esc(Array.from(r.name||'客')[0])}</span><div class="uc-info-identity"><div class="uc-info-contact">${customer}<div class="uc-info-phone"><span class="uc-info-phone-number" id="uc-phone-value">${esc(phone.value)}</span>${phoneAction}</div></div><div class="uc-info-context"><span>会员号 ${esc(r.member||'—')}</span></div></div>${compact?`<div class="uc-ticket-identifiers"><div class="uc-actions">${statusTag(r.status)}${levelTag(r.level)}</div><span>工单号：${esc(r.id)}</span></div>`:`<div class="uc-ticket-grade-header"><div class="uc-ticket-identifiers">${statusTag(r.status)}${level4Type(r)?'<span>'+esc(level4Type(r))+'</span>':''}<span>工单号：${esc(r.id)}</span></div>${gradeBadge(r)}</div>`}</header>${compact?'':`<section class="uc-info-complaint-body" aria-label="投诉内容"><p class="uc-info-content">${esc(r.content||'未填写投诉内容')}</p>${statement&&statement!==valueText(r.content).trim()?`<div class="uc-complaint-statement"><div class="uc-info-caption">客户陈述</div><p class="uc-info-content">${esc(statement)}</p></div>`:''}${r.files?.length?`<div class="uc-info-attachments" aria-label="投诉附件">${filesView(r.files,'original')}</div>`:''}${feedback.length?`<div class="uc-info-feedback uc-complaint-meta">${feedback.map(([,label,value])=>`<span>${label}：${esc(value)}</span>`).join('')}</div>`:''}</section><footer class="uc-complaint-origin uc-complaint-meta" aria-label="发起信息"><span>${icon('clock')}<span>发起时间：${esc(r.created?fmt(r.created):'—')}</span></span><span>${icon('users')}<span>发起人：${esc(r.submitter||'—')}</span></span><span>来源渠道：${esc(CHANNELS[r.channel]||'—')}</span>${complaintStore?`<span>投诉门店：${esc(complaintStore)}</span>`:''}</footer>`}</div>`;
   }
   function informationView(r){
     const orders=r.linked.length?orderCards(r.linked,true,r.customerId):empty('暂未关联订单'),orderAction=r.status==='已结案'?'':link(r.linked.length?'调整订单':'关联订单','pick-orders');

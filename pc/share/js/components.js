@@ -272,7 +272,7 @@ window.PCUI = (() => {
     wrapper.replaceChildren();
     const minHeight=source.hasAttribute('data-pc-min-height')&&Number.isFinite(Number(source.dataset.pcMinHeight))?Math.max(0,Number(source.dataset.pcMinHeight)):160;
     const gridOptions = {columns,data:rows,border:true,round:true,align:['left','center','right'].includes(source.dataset.pcAlign)?source.dataset.pcAlign:'center',size:'small',autoHeight:true,
-      minHeight,maxHeight:shop?Math.max(260,window.innerHeight-310):720,
+      minHeight,maxHeight:source.dataset.pcScroll==='parent'?undefined:shop?Math.max(260,window.innerHeight-310):720,
       mergeCells:rows.filter(row=>row.full).map(row=>({row:row.id,col:0,rowspan:1,colspan:heads.length})),
       rowConfig:{height:'auto',isHover:true},columnConfig:{resizable:true},
       showOverflow:false,emptyText:empty?.textContent.trim() || '暂无符合条件的数据',scrollX:{enabled:false},scrollY:{enabled:false}};

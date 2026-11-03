@@ -7,3 +7,4 @@ window.PCModules.complaints = {
   },
   leave() { PCComplaints.leave(); }
 };
+window.PCModules.complaints.ready = PCComplaintOptions.refresh();

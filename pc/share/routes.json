@@ -55,7 +55,7 @@
       ]
     },
     "complaints": {
-      "dependencies": ["complaint-detail"],
+      "dependencies": ["complaint-detail", "complaint-follow", "complaint-options"],
       "scripts": [
         "pages/complaints/business.js",
         "pages/complaints/index.js"
@@ -82,6 +82,18 @@
       "requiresUI": false,
       "scripts": ["pages/complaint-detail/index.js"],
       "styles": ["pages/complaint-detail/style.css"],
+      "routes": []
+    },
+    "complaint-follow": {
+      "requiresUI": false,
+      "scripts": ["pages/complaint-follow/index.js"],
+      "styles": [],
+      "routes": []
+    },
+    "complaint-options": {
+      "requiresUI": false,
+      "scripts": ["pages/complaint-options/storage.js", "pages/complaint-options/index.js"],
+      "styles": [],
       "routes": []
     },
     "complaint-solutions": {

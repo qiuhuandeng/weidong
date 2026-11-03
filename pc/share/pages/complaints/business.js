@@ -5,14 +5,14 @@
   // Independent PC records; import the source prototype once when available.
   const KEY = 'weid.pc.complaints.v1';
   const SOURCE_KEY = 'weidong.unified-complaints.v1';
-  const TYPES = ['闭店','咨询报价','前端话术','门店环境','门店多收','祛斑反黑','顾客自身','光电操作','脱毛操作','门店服务','医美效果','皮肤效果','脱毛效果','光电效果','广告宣传','前后端服务','仪器资质','产品价格','负面新闻','门店加单','顾客交钱没做','抗衰效果','产品过敏'];
+  const dictionary = window.PCComplaintOptions;
   const LEVELS = ['1级','2级','3级','4级','5级'];
   const LEVEL4_TYPES = ['报警','卫生局','监管局'];
   const level4Type = record => record.level==='4级'&&LEVEL4_TYPES.includes(record.level4Type)?record.level4Type:'';
   const CHANNELS = {mini:'微信小程序',wecom:'企业微信 H5 / 侧边栏（客户）',hotline:'400 电话热线',sales:'销售部转交（员工）',legal:'法人电话',wechat:'微信支付投诉',yinsheng:'银盛支付投诉',advertising:'广告渠道投诉',staff:'门店 / 店长提交'};
   const ACTOR = '林晓（售后客服）';
-  const ASSESSMENT_FIELDS=[['department','责任部门'],['type','售后类型'],['responsible','责任人'],['level','客诉等级'],['level4Type','风险类型'],['reason','责任原因']];
-  const CONTACT_FIELDS=[['firstContact','客诉第一联系人'],['contactTime','投诉时间'],['complaintStore','投诉门店'],['customerStatement','客户陈述']];
+  const ASSESSMENT_FIELDS=[['department','责任部门'],['type','售后类型'],['responsible','责任人'],['reason','责任原因']];
+  const CONTACT_FIELDS=[['firstContact','客诉第一联系人'],['contactTime','投诉时间'],['complaintStore','投诉门店'],['customerDemand','客户诉求'],['customerStatement','客户陈述']];
   const RECOGNITION_FIELDS=[...CONTACT_FIELDS,...ASSESSMENT_FIELDS];
   const MULTI_FIELDS=['department','responsible'];
   const multiValues=value=>[...new Set((Array.isArray(value)?value:value?[value]:[]).map(item=>String(item).trim()).filter(Boolean))];
@@ -32,6 +32,7 @@
   const STATUS_TABS=[['','全部'],...WORK_ORDER_STATUSES.map(status=>[status,status])];
   const canAssess=r=>!r.suspension&&!r.legacySuspended&&['客服已接单','客服处理中'].includes(r.status);
   const canFollow=r=>WORK_ORDER_STATUSES.includes(r.status)&&r.status!=='待处理';
+  const canGrade=r=>!r.suspension&&!r.legacySuspended&&canFollow(r)&&r.status!=='已结案';
   function normalizeRecordStatus(r){const before=r.status;r.status=workOrderStatus(before,r);if(['门店处理中','门店待处理','门店交付中'].includes(before)&&r.status==='客服处理中'){r.legacyStoreAssignment??={status:before,handler:r.currentHandler,department:r.currentDepartment,task:r.currentTask,deadline:r.taskDeadline};r.currentHandler=r.acceptedBy||r.startedBy||r.assessedBy||r.transfer?.fromHandler||'';r.currentDepartment='售后客服';r.currentTask='待客服继续处理';delete r.statusDetail;r.taskDeadline=null;}if(before==='已挂起')r.legacySuspended=true;if(before!==r.status&&/失败|部分发货|待同步/.test(before))r.statusDetail ||= before;}
   function currentHandler(r){return r.currentHandler||(['客服已接单','客服处理中','客服复核中'].includes(r.status)?r.acceptedBy||r.startedBy||r.assessedBy:'')||'';}
   function currentTask(r){
@@ -105,7 +106,9 @@
     ['鑫鑫航航','183****3898','南昌东湖店','staff','客服承诺的服务内容与到店沟通有差异，需要核对预约微信记录及门店沟通情况。','2026-10-19 16:03','肖玉红','待处理','',null],
     ['刘晴','138****6219','杭州上城店','mini','客户已提出取消预约，但尚未收到明确回复，希望客服协助确认。','2026-10-19 17:10','客户本人','待处理','',null],
     ['周女士','159****3076','苏州姑苏店','staff','客户反馈项目后不适，门店已上报，希望售后协助核实操作过程并安排复查。','2026-10-19 17:05','杨晓燕','待处理','',null],
-    ['林小溪','137****9082','厦门思明店','wechat','广告宣传的服务范围与到店说明不一致，希望核对预约承诺并提供解决方案。','2026-10-19 17:00','客户本人','待处理','',null]
+    ['林小溪','137****9082','厦门思明店','wechat','广告宣传的服务范围与到店说明不一致，希望核对预约承诺并提供解决方案。','2026-10-19 17:00','客户本人','待处理','',null],
+    ['顾女士','139****0286','杭州上城店','mini','预约前已提出取消服务，希望核对未消费项目并协商退款，请售后回电。','2026-11-03 09:20','客户本人','待处理','',null],
+    ['许女士','158****6312','苏州姑苏店','staff','客户对到店收费说明有疑问，门店已提交反馈，请售后核实预约时的报价。','2026-11-03 09:35','杨晓燕','待处理','',null]
   ];
   const orders = customers.flatMap((c,i)=>{
     const makeOrder = suffix => ({id:'2610'+String(190000000000+i*127+suffix),customerId:'C'+i,name:c[0],phone:c[1],member:String(15275350+i*227),customerWechat:'wx_'+String(203150+i),store:c[2],intention:['色斑改善','肤质改善','脱毛','舒缓修护'][i%4],consultant:['陈敏','王珊','周雨'][i%3],receptionSales:['杨晓燕','张婷婷','赵敏'][i%3],project:['S10祛斑护理','光电皮肤管理','冰点脱毛体验','肌肤修护疗程'][i%4],amount:[5800,5000,2980,189,1200,680][i%6],state:'已到店',created:'2026-10-10 10:30',appointment:'2026-10-12 14:00',arrived:'2026-10-12 14:06',inviter:['陈敏','王珊','周雨'][i%3],reception:['刘静','杨晓燕','吴鲜娇'][i%3],operator:['陈琳','许悦','李婷'][i%3],manager:['陈佳','赵敏','李雯'][i%3],maintainers:['陈琳（操作老师）','陈佳（店长）'],bookingWechatId:'wx'+i+(suffix===2?'b':'a'),wechatChoices:[{id:'wx'+i+'a',name:'美丽顾问 · '+['陈敏','王珊','周雨'][i%3],account:'meiye_'+String(1031+i),record:'JW'+(52010+i),added:'2026-10-08 10:25',promoter:['李江','张宁','陈敏'][i%3],source:['抖音 · 皮肤护理','视频号 · 到店体验','朋友圈 · 皮肤管理'][i%3],campaign:'皮肤管理 · 十月体验',costKey:'2026-10 / 华东推广 / '+(52010+i)},{id:'wx'+i+'b',name:'门店服务 · '+c[2],account:'store_'+String(201+i),record:'JW'+(62010+i),added:'2026-10-11 09:12',promoter:'周雨',source:'视频号 · 门店活动',campaign:'门店十月活动',costKey:'2026-10 / 门店推广 / '+(62010+i)}]});
@@ -143,7 +146,9 @@
     ['销售','前后端服务','inviter','2级','线上说的服务和到店说的不一样，希望把预约时的聊天记录核对清楚。','线上预约承诺与门店交接信息不一致，邀约环节未完整同步服务内容。','已核对预约微信记录及门店接待记录，协调销售和店长统一处理口径。','服务内容已核对并落实，客户确认后续安排。'],
     ['销售','前端话术','inviter','1级','我已经说了取消预约，一直没有收到回复。','咨询未及时响应客户取消预约的请求。','已联系咨询核对预约状态，等待客户确认取消结果。','预约已取消，客户确认无需其他协助。'],
     ['门店','光电操作','operator','3级','做完项目后感觉不舒服，希望核实当天的操作情况。','操作后的注意事项说明及回访不充分。','已联系操作老师核对记录，正在协调复查时间。','客户已完成复查，确认后续服务安排。'],
-    ['推广','广告宣传','promoter','2级','广告说包含的项目，到店后却说不包含，请核对清楚。','宣传服务范围不明确，与门店执行口径存在差异。','已定位预约微信及推广人，核对广告内容与门店服务范围。','服务范围已核对并按协商方案落实，客户确认接受。']
+    ['推广','广告宣传','promoter','2级','广告说包含的项目，到店后却说不包含，请核对清楚。','宣传服务范围不明确，与门店执行口径存在差异。','已定位预约微信及推广人，核对广告内容与门店服务范围。','服务范围已核对并按协商方案落实，客户确认接受。'],
+    ['销售','前端话术','inviter','1级','请核对还没有消费的项目，回电说明退款如何处理。','','',''],
+    ['销售','咨询报价','inviter','2级','到店后说明的费用和预约报价不一致，请帮忙核实。','','','']
   ];
   function demoTime(value,minutes=0){return new Date(Date.parse(value.slice(0,16).replace(' ','T')+':00Z')+minutes*60000).toISOString().slice(0,16).replace('T',' ')}
   function demoImage(r,o,kind){
@@ -240,7 +245,7 @@
       ${select('level',LEVELS,filterDraft.level,'全部等级','aria-label="客诉等级"')}
       ${more?[
         select('department',['推广','销售','门店'],filterDraft.department,'全部责任部门','aria-label="责任部门"'),
-        select('type',TYPES,filterDraft.type,'全部售后类型','aria-label="售后类型"'),
+        select('type',dictionary.options('types',filterDraft.type,records.map(r=>r.type)),filterDraft.type,'全部售后类型','aria-label="售后类型"'),
         select('store',[...new Set(records.map(r=>r.store))],filterDraft.store,'全部门店','aria-label="投诉门店" data-filterable'),
         select('linked',[['yes','已关联订单'],['no','未关联订单']],filterDraft.linked,'全部关联状态','aria-label="关联订单"'),
         select('contact',[['no','首次联系待补充'],['yes','首次联系已填写']],filterDraft.contact,'全部联系信息','aria-label="首次联系信息"'),
@@ -248,7 +253,7 @@
       ].join(''):''}
       <div class="query-actions"><button class="btn primary" type="submit" form="uc-search">搜索</button>${btn('重置','reset')}${link(more?'收起筛选':'更多筛选','more','aria-expanded="'+more+'"')}</div>
     </form><div id="uc-query-error" class="uc-error" role="alert"></div></div></section>
-    <section class="panel content-module uc-card" role="tabpanel" id="uc-list-panel" aria-labelledby="uc-status-${STATUS_TABS.findIndex(([value])=>value===(filters.status||''))}"><div class="panel-head uc-card-head"><h3>投诉列表</h3><div class="uc-actions">${btn('导出','export')}</div></div>
+    <section class="panel content-module uc-card" role="tabpanel" id="uc-list-panel" aria-labelledby="uc-status-${STATUS_TABS.findIndex(([value])=>value===(filters.status||''))}"><div class="panel-head uc-card-head"><h3>投诉列表</h3><div class="uc-actions">${btn('配置','options-open')}${btn('导出','export')}</div></div>
       <div class="table-wrap uc-table-wrap"><table class="uc-table uc-main-table" data-pc-align="left"><colgroup><col><col><col><col><col style="width:85px"><col><col style="width:125px"><col style="width:70px"></colgroup>
       <thead><tr>${['客户信息','关联订单 / 门店','售后来源 / 渠道','投诉内容','客诉等级','责任认定','工单状态','操作'].map((t,i)=>`<th data-pc-min-width="${[150,180,175,250,85,160,125,70][i]}"${i===7?' class="uc-fixed"':''}>${t}</th>`).join('')}</tr></thead>
       <tbody>${rows.length?rows.slice((page-1)*pageSize,page*pageSize).map(complaintRow).join(''):`<tr><td colspan="8">${empty('暂无符合条件的数据')}</td></tr>`}</tbody></table></div>
@@ -258,6 +263,17 @@
     root.querySelectorAll('#uc-search label[for]').forEach(el=>el.htmlFor=el.htmlFor.replace(/^uc-/,'uc-filter-'));
   }
 
+  const {optionsDirty,optionAction,syncOptionDraft,contactForm,responsibilityForm}=window.PCModules['complaint-options'].create({dictionary,getLayers:()=>layers,getEditor:()=>main?.editor,getRecords:()=>records,responsibleOptions,assessmentChoices,multiValues,multiSelect,responsibilityRule,select,openLayer,closeLayer,refreshOptionConsumers,btn,link,esc,section,field,input,toast});
+  function refreshOptionConsumers(){
+    if(!root?.isConnected)return;
+    filterDraft={...filterDraft,...Object.fromEntries(new FormData(root.querySelector('#uc-search')))};
+    renderList();
+    const e=main?.editor;for(const [name,key]of e?.kind==='assessment'?[['type','types'],['customerDemand','demands']]:e?.kind==='follow'?[['unresolvedReason','demands']]:[]){
+      const control=e.layer.el.querySelector('[name="'+name+'"]');if(!control)continue;
+      control.innerHTML=opt(dictionary.options(key,e.draft[name]),e.draft[name],control.options[0]?.textContent||'请选择');PCUI.syncControl(control);
+    }
+  }
+  dictionary?.subscribe(refreshOptionConsumers);
   function lockBackground(){syncDrawerInteraction();}
   function unlockBackground(){syncDrawerInteraction();}
   function openLayer(title,body,footer,level=1){
@@ -268,19 +284,19 @@
     portal.appendChild(el);bind(el);const layer={el,trigger,title,closing:false,parentView};layers.push(layer);lockBackground();
     requestAnimationFrame(()=>requestAnimationFrame(()=>{el.classList.add('show');el.querySelector('.uc-drawer').focus({preventScroll:true})}));return layer;
   }
-  function closeLayer(force=false){const layer=layers.at(-1);if(!layer||layer.closing)return;if(!force&&dirty(layer)){showDiscard(layer);return}layer.closing=true;layer.el.classList.remove('show');layer.el.classList.add('is-closing');setTimeout(()=>{if(!layers.includes(layer))return;layer.el.remove();layers.pop();if(main?.editor?.layer===layer)main.editor=null;if(layers.length){const parent=layers.at(-1);parent.el.inert=false;if(layer.parentView){parent.el.querySelector('.uc-drawer-body').scrollTop=layer.parentView.scroll;if(main?.layer===parent)setDetailTab(layer.parentView.tab)}}else{unlockBackground();main=null}if(layer.trigger?.isConnected)layer.trigger.focus({preventScroll:true});else if(layers.length)layers.at(-1).el.querySelector('.uc-drawer').focus({preventScroll:true});else root.querySelector('input,button')?.focus({preventScroll:true})},matchMedia('(prefers-reduced-motion: reduce)').matches?0:290)}
-  function dirty(layer){const e=main?.editor;return Boolean(e?.layer===layer&&(e.uploading||JSON.stringify(e.draft)!==e.baseline||(e.selectingOrders&&JSON.stringify(e.selection)!==e.selectionBaseline)))}
+  function closeLayer(force=false){const layer=layers.at(-1);if(!layer||layer.closing||layer.options?.saving)return;if(!force&&dirty(layer)){showDiscard(layer);return}layer.closing=true;layer.el.classList.remove('show');layer.el.classList.add('is-closing');setTimeout(()=>{if(!layers.includes(layer))return;layer.el.remove();layers.pop();if(main?.editor?.layer===layer)main.editor=null;if(layers.length){const parent=layers.at(-1);parent.el.inert=false;if(layer.parentView){parent.el.querySelector('.uc-drawer-body').scrollTop=layer.parentView.scroll;if(main?.layer===parent)setDetailTab(layer.parentView.tab)}}else{unlockBackground();main=null}if(layer.trigger?.isConnected)layer.trigger.focus({preventScroll:true});else if(layers.length)layers.at(-1).el.querySelector('.uc-drawer').focus({preventScroll:true});else root.querySelector('input,button')?.focus({preventScroll:true})},matchMedia('(prefers-reduced-motion: reduce)').matches?0:290)}
+  function dirty(layer){if(layer.options)return layer.options.saving||optionsDirty(layer.options);const e=main?.editor;return Boolean(e?.layer===layer&&(e.uploading||followTools().operationDirty(e)||(e.selectingOrders&&JSON.stringify(e.selection)!==e.selectionBaseline)))}
   function showDiscard(layer,action='close'){layer.discardAction=action;const foot=layer.el.querySelector('.uc-drawer-foot');if(foot.querySelector('.uc-discard'))return;layer.oldFoot=foot.innerHTML;foot.innerHTML=`<div class="uc-discard" role="alert"><span>有尚未保存的修改，是否放弃？</span>${link('继续填写','keep')}${btn('放弃修改','discard')}</div>`;foot.querySelector('button').focus()}
   function restoreFoot(layer){if(layer.oldFoot){layer.el.querySelector('.uc-drawer-foot').innerHTML=layer.oldFoot;layer.oldFoot=null;layer.discardAction=null}}
   function recordById(id){return records.find(r=>r.id===id)}
   function isAssessed(r){return ASSESSMENT_FIELDS.every(([key])=>key==='level4Type'?r.level!=='4级'||Boolean(level4Type(r)):key==='responsible'&&r.type==='闭店'?true:valueText(r[key]).trim())}
   function valuesFrom(r,fields){return Object.fromEntries(fields.map(([key])=>[key,MULTI_FIELDS.includes(key)?multiValues(r[key]):r[key]||'']))}
-  function recognitionSnapshot(r){return {...Object.fromEntries(RECOGNITION_FIELDS.map(([key])=>[key,MULTI_FIELDS.includes(key)?multiValues(r[key]):String(r[key]||'').trim()])),level4Type:level4Type(r),linked:clone(r.linked),handlingPlan:r.handlingPlan||'',handlingFiles:clone(r.handlingFiles||[]),customerSolution:r.customerSolution?clone(r.customerSolution):null}}
+  function recognitionSnapshot(r){return {...Object.fromEntries(RECOGNITION_FIELDS.map(([key])=>[key,MULTI_FIELDS.includes(key)?multiValues(r[key]):String(r[key]||'').trim()])),level:r.level||'',level4Type:level4Type(r),linked:clone(r.linked),handlingPlan:r.handlingPlan||'',handlingFiles:clone(r.handlingFiles||[]),customerSolution:r.customerSolution?clone(r.customerSolution):null}}
   function recognitionLog(snapshot){return {...snapshot,handlingFiles:(snapshot.handlingFiles||[]).map(({name,type,size})=>({name,type,size}))}}
-  function handlingMissing(draft){return [['department',multiValues(draft.department).length,'请选择责任部门'],['type',String(draft.type||'').trim(),'请选择售后类型'],['responsible',draft.type==='闭店'||multiValues(draft.responsible).length,'请选择责任人'],['level',LEVELS.includes(draft.level),'请选择客诉等级'],['level4Type',draft.level!=='4级'||Boolean(level4Type(draft)),'请选择风险类型'],['handlingPlan',validPlan(draft.handlingPlan),'请选择处理结果']].filter(([,value])=>!value).map(([name,,message])=>[name,message])}
+  function handlingMissing(draft){return [['department',multiValues(draft.department).length,'请选择责任部门'],['type',String(draft.type||'').trim(),'请选择售后类型'],['responsible',draft.type==='闭店'||multiValues(draft.responsible).length,'请选择责任人'],['handlingPlan',validPlan(draft.handlingPlan),'请选择处理结果']].filter(([,value])=>!value).map(([name,,message])=>[name,message])}
   function recordRecognition(r,draft,time){
     if(!canAssess(r)||handlingMissing(draft).length||(draft.handlingPlan==='resolved'&&!closureReady({...r,...draft,assessedAt:time})))return null;
-    const before=recognitionSnapshot(r),after=recognitionSnapshot({...draft,complaintStore:r.complaintStore,responsible:draft.type==='闭店'?[]:draft.responsible,linked:r.linked,customerSolution:r.customerSolution}),wasAssessed=Boolean(r.assessedAt||r.follows.some(f=>['handling','assessment'].includes(f.kind))),beforeStatus=r.status;
+    const before=recognitionSnapshot(r),after=recognitionSnapshot({...draft,level:r.level,level4Type:r.level4Type,complaintStore:r.complaintStore,responsible:draft.type==='闭店'?[]:draft.responsible,linked:r.linked,customerSolution:r.customerSolution}),wasAssessed=Boolean(r.assessedAt||r.follows.some(f=>['handling','assessment'].includes(f.kind))),beforeStatus=r.status;
     after.handlingPlan=draft.handlingPlan;
     const unchanged=JSON.stringify(before)===JSON.stringify(after);
     if(unchanged&&wasAssessed)return null;
@@ -298,15 +314,16 @@
     const entry={id:r.id+'-compensation-'+Date.now()+'-'+r.follows.length,kind:'compensation',action:'保存解决方案',time,actor:ACTOR,beforeStatus,status:r.status,before,customerSolution:clone(solution),files:[]};
     r.follows.unshift(entry);return entry;
   }
-  function recordAccept(r,time){if(r.suspension||r.legacySuspended||r.status!=='待处理')return null;const beforeStatus=r.status;r.status='客服已接单';r.acceptedAt=time;r.acceptedBy=ACTOR;delete r.statusDetail;delete r.currentTask;const entry={id:r.id+'-accept-'+Date.now(),kind:'accept',action:'客服接单',time,actor:ACTOR,note:'客服已接单，可进行责任认定或填写解决方案。',beforeStatus,status:r.status,files:[]};r.follows.unshift(entry);return entry}
+  function recordAccept(r,time,grade){if(r.suspension||r.legacySuspended||r.status!=='待处理'||followTools().gradeErrors(grade).length)return null;const beforeStatus=r.status,before=followTools().gradeValue(r);Object.assign(r,followTools().gradeValue(grade));r.status='客服已接单';r.acceptedAt=time;r.acceptedBy=ACTOR;delete r.statusDetail;delete r.currentTask;const entry={id:r.id+'-accept-'+Date.now(),kind:'accept',action:'客服接单',time,actor:ACTOR,note:'客服已接单，确认客诉等级为 '+r.level+(level4Type(r)?'（'+level4Type(r)+'）':'')+'。',before,...followTools().gradeValue(r),beforeStatus,status:r.status,files:[]};r.follows.unshift(entry);return entry}
   function markProcessing(r,time){if(r.status==='客服已接单'){r.status='客服处理中';r.startedAt??=time;r.startedBy??=ACTOR;delete r.statusDetail;delete r.currentTask}}
-  function recordFollow(r,d,time){if(!canFollow(r))return null;const beforeStatus=r.status;const entry={id:r.id+'-'+Date.now()+'-'+r.follows.length,kind:'follow',time,actor:ACTOR,note:d.note.trim(),files:clone(d.files),beforeStatus,status:r.status,...recognitionSnapshot(r)};r.follows.unshift(entry);return entry}
+  function followTools(){return window.PCModules['complaint-follow'].create({ACTOR,canAssess,canFollow,canGrade,LEVELS,LEVEL4_TYPES,error,clearErrors,markProcessing,recognitionSnapshot,clone,esc,fmt,field,input,select,detail,section,tag,link,btn,empty,events,filesView,draftFiles,solutionRead,level4Type,valueText,planText,valuesFrom,RECOGNITION_FIELDS,solutionDraft,assessmentChoices,dictionary})}
+  function recordFollow(r,d,time){return followTools().record(r,d,time)}
   function hasHandlingScheme(r){return validPlan(r.handlingPlan)&&Boolean(r.assessedAt||(r.follows||[]).some(f=>['handling','assessment'].includes(f.kind)))}
   function canClose(r){return !r.suspension&&!r.legacySuspended&&['客服处理中','客服复核中'].includes(r.status)&&closureReady(r)}
   function recordClosure(r,time){if(!canClose(r))return null;const beforeStatus=r.status;r.status='已结案';delete r.statusDetail;delete r.currentTask;r.handlingPlan='resolved';r.closedAt=time;r.closedBy=ACTOR;const entry={id:r.id+'-close-'+Date.now(),kind:'closure',time,actor:ACTOR,note:'已确认客诉处理完成，予以结案。',status:r.status,beforeStatus,...recognitionSnapshot(r),files:[]};r.follows.unshift(entry);return entry}
   function replyAction(){return `<div class="uc-footer-reply">${btn('回复客户','reply-customer')}</div>`}
 
-  function followPanel(r){return (canFollow(r)?`<div class="uc-actions uc-follow-actions">${btn('写跟进','write-follow')}</div>`:'')+followHistory(r)+(r.channel==='wechat'?wechatView(r):'')}
+  function followPanel(r){return followTools().history(r)+(r.channel==='wechat'?wechatView(r):'')}
   function openComplaint(id,tab='info'){
     if(layers.length)return;main={record:recordById(id),tab:detailTabKey(tab),scrollPositions:{},references:{payment:false},layer:null,editor:null};
     main.layer=openLayer('投诉详情','','');renderDetail();
@@ -321,9 +338,11 @@
     const visible=!main.phoneVisible,phone=phoneView(main.record,visible);
     if(!phone.canReveal){toast('该工单仅保存了脱敏号码，暂无完整号码');return;}
     main.phoneVisible=visible;
-    main.layer.el.querySelector('#uc-phone-value').textContent=phone.value;
-    button.setAttribute('aria-expanded',String(visible));
-    (button.querySelector('.pc-button-content')||button).textContent=visible?'收起号码':'查看完整号码';
+    for(const layer of [main.layer,main.editor?.layer].filter(Boolean)){
+      const value=layer.el.querySelector('#uc-phone-value'),trigger=layer.el.querySelector('[data-uc="toggle-phone"]');if(!value||!trigger)continue;
+      value.textContent=phone.value;trigger.setAttribute('aria-expanded',String(visible));
+      (trigger.querySelector('.pc-button-content')||trigger).textContent=visible?'收起号码':'查看完整号码';
+    }
   }
   function toggleDetailReference(button){
     const key=button.dataset.reference;if(!main||!Object.hasOwn(main.references,key))return;
@@ -336,9 +355,9 @@
   function panel(id,content){return `<section class="uc-tab-panel" role="tabpanel" id="uc-section-${id}" aria-labelledby="uc-tab-${id}" ${main.tab===id?'':'hidden'}>${content}</section>`}
   function setDetailTab(key){if(!main?.layer)return;key=detailTabKey(key);main.tab=key;main.layer.el.querySelectorAll('.uc-tab').forEach(b=>{const active=b.dataset.tab===key;b.setAttribute('aria-selected',active);b.tabIndex=active?0:-1});main.layer.el.querySelectorAll('.uc-tab-panel').forEach(p=>p.hidden=p.id!=='uc-section-'+key)}
   function selectDetailTab(key,focus=true){key=detailTabKey(key);const body=main.layer.el.querySelector('.uc-drawer-body'),scroll=body.scrollTop,tabTop=body.querySelector('.uc-detail-common').offsetHeight;main.scrollPositions[main.tab]=scroll;setDetailTab(key);body.scrollTop=scroll<=tabTop?scroll:Math.max(tabTop,main.scrollPositions[key]||0);if(focus)main.layer.el.querySelector('#uc-tab-'+key)?.focus({preventScroll:true})}
-  function detailPanels(r){return panel('info',detailCommon(r)+processView(r))+panel('plan',handlingSchemeView(r)+section('解决方案',solutionView(r)))+panel('follows',followPanel(r))}
+  function detailPanels(r){return panel('info',detailCommon(r)+processView(r))+panel('plan',followTools().overview(r)+handlingSchemeView(r)+section('解决方案',solutionView(r)))+panel('follows',followPanel(r))}
   function renderDetail(){if(!main.layer)return;const r=main.record,layer=main.layer,body=layer.el.querySelector('.uc-drawer-body');if(body.children.length)main.scrollPositions[main.tab]=body.scrollTop;layer.el.querySelector('.uc-drawer').classList.add('uc-detail-drawer','uc-workspace');layer.el.querySelector('.uc-layer-top').innerHTML='';body.classList.add('uc-detail-body');body.innerHTML=`<section class="uc-detail-common" aria-label="工单概况">${summary(r,main.phoneVisible)}</section>${detailTabs()}<div class="uc-detail-panels">${detailPanels(r)}</div>`;body.scrollTop=main.scrollPositions[main.tab]||0;layer.el.querySelector('.uc-drawer-foot').innerHTML=detailActions(r)}
-  const {summary,phoneView,informationView,orderCards,processingDepartment,processRecords,processView,detailActions,closureReady}=window.PCModules['complaint-detail'].create({btn,replyAction,canAssess,canClose,hasHandlingScheme,handlingMissing,icon,workOrderStatus,valueText,planText,detail,statusTag,currentHandler,currentTask,events,esc,empty,section,fmt,levelTag,level4Type,CHANNELS,interval,filesView,link,tag,resolveLink,orderProjects,money,iconFile,paymentView,paymentMoney,detailReference,isDemoRecord:r=>r.demoDetailsVersion===DEMO_DETAILS_VERSION&&customers[Number(r.id)-31001]?.[0]===r.name&&r.customerId==='C'+(Number(r.id)-31001)});
+  const {summary,phoneView,informationView,orderCards,processingDepartment,processRecords,processView,detailActions,closureReady}=window.PCModules['complaint-detail'].create({btn,replyAction,canFollow,canAssess,canGrade,canClose,hasHandlingScheme,handlingMissing,icon,workOrderStatus,valueText,planText,detail,statusTag,currentHandler,currentTask,events,esc,empty,section,fmt,levelTag,level4Type,CHANNELS,interval,filesView,link,tag,resolveLink,orderProjects,money,iconFile,paymentView,paymentMoney,detailReference,isDemoRecord:r=>r.demoDetailsVersion===DEMO_DETAILS_VERSION&&customers[Number(r.id)-31001]?.[0]===r.name&&r.customerId==='C'+(Number(r.id)-31001)});
   function paymentListSummary(r){return r.channel==='wechat'?`<div class="uc-payment-list-summary"><span>订单 ${esc(paymentMoney(r.paymentAmount))}</span><span>申请退款 ${esc(paymentMoney(r.refund))}</span></div>`:''}
   function paymentView(r){const read=(label,value,full=false)=>detail(label,valueText(value).trim()||'—',full);return `<section class="uc-channel-payment" aria-label="微信支付信息"><div class="uc-section-head"><h4>微信支付信息</h4><div class="uc-channel-state">${wechatStatusTag(r.channelStatus)}</div></div><div class="uc-details uc-payment-facts">${read('商户名称',r.merchant)}${read('商户号',r.merchantId)}${read('微信投诉单号',r.sourceId)}${read('投诉时间',r.created?fmt(r.created):'')}${read('外部单号',r.externalOrder)}${read('客户昵称',r.wechatNickname)}${read('问题类型',r.problemType)}${read('问题描述',r.problemDescription)}${read('订单金额',paymentMoney(r.paymentAmount))}${read('申请退款金额',paymentMoney(r.refund))}</div><details class="uc-inline-details uc-payment-more"><summary>更多支付资料</summary><div class="uc-details">${read('微信支付订单号',r.payOrder,true)}${read('投诉次数',r.complaintCount===undefined||r.complaintCount===null?'':r.complaintCount+' 次')}${read('风险状态',r.riskStatus)}</div></details></section>`}
   function resolveLink(item){const order=orders.find(o=>o.id===item.id);return {order,wx:order?.wechatChoices.find(w=>w.id===(item.wechatId||order.bookingWechatId))}}
@@ -349,29 +368,33 @@
   function handlingSchemeView(r){if(r.status==='待处理')return empty(currentTask(r));if(canAssess(r)&&!hasHandlingScheme(r))return empty('已开始处理，请填写责任认定');return `<article class="uc-scheme-card" aria-label="责任认定"><div class="uc-scheme-content">${assessmentView(r)}</div>${r.assessedAt||r.closedAt?`<footer class="uc-scheme-meta">${r.assessedAt?`<span>处理人：${esc(r.assessedBy||ACTOR)}</span><span>处理时间：${fmt(r.assessedAt)}</span>`:''}${r.closedAt?`<span>结案时间：${fmt(r.closedAt)}</span>`:''}</footer>`:''}</article>`}
   function solutionView(r){if(!r.customerSolution)return empty('暂未填写解决方案');return `<article class="uc-scheme-card" aria-label="已保存的解决方案"><div class="uc-scheme-content">${solutionRead(r.customerSolution)}</div>${r.compensatedAt?`<footer class="uc-scheme-meta"><span>保存人：${esc(r.compensatedBy||'未记录')}</span><span>保存时间：${fmt(r.compensatedAt)}</span></footer>`:''}</article>`}
   function events(items,render){return `<div class="uc-timeline">${items.map(item=>`<article class="uc-event"><time class="uc-event-time">${esc(fmt(item.time))}</time><div class="uc-event-content">${render(item)}</div></article>`).join('')}</div>`}
-  function followHistory(r){return r.follows.length?events(r.follows,f=>{
-    if(['assessment','handling'].includes(f.kind))return `<div class="uc-event-title"><strong>${esc(f.actor)}</strong>${tag(String(f.action||'').includes('修改')?'修改责任认定':'责任认定','blue')}</div><div class="uc-recognition-summary">${[f.department,f.type,f.responsible,f.level,level4Type(f)].map(valueText).filter(Boolean).map(value=>`<span>${esc(value)}</span>`).join('')}</div><div class="uc-event-text">责任原因：${esc(f.reason||'未填写')}</div>${f.handlingPlan?`<div class="uc-event-text">处理结果：${esc(planText(f.handlingPlan))}</div>`:''}${f.customerSolution?`<details class="uc-inline-details"><summary>查看解决方案</summary>${solutionRead(f.customerSolution,r.follows.indexOf(f))}</details>`:''}${filesView(f.handlingFiles||[],'handling-history',r.follows.indexOf(f))}<div class="uc-saved-meta">首次反馈：${esc(f.firstContact||'未填写')} · ${fmt(f.contactTime)}</div>`;
-    if(f.kind==='transfer')return `<div class="uc-event-title"><strong>${esc(f.actor)}</strong><span>历史门店转派</span></div><div class="uc-event-text">${esc(f.store)} · ${esc(f.toHandler)}<br>转派原因：${esc(f.note)}</div>`;
-    if(f.kind==='compensation')return `<div class="uc-event-title"><strong>${esc(f.actor)}</strong>${tag('解决方案','blue')}</div>${solutionRead(f.customerSolution,r.follows.indexOf(f))||'<span class="uc-muted">未选择处理方式</span>'}`;
-    if(['accept','start'].includes(f.kind))return `<div class="uc-event-title"><strong>${esc(f.actor)}</strong>${tag(f.kind==='accept'?'客服接单':'开始处理','blue')}</div><div class="uc-event-text">${esc(f.note)}</div>`;
-    if(f.kind==='reply')return `<div class="uc-event-title"><strong>${esc(f.actor)}</strong>${tag('回复客户','green')}</div>${f.note?`<div class="uc-event-text">${esc(f.note)}</div>`:''}${filesView(f.files||[],'follow',r.follows.indexOf(f))}`;
-    if(f.kind==='closure')return `<div class="uc-event-title"><strong>${esc(f.actor)}</strong>${tag('结案','green')}</div><div class="uc-event-text">${esc(f.note||'未填写跟进内容')}</div>`;
-    return `<div class="uc-event-title"><strong>${esc(f.actor)}</strong>${tag('沟通跟进')}${f.actor===ACTOR?link('编辑','edit-follow-record',`data-follow="${esc(f.id)}" aria-label="编辑跟进 ${esc(fmt(f.time))}"`):''}</div><div class="uc-event-text">${esc(f.note||'未填写跟进内容')}</div>${filesView(f.files||[],'follow',r.follows.indexOf(f))}${f.updatedAt?`<div class="uc-saved-meta">修改于 ${fmt(f.updatedAt)}</div>`:''}`;
-  }):empty('暂无跟进记录')}
   function wechatView(r){return r.messages?.length?`<details class="uc-inline-details uc-channel-disclosure"><summary>微信协商记录</summary>${events([...r.messages].reverse(),m=>`<div class="uc-event-title"><strong>${esc(m.actor)}</strong>${tag(m.type,'blue')}</div><div class="uc-event-text">${esc(m.text)}</div>${filesView(m.files||[],'message',r.messages.indexOf(m))}`)}</details>`:''}
   function filesView(files,kind,index=''){return files?.length?`<div class="uc-attachments uc-image-gallery">${files.map((f,i)=>String(f.data||'').startsWith('data:image/')?`<button type="button" class="uc-image-thumb" data-uc="file" data-kind="${kind}" data-index="${index}" data-file="${i}" aria-label="查看图片：${esc(f.name)}"><img src="${esc(f.data)}" alt="${esc(f.name)}" loading="lazy"><span>${esc(f.name)}</span></button>`:`<button type="button" class="uc-file uc-file-download" data-uc="file" data-kind="${kind}" data-index="${index}" data-file="${i}" aria-label="${isAudioFile(f)?'播放录音':'下载附件'}：${esc(f.name)}">${iconFile}<span>${esc(f.name)}</span><span class="uc-link">${isAudioFile(f)?'播放':'下载'}</span></button>`).join('')}</div>`:''}
   function draftFiles(files,preview=false){return files.length?`<div class="uc-attachments">${files.map((f,i)=>`<div class="uc-file">${preview?`<img class="uc-reply-image" src="${esc(f.data)}" alt="${esc(f.name)}">`:''}<span>${esc(f.name)}</span>${link('移除','remove-file',`data-file="${i}"`)}</div>`).join('')}</div>`:''}
 
-  function openEditor(kind,draft,followId=null){if(main.editor)return;const e={kind,draft,baseline:JSON.stringify(draft),followId,selectingOrders:kind==='orders',uploading:false};if(kind==='orders')Object.assign(e,orderPickerState(main.record,draft.linked));main.editor=e;e.layer=openLayer(kind==='orders'?(draft.linked.length?'调整关联订单':'关联订单'):kind==='assessment'?'责任认定':kind==='compensation'?'解决方案':kind==='reply'?'回复客户':followId?'编辑跟进':'写跟进','','',main.layer?2:1);e.layer.editor=true;e.layer.el.querySelector('.uc-drawer').dataset.size=['reply','follow'].includes(kind)?'small':'medium';e.layer.el.querySelector('.uc-drawer').style.setProperty('--archive-drawer-width',['reply','follow'].includes(kind)?'560px':'860px');e.layer.el.querySelector('.uc-drawer').classList.add('uc-operation-drawer',kind==='orders'?'uc-orders-editor':kind==='assessment'?'uc-assessment-drawer':kind==='compensation'?'uc-compensation-drawer':kind==='reply'?'uc-reply-editor':'uc-follow-editor');renderEditor()}
-  function editorContext(){const r=main.record;return `<div class="uc-editor-context"><div><strong>${esc(r.name)}</strong><span>${esc(r.phone)}</span><span>${esc(r.store)}</span></div><div class="uc-muted">投诉 ${r.id} · ${CHANNELS[r.channel]} · ${fmt(r.created)}${statusTag(r.status)}</div></div>`}
-  function renderEditor(resetScroll=false){const e=main.editor;if(!e)return;const body=e.layer.el.querySelector('.uc-drawer-body'),scroll=resetScroll?0:body.scrollTop;e.layer.el.querySelector('.uc-layer-top').innerHTML=editorContext();body.classList.add('uc-editor-body');body.innerHTML=e.kind==='orders'?orderPickerView():e.kind==='assessment'?assessmentForm():e.kind==='compensation'?`<div id="uc-compensation-form" data-draft="compensation" novalidate>${solutionForm()}</div>`:e.kind==='reply'?replyForm():followForm();body.scrollTop=scroll;renderEditorFooter()}
-  function renderEditorFooter(){const e=main.editor;if(!e)return;const foot=e.layer.el.querySelector('.uc-drawer-foot');if(foot.querySelector('.uc-discard'))return;
-    if(e.kind==='orders'){foot.innerHTML=btn('取消','dismiss')+btn('保存关联','confirm-orders',e.selection.length===1?'':'disabled',true);return}
-    if(e.kind==='reply'){foot.innerHTML=btn('取消','dismiss')+btn('保存回复','save-reply',e.uploading?'disabled':'',true);return}
-    if(e.kind==='assessment'){foot.innerHTML=btn('取消','dismiss')+btn(e.draft.handlingPlan==='resolved'?'保存并结案':'保存方案','save-assessment',e.uploading?'disabled':'',true);return}
-    if(e.kind==='compensation'){foot.innerHTML=solutionFoot()+btn('取消','dismiss')+btn('确认方案','save-compensation',e.uploading?'disabled':'',true);return}
-    foot.innerHTML=btn('取消','dismiss')+btn(e.followId?'保存修改':'保存跟进','save-follow',e.uploading?'disabled':'',true);
+  function openEditor(kind,draft,followId=null){
+    if(main.editor)return;
+    const handling=Object.hasOwn(followTools().OPERATIONS,kind),e={kind,draft,baseline:JSON.stringify(draft),followId,handling,selectingOrders:kind==='orders',uploading:false};
+    if(kind==='orders')Object.assign(e,orderPickerState(main.record,draft.linked));main.editor=e;
+    e.layer=openLayer(handling?'跟进处理':kind==='orders'?(draft.linked.length?'调整关联订单':'关联订单'):kind==='assessment'?'责任认定':'回复客户','','',2);e.layer.editor=true;e.layer.el.querySelector('.uc-drawer').classList.add('uc-operation-drawer','uc-'+kind+'-editor');
+    renderEditor(true);
   }
+  function finishEditor(target){
+    const e=main?.editor;if(target&&e?.layer.parentView)e.layer.parentView.tab=target;
+    if(e?.handling){e.baseline=JSON.stringify(e.draft);if(dirty(e.layer)){showDiscard(e.layer);e.layer.el.querySelector('.uc-discard span').textContent='本次操作已保存，另一项操作还有未保存内容，是否放弃？';return}}
+    closeLayer(true);
+  }
+  function editorContext(){const r=main.record;return `<div class="uc-editor-context"><div><strong>${esc(r.name)}</strong><span>${esc(r.phone)}</span><span>${esc(r.store)}</span></div><div class="uc-muted">投诉 ${r.id} · ${CHANNELS[r.channel]} · ${fmt(r.created)}${statusTag(r.status)}</div></div>`}
+  function renderEditor(resetScroll=false){
+    const e=main.editor;if(!e)return;
+    const body=e.layer.el.querySelector('.uc-drawer-body'),scroll=resetScroll?0:body.scrollTop,small=e.kind==='reply',drawer=e.layer.el.querySelector('.uc-drawer');
+    drawer.dataset.size=small?'small':'medium';drawer.style.setProperty('--archive-drawer-width',small?'560px':'860px');
+    e.layer.el.querySelector('.uc-layer-top').innerHTML=e.handling?'':editorContext();body.classList.add('uc-editor-body');
+    let content=e.kind==='orders'?orderPickerView():e.kind==='assessment'?assessmentForm():e.kind==='compensation'?`<div id="uc-compensation-form" data-draft="compensation" novalidate>${solutionForm()}</div>`:e.kind==='reply'?replyForm():followForm();
+    if(e.handling)content=`<section class="uc-detail-common" aria-label="工单概况">${summary(main.record,main.phoneVisible,true)}</section>`+(!e.followId&&canAssess(main.record)?followTools().operationChoice(e.kind):'')+`<section id="uc-operation-panel" aria-label="${followTools().OPERATIONS[e.kind][0]}">${content}</section>`;
+    body.innerHTML=content;body.scrollTop=scroll;renderEditorFooter();
+  }
+  function renderEditorFooter(){const e=main.editor;if(!e)return;const foot=e.layer.el.querySelector('.uc-drawer-foot');if(foot.querySelector('.uc-discard'))return;foot.innerHTML=followTools().editorFooter(e,e.kind==='compensation'?solutionFoot():'')}
   // Adapted from complaint-prototype/workflow proposalForm and ticket-operations.
   // The unified module uses its own customers, orders and saved handling records.
   const SOLUTION_METHODS={refund:'退款',exchange:'商品置换'};
@@ -434,7 +457,6 @@
     if(has('service')&&p.content)details.push(detail('处理说明',p.content,true));
     return (details.length?`<div class="uc-details">${details.join('')}</div>`:'')+filesView(p.attachments||[],historyIndex===''?'solution':'solution-history',historyIndex);
   }
-  function contactForm(){const d=main.editor.draft,contacts=responsibleOptions([d.firstContact,...records.map(r=>r.firstContact)].filter(Boolean));return `<div class="uc-grid ub-form" data-pc-columns="2">${field('firstContact','第一联系人',select('firstContact',contacts,d.firstContact,'请选择员工，支持姓名搜索','data-filterable'),false)}${field('contactTime','投诉时间',input('contactTime',d.contactTime,'客户陈述的投诉时间','datetime-local'),false)}${field('customerStatement','客户陈述',`<textarea id="uc-customerStatement" name="customerStatement" class="uc-input" rows="3" maxlength="500" show-word-limit placeholder="补充客户原话（选填）">${esc(d.customerStatement)}</textarea>`,false,'',true)}</div>`}
   function responsibleOptions(selected=[],directory=EMPLOYEES,items=records,orderItems=orders){
     const names=new Map();
     const add=(value,status='')=>multiValues(value).forEach(name=>{if(!names.has(name)||status)names.set(name,status)});
@@ -447,21 +469,39 @@
   }
   function multiSelect(name,label,options,value,attrs=''){const selected=multiValues(value),items=new Map(options.map(item=>Array.isArray(item)?item:[item,item]));selected.forEach(item=>{if(!items.has(item))items.set(item,item)});return `<select id="uc-${name}" name="${name}" multiple data-filterable placeholder="${name==='responsible'?'搜索姓名，含离职人员':'请选择'+label}" aria-label="${label}，必填，可多选" ${attrs}>${[...items].map(([value,text])=>`<option value="${esc(value)}"${selected.includes(value)?' selected':''}>${esc(text)}</option>`).join('')}</select>`;}
   function assessmentChoices(name,label,items,value,multiple=false){const selected=multiValues(value),options=items.map(item=>Array.isArray(item)?item:[item,item]);if(multiple)selected.forEach(value=>{if(!options.some(([key])=>key===value))options.push([value,value])});return `<div class="uc-solution-${multiple?'choices':'radios'}" role="${multiple?'group':'radiogroup'}" aria-label="${label}">${options.map(([key,text],index)=>`<label><input type="${multiple?'checkbox':'radio'}" id="uc-${name}${index?'-'+index:''}" name="${name}" value="${esc(key)}"${selected.includes(key)?' checked':''}>${esc(text)}</label>`).join('')}</div>`}
-  function levelFields(d){return field('level','客诉等级',assessmentChoices('level','客诉等级',LEVELS,d.level),true,'',true)+field('level4Type','风险类型',assessmentChoices('level4Type','风险类型',LEVEL4_TYPES,level4Type(d)),true,'',true).replace('data-field="level4Type"','data-field="level4Type"'+(d.level==='4级'?'':' hidden'))}
-  function responsibilityForm(){const d=main.editor.draft,hasDepartment=multiValues(d.department).length>0,closed=d.type==='闭店';return `<div class="ub-form">${field('department','责任部门',assessmentChoices('department','责任部门',['推广','销售','门店'],d.department,true),true,'',true)}${field('type','售后类型',select('type',TYPES,d.type,hasDepartment?'请选择售后类型':'请先选择责任部门',`required aria-required="true" ${hasDepartment?'':'disabled'}`),true,'',true)}<div class="uc-full uc-rule" ${responsibilityRule(d.type)?'':'hidden'}><span>归因参考：</span><span id="uc-rule-text">${responsibilityRule(d.type)}</span></div>${field('responsible','责任人',multiSelect('responsible','责任人',responsibleOptions(d.responsible),d.responsible,hasDepartment&&d.type&&!closed?'required aria-required="true"':'disabled'),true,'',true).replace('data-field="responsible"','data-field="responsible"'+(closed?' hidden':''))}${levelFields(d)}${field('reason','责任原因',`<textarea id="uc-reason" name="reason" class="uc-input" rows="3" maxlength="1000" show-word-limit placeholder="填写责任原因">${esc(d.reason)}</textarea>`,false,'',true)}</div>`}
+
   function handlingPlanForm(){const d=main.editor.draft;return `<div class="ub-form">${field('handlingPlan','处理结果',assessmentChoices('handlingPlan','处理结果',[HANDLING_PLANS[1],HANDLING_PLANS[0]],d.handlingPlan),true,'',true)}${field('handlingFiles','附件',`<div><div class="uc-upload-row">${btn('上传附件','upload-handling','id="uc-handlingFiles"')}<input type="file" id="uc-handling-upload" accept="${Object.keys(HANDLING_FILE_TYPES).map(ext=>'.'+ext).join(',')}" multiple hidden data-upload="handling"><span class="uc-muted">最多 4 个，每个不超过 5MB</span></div><div id="uc-upload-list" aria-live="polite">${draftFiles(d.handlingFiles)}</div></div>`,false,'',true)}</div>`}
-  function assessmentForm(){const r=main.record,linked=r.linked;return `<div id="uc-assessment-form" class="uc-assessment-layout" data-draft="assessment" novalidate>${section('关联订单',linked.length?orderCards(linked):empty('暂未关联订单'),`<span class="uc-muted">${linked.length} 笔</span>`)}${section('处理信息',`<div class="uc-assessment-original"><div class="uc-info-caption">投诉内容</div><p class="uc-info-content">${esc(r.content||'未填写')}</p></div>${contactForm()}${responsibilityForm()}${handlingPlanForm()}`)}</div>`}
-  function followForm(){const d=main.editor.draft;return `<div id="uc-follow-form" data-draft="follow" novalidate>${field('note','跟进内容',`<textarea id="uc-note" name="note" class="uc-input uc-follow-note" rows="6" maxlength="2000" placeholder="记录沟通情况、处理进展或下一步安排">${esc(d.note)}</textarea>`,false)}<div class="uc-upload-row">${btn('添加图片','upload-follow')}<input type="file" id="uc-upload" accept="image/png,image/jpeg" multiple hidden data-upload="follow"><span class="uc-muted">最多 4 张，每张 5MB 以内</span></div><div id="uc-upload-list">${draftFiles(d.files)}</div></div>`}
+  function assessmentForm(){const r=main.record,linked=r.linked;return `<div id="uc-assessment-form" class="uc-assessment-layout" data-draft="assessment" novalidate>${section('关联订单',linked.length?orderCards(linked):empty('暂未关联订单'),`<span class="uc-muted">${linked.length} 笔</span>`)}${section('处理信息',`${contactForm()}${responsibilityForm()}${handlingPlanForm()}`)}</div>`}
+  function followForm(){const e=main.editor;return followTools().form(main.record,e.draft,main.record.follows.find(f=>f.id===e.followId))}
   function replyForm(){const d=main.editor.draft;return `<div id="uc-reply-form" data-draft="reply" novalidate>${field('note','回复内容',`<textarea id="uc-note" name="note" class="uc-input" rows="6" maxlength="2000" placeholder="填写回复客户的内容">${esc(d.note)}</textarea>`)}${field('replyImages','图片',`<div><div class="uc-upload-row">${btn('添加图片','upload-reply','id="uc-replyImages"')}<input type="file" id="uc-reply-upload" accept="image/png,image/jpeg" multiple hidden data-upload="reply"></div><div class="uc-help">最多 4 张，每张 5MB 以内，支持 JPG、PNG</div><div id="uc-upload-list" aria-live="polite">${draftFiles(d.files,true)}</div></div>`)}</div>`}
   function beginReply(){if(!main||main.editor)return;openEditor('reply',{note:'',files:[]})}
-  function askAccept(){if(!main||main.editor||main.record.status!=='待处理')return;PCUI.confirm({title:'客服接单',content:'确认接手该客诉工单？',onConfirm:()=>{const next=clone(records),r=next.find(r=>r.id===main.record.id);if(!recordAccept(r,now()))return;if(commitRecord(next,'客服接单','客服已接单'))toast('已接单，可进行责任认定或填写解决方案')}})}
+  function editGrade(accept=false){
+    if(!main||main.editor||(accept?main.record.status!=='待处理':!canGrade(main.record)))return;
+    const current=main;followTools().gradeDialog(main.record,accept,grade=>{
+      if(main!==current)return false;const next=clone(records),r=next.find(r=>r.id===main.record.id),entry=accept?recordAccept(r,now(),grade):followTools().recordGrade(r,grade,now());
+      if(!entry){toast(accept?'当前工单已不可接单':'客诉等级未变更');return !accept}
+      if(!commitRecord(next,entry.action,JSON.stringify(entry.before)+' → '+JSON.stringify(grade)))return false;
+      toast(accept?'等级已确认，客服已接单':'客诉等级已更新');return true;
+    });
+  }
+  function askAccept(){editGrade(true)}
 
-  function beginAssessment(){if(!canAssess(main.record)){toast(main.record.status==='已结案'?'该客诉已结案':main.record.status==='待处理'?'请先接单':'当前由其他环节办理，暂不可修改责任认定');return}openEditor('assessment',{...valuesFrom(main.record,RECOGNITION_FIELDS),handlingPlan:main.record.handlingPlan||'',handlingFiles:clone(main.record.handlingFiles||[])})}
-  async function beginCompensation(){if(!main||main.editor||!canAssess(main.record))return;const detail=main;try{await loadSolutionTools();if(main!==detail||main.editor||main.layer.closing||!canAssess(main.record))return;openEditor('compensation',{customerSolution:solutionDraft(main.record.customerSolution)})}catch(error){if(main===detail)toast(error.message)}}
-  function beginFollow(){if(!canFollow(main.record)){toast('请先处理该客诉');return}openEditor('follow',{note:'',files:[]})}
-  function editFollowRecord(id){const f=main.record.follows.find(f=>f.id===id);if(f&&!['accept','start','transfer','assessment','handling','compensation','closure','reply'].includes(f.kind)&&f.actor===ACTOR)openEditor('follow',{note:f.note,files:clone(f.files||[])},id)}
-  function syncDraft(el){if(syncSolution(el))return;const e=main?.editor;if(e?.kind==='orders'&&el.closest('#uc-order-search')){readOrderSearch();updateOrderDateButtons();e.layer.el.querySelector('#uc-order-search-error').textContent='';return}if(!e||!el.closest('[data-draft]')||!Object.hasOwn(e.draft,el.name)||el.type==='radio'&&!el.checked)return;e.draft[el.name]=el.type==='checkbox'?[...e.layer.el.querySelectorAll('input[type="checkbox"][name="'+el.name+'"]:checked')].map(input=>input.value):el.multiple?[...el.selectedOptions].map(option=>option.value):el.value;el.removeAttribute('aria-invalid');e.layer.el.querySelector('#uc-'+el.name)?.removeAttribute('aria-invalid');const err=e.layer.el.querySelector('#uc-error-'+el.name);if(err)err.textContent='';if(e.kind==='assessment'){
-    if(el.name==='level'){const active=e.draft.level==='4级';if(!active)e.draft.level4Type='';e.layer.el.querySelector('[data-field="level4Type"]').hidden=!active;e.layer.el.querySelectorAll('input[name="level4Type"]').forEach(related=>{related.checked=related.value===level4Type(e.draft);related.removeAttribute('aria-invalid');related.removeAttribute('aria-describedby');PCUI.syncControl(related)});e.layer.el.querySelector('#uc-error-level4Type').textContent=''}
+  function beginAssessment(){if(!canAssess(main.record)){toast(main.record.status==='已结案'?'该客诉已结案':main.record.status==='待处理'?'请先接单':'当前由其他环节办理，暂不可修改责任认定');return}openEditor('assessment',followTools().operationDraft('assessment',main.record))}
+  async function beginCompensation(){if(!main||main.editor||!canAssess(main.record))return;const detail=main;try{await loadSolutionTools();if(main!==detail||main.editor||main.layer.closing||!canAssess(main.record))return;openEditor('compensation',followTools().operationDraft('compensation',main.record))}catch(error){if(main===detail)toast(error.message)}}
+  function beginHandling(){if(!main||main.editor||!canFollow(main.record))return;openEditor('follow',followTools().draft(main.record))}
+  async function chooseOperation(kind){
+    const e=main?.editor;if(!e||!canAssess(main.record)||!Object.hasOwn(followTools().OPERATIONS,kind))return;
+    if(e.uploading){toast('附件正在读取，请稍后切换');return}const previous=e.kind;
+    if(kind===e.kind)return;
+    try{if(kind==='compensation')await loadSolutionTools();if(main?.editor!==e||e.kind!==previous||e.layer.closing||!canAssess(main.record))return;
+      followTools().switchOperation(e,kind,main.record);e.layer.oldFoot=null;e.layer.discardAction=null;renderEditor(true);
+    }catch(error){toast(error.message)}
+  }
+  function editFollowRecord(id){const f=main.record.follows.find(f=>f.id===id);if(followTools().editable(f))openEditor('follow',followTools().draft(main.record,f),id)}
+  function syncDraft(el){if(syncOptionDraft(el)||syncSolution(el))return;const e=main?.editor;if(e?.kind==='orders'&&el.closest('#uc-order-search')){readOrderSearch();updateOrderDateButtons();e.layer.el.querySelector('#uc-order-search-error').textContent='';return}if(!e||!el.closest('[data-draft]')||!Object.hasOwn(e.draft,el.name)||el.type==='radio'&&!el.checked)return;e.draft[el.name]=el.type==='checkbox'?[...e.layer.el.querySelectorAll('input[type="checkbox"][name="'+el.name+'"]:checked')].map(input=>input.value):el.multiple?[...el.selectedOptions].map(option=>option.value):el.value;el.removeAttribute('aria-invalid');e.layer.el.querySelector('#uc-'+el.name)?.removeAttribute('aria-invalid');const err=e.layer.el.querySelector('#uc-error-'+el.name);if(err)err.textContent='';if(e.kind==='follow'&&el.name==='followResult'){
+    const ongoing=e.draft.followResult==='ongoing';for(const name of ['unresolvedReason']){e.layer.el.querySelector('[data-field="'+name+'"]').hidden=!ongoing;e.layer.el.querySelector('#uc-error-'+name).textContent=''}
+    const reason=e.layer.el.querySelector('[name=unresolvedReason]');reason.required=ongoing;reason.setAttribute('aria-required',String(ongoing));PCUI.syncControl(reason);
+  }if(e.kind==='assessment'){
     if(el.name==='handlingPlan'){e.layer.el.querySelectorAll('[name=handlingPlan]').forEach(input=>input.removeAttribute('aria-invalid'));renderEditorFooter()}
     if(el.name==='department'){const type=e.layer.el.querySelector('[name=type]'),hasDepartment=multiValues(e.draft.department).length>0;type.disabled=!hasDepartment;if(!hasDepartment){e.draft.type='';type.value=''}type.options[0].textContent=hasDepartment?'请选择售后类型':'请先选择责任部门';PCUI.syncControl(type)}
     if(['department','type'].includes(el.name)){const responsible=e.layer.el.querySelector('[name=responsible]'),closed=e.draft.type==='闭店';responsible.disabled=!multiValues(e.draft.department).length||!e.draft.type||closed;responsible.required=!responsible.disabled;responsible.setAttribute('aria-required',String(responsible.required));responsible.closest('[data-field]').hidden=closed;e.layer.el.querySelector('#uc-error-responsible').textContent='';PCUI.syncControl(responsible)}
@@ -476,24 +516,29 @@
     clearErrors(e.layer.el);const missing=handlingMissing(e.draft);
     if(missing.length){const [first]=missing[0];missing.forEach(([name,message])=>error(e.layer.el,name,message));const control=e.layer.el.querySelector('#uc-'+first)||e.layer.el.querySelector('[data-field="'+first+'"] input')||e.layer.el.querySelector('[data-field="'+first+'"] select');PCUI.focusControl(control);(control||e.layer.el.querySelector('#uc-error-'+first))?.scrollIntoView({block:'center'});return}
     const next=clone(records),r=next.find(r=>r.id===main.record.id),entry=recordRecognition(r,e.draft,now());
-    if(!entry){closeLayer(true);toast('处理信息未变更');return}
+    if(!entry){finishEditor('plan');toast('处理信息未变更');return}
     if(!commitRecord(next,entry.action,JSON.stringify(recognitionLog(entry.before))+' → '+JSON.stringify(recognitionLog(recognitionSnapshot(r)))))return;
-    closeLayer(true);toast(r.status==='已结案'?'责任认定已保存，客诉已结案':'责任认定已保存，继续沟通');
+    finishEditor('plan');toast(r.status==='已结案'?'责任认定已保存，客诉已结案':'责任认定已保存，继续沟通');
   }
   function saveCompensation(){
     const e=main?.editor;if(e?.kind!=='compensation')return;if(!canAssess(main.record)){toast('当前状态不可修改解决方案');return}if(e.uploading){toast('附件正在读取，请稍后保存');return}
     clearErrors(e.layer.el);const solution=validateCustomerSolution(e.draft.customerSolution);
     if(solution.errors.length){solution.errors.forEach(([name,message])=>error(e.layer.el,name,message));const [first]=solution.errors[0],control=e.layer.el.querySelector('#uc-'+first)||e.layer.el.querySelector('[data-field="'+first+'"] input')||e.layer.el.querySelector('[data-uc=solution-add-product]');PCUI.focusControl(control);(control||e.layer.el.querySelector('#uc-error-'+first))?.scrollIntoView({block:'center'});return}
     const next=clone(records),r=next.find(r=>r.id===main.record.id),entry=recordCompensation(r,solution.value,now());
-    if(!entry){closeLayer(true);toast('解决方案未变更');return}
+    if(!entry){finishEditor('plan');toast('解决方案未变更');return}
     if(!commitRecord(next,'保存解决方案',JSON.stringify(entry.before)+' → '+JSON.stringify(entry.customerSolution)))return;
-    closeLayer(true);toast('解决方案已保存');
+    finishEditor('plan');toast('解决方案已保存');
   }
   function saveReply(){const e=main?.editor;if(e?.kind!=='reply')return;if(e.uploading){toast('图片正在读取，请稍后保存');return}clearErrors(e.layer.el);const note=e.draft.note.trim();if(!note&&!e.draft.files.length){error(e.layer.el,'note','请填写回复内容或添加图片');e.layer.el.querySelector('#uc-note').focus();return}const next=clone(records),r=next.find(r=>r.id===main.record.id);r.follows.unshift({id:r.id+'-reply-'+Date.now()+'-'+r.follows.length,kind:'reply',time:now(),actor:ACTOR,note,files:clone(e.draft.files),beforeStatus:r.status,status:r.status});if(!commitRecord(next,'回复客户',note||(e.draft.files.length+' 张图片')))return;closeLayer(true);toast('回复已保存，可在跟进记录中查看')}
-  function saveFollow(){const e=main.editor;if(e.uploading){toast('图片正在读取，请稍后保存');return}const d=e.draft,next=clone(records),r=next.find(r=>r.id===main.record.id),time=now();let log;
-    if(e.followId){const f=r.follows.find(f=>f.id===e.followId);if(!f||['accept','start','transfer','assessment','handling','compensation','closure','reply'].includes(f.kind)||f.actor!==ACTOR)return;log=f.note+' → '+d.note.trim();f.revisions??=[];f.revisions.push({time,actor:ACTOR,note:f.note,files:clone(f.files||[])});f.note=d.note.trim();f.files=clone(d.files);f.updatedAt=time;f.updatedBy=ACTOR}
-    else{if(!recordFollow(r,d,time)){toast('请先处理该客诉');return}log=d.note.trim()}
-    if(!commitRecord(next,e.followId?'修改跟进':'新增跟进',log))return;closeLayer(true);toast('跟进已保存');
+  function saveFollow(){
+    const e=main?.editor;if(e?.kind!=='follow')return;if(e.uploading){toast('图片正在读取，请稍后保存');return}
+    clearErrors(e.layer.el);const old=main.record.follows.find(f=>f.id===e.followId),errors=followTools().validate(main.record,e.draft,old);
+    if(errors.length){errors.forEach(([name,message])=>error(e.layer.el,name,message));PCUI.focusControl(e.layer.el.querySelector('#uc-'+errors[0][0]));return}
+    const next=clone(records),r=next.find(r=>r.id===main.record.id),time=now(),entry=e.followId?followTools().edit(r,e.followId,e.draft,time):recordFollow(r,e.draft,time);
+    if(!entry){toast('该记录已不可修改，请重新查看工单');return}
+    const log=JSON.stringify({note:entry.note,communication:entry.communication});
+    if(!commitRecord(next,e.followId?'修改跟进':'新增跟进',log))return;
+    const target=!e.followId&&entry.communication?.result==='agreed'?'plan':'follows';finishEditor(target);toast(target==='plan'?'沟通已记录，请填写并确认具体解决方案':'跟进已保存');
   }
   function askClosure(){if(!canClose(main.record))return;PCUI.confirm({title:'确认结案',content:'确认该客诉已处理完成并结案？',onConfirm:confirmClosure});}
   function confirmClosure(){const next=clone(records),r=next.find(r=>r.id===main.record.id);if(!recordClosure(r,now()))return;if(!commitRecord(next,'结案','已确认客诉处理完成'))return;main.layer.el.querySelector('.uc-drawer-foot button')?.focus();toast('客诉已结案')}
@@ -541,15 +586,16 @@
   function confirmOrders(){const e=main.editor;if(e?.kind!=='orders'||main.record.status==='已结案')return;if(e.selection.length!==1){toast('请选择一笔关联订单');return}if(JSON.stringify(e.selection)===e.selectionBaseline){closeLayer(true);return}const next=clone(records),r=next.find(r=>r.id===main.record.id),before=clone(r.linked);r.linked=clone(e.selection);if(!commitRecord(next,before.length?'调整关联订单':'关联订单',JSON.stringify(before)+' → '+JSON.stringify(r.linked)))return;closeLayer(true);toast('关联订单已保存')}
   function previewFile(button){const kind=button.dataset.kind,index=Number(button.dataset.index),i=Number(button.dataset.file),r=main.record;const f=kind==='original'?r.files[i]:kind==='handling'?r.handlingFiles?.[i]:kind==='handling-history'?r.follows[index]?.handlingFiles?.[i]:kind==='solution'?r.customerSolution?.attachments?.[i]:kind==='solution-history'?r.follows[index]?.customerSolution?.attachments?.[i]:kind==='follow'?r.follows[index]?.files[i]:kind==='message'?r.messages[index]?.files[i]:null;if(!f?.data)return;if(isAudioFile(f)){openLayer('录音附件',`<div class="uc-audio-preview"><h4>${esc(f.name)}</h4>${/\.amr$/i.test(f.name)?'<p class="uc-muted">此录音格式请下载后播放</p>':`<audio controls preload="metadata" src="${esc(f.data)}" aria-label="${esc(f.name)}"></audio>`}<a class="uc-link" href="${esc(f.data)}" download="${esc(f.name)}">下载录音</a></div>`,btn('关闭','dismiss'),2);return}if(!String(f.data).startsWith('data:image/')){const a=document.createElement('a');a.href=f.data;a.download=f.name;a.click();return}openLayer('证明材料',`<img class="uc-preview-img" src="${esc(f.data)}" alt="${esc(f.name)}">`,btn('关闭','dismiss'),2)}
   async function uploadFiles(el){const e=main.editor;if(!e||e.uploading)return;const handling=['assessment','compensation'].includes(e.kind),list=e.kind==='compensation'?e.draft.customerSolution.attachments:handling?e.draft.handlingFiles:e.draft.files,files=[...el.files];if(!files.length)return;if(files.length+list.length>4){toast(handling?'最多添加 4 个附件':'最多添加 4 张图片');el.value='';return}if(files.some(f=>f.size>5*1024*1024||(handling?!validHandlingFile(f):!['image/jpeg','image/png'].includes(f.type)))){toast(handling?'请上传不超过 5MB 的图片、PDF、Word、Excel 或 MP3、M4A、WAV、AMR 录音':'请上传不超过 5MB 的 JPG 或 PNG 图片');el.value='';return}e.uploading=true;el.disabled=true;e.layer.el.querySelector('[data-uc=upload-handling],[data-uc=upload-solution]')?.setAttribute('disabled','');renderEditorFooter();try{const results=await Promise.all(files.map(file=>new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>{const type=handling?handlingFileType(file):file.type;resolve({name:file.name,data:handling?String(reader.result).replace(/^data:[^;]*;/,'data:'+type+';'):reader.result,type,size:file.size})};reader.onerror=reject;reader.readAsDataURL(file)})));if(main?.editor!==e||e.layer.closing)return;list.push(...results);const host=e.layer.el.querySelector('#uc-upload-list');if(host)host.innerHTML=draftFiles(list,e.kind==='reply');if(e.kind==='reply')clearErrors(e.layer.el)}catch(err){toast(handling?'附件读取失败，请重试':'图片读取失败，请重试')}finally{e.uploading=false;el.disabled=false;el.value='';e.layer.el.querySelector('[data-uc=upload-handling],[data-uc=upload-solution]')?.removeAttribute('disabled');if(main?.editor===e)renderEditorFooter()}}
-  function complaintCSV(rows){const headers=['序号','投诉单号','客户','手机号','门店','售后来源 / 渠道','投诉时间','投诉内容','客诉第一联系人','联系时间','责任部门','售后类型','客诉等级','风险类型','责任人','责任原因','关联订单','工单状态','当前办理人','当前事项 / 卡点'];const cell=value=>'"'+valueText(value).replace(/^[=+@-]/,"'$&").replace(/"/g,'""')+'"';return '\uFEFF'+[headers,...rows.map((r,i)=>[i+1,r.id,r.name,r.phone,r.store,CHANNELS[r.channel],r.created,r.content,r.firstContact,fmt(r.contactTime),r.department,r.type,r.level,level4Type(r),r.responsible,r.reason,r.linked.map(l=>l.id).join(' / '),workOrderStatus(r.status),currentHandler(r),currentTask(r)])].map(row=>row.map(cell).join(',')).join('\r\n')}
+  function complaintCSV(rows){const headers=['序号','投诉单号','客户','手机号','门店','售后来源 / 渠道','投诉时间','投诉内容','客户诉求','客诉第一联系人','联系时间','责任部门','售后类型','客诉等级','风险类型','责任人','责任原因','关联订单','工单状态','当前办理人','当前事项 / 卡点'];const cell=value=>'"'+valueText(value).replace(/^[=+@-]/,"'$&").replace(/"/g,'""')+'"';return '\uFEFF'+[headers,...rows.map((r,i)=>[i+1,r.id,r.name,r.phone,r.store,CHANNELS[r.channel],r.created,r.content,r.customerDemand,r.firstContact,fmt(r.contactTime),r.department,r.type,r.level,level4Type(r),r.responsible,r.reason,r.linked.map(l=>l.id).join(' / '),workOrderStatus(r.status),currentHandler(r),currentTask(r)])].map(row=>row.map(cell).join(',')).join('\r\n')}
   function exportRows(){const csv=complaintCSV(filtered());const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'})),a=document.createElement('a');a.href=url;a.download='统一客诉列表_'+now().slice(0,10)+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('已导出当前筛选结果')}
 
   function handleClick(event){event.stopPropagation();const b=event.target.closest('[data-uc]');if(!b||b.disabled)return;const action=b.dataset.uc,layer=layers.at(-1);if(layer?.closing)return;
-    if(action==='detail')openComplaint(b.dataset.id);
+    if(action.startsWith('options-'))optionAction(action,b,layer);
+    else if(action==='detail')openComplaint(b.dataset.id);
     else if(action==='order-detail')openOrderSnapshot(b.dataset.order);
     else if(action==='customer-detail')openCustomerSnapshot(b.dataset.customer);
     else if(action==='toggle-phone')togglePhone(b);
-    else if(action==='write-follow')beginFollow();
+    else if(action==='begin-handling')beginHandling();
     else if(action==='reply-customer')beginReply();
     else if(action==='save-reply')saveReply();
     else if(action==='upload-follow')main.editor.layer.el.querySelector('#uc-upload').click();
@@ -565,6 +611,7 @@
     else if(action==='save-assessment')saveAssessment();
     else if(action==='save-compensation')saveCompensation();
     else if(action==='accept-case')askAccept();
+    else if(action==='edit-grade')editGrade();
     else if(action==='begin-assessment')beginAssessment();
     else if(action==='begin-compensation')beginCompensation();
     else if(action==='close-case')askClosure();
@@ -584,13 +631,13 @@
     else if(action==='page'){const target=Number(b.dataset.page);if(b.dataset.pagination==='orders'){const e=main.editor;readOrderSearch();e.orderPage=Math.max(1,Math.min(target,Math.ceil(orderPickerOrders(e).length/e.orderPageSize)||1));renderEditor()}else{page=Math.max(1,Math.min(target,Math.ceil(filtered().length/pageSize)||1));renderList()}}
     else if(action==='export')exportRows();
   }
-  function handleChange(event){event.stopPropagation();const el=event.target;if(el.dataset.orderChoice&&el.checked){if(selectPickerOrder(main.editor,el.dataset.orderChoice))renderEditorFooter();return}syncDraft(el);if(el.id==='uc-orderKeywordType'){const e=main.editor;e.orderSearch.keyword='';const input=e.layer.el.querySelector('#uc-orderKeyword');input.value='';input.placeholder='输入'+(ORDER_KEYWORDS.find(([key])=>key===el.value)?.[1]||'客户手机');input.focus()}if(el.id==='uc-filter-keywordType'){const input=root.querySelector('#uc-filter-keyword');input.value='';input.placeholder='输入'+(ORDER_KEYWORDS.find(([key])=>key===el.value)?.[1]||'客户手机');input.focus()}if(el.dataset.pageSize==='list'){pageSize=Number(el.value);page=1;renderList()}if(el.dataset.pageSize==='orders'){const e=main.editor;readOrderSearch();e.orderPageSize=Number(el.value);e.orderPage=1;renderEditor()}if(el.dataset.upload)uploadFiles(el)}
-  function handleSubmit(event){event.preventDefault();event.stopPropagation();if(event.target.id==='uc-search'){const values=Object.fromEntries(new FormData(event.target));filterDraft={...filterDraft,...values};if(filterDraft.start&&filterDraft.end&&filterDraft.start>filterDraft.end){root.querySelector('#uc-query-error').textContent='投诉结束日期不能早于开始日期';return}filters={...filterDraft,status:filters.status||''};page=1;renderList()}if(event.target.id==='uc-order-search'){const e=main.editor,q=readOrderSearch();if(!q.keyword?.trim()){e.layer.el.querySelector('#uc-order-search-error').textContent='请输入客户手机号、姓名、会员号、微信或订单号';return}if(q.start&&q.end&&q.start>q.end){e.layer.el.querySelector('#uc-order-search-error').textContent='到店结束日期不能早于开始日期';return}e.orderFilters=clone(q);e.orderPage=1;renderEditor()}}
+  function handleChange(event){event.stopPropagation();const el=event.target;if(el.name==='operation'&&el.checked){const e=main.editor,kind=el.value;followTools().resetOperation(e);if(kind!==e.kind)chooseOperation(kind);return}if(el.dataset.orderChoice&&el.checked){if(selectPickerOrder(main.editor,el.dataset.orderChoice))renderEditorFooter();return}syncDraft(el);if(el.id==='uc-orderKeywordType'){const e=main.editor;e.orderSearch.keyword='';const input=e.layer.el.querySelector('#uc-orderKeyword');input.value='';input.placeholder='输入'+(ORDER_KEYWORDS.find(([key])=>key===el.value)?.[1]||'客户手机');input.focus()}if(el.id==='uc-filter-keywordType'){const input=root.querySelector('#uc-filter-keyword');input.value='';input.placeholder='输入'+(ORDER_KEYWORDS.find(([key])=>key===el.value)?.[1]||'客户手机');input.focus()}if(el.dataset.pageSize==='list'){pageSize=Number(el.value);page=1;renderList()}if(el.dataset.pageSize==='orders'){const e=main.editor;readOrderSearch();e.orderPageSize=Number(el.value);e.orderPage=1;renderEditor()}if(el.dataset.upload)uploadFiles(el)}
+  function handleSubmit(event){event.preventDefault();event.stopPropagation();const layer=layers.at(-1);if(layer?.options){if(!layer.options.saving)applyOption(layer);return}if(event.target.id==='uc-search'){const values=Object.fromEntries(new FormData(event.target));filterDraft={...filterDraft,...values};if(filterDraft.start&&filterDraft.end&&filterDraft.start>filterDraft.end){root.querySelector('#uc-query-error').textContent='投诉结束日期不能早于开始日期';return}filters={...filterDraft,status:filters.status||''};page=1;renderList()}if(event.target.id==='uc-order-search'){const e=main.editor,q=readOrderSearch();if(!q.keyword?.trim()){e.layer.el.querySelector('#uc-order-search-error').textContent='请输入客户手机号、姓名、会员号、微信或订单号';return}if(q.start&&q.end&&q.start>q.end){e.layer.el.querySelector('#uc-order-search-error').textContent='到店结束日期不能早于开始日期';return}e.orderFilters=clone(q);e.orderPage=1;renderEditor()}}
   function keyboard(event){if(!root?.isConnected||document.querySelector('#modal .pc-company-dialog'))return;if(event.target.closest('.pc-tabs')&&['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;if(PCUI.isPopupOpen())return;if(!layers.length){if(event.target.matches('.uc-list-tab')&&['ArrowLeft','ArrowRight'].includes(event.key)){event.preventDefault();const tabs=[...root.querySelectorAll('.uc-list-tab')],i=tabs.indexOf(event.target);tabs[(i+(event.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length].click()}return;}const layer=layers.at(-1);if(event.key==='Escape'){event.preventDefault();event.stopImmediatePropagation();closeLayer();return}if(event.target.matches('.uc-tab')&&['ArrowLeft','ArrowRight'].includes(event.key)){event.preventDefault();const tabs=[...layer.el.querySelectorAll('.uc-tab')],i=tabs.indexOf(event.target);tabs[(i+(event.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length].click();return}if(event.key==='Tab'){const all=[...layer.el.querySelectorAll('button:not(:disabled),input:not(:disabled),select:not(:disabled),textarea:not(:disabled),summary,[tabindex="0"]')].filter(e=>e.getClientRects().length&&e.tabIndex>=0);if(!all.length){event.preventDefault();return}if(event.shiftKey&&(document.activeElement===all[0]||document.activeElement===layer.el.querySelector('.uc-drawer'))){event.preventDefault();all.at(-1).focus()}else if(!event.shiftKey&&(document.activeElement===all.at(-1)||!layer.el.contains(document.activeElement))){event.preventDefault();all[0].focus()}}}
   function openOrderSnapshot(id){const order=orders.find(item=>item.id===id);if(!order){toast('该订单暂无更多资料');return}openLayer('订单详情',section('订单 '+esc(id),orderCards([{id}])) ,btn('关闭','dismiss'),2);}
   function openCustomerSnapshot(id){const record=records.find(item=>item.customerId===id);if(!record){toast('该客户暂无更多资料');return}openLayer('客户资料',section('基本信息',`<div class="uc-details">${detail('客户姓名',record.name)}${detail('会员号',record.member)}${detail('客户手机',record.phone)}${detail('所属门店',record.store)}${detail('客户微信',record.customerWechat||orders.find(o=>o.customerId===id)?.customerWechat)}</div>`),btn('关闭','dismiss'),2);}
   function bind(el){el.addEventListener('click',handleClick);el.addEventListener('change',handleChange);el.addEventListener('input',event=>{event.stopPropagation();syncDraft(event.target)});el.addEventListener('submit',handleSubmit,true);}
-  function mount(content){if(!content)return;root=content;root.classList.add('uc-scope');portal=document.getElementById('mergeDrawers');bind(root);renderList();if(readFailure)toast('本地记录读取失败，已恢复初始列表');}
+  function mount(content){if(!content)return;root=content;root.classList.add('uc-scope');portal=document.getElementById('mergeDrawers');bind(root);renderList();if(readFailure)toast('本地记录读取失败，已恢复初始列表');if(dictionary.error)toast('下拉配置读取失败：'+dictionary.error+'；请在配置入口重试');}
   function leave(){for(const layer of layers)layer.el.remove();layers=[];main=null;unlockBackground();}
   PCUI.registerPager('complaints',(value,config)=>{if(config.scope==='orders'){const e=main?.editor;if(!e)return;readOrderSearch();e.orderPage=value.currentPage;e.orderPageSize=value.pageSize;renderEditor();}else{filterDraft={...filterDraft,...Object.fromEntries(new FormData(root.querySelector('#uc-search')))};page=value.currentPage;pageSize=value.pageSize;renderList();}});
   document.addEventListener('keydown',keyboard,true);
