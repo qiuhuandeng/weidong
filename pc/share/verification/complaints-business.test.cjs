@@ -426,15 +426,15 @@ test('legacy store transfers return to customer service without losing the recor
   assert.equal(a.workOrderStatus('客服待结案'),'客服复核中');assert.equal(a.workOrderStatus('待结案'),'客服复核中');
 });
 test('communication records advance accepted work without creating or confirming a solution',()=>{
-  const r={...copy(record),status:'客服已接单',customerSolution:null,assessedAt:null,follows:[]},d={note:'已电话联系，客户暂未接听',files:[],followResult:'ongoing',unresolvedReason:'申请退款',nextFollowAt:'2026-11-04T10:00'};
+  const r={...copy(record),status:'客服已接单',customerSolution:null,assessedAt:null,follows:[]},d={note:'已电话联系，客户暂未接听',files:[],followResult:'ongoing',unresolvedReason:'正和客户协商退款金额',nextFollowAt:'2026-11-04T10:00'};
   const entry=a.recordFollow(r,d,'2026-11-03 10:00');assert.ok(entry);assert.equal(r.status,'客服处理中');assert.equal(entry.beforeStatus,'客服已接单');
   assert.equal(r.customerSolution,null);assert.equal(r.assessedAt,null);assert.equal(a.canClose(r),false);
-  assert.equal(a.followTools().current(r),entry);assert.equal(entry.communication.reason,'申请退款');assert.equal(entry.communication.nextFollowAt,'2026-11-04T10:00');
-  assert.ok(a.followTools().overview(r).includes('申请退款'));assert.ok(a.followTools().history(r).includes('2026-11-04 10:00'));
-  d.unresolvedReason='解释说明';d.files.push({name:'local'});assert.equal(entry.communication.reason,'申请退款');assert.equal(entry.files.length,0);
+  assert.equal(a.followTools().current(r),entry);assert.equal(entry.communication.reason,'正和客户协商退款金额');assert.equal(entry.communication.nextFollowAt,'2026-11-04T10:00');
+  assert.ok(a.followTools().overview(r).includes('正和客户协商退款金额'));assert.ok(a.followTools().history(r).includes('2026-11-04 10:00'));
+  d.unresolvedReason='无法联系上客户';d.files.push({name:'local'});assert.equal(entry.communication.reason,'正和客户协商退款金额');assert.equal(entry.files.length,0);
 });
 test('communication outcomes validate required reasons, explanations and dates before mutation',()=>{
-  const r={...copy(record),status:'客服处理中',follows:[]},base={note:'',files:[],followResult:'ongoing',unresolvedReason:'申请退款',nextFollowAt:''};
+  const r={...copy(record),status:'客服处理中',follows:[]},base={note:'',files:[],followResult:'ongoing',unresolvedReason:'正和客户协商退款金额',nextFollowAt:''};
   for(const change of [{followResult:''},{followResult:'unknown'},{unresolvedReason:''},{unresolvedReason:'unknown'},{unresolvedReason:'其他'},{nextFollowAt:'2026-02-30T10:00'},{nextFollowAt:'invalid'}]){
     const before=JSON.stringify(r);assert.equal(a.recordFollow(r,{...base,...change},'2026-11-03 10:00'),null);assert.equal(JSON.stringify(r),before);
   }
@@ -442,34 +442,34 @@ test('communication outcomes validate required reasons, explanations and dates b
 });
 test('ordinary notes preserve communication blockers and do not start accepted work',()=>{
   const r={...copy(record),status:'客服已接单',follows:[]};a.recordFollow(r,{note:'内部资料已补充',files:[]},'2026-11-03 10:00');assert.equal(r.status,'客服已接单');assert.equal(a.followTools().current(r),null);
-  const progress=a.recordFollow(r,{note:'协商金额',files:[],followResult:'ongoing',unresolvedReason:'解释说明'},'2026-11-03 10:01');
-  a.recordFollow(r,{note:'补充订单核实结果',files:[],followResult:'note',unresolvedReason:'申请退款',nextFollowAt:'invalid'},'2026-11-03 10:02');
+  const progress=a.recordFollow(r,{note:'协商金额',files:[],followResult:'ongoing',unresolvedReason:'无法联系上客户'},'2026-11-03 10:01');
+  a.recordFollow(r,{note:'补充订单核实结果',files:[],followResult:'note',unresolvedReason:'正和客户协商退款金额',nextFollowAt:'invalid'},'2026-11-03 10:02');
   assert.equal(a.followTools().current(r),progress);assert.equal(r.follows[0].communication,undefined);
 });
 test('customer agreement clears the blocker but does not submit a solution or close the case',()=>{
   const r={...copy(record),status:'客服处理中',handlingPlan:'unresolved',customerSolution:null,follows:[]};
-  a.recordFollow(r,{note:'金额未达成一致',files:[],followResult:'ongoing',unresolvedReason:'解释说明'},'2026-11-03 10:00');
-  const entry=a.recordFollow(r,{note:'客户同意协商金额',files:[],followResult:'agreed',unresolvedReason:'解释说明',nextFollowAt:'invalid'},'2026-11-03 11:00');
+  a.recordFollow(r,{note:'金额未达成一致',files:[],followResult:'ongoing',unresolvedReason:'无法联系上客户'},'2026-11-03 10:00');
+  const entry=a.recordFollow(r,{note:'客户同意协商金额',files:[],followResult:'agreed',unresolvedReason:'无法联系上客户',nextFollowAt:'invalid'},'2026-11-03 11:00');
   assert.equal(entry.communication.reason,'');assert.equal(entry.communication.nextFollowAt,'');assert.equal(r.status,'客服处理中');assert.equal(r.customerSolution,null);assert.equal(a.canClose(r),false);
-  const view=a.followTools().overview(r);assert.ok(view.includes('填写解决方案'));assert.ok(!view.includes('未达成原因'));assert.ok(a.followTools().history(r).includes('解释说明'));
+  const view=a.followTools().overview(r);assert.ok(view.includes('填写解决方案'));assert.ok(!view.includes('未达成原因'));assert.ok(a.followTools().history(r).includes('无法联系上客户'));
   assert.ok(a.recordCompensation(r,valid.value,'2026-11-03 12:00'));assert.equal(a.followTools().current(r),null);assert.equal(a.followTools().overview(r),'');
 });
 test('financial, procurement, review and closed stages accept notes but cannot change communication outcomes',()=>{
   for(const status of ['待处理','财务审批中','采购审批中','待财务付款','待采购发货','客服复核中','已结案']){
     const r={...copy(record),status},before=JSON.stringify(r);
-    for(const result of ['ongoing','agreed']){assert.equal(a.recordFollow(r,{note:'跟进',files:[],followResult:result,unresolvedReason:'解释说明'},'2026-11-03 10:00'),null);assert.equal(JSON.stringify(r),before)}
+    for(const result of ['ongoing','agreed']){assert.equal(a.recordFollow(r,{note:'跟进',files:[],followResult:result,unresolvedReason:'无法联系上客户'},'2026-11-03 10:00'),null);assert.equal(JSON.stringify(r),before)}
     assert.equal(a.followTools().draft(r).followResult,'note');assert.ok(!a.followTools().form(r,a.followTools().draft(r)).includes('name="followResult"'));
     if(status!=='待处理'){assert.ok(a.recordFollow(r,{note:'补充记录',files:[]},'2026-11-03 10:00'));assert.equal(r.status,status)}
   }
 });
 test('editing retains original communication time and snapshots without replacing a newer blocker',()=>{
   const r={...copy(record),status:'客服处理中',customerSolution:null,follows:[]};
-  const first=a.recordFollow(r,{note:'电话未接',files:[],followResult:'ongoing',unresolvedReason:'申请退款'},'2026-11-03 10:00');
-  const latest=a.recordFollow(r,{note:'客户接听，金额未谈妥',files:[],followResult:'ongoing',unresolvedReason:'解释说明'},'2026-11-03 11:00');
+  const first=a.recordFollow(r,{note:'电话未接',files:[],followResult:'ongoing',unresolvedReason:'正和客户协商退款金额'},'2026-11-03 10:00');
+  const latest=a.recordFollow(r,{note:'客户接听，金额未谈妥',files:[],followResult:'ongoing',unresolvedReason:'无法联系上客户'},'2026-11-03 11:00');
   const d=a.followTools().draft(r,first);d.note='补充：上午拨打两次';assert.ok(a.followTools().edit(r,first.id,d,'2026-11-03 12:00'));
-  assert.equal(a.followTools().current(r),latest);assert.equal(first.time,'2026-11-03 10:00');assert.equal(first.revisions[0].note,'电话未接');assert.equal(first.revisions[0].communication.reason,'申请退款');
+  assert.equal(a.followTools().current(r),latest);assert.equal(first.time,'2026-11-03 10:00');assert.equal(first.revisions[0].note,'电话未接');assert.equal(first.revisions[0].communication.reason,'正和客户协商退款金额');
   const before=JSON.stringify(r);d.unresolvedReason='其他';assert.equal(a.followTools().edit(r,first.id,d,'2026-11-03 13:00'),null);assert.equal(JSON.stringify(r),before);
-  r.status='已结案';d.unresolvedReason='申请退款';assert.ok(a.followTools().edit(r,first.id,d,'2026-11-03 13:00'));assert.equal(r.status,'已结案');assert.equal(a.followTools().current(r),null);
+  r.status='已结案';d.unresolvedReason='正和客户协商退款金额';assert.ok(a.followTools().edit(r,first.id,d,'2026-11-03 13:00'));assert.equal(r.status,'已结案');assert.equal(a.followTools().current(r),null);
 });
 test('old complaints receive pending examples once without resetting existing work',()=>{
   const existing=copy(a.records.filter(r=>Number(r.id)<31019));existing.forEach(r=>r.status='已结案');let raw=JSON.stringify(existing);
@@ -486,13 +486,13 @@ test('old complaints receive pending examples once without resetting existing wo
 });
 test('communication survives refresh and failed saves leave the persisted record unchanged',()=>{
   const next=copy(a.records),r=next[0];r.status='客服已接单';r.follows=[];r.customerSolution=null;
-  a.recordFollow(r,{note:'联系不上，下午重试',files:[],followResult:'ongoing',unresolvedReason:'申请退款',nextFollowAt:'2026-11-03T15:00'},'2026-11-03 10:00');
+  a.recordFollow(r,{note:'联系不上，下午重试',files:[],followResult:'ongoing',unresolvedReason:'正和客户协商退款金额',nextFollowAt:'2026-11-03T15:00'},'2026-11-03 10:00');
   const raw=JSON.stringify(next);let writes=0;
   const local={...context,window:{PCModules:{},addEventListener(){}},localStorage:{getItem:k=>k==='weid.pc.complaints.v1'?raw:null,setItem(){writes++;throw Error('QuotaExceededError')}}};
   loadOptions(local);vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../pages/complaint-workflow/index.js'),'utf8'),local);vm.runInNewContext(processCode,local);vm.runInNewContext(followCode,local);vm.runInNewContext(code.replace('  window.PCComplaints={mount,leave};',hook+'\n  window.PCComplaints={mount,leave};'),local);
-  const api=local.window.testAPI;assert.equal(writes,0);assert.equal(api.followTools().current(api.records[0]).communication.reason,'申请退款');
-  const changed=copy(api.records);api.recordFollow(changed[0],{note:'再次沟通',files:[],followResult:'ongoing',unresolvedReason:'解释说明'},'2026-11-03 11:00');
-  assert.equal(api.persist(changed),false);assert.equal(api.followTools().current(api.records[0]).communication.reason,'申请退款');
+  const api=local.window.testAPI;assert.equal(writes,0);assert.equal(api.followTools().current(api.records[0]).communication.reason,'正和客户协商退款金额');
+  const changed=copy(api.records);api.recordFollow(changed[0],{note:'再次沟通',files:[],followResult:'ongoing',unresolvedReason:'无法联系上客户'},'2026-11-03 11:00');
+  assert.equal(api.persist(changed),false);assert.equal(api.followTools().current(api.records[0]).communication.reason,'正和客户协商退款金额');
 });
 test('handling context shows customer identity without repeating complaint content or attachments',()=>{
   const r=a.records.find(r=>r.id==='31020'),before=JSON.stringify(r),compact=a.summary(r,false,true),detail=a.summary(r);
@@ -514,7 +514,7 @@ test('unresolved proposal requires a configured reason without a separate follow
   assert.ok(!html.includes('name="followResult"'));assert.ok(!html.includes('跟进结果'));
   assert.ok(html.includes('data-field="unresolvedReason"'));assert.ok(html.includes('required aria-required="true"'));
   assert.ok(helper.validate(r,{operation:'unresolved',files:[],unresolvedReason:''}).some(([name])=>name==='unresolvedReason'));
-  assert.equal(helper.validate(r,{operation:'unresolved',files:[],unresolvedReason:'解释说明'}).length,0);
+  assert.equal(helper.validate(r,{operation:'unresolved',files:[],unresolvedReason:'无法联系上客户'}).length,0);
   assert.ok(helper.closureForm({note:''}).includes('确认后工单将进入已结案状态'));
 });
 test('reason choices track customer-demand configuration while saved reasons and legacy history remain stable',()=>{
@@ -575,7 +575,7 @@ test('switching communication operations preserves both drafts and detects hidde
   e.draft.customerSolution.methods=['refund'];e.draft.customerSolution.refundAmounts={project:'1200'};
   const refund=JSON.stringify(e.draft);
   helper.switchOperation(e,'follow',r);assert.equal(e.kind,'follow');assert.equal(helper.operationDirty(e),true);
-  e.draft.note='继续协商退款';e.draft.unresolvedReason='申请退款';const follow=JSON.stringify(e.draft);
+  e.draft.note='继续协商退款';e.draft.unresolvedReason='正和客户协商退款金额';const follow=JSON.stringify(e.draft);
   helper.switchOperation(e,'compensation',r);assert.equal(JSON.stringify(e.draft),refund);
   e.baseline=JSON.stringify(e.draft);assert.equal(helper.operationDirty(e),true);
   helper.switchOperation(e,'follow',r);assert.equal(JSON.stringify(e.draft),follow);

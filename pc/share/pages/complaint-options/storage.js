@@ -1,6 +1,6 @@
 /* Configurable complaint dictionaries; separate from complaint records and other systems. */
 window.PCComplaintOptions = (() => {
-  const DEFAULTS={demands:['申请退款','商品置换','继续服务','解释说明','其他'],types:['闭店','咨询报价','前端话术','门店环境','门店多收','祛斑反黑','顾客自身','光电操作','脱毛操作','门店服务','医美效果','皮肤效果','脱毛效果','光电效果','广告宣传','前后端服务','仪器资质','产品价格','负面新闻','门店加单','顾客交钱没做','抗衰效果','产品过敏']};
+  const DEFAULTS={demands:['正和客户协商退款金额','正和门店协商退款业绩','已和客户达成退款金额，待付款','无法联系上客户','客户提出的赔偿金额不合理（退一赔三）','客户提出的赔偿金额不合理（退一赔十）'],types:['闭店','咨询报价','前端话术','门店环境','门店多收','祛斑反黑','顾客自身','光电操作','脱毛操作','门店服务','医美效果','皮肤效果','脱毛效果','光电效果','广告宣传','前后端服务','仪器资质','产品价格','负面新闻','门店加单','顾客交钱没做','抗衰效果','产品过敏']};
   const LABELS={demands:'客户诉求',types:'售后类型'},copy=value=>JSON.parse(JSON.stringify(value));
   let current={schema:1,revision:0,...copy(DEFAULTS)},failure='',database,channel;
   const listeners=new Set();
