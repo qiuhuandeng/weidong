@@ -10,7 +10,9 @@ const context = {URL, Date, Intl, console, icon:name=>`<svg aria-hidden="true" d
   document:{addEventListener(){},getElementById(){return null}},
   PCUI:{registerPager(){}},ElementPlus:{ElMessage(){}},window:{PCModules:{},addEventListener(){}}};
 vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../pages/complaint-solutions/index.js'),'utf8'),context);
-function loadOptions(target){for(const file of ['storage.js','index.js'])vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../pages/complaint-options',file),'utf8'),target)}
+const workflowCode=fs.readFileSync(path.join(__dirname,'../pages/complaint-workflow/index.js'),'utf8');
+vm.runInNewContext(workflowCode,context);
+function loadOptions(target){vm.runInNewContext(workflowCode,target);vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../pages/complaint-fixtures/index.js'),'utf8'),target);for(const file of ['storage.js','index.js'])vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../pages/complaint-options',file),'utf8'),target)}
 loadOptions(context);
 const followCode=fs.readFileSync(path.join(__dirname,'../pages/complaint-follow/index.js'),'utf8');
 vm.runInNewContext(followCode,context);
@@ -22,7 +24,7 @@ const a=context.window.testAPI;
 let count=0;
 const test=(name,run)=>{run();count++;console.log('PASS '+name)};
 const copy=o=>JSON.parse(JSON.stringify(o));
-test('seed contains all three channels and 20 complaints / 24 orders',()=>{assert.equal(a.records.length,20);assert.equal(a.orders.length,24);assert.deepEqual([...new Set(a.records.map(r=>r.channel))].sort(),['mini','staff','wechat'])});
+test('seed contains all three channels and 23 complaints / 27 orders',()=>{assert.equal(a.records.length,23);assert.equal(a.orders.length,27);assert.deepEqual([...new Set(a.records.map(r=>r.channel))].sort(),['mini','staff','wechat'])});
 test('PC writes only its own storage key',()=>assert.deepEqual([...storage.keys()],['weid.pc.complaints.v1']));
 test('money precision, invalid decimals, negatives and overflow',()=>{assert.equal(a.toCents('12.34'),1234);assert.equal(a.toCents('0.01'),1);for(const v of ['1.001','-1','1e3','Infinity','9007199254740992'])assert.equal(a.toCents(v),null)});
 test('date shortcuts handle leap year and week boundary',()=>{assert.deepEqual(copy(a.orderDateRange('lastMonth','2024-03-01')),{start:'2024-02-01',end:'2024-02-29'});assert.deepEqual(copy(a.orderDateRange('week','2026-10-22')),{start:'2026-10-19',end:'2026-10-25'})});
@@ -388,7 +390,7 @@ test('status compatibility reads existing records at full quota without rewritin
   const saved=copy(a.records);saved[0].status='财务付款失败';saved[1].status='处理中';saved[2].status='门店处理中';saved[2].currentHandler='店长甲';saved[2].acceptedBy='客服甲';saved[3].status='客服待结案';
   const original=JSON.stringify(saved);let writes=0;
   const full={...context,window:{PCModules:{},addEventListener(){}},localStorage:{getItem:k=>k==='weid.pc.complaints.v1'?original:null,setItem(){writes++;throw Error('quota exceeded')}}};
-  loadOptions(full);vm.runInNewContext(processCode,full);
+  loadOptions(full);vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../pages/complaint-workflow/index.js'),'utf8'),full);vm.runInNewContext(processCode,full);
   vm.runInNewContext(followCode,full);
   vm.runInNewContext(code.replace('  window.PCComplaints={mount,leave};',hook+'\n  window.PCComplaints={mount,leave};'),full);
   assert.equal(writes,0);assert.equal(full.window.testAPI.records[0].status,'待财务付款');assert.equal(full.window.testAPI.currentTask(full.window.testAPI.records[0]),'财务付款失败');
@@ -461,20 +463,25 @@ test('editing retains original communication time and snapshots without replacin
   const before=JSON.stringify(r);d.unresolvedReason='其他';assert.equal(a.followTools().edit(r,first.id,d,'2026-11-03 13:00'),null);assert.equal(JSON.stringify(r),before);
   r.status='已结案';d.unresolvedReason='申请退款';assert.ok(a.followTools().edit(r,first.id,d,'2026-11-03 13:00'));assert.equal(r.status,'已结案');assert.equal(a.followTools().current(r),null);
 });
-test('old complaints receive two new pending examples once without resetting existing work',()=>{
+test('old complaints receive pending examples once without resetting existing work',()=>{
   const existing=copy(a.records.filter(r=>Number(r.id)<31019));existing.forEach(r=>r.status='已结案');let raw=JSON.stringify(existing);
   const local={...context,window:{PCModules:{},addEventListener(){}},localStorage:{getItem:k=>k==='weid.pc.complaints.v1'?raw:null,setItem:(k,v)=>{assert.equal(k,'weid.pc.complaints.v1');raw=v}}};
-  const boot=()=>{loadOptions(local);vm.runInNewContext(processCode,local);vm.runInNewContext(followCode,local);vm.runInNewContext(code.replace('  window.PCComplaints={mount,leave};',hook+'\n  window.PCComplaints={mount,leave};'),local);return local.window.testAPI.records};
-  const loaded=boot();assert.equal(loaded.length,20);assert.ok(loaded.filter(r=>Number(r.id)<31019).every(r=>r.status==='已结案'));
-  for(const id of ['31019','31020']){const r=loaded.find(r=>r.id===id);assert.equal(r.status,'待处理');assert.ok(r.level);assert.equal(r.follows.length,0);assert.equal(r.linked.length,1);assert.equal(r.customerSolution,undefined)}
-  const refreshed=boot();assert.equal(refreshed.length,20);assert.equal(refreshed.filter(r=>r.status==='待处理').length,2);
+  const boot=()=>{loadOptions(local);vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../pages/complaint-workflow/index.js'),'utf8'),local);vm.runInNewContext(processCode,local);vm.runInNewContext(followCode,local);vm.runInNewContext(code.replace('  window.PCComplaints={mount,leave};',hook+'\n  window.PCComplaints={mount,leave};'),local);return local.window.testAPI.records};
+  const loaded=boot();assert.equal(loaded.length,23);assert.ok(loaded.filter(r=>Number(r.id)<31019).every(r=>r.status==='已结案'));
+  for(const id of ['31019','31020','31021','31022','31023']){const r=loaded.find(r=>r.id===id);assert.equal(r.status,'待处理');assert.ok(r.level);assert.equal(r.follows.length,0);assert.equal(r.linked.length,1);assert.equal(r.customerSolution,undefined)}
+  const refreshed=boot();assert.equal(refreshed.length,23);assert.equal(refreshed.filter(r=>r.status==='待处理').length,5);
+  const pending=refreshed.filter(r=>Number(r.id)>=31021);assert.deepEqual(copy(pending.map(r=>r.channel).sort()),['mini','staff','wechat']);
+  for(const r of pending){assert.ok(r.files.length);assert.ok(local.window.testAPI.detailActions(r).includes('accept-case'));assert.ok(local.window.testAPI.recordAccept(r,'2026-11-03 11:00',{level:r.level}));}
+  assert.ok(local.window.testAPI.persist(refreshed));
+  const afterAccept=boot();for(const r of afterAccept.filter(r=>Number(r.id)>=31021)){assert.equal(r.status,'客服已接单');assert.equal(r.acceptedAt,'2026-11-03 11:00');assert.equal(r.follows.filter(f=>f.kind==='accept').length,1)}
+  assert.equal(afterAccept.filter(r=>Number(r.id)>=31021).length,3);
 });
 test('communication survives refresh and failed saves leave the persisted record unchanged',()=>{
   const next=copy(a.records),r=next[0];r.status='客服已接单';r.follows=[];r.customerSolution=null;
   a.recordFollow(r,{note:'联系不上，下午重试',files:[],followResult:'ongoing',unresolvedReason:'申请退款',nextFollowAt:'2026-11-03T15:00'},'2026-11-03 10:00');
   const raw=JSON.stringify(next);let writes=0;
   const local={...context,window:{PCModules:{},addEventListener(){}},localStorage:{getItem:k=>k==='weid.pc.complaints.v1'?raw:null,setItem(){writes++;throw Error('QuotaExceededError')}}};
-  loadOptions(local);vm.runInNewContext(processCode,local);vm.runInNewContext(followCode,local);vm.runInNewContext(code.replace('  window.PCComplaints={mount,leave};',hook+'\n  window.PCComplaints={mount,leave};'),local);
+  loadOptions(local);vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../pages/complaint-workflow/index.js'),'utf8'),local);vm.runInNewContext(processCode,local);vm.runInNewContext(followCode,local);vm.runInNewContext(code.replace('  window.PCComplaints={mount,leave};',hook+'\n  window.PCComplaints={mount,leave};'),local);
   const api=local.window.testAPI;assert.equal(writes,0);assert.equal(api.followTools().current(api.records[0]).communication.reason,'申请退款');
   const changed=copy(api.records);api.recordFollow(changed[0],{note:'再次沟通',files:[],followResult:'ongoing',unresolvedReason:'解释说明'},'2026-11-03 11:00');
   assert.equal(api.persist(changed),false);assert.equal(api.followTools().current(api.records[0]).communication.reason,'申请退款');

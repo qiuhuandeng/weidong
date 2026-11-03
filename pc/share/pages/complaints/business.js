@@ -6,6 +6,7 @@
   const KEY = 'weid.pc.complaints.v1';
   const SOURCE_KEY = 'weidong.unified-complaints.v1';
   const dictionary = window.PCComplaintOptions;
+  const {customers,demoScenarios}=window.PCModules['complaint-fixtures'];
   const LEVELS = ['1级','2级','3级','4级','5级'];
   const LEVEL4_TYPES = ['报警','卫生局','监管局'];
   const level4Type = record => record.level==='4级'&&LEVEL4_TYPES.includes(record.level4Type)?record.level4Type:'';
@@ -18,7 +19,6 @@
   const multiValues=value=>[...new Set((Array.isArray(value)?value:value?[value]:[]).map(item=>String(item).trim()).filter(Boolean))];
   const valueText=value=>Array.isArray(value)?multiValues(value).join('、'):String(value??'');
   // Match the Zhongtai workflow vocabulary; fault attribution is not the current handler.
-  const WORK_ORDER_STATUSES=['待处理','客服已接单','客服处理中','财务审批中','采购审批中','待财务付款','待采购发货','客服复核中','已结案'];
   const STATUS_ALIASES={'客服待处理':'待处理','客服接单':'客服已接单','处理中':'客服处理中','门店待处理':'客服处理中','门店处理中':'客服处理中','待结案':'客服复核中','客服待结案':'客服复核中','已完成':'已结案','财务付款中':'待财务付款','财务付款失败':'待财务付款','采购执行中':'待采购发货','采购待发货':'待采购发货','采购部分发货':'待采购发货','门店交付中':'客服处理中','财务审批发起失败':'财务审批中','财务审批待同步':'财务审批中','采购审批发起失败':'采购审批中','采购审批待同步':'采购审批中'};
   function workOrderStatus(status,r={}){
     if(status!=='已挂起'&&!['门店处理中','门店待处理','门店交付中'].includes(status))return STATUS_ALIASES[status]||status||'待处理';
@@ -28,11 +28,13 @@
     const previous=[r.suspension?.returnState,r.resumeStatus,r.beforeStatus,...(r.follows||[]).map(f=>f.beforeStatus)].find(value=>value&&value!=='已挂起');
     return stage||STATUS_ALIASES[status]||(previous?workOrderStatus(previous):r.startedAt||r.assessedAt?'客服处理中':r.acceptedAt?'客服已接单':'待处理');
   }
+  const workflow=window.PCModules['complaint-workflow'].create({normalizeStatus:workOrderStatus});
+  const WORK_ORDER_STATUSES=workflow.statuses.map(([status])=>status);
   const statusScope=status=>['待处理','客服已接单'].includes(workOrderStatus(status))?'pending':workOrderStatus(status)==='已结案'?'closed':'active';
-  const STATUS_TABS=[['','全部'],...WORK_ORDER_STATUSES.map(status=>[status,status])];
-  const canAssess=r=>!r.suspension&&!r.legacySuspended&&['客服已接单','客服处理中'].includes(r.status);
-  const canFollow=r=>WORK_ORDER_STATUSES.includes(r.status)&&r.status!=='待处理';
-  const canGrade=r=>!r.suspension&&!r.legacySuspended&&canFollow(r)&&r.status!=='已结案';
+  const STATUS_TABS=workflow.tabs;
+  const canAssess=r=>workflow.can(r,'assess');
+  const canFollow=r=>workflow.can(r,'follow');
+  const canGrade=r=>workflow.can(r,'grade');
   function normalizeRecordStatus(r){const before=r.status;r.status=workOrderStatus(before,r);if(['门店处理中','门店待处理','门店交付中'].includes(before)&&r.status==='客服处理中'){r.legacyStoreAssignment??={status:before,handler:r.currentHandler,department:r.currentDepartment,task:r.currentTask,deadline:r.taskDeadline};r.currentHandler=r.acceptedBy||r.startedBy||r.assessedBy||r.transfer?.fromHandler||'';r.currentDepartment='售后客服';r.currentTask='待客服继续处理';delete r.statusDetail;r.taskDeadline=null;}if(before==='已挂起')r.legacySuspended=true;if(before!==r.status&&/失败|部分发货|待同步/.test(before))r.statusDetail ||= before;}
   function currentHandler(r){return r.currentHandler||(['客服已接单','客服处理中','客服复核中'].includes(r.status)?r.acceptedBy||r.startedBy||r.assessedBy:'')||'';}
   function currentTask(r){
@@ -88,28 +90,7 @@
   const error = (scope,name,text) => {const el=scope.querySelector(`#uc-error-${name}`);if(el)el.textContent=text;const control=scope.querySelector(`#uc-${name}`)||scope.querySelector(`[name="${name}"]`);if(control){const visible=control.hidden?control.closest('.pc-island')?.querySelector('input:not([hidden]),button,[tabindex="0"]'):control;for(const target of new Set([control,visible].filter(Boolean))){target.setAttribute('aria-invalid','true');target.setAttribute('aria-describedby','uc-error-'+name)}}};
   const clearErrors = scope => {scope.querySelectorAll('.uc-error').forEach(e=>e.textContent='');scope.querySelectorAll('[aria-invalid]').forEach(e=>e.removeAttribute('aria-invalid'))};
 
-  const customers = [
-    ['王秀珍','150****3858','河源源城店','staff','这个顾客想退款，需要售后打电话协助沟通。已做两次项目，补了5800元疗程，顾客不愿继续到店。','2026-10-19 16:23','杨晓燕','待处理','',null],
-    ['小海军','136****1211','厦门湖里店','wechat','购买时承诺免费提供扁平疣治疗，到店后告知需要另付费，希望按原承诺提供服务。','2026-10-19 14:37','客户本人','待处理','',null],
-    ['付婧','191****8186','上海静安店','mini','门店没有按照顾客要求操作，对沟通过程和服务态度不满意，希望客服协助处理。','2026-10-18 14:10','客户本人','待处理','',null],
-    ['李焰','139****2002','厦门思明店','wechat','项目体验与广告介绍不一致，希望退回未消费的费用。','2026-10-18 19:39','客户本人','处理中','推广','广告宣传'],
-    ['日暮林间','182****4727','乐山市中店','staff','顾客反馈项目效果不符合预期，希望核对已做项目和剩余疗程后协商退款。','2026-10-19 16:23','吴鲜娇','处理中','门店','皮肤效果'],
-    ['张丽华','137****7297','福州台江店','staff','顾客做完项目后反馈皮肤不适，希望售后回电，协助核实操作记录并安排复查。','2026-10-19 16:18','张婷婷','待处理','',null],
-    ['陈女士','176****5776','南京建邺店','mini','我想取消预约，一直不回消息。之前已经和邀约人说明原因，希望尽快回复。','2026-10-14 01:46','客户本人','处理中','销售','前端话术'],
-    ['邵瑞琴','138****5132','厦门湖里店','wechat','做的项目说第二次可以做，但是找不到地址了，希望联系原门店确认。','2026-10-18 18:37','客户本人','待处理','',null],
-    ['祝老师','182****4065','十堰茅箭店','staff','项目报废，申请维护，客户反馈光电操作过程不适，希望核实当日操作老师。','2026-10-19 16:04','朱玲玲','处理中','门店','光电操作'],
-    ['陈小悦','186****9108','杭州上城店','mini','交了20元定金，预约前咨询的价格和门店实际报价不同，希望说明收费项目。','2026-10-13 14:20','客户本人','已完成','销售','咨询报价'],
-    ['阮淑贞','136****6947','厦门思明店','wechat','对广告中的项目效果有疑问，希望核实疗程内容和宣传依据。','2026-10-18 18:34','客户本人','处理中','推广','广告宣传'],
-    ['岑秀清','134****7926','成都百里湿江店','staff','顾客因自身原因无法继续项目，申请核实剩余服务并协商处理。','2026-10-19 16:07','王晓凤','已完成','门店','顾客自身'],
-    ['林女士','130****3650','杭州临平店','mini','原门店已搬迁，希望确认新的服务门店，并处理未完成的疗程。','2026-10-14 09:12','客户本人','待处理','',null],
-    ['谢国森','180****7661','南京建邺店','wechat','对服务沟通不满意，希望客服尽快联系并协商未消费部分。','2026-10-18 18:12','客户本人','已完成','门店','门店服务'],
-    ['鑫鑫航航','183****3898','南昌东湖店','staff','客服承诺的服务内容与到店沟通有差异，需要核对预约微信记录及门店沟通情况。','2026-10-19 16:03','肖玉红','待处理','',null],
-    ['刘晴','138****6219','杭州上城店','mini','客户已提出取消预约，但尚未收到明确回复，希望客服协助确认。','2026-10-19 17:10','客户本人','待处理','',null],
-    ['周女士','159****3076','苏州姑苏店','staff','客户反馈项目后不适，门店已上报，希望售后协助核实操作过程并安排复查。','2026-10-19 17:05','杨晓燕','待处理','',null],
-    ['林小溪','137****9082','厦门思明店','wechat','广告宣传的服务范围与到店说明不一致，希望核对预约承诺并提供解决方案。','2026-10-19 17:00','客户本人','待处理','',null],
-    ['顾女士','139****0286','杭州上城店','mini','预约前已提出取消服务，希望核对未消费项目并协商退款，请售后回电。','2026-11-03 09:20','客户本人','待处理','',null],
-    ['许女士','158****6312','苏州姑苏店','staff','客户对到店收费说明有疑问，门店已提交反馈，请售后核实预约时的报价。','2026-11-03 09:35','杨晓燕','待处理','',null]
-  ];
+
   const orders = customers.flatMap((c,i)=>{
     const makeOrder = suffix => ({id:'2610'+String(190000000000+i*127+suffix),customerId:'C'+i,name:c[0],phone:c[1],member:String(15275350+i*227),customerWechat:'wx_'+String(203150+i),store:c[2],intention:['色斑改善','肤质改善','脱毛','舒缓修护'][i%4],consultant:['陈敏','王珊','周雨'][i%3],receptionSales:['杨晓燕','张婷婷','赵敏'][i%3],project:['S10祛斑护理','光电皮肤管理','冰点脱毛体验','肌肤修护疗程'][i%4],amount:[5800,5000,2980,189,1200,680][i%6],state:'已到店',created:'2026-10-10 10:30',appointment:'2026-10-12 14:00',arrived:'2026-10-12 14:06',inviter:['陈敏','王珊','周雨'][i%3],reception:['刘静','杨晓燕','吴鲜娇'][i%3],operator:['陈琳','许悦','李婷'][i%3],manager:['陈佳','赵敏','李雯'][i%3],maintainers:['陈琳（操作老师）','陈佳（店长）'],bookingWechatId:'wx'+i+(suffix===2?'b':'a'),wechatChoices:[{id:'wx'+i+'a',name:'美丽顾问 · '+['陈敏','王珊','周雨'][i%3],account:'meiye_'+String(1031+i),record:'JW'+(52010+i),added:'2026-10-08 10:25',promoter:['李江','张宁','陈敏'][i%3],source:['抖音 · 皮肤护理','视频号 · 到店体验','朋友圈 · 皮肤管理'][i%3],campaign:'皮肤管理 · 十月体验',costKey:'2026-10 / 华东推广 / '+(52010+i)},{id:'wx'+i+'b',name:'门店服务 · '+c[2],account:'store_'+String(201+i),record:'JW'+(62010+i),added:'2026-10-11 09:12',promoter:'周雨',source:'视频号 · 门店活动',campaign:'门店十月活动',costKey:'2026-10 / 门店推广 / '+(62010+i)}]});
     const current=makeOrder(1);
@@ -128,28 +109,7 @@
   });
   // Local prototype fixtures. Existing manually saved values are retained during migration.
   const DEMO_DETAILS_VERSION = 'status-matched-plans-20261019';
-  const demoScenarios = [
-    ['门店','门店服务','manager','2级','我已经做了两次，不想继续疗程，请帮我核对还能退多少。','门店未及时说明剩余疗程的处理方式，退款诉求多次转交后未明确回复。','已与门店核对两次消费记录和剩余项目，整理可协商方案，等待客户确认。','客户已确认剩余项目处理方案，回访确认无其他诉求。'],
-    ['推广','广告宣传','promoter','3级','预约时说包含扁平疣治疗，到店又说要收费，我希望按承诺处理。','预约引流内容未明确免费服务范围，与到店实际收费口径不一致。','已定位预约微信及对应加微记录，要求推广核对宣传内容，并与门店确认服务范围。','已向客户说明服务范围并落实协商方案，客户确认处理结果。'],
-    ['门店','脱毛操作','operator','2级','我提前说明了操作要求，但老师没有确认就开始了，沟通时也没有解释清楚。','操作前未充分确认客户需求，操作后的解释与安抚不及时。','已联系操作老师核对当日记录，由店长与客户确认后续复查和服务安排。','客户已完成回访，对后续服务安排表示认可。'],
-    ['推广','广告宣传','promoter','3级','体验和广告介绍有差别，未消费的部分我想申请退回。','广告对体验内容的描述不够完整，客户预期与实际交付存在差异。','已核对广告页面和预约沟通，整理已消费与未消费项目，等待退款方案确认。','已完成未消费部分的协商处理，客户确认无其他问题。'],
-    ['门店','皮肤效果','operator','2级','做完疗程后没有达到当时沟通的预期，希望核对项目并协商剩余疗程。','门店未持续跟进阶段性反馈，对疗程效果和预期的沟通不足。','已核对疗程进度，安排接待老师回访客户，并协商剩余项目的处理方式。','客户已确认剩余疗程处理方案，回访结束。'],
-    ['门店','光电操作','operator','3级','做完项目后皮肤不舒服，我先联系了邀约老师，希望尽快安排复查。','操作后的注意事项说明及回访不充分，客户反馈后未及时安排复查。','已协调操作老师核对当次记录，联系客户确认可到店的复查时间。','客户已完成复查并确认后续安排，门店持续回访。'],
-    ['销售','前端话术','inviter','1级','我已经说过要取消预约，但一直没有收到回复。','邀约人未及时响应客户取消预约的明确诉求，沟通记录中缺少处理反馈。','已定位原预约微信，通知邀约人核对取消诉求并向客户明确答复。','取消预约事项已处理，客户确认收到回复。'],
-    ['门店','闭店','manager','2级','上次说第二次还可以做，但我找不到原门店了，请帮我确认去哪里。','门店地址变更后未及时通知存量客户，也未明确后续服务承接安排。','已由店长核对未完成疗程，联系承接门店确认地址和可预约时间。','客户已确认承接门店及预约安排，后续服务衔接完成。'],
-    ['门店','光电操作','operator','3级','光电操作时感觉不舒服，希望核实当天是哪位老师操作，并说明后续安排。','操作中未及时记录并处理客户的不适反馈，需由当次操作老师核实服务过程。','已调取操作维护记录并联系操作老师，安排店长协调复查及后续服务。','复查及后续服务已确认，客户回访结束。'],
-    ['销售','咨询报价','inviter','1级','我交了定金，预约前说的价格和门店报的价格不一样。','预约报价未明确包含项目和额外费用，前端沟通口径不完整。','已核对预约报价和门店项目明细，向客户逐项说明收费内容。','已按协商口径确认费用，客户认可说明并确认本次投诉结束。'],
-    ['推广','广告宣传','promoter','2级','广告中的疗程内容和效果我没有理解清楚，希望提供准确的说明。','广告对项目适用范围和效果表述不清，客户未获得充分说明。','已联系对应推广人核对宣传依据，整理疗程说明后向客户回电解释。','客户已收到完整疗程说明，确认无其他疑问。'],
-    ['门店','顾客自身','manager','1级','我个人时间安排有变化，没办法继续做，想协商剩余服务。','客户个人安排变更导致无法继续履约，由门店负责剩余服务核实与协商。','已核对剩余权益及有效期，与客户沟通延期或调整服务的可选方案。','客户已选择并确认延期服务方案，门店完成登记，回访无异议。'],
-    ['门店','闭店','manager','4级','原门店搬走了，还有没做完的疗程，请帮我安排后续服务。','原门店搬迁后的客户告知及疗程承接不及时，未形成明确服务安排。','已核实剩余疗程，协调临近门店承接，等待客户确认新的到店时间。','新的承接门店及疗程安排已获客户确认。'],
-    ['门店','门店服务','manager','2级','门店沟通的态度让我不满意，未消费的部分希望有人明确处理。','门店接待沟通不充分，客户表达诉求后未得到清晰的处理反馈。','已由店长复核接待过程，并就未消费部分与客户协商处理方式。','店长已完成回访及协商处理，客户确认接受结果。'],
-    ['销售','前后端服务','inviter','2级','线上说的服务和到店说的不一样，希望把预约时的聊天记录核对清楚。','线上预约承诺与门店交接信息不一致，邀约环节未完整同步服务内容。','已核对预约微信记录及门店接待记录，协调销售和店长统一处理口径。','服务内容已核对并落实，客户确认后续安排。'],
-    ['销售','前端话术','inviter','1级','我已经说了取消预约，一直没有收到回复。','咨询未及时响应客户取消预约的请求。','已联系咨询核对预约状态，等待客户确认取消结果。','预约已取消，客户确认无需其他协助。'],
-    ['门店','光电操作','operator','3级','做完项目后感觉不舒服，希望核实当天的操作情况。','操作后的注意事项说明及回访不充分。','已联系操作老师核对记录，正在协调复查时间。','客户已完成复查，确认后续服务安排。'],
-    ['推广','广告宣传','promoter','2级','广告说包含的项目，到店后却说不包含，请核对清楚。','宣传服务范围不明确，与门店执行口径存在差异。','已定位预约微信及推广人，核对广告内容与门店服务范围。','服务范围已核对并按协商方案落实，客户确认接受。'],
-    ['销售','前端话术','inviter','1级','请核对还没有消费的项目，回电说明退款如何处理。','','',''],
-    ['销售','咨询报价','inviter','2级','到店后说明的费用和预约报价不一致，请帮忙核实。','','','']
-  ];
+
   function demoTime(value,minutes=0){return new Date(Date.parse(value.slice(0,16).replace(' ','T')+':00Z')+minutes*60000).toISOString().slice(0,16).replace('T',' ')}
   function demoImage(r,o,kind){
     const rows=kind==='conversation'?[['客户',r.customerStatement||r.content],['客服','已收到您的反馈，我们会核对订单和服务记录，并与您确认处理安排。']]:[['服务项目',o.project],['服务门店',o.store],['到店时间',o.arrived],['接待老师',o.reception],['操作老师',o.operator],['订单号',o.id]];
@@ -316,10 +276,10 @@
   }
   function recordAccept(r,time,grade){if(r.suspension||r.legacySuspended||r.status!=='待处理'||followTools().gradeErrors(grade).length)return null;const beforeStatus=r.status,before=followTools().gradeValue(r);Object.assign(r,followTools().gradeValue(grade));r.status='客服已接单';r.acceptedAt=time;r.acceptedBy=ACTOR;delete r.statusDetail;delete r.currentTask;const entry={id:r.id+'-accept-'+Date.now(),kind:'accept',action:'客服接单',time,actor:ACTOR,note:'客服已接单，确认客诉等级为 '+r.level+(level4Type(r)?'（'+level4Type(r)+'）':'')+'。',before,...followTools().gradeValue(r),beforeStatus,status:r.status,files:[]};r.follows.unshift(entry);return entry}
   function markProcessing(r,time){if(r.status==='客服已接单'){r.status='客服处理中';r.startedAt??=time;r.startedBy??=ACTOR;delete r.statusDetail;delete r.currentTask}}
-  function followTools(){return window.PCModules['complaint-follow'].create({ACTOR,canAssess,canFollow,canGrade,LEVELS,LEVEL4_TYPES,error,clearErrors,markProcessing,recognitionSnapshot,clone,esc,fmt,field,input,select,detail,section,tag,link,btn,empty,events,filesView,draftFiles,solutionRead,level4Type,valueText,planText,valuesFrom,RECOGNITION_FIELDS,solutionDraft,assessmentChoices,dictionary})}
+  function followTools(){return window.PCModules['complaint-follow'].create({ACTOR,canAssess,canFollow,canGrade,handlingOperations:workflow.handlingOperations,LEVELS,LEVEL4_TYPES,error,clearErrors,markProcessing,recognitionSnapshot,clone,esc,fmt,field,input,select,detail,section,tag,link,btn,empty,events,filesView,draftFiles,solutionRead,level4Type,valueText,planText,valuesFrom,RECOGNITION_FIELDS,solutionDraft,assessmentChoices,dictionary})}
   function recordFollow(r,d,time){return followTools().record(r,d,time)}
   function hasHandlingScheme(r){return validPlan(r.handlingPlan)&&Boolean(r.assessedAt||(r.follows||[]).some(f=>['handling','assessment'].includes(f.kind)))}
-  function canClose(r){return !r.suspension&&!r.legacySuspended&&['客服处理中','客服复核中'].includes(r.status)&&closureReady(r)}
+  function canClose(r){return workflow.can(r,'close')&&closureReady(r)}
   function recordClosure(r,time,note=''){if(!canClose(r))return null;const beforeStatus=r.status;r.status='已结案';delete r.statusDetail;delete r.currentTask;r.handlingPlan='resolved';r.closedAt=time;r.closedBy=ACTOR;const entry={id:r.id+'-close-'+Date.now(),kind:'closure',time,actor:ACTOR,note:String(note||'').trim()||'已确认客诉处理完成，予以结案。',status:r.status,beforeStatus,...recognitionSnapshot(r),files:[]};r.follows.unshift(entry);return entry}
   function replyAction(){return `<div class="uc-footer-reply">${btn('回复客户','reply-customer')}</div>`}
 
@@ -357,7 +317,7 @@
   function selectDetailTab(key,focus=true){key=detailTabKey(key);const body=main.layer.el.querySelector('.uc-drawer-body'),scroll=body.scrollTop,tabTop=body.querySelector('.uc-detail-common').offsetHeight;main.scrollPositions[main.tab]=scroll;setDetailTab(key);body.scrollTop=scroll<=tabTop?scroll:Math.max(tabTop,main.scrollPositions[key]||0);if(focus)main.layer.el.querySelector('#uc-tab-'+key)?.focus({preventScroll:true})}
   function detailPanels(r){return panel('info',detailCommon(r)+processView(r))+panel('plan',followTools().overview(r)+handlingSchemeView(r)+section('解决方案',solutionView(r)))+panel('follows',followPanel(r))}
   function renderDetail(){if(!main.layer)return;const r=main.record,layer=main.layer,body=layer.el.querySelector('.uc-drawer-body');if(body.children.length)main.scrollPositions[main.tab]=body.scrollTop;layer.el.querySelector('.uc-drawer').classList.add('uc-detail-drawer','uc-workspace');layer.el.querySelector('.uc-layer-top').innerHTML='';body.classList.add('uc-detail-body');body.innerHTML=`<section class="uc-detail-common" aria-label="工单概况">${summary(r,main.phoneVisible)}</section>${detailTabs()}<div class="uc-detail-panels">${detailPanels(r)}</div>`;body.scrollTop=main.scrollPositions[main.tab]||0;layer.el.querySelector('.uc-drawer-foot').innerHTML=detailActions(r)}
-  const {summary,phoneView,informationView,orderCards,processingDepartment,processRecords,processView,detailActions,closureReady}=window.PCModules['complaint-detail'].create({btn,replyAction,canFollow,canAssess,canGrade,canClose,hasHandlingScheme,handlingMissing,icon,workOrderStatus,valueText,planText,detail,statusTag,currentHandler,currentTask,events,esc,empty,section,fmt,levelTag,level4Type,CHANNELS,interval,filesView,link,tag,resolveLink,orderProjects,money,iconFile,paymentView,paymentMoney,detailReference,isDemoRecord:r=>r.demoDetailsVersion===DEMO_DETAILS_VERSION&&customers[Number(r.id)-31001]?.[0]===r.name&&r.customerId==='C'+(Number(r.id)-31001)});
+  const {summary,phoneView,informationView,orderCards,processingDepartment,processRecords,processView,detailActions,closureReady}=window.PCModules['complaint-detail'].create({btn,replyAction,canFollow,canAssess,canGrade,canClose,workflowActions:workflow.detailActions,workflowDepartment:workflow.department,hasHandlingScheme,handlingMissing,icon,workOrderStatus,valueText,planText,detail,statusTag,currentHandler,currentTask,events,esc,empty,section,fmt,levelTag,level4Type,CHANNELS,interval,filesView,link,tag,resolveLink,orderProjects,money,iconFile,paymentView,paymentMoney,detailReference,isDemoRecord:r=>r.demoDetailsVersion===DEMO_DETAILS_VERSION&&customers[Number(r.id)-31001]?.[0]===r.name&&r.customerId==='C'+(Number(r.id)-31001)});
   function paymentListSummary(r){return r.channel==='wechat'?`<div class="uc-payment-list-summary"><span>订单 ${esc(paymentMoney(r.paymentAmount))}</span><span>申请退款 ${esc(paymentMoney(r.refund))}</span></div>`:''}
   function paymentView(r){const read=(label,value,full=false)=>detail(label,valueText(value).trim()||'—',full);return `<section class="uc-channel-payment" aria-label="微信支付信息"><div class="uc-section-head"><h4>微信支付信息</h4><div class="uc-channel-state">${wechatStatusTag(r.channelStatus)}</div></div><div class="uc-details uc-payment-facts">${read('商户名称',r.merchant)}${read('商户号',r.merchantId)}${read('微信投诉单号',r.sourceId)}${read('投诉时间',r.created?fmt(r.created):'')}${read('外部单号',r.externalOrder)}${read('客户昵称',r.wechatNickname)}${read('问题类型',r.problemType)}${read('问题描述',r.problemDescription)}${read('订单金额',paymentMoney(r.paymentAmount))}${read('申请退款金额',paymentMoney(r.refund))}</div><details class="uc-inline-details uc-payment-more"><summary>更多支付资料</summary><div class="uc-details">${read('微信支付订单号',r.payOrder,true)}${read('投诉次数',r.complaintCount===undefined||r.complaintCount===null?'':r.complaintCount+' 次')}${read('风险状态',r.riskStatus)}</div></details></section>`}
   function resolveLink(item){const order=orders.find(o=>o.id===item.id);return {order,wx:order?.wechatChoices.find(w=>w.id===(item.wechatId||order.bookingWechatId))}}

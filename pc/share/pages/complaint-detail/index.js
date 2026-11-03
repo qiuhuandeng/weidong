@@ -1,19 +1,14 @@
 /* Read-only complaint overview and progress. No workflow state or stored data is changed. */
-window.PCModules['complaint-detail']={render(){},create({btn,replyAction,canFollow,canAssess,canGrade,canClose,hasHandlingScheme,handlingMissing,icon,workOrderStatus,valueText,planText,detail,statusTag,currentHandler,currentTask,events,esc,empty,section,fmt,levelTag,level4Type,CHANNELS,interval,filesView,link,tag,resolveLink,orderProjects,money,iconFile,paymentView,paymentMoney,detailReference,isDemoRecord=()=>false}){
+window.PCModules['complaint-detail']={render(){},create({btn,replyAction,canFollow,canAssess,canGrade,canClose,workflowActions,workflowDepartment,hasHandlingScheme,handlingMissing,icon,workOrderStatus,valueText,planText,detail,statusTag,currentHandler,currentTask,events,esc,empty,section,fmt,levelTag,level4Type,CHANNELS,interval,filesView,link,tag,resolveLink,orderProjects,money,iconFile,paymentView,paymentMoney,detailReference,isDemoRecord=()=>false}){
   function closureReady(r){
     if(!hasHandlingScheme(r)||handlingMissing(r).length)return false;
     const pending=(r.execution?.steps||[]).some(node=>['handling','approval'].includes(node.type)&&!['intake','sales','close'].includes(node.kind)&&!node.done&&!node.skipped);
     return !pending&&(r.status==='客服复核中'||r.handlingPlan==='resolved'||Boolean(r.customerSolution?.methods?.length||r.customerSolution?.handlingMethods?.length));
   }
   function detailActions(r){
-    let primary=null,secondary=[];
-    if(!r.suspension&&!r.legacySuspended){
-      if(r.status==='待处理')primary=['客服接单','accept-case'];
-      else if(canFollow(r))primary=['跟进处理','begin-handling'];
-      if(canAssess(r))secondary.push(['责任认定','begin-assessment']);
-      if(canClose(r))secondary.push(['结案','close-case']);
-    }
-    return replyAction()+secondary.map(([label,action])=>btn(label,action)).join('')+(primary?btn(primary[0],primary[1],'',true):'');
+    const actions=workflowActions(r,{canClose:canClose(r)}),labels={accept:['客服接单','accept-case'],handling:['跟进处理','begin-handling'],assessment:['责任认定','begin-assessment'],closure:['结案','close-case']};
+    const primary=actions.includes('accept')?labels.accept:actions.includes('handling')?labels.handling:null;
+    return (actions.includes('reply')?replyAction():'')+actions.filter(key=>['assessment','closure'].includes(key)).map(key=>btn(...labels[key])).join('')+(primary?btn(primary[0],primary[1],'',true):'');
   }
   function deadlineText(value){
     if(!value)return '—';
@@ -60,8 +55,7 @@ window.PCModules['complaint-detail']={render(){},create({btn,replyAction,canFoll
     const status=workOrderStatus(r.status,r);
     if(status==='已结案')return '—';
     if(r.currentDepartment)return valueText(r.currentDepartment);
-    if(['待处理','客服已接单','客服处理中','客服复核中'].includes(status))return '售后客服';
-    return ['门店','财务','采购'].find(department=>status.includes(department))||'—';
+    return workflowDepartment({...r,status});
   }
   function processRecords(r){
     const titles={accept:'客服接单',start:'开始处理',assessment:'责任认定',handling:'责任认定',compensation:'保存解决方案',closure:'结案'};

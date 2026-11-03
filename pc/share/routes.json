@@ -55,7 +55,7 @@
       ]
     },
     "complaints": {
-      "dependencies": ["complaint-detail", "complaint-follow", "complaint-options"],
+      "dependencies": ["complaint-workflow", "complaint-detail", "complaint-follow", "complaint-options", "complaint-fixtures"],
       "scripts": [
         "pages/complaints/business.js",
         "pages/complaints/index.js"
@@ -82,6 +82,18 @@
       "requiresUI": false,
       "scripts": ["pages/complaint-detail/index.js"],
       "styles": ["pages/complaint-detail/style.css"],
+      "routes": []
+    },
+    "complaint-fixtures": {
+      "requiresUI": false,
+      "scripts": ["pages/complaint-fixtures/index.js"],
+      "styles": [],
+      "routes": []
+    },
+    "complaint-workflow": {
+      "requiresUI": false,
+      "scripts": ["pages/complaint-workflow/index.js"],
+      "styles": [],
       "routes": []
     },
     "complaint-follow": {

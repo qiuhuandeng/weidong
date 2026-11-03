@@ -1,11 +1,11 @@
 /* Customer communication records. Workflow stages and confirmed solutions stay separate. */
-window.PCModules['complaint-follow']={render(){},create({ACTOR,canAssess,canFollow,canGrade,LEVELS,LEVEL4_TYPES,error,clearErrors,markProcessing,recognitionSnapshot,clone,esc,fmt,field,input,select,detail,section,tag,link,btn,empty,events,filesView,draftFiles,solutionRead,level4Type,valueText,planText,valuesFrom,RECOGNITION_FIELDS,solutionDraft,assessmentChoices,dictionary}){
+window.PCModules['complaint-follow']={render(){},create({ACTOR,canAssess,canFollow,canGrade,handlingOperations,LEVELS,LEVEL4_TYPES,error,clearErrors,markProcessing,recognitionSnapshot,clone,esc,fmt,field,input,select,detail,section,tag,link,btn,empty,events,filesView,draftFiles,solutionRead,level4Type,valueText,planText,valuesFrom,RECOGNITION_FIELDS,solutionDraft,assessmentChoices,dictionary}){
   const RESULTS={agreed:'客户已同意解决方案',ongoing:'未达成一致'};
   const LEGACY_REASONS={unreachable:'联系不上客户',amount:'客户不认可方案金额',method:'客户不接受处理方式',considering:'客户需要考虑，等待回复',internal:'等待内部核实或确认',other:'其他'};
-  const OPERATIONS={follow:['方案未达成一致'],compensation:['已确认解决方案'],closure:['已处理并结案']};
+  const OPERATIONS=handlingOperations;
   const isCommunication=f=>f?.kind==='follow'&&['ongoing','agreed'].includes(f.communication?.result);
   const editable=f=>f&&(!f.kind||f.kind==='follow')&&f.actor===ACTOR;
-  function draft(r,f){return {note:f?.note||'',files:clone(f?.files||[]),unresolvedReason:f?.communication?.reason||'',reasonSource:f?f.communication?.reasonSource||'':'demands'}}
+  function draft(r,f){return {note:f?.note||'',files:clone(f?.files||[]),unresolvedReason:f?.communication?.reason||'',reasonSource:f?f.communication?.reasonSource||'':'demands',...(f?{followResult:f.communication?.result||'note'}:!canAssess(r)?{followResult:'note'}:{operation:'unresolved'})}}
   function operationDraft(kind,r){return kind==='follow'?draft(r):kind==='closure'?{note:'',files:[]}:kind==='assessment'?{...valuesFrom(r,RECOGNITION_FIELDS),handlingPlan:r.handlingPlan||'',handlingFiles:clone(r.handlingFiles||[])}:{customerSolution:solutionDraft(r.customerSolution)}}
   function switchOperation(e,kind,r){
     e.operations??={};e.operations[e.kind]={draft:e.draft,baseline:e.baseline};
@@ -41,10 +41,10 @@ window.PCModules['complaint-follow']={render(){},create({ACTOR,canAssess,canFoll
       }
     }));
   }
-  function communication(d){const result=Object.hasOwn(d,'followResult')?d.followResult:'ongoing';return result==='note'?null:{result,reason:result==='ongoing'?d.unresolvedReason||'':'',nextFollowAt:result==='ongoing'?d.nextFollowAt||'':'',...(result==='ongoing'&&d.reasonSource!==''?{reasonSource:'demands'}:{})}}
+  function communication(d){const result=Object.hasOwn(d,'followResult')?d.followResult:d.operation==='unresolved'?'ongoing':'note';return result==='note'?null:{result,reason:result==='ongoing'?d.unresolvedReason||'':'',nextFollowAt:result==='ongoing'?d.nextFollowAt||'':'',...(result==='ongoing'&&d.reasonSource!==''?{reasonSource:'demands'}:{})}}
   function reasonText(c){return c.reasonSource==='demands'?c.reason:LEGACY_REASONS[c.reason]||c.reason}
   function validate(r,d,old){
-    const errors=[],result=Object.hasOwn(d,'followResult')?d.followResult:'ongoing',value=communication(d),note=String(d.note||'').trim();
+    const errors=[],result=Object.hasOwn(d,'followResult')?d.followResult:d.operation==='unresolved'?'ongoing':'note',value=communication(d),note=String(d.note||'').trim();
     if(!canFollow(r))errors.push(['unresolvedReason','请先接单后再跟进']);
     if(result!=='note'&&!Object.hasOwn(RESULTS,result))errors.push(['unresolvedReason','当前本次操作不可保存跟进']);
     if(old){if(!editable(old)||JSON.stringify(value)!==JSON.stringify(old.communication||null))errors.push(['unresolvedReason','进展变化请新增跟进记录']);}

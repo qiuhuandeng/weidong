@@ -1,29 +1,31 @@
 {
-  "entryBytes": 13558,
+  "entryBytes": 13896,
   "entries": {
-    "pc.html": 13558,
+    "pc.html": 13896,
     "inventory.html": 10006
   },
   "sharedGzipBytes": 1281721,
   "preferredFontBytes": 28440,
   "firstRouteGzipBytes": {
-    "customer": 1465302,
-    "management": 1342437,
-    "complaints": 1345538,
-    "home": 52552,
-    "complaint-detail": 60733,
-    "complaint-follow": 57222,
-    "complaint-options": 57342,
-    "complaint-solutions": 1291410,
-    "supply-chain": 1378426,
-    "inventory-core": 1331825,
-    "inventory-clinical": 1395910,
-    "group-approval": 1356952,
-    "group-approval-designer": 1376947,
-    "group-approval-data": 1305494,
-    "refund-risk": 82692,
-    "stock-management": 1331663,
-    "product-center": 1354246
+    "customer": 1465365,
+    "management": 1342500,
+    "complaints": 1346791,
+    "home": 52615,
+    "complaint-detail": 60781,
+    "complaint-fixtures": 56629,
+    "complaint-workflow": 53042,
+    "complaint-follow": 57301,
+    "complaint-options": 57405,
+    "complaint-solutions": 1291473,
+    "supply-chain": 1378489,
+    "inventory-core": 1331888,
+    "inventory-clinical": 1395973,
+    "group-approval": 1357015,
+    "group-approval-designer": 1377010,
+    "group-approval-data": 1305557,
+    "refund-risk": 82755,
+    "stock-management": 1331726,
+    "product-center": 1354309
   },
   "files": {
     "js/vendor.27618b08a27e7019.js": {
@@ -96,10 +98,10 @@
       "gzipBytes": 55667,
       "sha256": "ddc9fae0bd57f9a998bfdf483915f8fcf5a98c74c288899d390a8c1067234e89"
     },
-    "js/complaints.058d6603a0422dae.js": {
-      "bytes": 117733,
-      "gzipBytes": 36891,
-      "sha256": "058d6603a0422daecd08e34532ed835c010383bd3ecade9ddd39724ae6b26ce8"
+    "js/complaints.57ddcb10999fb1d7.js": {
+      "bytes": 106156,
+      "gzipBytes": 32861,
+      "sha256": "57ddcb10999fb1d757e1111ed960035869b994d0fc0390b6a8c6d03e85cc98c1"
     },
     "css/complaints.4edb1ec48a78bb21.css": {
       "bytes": 13576,
@@ -111,20 +113,30 @@
       "gzipBytes": 389,
       "sha256": "8970e33cacf3c9db9f2a3883ba97cede24e01923a7c3d698cd85b0a94c718e11"
     },
-    "js/complaint-detail.c0283f19ccbcd6e3.js": {
-      "bytes": 21361,
-      "gzipBytes": 7533,
-      "sha256": "c0283f19ccbcd6e3ac4a635a5c60955170574036d026abb9770fb0989e6f2d31"
+    "js/complaint-detail.daba7db1fed928f4.js": {
+      "bytes": 21280,
+      "gzipBytes": 7518,
+      "sha256": "daba7db1fed928f4f2f4e1c7f9f62fedb89bd4393ab02b04b8e9a6e910859937"
     },
     "css/complaint-detail.a482a627a572a22b.css": {
       "bytes": 3221,
       "gzipBytes": 1037,
       "sha256": "a482a627a572a22b4f13516ab506ae5b1c1f9a53e56d100c366b91dd60c37ffc"
     },
-    "js/complaint-follow.12298dfe8096bb16.js": {
-      "bytes": 14339,
-      "gzipBytes": 5059,
-      "sha256": "12298dfe8096bb1618f184dae500e91a61581fbf75f228c3e93d45f615f39d07"
+    "js/complaint-fixtures.b5d7d2f65efac989.js": {
+      "bytes": 12840,
+      "gzipBytes": 4403,
+      "sha256": "b5d7d2f65efac989352f1a4bb3e2f479f092971ae0c814e1e1c5fb35b679a5d0"
+    },
+    "js/complaint-workflow.7e03784ac5aa6f6f.js": {
+      "bytes": 1822,
+      "gzipBytes": 816,
+      "sha256": "7e03784ac5aa6f6f05213a94356ce993338fb1890c794b6d7377e8a95cb58804"
+    },
+    "js/complaint-follow.41eb2380acf9c733.js": {
+      "bytes": 14455,
+      "gzipBytes": 5075,
+      "sha256": "41eb2380acf9c733111c1e167295a33b8d38faba4597429045ea1c0f073e7b70"
     },
     "js/complaint-options.a9d1cb41ae16c6a4.js": {
       "bytes": 13978,
