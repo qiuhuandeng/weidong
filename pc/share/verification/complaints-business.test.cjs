@@ -24,7 +24,7 @@ const a=context.window.testAPI;
 let count=0;
 const test=(name,run)=>{run();count++;console.log('PASS '+name)};
 const copy=o=>JSON.parse(JSON.stringify(o));
-test('seed contains all three channels and 23 complaints / 27 orders',()=>{assert.equal(a.records.length,23);assert.equal(a.orders.length,27);assert.deepEqual([...new Set(a.records.map(r=>r.channel))].sort(),['mini','staff','wechat'])});
+test('seed contains all three channels and 28 complaints / 32 orders',()=>{assert.equal(a.records.length,28);assert.equal(a.orders.length,32);assert.deepEqual([...new Set(a.records.map(r=>r.channel))].sort(),['mini','staff','wechat'])});
 test('workflow owns status tabs, departments and action eligibility',()=>{
   assert.deepEqual(copy(a.workflow.statuses.map(([status])=>status)),copy(a.WORK_ORDER_STATUSES));
   assert.equal(a.workflow.department({status:'财务审批中'}),'财务');assert.equal(a.workflow.department({status:'待采购发货'}),'采购');
@@ -475,14 +475,14 @@ test('old complaints receive pending examples once without resetting existing wo
   const existing=copy(a.records.filter(r=>Number(r.id)<31019));existing.forEach(r=>r.status='已结案');let raw=JSON.stringify(existing);
   const local={...context,window:{PCModules:{},addEventListener(){}},localStorage:{getItem:k=>k==='weid.pc.complaints.v1'?raw:null,setItem:(k,v)=>{assert.equal(k,'weid.pc.complaints.v1');raw=v}}};
   const boot=()=>{loadOptions(local);vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../pages/complaint-workflow/index.js'),'utf8'),local);vm.runInNewContext(processCode,local);vm.runInNewContext(followCode,local);vm.runInNewContext(code.replace('  window.PCComplaints={mount,leave};',hook+'\n  window.PCComplaints={mount,leave};'),local);return local.window.testAPI.records};
-  const loaded=boot();assert.equal(loaded.length,23);assert.ok(loaded.filter(r=>Number(r.id)<31019).every(r=>r.status==='已结案'));
+  const loaded=boot();assert.equal(loaded.length,28);assert.ok(loaded.filter(r=>Number(r.id)<31019).every(r=>r.status==='已结案'));
   for(const id of ['31019','31020','31021','31022','31023']){const r=loaded.find(r=>r.id===id);assert.equal(r.status,'待处理');assert.ok(r.level);assert.equal(r.follows.length,0);assert.equal(r.linked.length,1);assert.equal(r.customerSolution,undefined)}
-  const refreshed=boot();assert.equal(refreshed.length,23);assert.equal(refreshed.filter(r=>r.status==='待处理').length,5);
-  const pending=refreshed.filter(r=>Number(r.id)>=31021);assert.deepEqual(copy(pending.map(r=>r.channel).sort()),['mini','staff','wechat']);
+  const refreshed=boot();assert.equal(refreshed.length,28);assert.equal(refreshed.filter(r=>r.status==='待处理').length,5);
+  const pending=refreshed.filter(r=>Number(r.id)>=31021&&Number(r.id)<=31023);assert.deepEqual(copy(pending.map(r=>r.channel).sort()),['mini','staff','wechat']);
   for(const r of pending){assert.ok(r.files.length);assert.ok(local.window.testAPI.detailActions(r).includes('accept-case'));assert.ok(local.window.testAPI.recordAccept(r,'2026-11-03 11:00',{level:r.level}));}
   assert.ok(local.window.testAPI.persist(refreshed));
-  const afterAccept=boot();for(const r of afterAccept.filter(r=>Number(r.id)>=31021)){assert.equal(r.status,'客服已接单');assert.equal(r.acceptedAt,'2026-11-03 11:00');assert.equal(r.follows.filter(f=>f.kind==='accept').length,1)}
-  assert.equal(afterAccept.filter(r=>Number(r.id)>=31021).length,3);
+  const afterAccept=boot();for(const r of afterAccept.filter(r=>Number(r.id)>=31021&&Number(r.id)<=31023)){assert.equal(r.status,'客服已接单');assert.equal(r.acceptedAt,'2026-11-03 11:00');assert.equal(r.follows.filter(f=>f.kind==='accept').length,1)}
+  assert.equal(afterAccept.filter(r=>Number(r.id)>=31021&&Number(r.id)<=31023).length,3);
 });
 test('communication survives refresh and failed saves leave the persisted record unchanged',()=>{
   const next=copy(a.records),r=next[0];r.status='客服已接单';r.follows=[];r.customerSolution=null;

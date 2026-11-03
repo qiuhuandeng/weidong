@@ -108,7 +108,7 @@
     return [current,previous];
   });
   // Local prototype fixtures. Existing manually saved values are retained during migration.
-  const DEMO_DETAILS_VERSION = 'status-matched-plans-20261019';
+  const DEMO_DETAILS_VERSION = 'workflow-stage-records-20261103';
 
   function demoTime(value,minutes=0){return new Date(Date.parse(value.slice(0,16).replace(' ','T')+':00Z')+minutes*60000).toISOString().slice(0,16).replace('T',' ')}
   function demoImage(r,o,kind){
@@ -146,6 +146,15 @@
             r.closedAt=directClose?firstTime:demoTime(r.created,50);r.closedBy=ACTOR;
             if(!directClose)r.follows.unshift({id:r.id+'-demo-closure',kind:'closure',time:r.closedAt,actor:ACTOR,note:resolution,beforeStatus:'处理中',status:'已完成',...clone(snapshot),files:[],mock:true});
           }else{delete r.closedAt;delete r.closedBy}
+          const stageRecords={
+            '财务审批中':['财务审批','周雨','退款金额：¥ 1,680.00；收款账户已核对，等待财务审批意见。',[['处理方式','退款'],['退款金额','¥ 1,680.00'],['审批意见','等待财务审批']]],
+            '采购审批中':['采购审批','陈敏','置换商品：舒缓修护霜 50g × 2；收货地址已确认，等待采购审批。',[['处理方式','商品置换'],['商品明细','舒缓修护霜 50g × 2'],['审批意见','等待采购审批']]],
+            '待财务付款':['财务付款','李江','财务审批已通过，待登记实际付款金额、交易流水号及付款凭证。',[['审批结果','已通过'],['待付金额','¥ 1,680.00'],['付款状态','待财务付款']]],
+            '待采购发货':['采购发货','陈敏','采购审批已通过，待登记发货方式、发货数量、物流单号及备注。',[['审批结果','已通过'],['发货商品','舒缓修护霜 50g × 2'],['发货状态','待采购发货']]],
+            '客服复核中':['客服复核','林晓（售后客服）','财务已登记付款凭证，待联系客户确认到账，并填写复核结论与结案说明。',[['付款结果','成功'],['交易流水号','PAY-20261103-01'],['复核状态','待客户确认']]]
+          };
+          const stage=stageRecords[r.status];
+          if(stage)r.follows.unshift({id:r.id+'-demo-workflow',kind:'workflow',action:stage[0],time:demoTime(r.created,35),actor:stage[1],note:stage[2],fields:stage[3],beforeStatus:'客服处理中',status:r.status,files:[],mock:true});
         }else if(r.status==='已完成'){
           r.closedAt??=r.follows.find(f=>f.status==='已完成')?.time||demoTime(r.created,50);r.closedBy??=ACTOR;
         }
