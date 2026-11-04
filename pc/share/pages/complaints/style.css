@@ -133,3 +133,10 @@
 .uc-customer-search .pc-search-layout>:first-child{min-width:0;width:max-content;max-width:100%}
 .uc-customer-search .pc-search-form .el-form{width:auto;max-width:100%}
 .uc-customer-search.query-module .query-actions{width:auto;margin:0}
+
+/* All follow-up operations share one content boundary and keep their width on switch. */
+.uc-handling-body{scrollbar-gutter:stable}
+.uc-handling-content{padding-inline:var(--pc-gap)}
+.uc-handling-content .uc-solution-method{margin-bottom:0}
+.uc-handling-content #uc-solution-fields>.uc-section{margin-bottom:calc(var(--pc-gap) * 2)}
+.uc-handling-content .uc-refund-order-label{margin-top:0;padding:0 0 8px}

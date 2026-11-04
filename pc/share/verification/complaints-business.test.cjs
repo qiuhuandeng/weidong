@@ -747,7 +747,7 @@ test('handling context shows customer identity without repeating complaint conte
 test('handling offers three mutually exclusive business operations',()=>{
   const helper=a.followTools(),options=Object.keys(helper.OPERATIONS);
   assert.deepEqual([...options],['follow','compensation','closure']);
-  for(const kind of options){const html=helper.operationChoice(kind);assert.equal((html.match(/type="radio"/g)||[]).length,3);assert.ok(html.includes('方案未达成一致'));assert.ok(html.includes('已确认解决方案'));assert.ok(html.includes('已处理并结案'));assert.ok(!html.includes('责任认定'));assert.equal((html.match(/ checked/g)||[]).length,1);assert.ok(html.includes(`value="${kind}" checked`));assert.ok(!html.includes('role="tab"'))}
+  for(const kind of options){const html=helper.operationChoice(kind);assert.equal((html.match(/type="radio"/g)||[]).length,3);assert.ok(html.includes('方案未达成一致'));assert.ok(html.includes('已确认退赔方案'));assert.ok(html.includes('无赔付直接结案'));assert.ok(!html.includes('责任认定'));assert.equal((html.match(/ checked/g)||[]).length,1);assert.ok(html.includes(`value="${kind}" checked`));assert.ok(!html.includes('role="tab"'))}
   const inputs=options.map(value=>({value,checked:value==='compensation'})),synced=[],previous=context.PCUI.syncControl;
   context.PCUI.syncControl=input=>synced.push(input.value);
   try{helper.resetOperation({kind:'follow',layer:{el:{querySelectorAll:()=>inputs}}});assert.equal(inputs.filter(input=>input.checked).length,1);assert.ok(inputs[0].checked);assert.deepEqual(synced,options)}finally{context.PCUI.syncControl=previous}
@@ -759,7 +759,7 @@ test('unresolved proposal requires a configured reason without a separate follow
   assert.ok(html.includes('data-field="unresolvedReason"'));assert.ok(html.includes('required aria-required="true"'));
   assert.ok(helper.validate(r,{operation:'unresolved',files:[],unresolvedReason:''}).some(([name])=>name==='unresolvedReason'));
   assert.equal(helper.validate(r,{operation:'unresolved',files:[],unresolvedReason:'无法联系上客户'}).length,0);
-  assert.ok(helper.closureForm({note:''}).includes('确认后工单将进入已结案状态'));
+  assert.ok(!helper.closureForm({note:''}).includes('确认后工单将进入已结案状态'));assert.ok(helper.closureForm({note:''}).includes('结案说明'));
 });
 test('reason choices track customer-demand configuration while saved reasons and legacy history remain stable',()=>{
   const dict=context.window.PCComplaintOptions,descriptor=Object.getOwnPropertyDescriptor(dict,'current'),options=dict.options;

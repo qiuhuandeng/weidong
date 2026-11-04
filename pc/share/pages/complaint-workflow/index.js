@@ -5,7 +5,7 @@ window.PCModules['complaint-workflow']={render(){},create({normalizeStatus}){
     ['财务审批中','财务'],['采购审批中','采购'],['待财务付款','财务'],
     ['待采购发货','采购'],['客服复核中','售后客服'],['已结案','']
   ];
-  const labels=Object.fromEntries(statuses),known=new Set(Object.keys(labels)),handlingOperations={follow:['方案未达成一致'],compensation:['已确认解决方案'],closure:['已处理并结案']};
+  const labels=Object.fromEntries(statuses),known=new Set(Object.keys(labels)),handlingOperations={follow:['方案未达成一致'],compensation:['已确认退赔方案'],closure:['无赔付直接结案']};
   const state=record=>normalizeStatus(record.status,record);
   const active=record=>!record.suspension&&!record.legacySuspended;
   const directClosureStatuses=['财务审批中','采购审批中','待财务付款','待采购发货','客服复核中'];
