@@ -263,11 +263,11 @@
     const progress=listProgressText(r),orderInfo=r.linked.length?r.linked.map(item=>{const order=orders.find(order=>order.id===item.id),state=linkedOrderState(item);return `<div><span class="pc-block uc-block">${listValue(order?.store||r.store)} ${state?tag(state,{'已排客':'blue','已到店':'green','已超时':'orange','已完成':'gray','已流退':'gray'}[state]||'gray'):''}</span><span class="pc-block uc-block">${link(esc(item.id),'order-detail',`data-order="${esc(item.id)}"`)}</span></div>`}).join(''):`<span class="pc-block uc-block">${listValue(r.store)}</span><span class="pc-block uc-block uc-muted">未关联订单</span>`;
     return `<tr><td class="uc-list-customer">${customerIdOf(r)?link(esc(r.name),'customer-detail',`data-customer="${esc(customerIdOf(r))}" aria-label="查看客户详情：${esc(r.name)}"`):listValue(r.name)}<span class="pc-block uc-block uc-muted">${customerIdOf(r)?'会员号 '+listValue(r.member):'未关联客户'}</span><span class="pc-block uc-block uc-muted">${listValue(r.phone)}</span></td>
       <td class="uc-list-store-order">${orderInfo}</td>
-      <td>${listValue(CHANNELS[r.channel])}<span class="pc-block uc-block uc-muted">售后类型：${listValue(r.type)}</span><span class="pc-block uc-block uc-muted">${listValue(r.created?fmt(r.created):'')}</span></td>
+      <td>${listValue(CHANNELS[r.channel])}<span class="pc-block uc-block uc-muted">${listValue(r.created?fmt(r.created):'')}</span></td>
       <td><span class="pc-block uc-block uc-muted">工单号：${listValue(r.id)}</span><div class="uc-complaint-content">${listValue(r.content)}</div></td>
       <td>${levelTag(r.level)}${level4Type(r)?'<span class="pc-block uc-block uc-muted">'+esc(level4Type(r))+'</span>':''}<div class="uc-list-timing" data-complaint-timing="${esc(r.id)}">${complaintTimingHTML(r)}</div></td>
       <td>${statusTag(r.status)}${progress?`<div class="uc-progress-task uc-muted" title="${esc(progress)}">${esc(progress)}</div>`:''}</td>
-      <td>${listValue(valueText(r.department)||'待认定')}<span class="pc-block uc-block">责任人：${listValue(r.type==='闭店'?'无需填写':r.responsible)}</span></td>
+      <td>${listValue(valueText(r.department)||'待认定')}<span class="pc-block uc-block uc-muted">售后类型：${listValue(r.type)}</span><span class="pc-block uc-block">责任人：${listValue(r.type==='闭店'?'无需填写':r.responsible)}</span></td>
       <td class="uc-fixed"><div class="uc-actions">${link('详情','detail',`data-id="${r.id}"`)}</div></td></tr>`;
   }
   function statusCount(status){return records.filter(record=>workOrderStatus(record.status,record)===status).length}
