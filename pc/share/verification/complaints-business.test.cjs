@@ -12,13 +12,13 @@ const context = {URL, Date, Intl, console, icon:name=>`<svg aria-hidden="true" d
 vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../pages/complaint-solutions/index.js'),'utf8'),context);
 const workflowCode=fs.readFileSync(path.join(__dirname,'../pages/complaint-workflow/index.js'),'utf8');
 vm.runInNewContext(workflowCode,context);
-function loadOptions(target){vm.runInNewContext(workflowCode,target);vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../pages/complaint-fixtures/index.js'),'utf8'),target);for(const file of ['storage.js','index.js'])vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../pages/complaint-options',file),'utf8'),target)}
+function loadOptions(target){vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../pages/complaint-order-linking/index.js'),'utf8'),target);vm.runInNewContext(workflowCode,target);vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../pages/complaint-fixtures/index.js'),'utf8'),target);for(const file of ['storage.js','index.js'])vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../pages/complaint-options',file),'utf8'),target)}
 loadOptions(context);
 const followCode=fs.readFileSync(path.join(__dirname,'../pages/complaint-follow/index.js'),'utf8');
 vm.runInNewContext(followCode,context);
 const processCode=fs.readFileSync(path.join(__dirname,'../pages/complaint-detail/index.js'),'utf8');
 vm.runInNewContext(processCode,context);
-const hook = `window.testAPI={executionResultRecords,planPanel,workflow,toCents,orderDateRange,filtered,matchingOrders,orderPickerState,orderPickerOrders,orderPickerView,selectPickerOrder,handlingMissing,validateCustomerSolution,solutionDraft,solutionTotals,solutionOrders,refundEntries,refundAvailable,solutionTools,solutionRead,recordAccept,recordRecognition,recordCompensation,recordFollow,followTools,recordClosure,hasHandlingScheme,canClose,responsibleOptions,complaintCSV,validHandlingFile,records,orders,persist,canAssess,STATUS_TABS,WORK_ORDER_STATUSES,CHANNELS,workOrderStatus,normalizeRecordStatus,statusScope,currentHandler,currentTask,detailActions,complaintRow,complaintTiming,complaintTimingHTML,listProgressText,summary,phoneView,processingDepartment,processRecords,processView,select(id){main={record:records.find(r=>r.id===id)};return main.record;}};`;
+const hook = `window.testAPI={executionResultRecords,planPanel,workflow,toCents,orderDateRange,filtered,matchingOrders,customerIdOf,customerDirectory,matchingCustomers,orderPickerState,orderPickerTitle,orderPickerDirty,orderPickerCustomers,orderPickerOrders,orderPickerView,selectPickerCustomer,changePickerCustomer,selectPickerOrder,recordOrderAssociation,informationView,handlingMissing,validateCustomerSolution,solutionDraft,solutionTotals,solutionOrders,refundEntries,refundAvailable,solutionTools,solutionRead,recordAccept,recordRecognition,recordCompensation,recordFollow,followTools,recordClosure,hasHandlingScheme,canClose,responsibleOptions,complaintCSV,validHandlingFile,records,orders,persist,canAssess,STATUS_TABS,WORK_ORDER_STATUSES,CHANNELS,workOrderStatus,normalizeRecordStatus,statusScope,currentHandler,currentTask,detailActions,complaintRow,complaintTiming,complaintTimingHTML,listProgressText,summary,phoneView,processingDepartment,processRecords,processView,select(id){main={record:records.find(r=>r.id===id)};return main.record;}};`;
 vm.runInNewContext(code.replace('  window.PCComplaints={mount,leave};',hook+'\n  window.PCComplaints={mount,leave};'),context);
 const a=context.window.testAPI;
 let count=0;
@@ -36,27 +36,91 @@ test('workflow owns status tabs, departments and action eligibility',()=>{
 test('PC writes only its own storage key',()=>assert.deepEqual([...storage.keys()],['weid.pc.complaints.v1']));
 test('money precision, invalid decimals, negatives and overflow',()=>{assert.equal(a.toCents('12.34'),1234);assert.equal(a.toCents('0.01'),1);for(const v of ['1.001','-1','1e3','Infinity','9007199254740992'])assert.equal(a.toCents(v),null)});
 test('date shortcuts handle leap year and week boundary',()=>{assert.deepEqual(copy(a.orderDateRange('lastMonth','2024-03-01')),{start:'2024-02-01',end:'2024-02-29'});assert.deepEqual(copy(a.orderDateRange('week','2026-10-22')),{start:'2026-10-19',end:'2026-10-25'})});
-test('keyword, channel, status, date and linked filters compose',()=>{assert.equal(a.filtered({keyword:'3858',keywordType:'phone'}).length,1);assert.equal(a.filtered({keyword:'3858',keywordType:'phone',channel:'wechat'}).length,0);assert.ok(a.filtered({channel:'wechat',status:'待处理',linked:'yes'}).every(r=>r.channel==='wechat'&&r.status==='待处理'&&r.linked.length));assert.equal(a.filtered({start:'2099-01-01'}).length,0)});
+test('keyword, channel, workflow, order status and complaint dates compose',()=>{assert.equal(a.filtered({keyword:'3858',keywordType:'phone'}).length,1);assert.equal(a.filtered({keyword:'3858',keywordType:'phone',channel:'wechat'}).length,0);assert.ok(a.filtered({channel:'wechat',status:'待处理',orderStatus:'已到店'}).every(r=>r.channel==='wechat'&&r.status==='待处理'&&r.linked.length));assert.equal(a.filtered({start:'2099-01-01'}).length,0)});
+test('order status filters linked orders independently of workflow, including every linked order',()=>{
+  const recordCount=a.records.length,orderCount=a.orders.length,base=copy(a.records[0]);
+  try{
+    for(const [index,state]of ['已排客','已到店','已超时','已完成','已流退'].entries()){
+      const order={...copy(a.orders[0]),id:'status-order-'+index,state};a.orders.push(order);
+      const r={...copy(base),id:'order-state-'+index,status:'客服处理中',created:'2026-11-04 09:00',linked:[{id:order.id}]};a.records.push(r);
+      assert.ok(a.complaintRow(r).split('</td>')[1].includes(state));
+    }
+    a.records.push({...copy(base),id:'order-state-multiple',status:'客服处理中',created:'2026-11-04 10:00',linked:[{id:'status-order-1'},{id:'status-order-3'}]});
+    a.records.push({...copy(base),id:'order-state-unlinked',status:'已结案',created:'2026-11-04 10:00',linked:[]});
+    for(const [index,state]of ['已排客','已到店','已超时','已完成','已流退'].entries()){
+      const rows=a.filtered({orderStatus:state,status:'客服处理中',start:'2026-11-04',end:'2026-11-04'}).filter(r=>r.id.startsWith('order-state-'));
+      assert.ok(rows.some(r=>r.id==='order-state-'+index));assert.equal(rows.length,[1,3].includes(index)?2:1);
+    }
+    const multi=a.records.find(r=>r.id==='order-state-multiple'),cell=a.complaintRow(multi).split('</td>')[1];
+    for(const text of ['status-order-1','已到店','status-order-3','已完成'])assert.ok(cell.includes(text));
+    assert.equal(a.filtered({orderStatus:'已完成',status:'已结案'}).filter(r=>r.id==='order-state-unlinked').length,0);
+    assert.equal(a.filtered({orderStatus:'已到店',end:'2026-11-03'}).filter(r=>r.id.startsWith('order-state-')).length,0);
+  }finally{a.records.splice(recordCount);a.orders.splice(orderCount)}
+});
 test('order search independent keyword/consultant/date criteria',()=>{assert.equal(a.matchingOrders({keywordType:'phone',keyword:'3858'}).length,2);assert.equal(a.matchingOrders({keywordType:'name',keyword:'王秀珍',consultant:'不存在'}).length,0)});
 test('known customer opens all of their orders by ID regardless of masked contact or stale filters',()=>{
   const r=a.records.find(r=>r.id==='31001'),e=a.orderPickerState({...r,phone:'unknown'});
   e.orderFilters={keyword:'other person',keywordType:'name',start:'2099-01-01',consultant:'其他'};
   const matches=a.orderPickerOrders(e);assert.equal(matches.length,2);assert.ok(matches.every(o=>o.customerId===r.customerId));
-  assert.ok(matches.some(o=>o.state==='已完成'));assert.equal(e.orderSearch.keyword,'');
-  assert.ok(!a.orderPickerView(e).includes('id="uc-order-search"'));
+  assert.ok(matches.some(o=>o.state==='已完成'));assert.equal(e.customerSearch.keyword,'');
+  assert.ok(!a.orderPickerView(e).includes('id="uc-customer-search"'));
 });
-test('unknown customer waits for an explicit search and retains the search form',()=>{
-  const e=a.orderPickerState({customerId:null,phone:'150****3858',linked:[]});
+test('unlinked customers must explicitly confirm a member before orders become selectable',()=>{
+  const r={customerId:null,phone:'150****3858',linked:[]},e=a.orderPickerState(r),before=JSON.stringify(r);
   assert.equal(a.orderPickerOrders(e).length,0);assert.ok(a.orderPickerView(e).includes('请先搜索客户'));
-  assert.ok(a.orderPickerView(e).includes('id="uc-order-search"'));
-  e.orderFilters={keywordType:'member',keyword:a.orders[0].member};
+  assert.ok(a.orderPickerView(e).includes('id="uc-customer-search"'));
+  e.customerFilters={keywordType:'member',keyword:a.orders[0].member};
+  assert.equal(a.orderPickerCustomers(e).length,1);assert.equal(a.orderPickerOrders(e).length,0);
+  assert.equal(a.selectPickerOrder(e,a.orders[0].id),false);
+  assert.ok(a.selectPickerCustomer(e,a.orders[0].customerId));assert.equal(e.selection.length,0);
   assert.equal(a.orderPickerOrders(e).length,2);assert.ok(a.orderPickerOrders(e).every(o=>o.customerId===a.orders[0].customerId));
-  e.orderFilters.keyword='';assert.equal(a.orderPickerOrders(e).length,0);
+  assert.equal(JSON.stringify(r),before);assert.ok(a.orderPickerView(e).includes('更换客户'));
+});
+test('legacy manual IDs and typed member labels are not treated as customer bindings',()=>{
+  for(const customerId of ['',null,'manual-40001']){
+    const r={customerId,member:a.orders[0].member,name:a.orders[0].name,phone:'13800002901',linked:[]},e=a.orderPickerState(r);
+    assert.equal(a.customerIdOf(r),'');assert.equal(e.customerSearch.keyword,r.phone);assert.equal(a.orderPickerCustomers(e).length,1);
+    assert.equal(e.orderCustomerId,'');assert.equal(a.orderPickerOrders(e).length,0);assert.equal(a.orderPickerTitle(e),'关联客户及订单');
+    assert.ok(a.summary(r).includes('未关联客户'));assert.ok(!a.summary(r).includes('data-uc="customer-detail"'));
+    assert.ok(a.informationView(r).includes('关联客户及订单'));assert.ok(a.complaintRow({...r,id:'manual',linked:[],follows:[],status:'待处理'}).includes('未关联客户'));
+  }
+  assert.ok(!a.customerDirectory().some(item=>item.customerId.startsWith('manual-')));
+});
+test('customer candidates are deduplicated by ID and same-name matches remain distinct',()=>{
+  const candidates=a.matchingCustomers({keywordType:'name',keyword:'林女士'});
+  assert.ok(candidates.length>=2);assert.equal(new Set(candidates.map(item=>item.customerId)).size,candidates.length);
+  const e=a.orderPickerState({customerId:'',phone:'',linked:[]});e.customerFilters={keywordType:'name',keyword:'林女士'};
+  assert.equal(a.selectPickerCustomer(e,'C0'),false);assert.ok(a.selectPickerCustomer(e,candidates[0].customerId));
+  const firstOrder=a.orderPickerOrders(e)[0];assert.ok(a.selectPickerOrder(e,firstOrder.id));a.changePickerCustomer(e);
+  assert.equal(e.orderCustomerId,'');assert.equal(e.selection.length,0);assert.ok(a.selectPickerCustomer(e,candidates[1].customerId));
+  assert.equal(a.selectPickerOrder(e,firstOrder.id),false);assert.equal(e.selection.length,0);
+});
+test('no-match and no-order cases retain the ticket and do not silently choose another customer',()=>{
+  const e=a.orderPickerState({customerId:'',name:'未登记客户',phone:'',linked:[]});e.customerFilters={keywordType:'name',keyword:'不存在的客户'};
+  assert.equal(a.orderPickerCustomers(e).length,0);assert.ok(a.orderPickerView(e).includes('暂不关联也可继续处理工单'));
+  const count=a.records.length;
+  try{
+    a.records.push({customerId:'customer-without-orders',name:'无订单会员',phone:'13800001234',member:'unique-member',store:'测试门店'});
+    e.customerFilters={keywordType:'member',keyword:'unique-member'};assert.ok(a.selectPickerCustomer(e,'customer-without-orders'));
+    assert.equal(a.orderPickerOrders(e).length,0);assert.ok(a.orderPickerView(e).includes('该客户暂无订单'));
+    assert.ok(a.orderPickerView(e).includes('更换客户'));
+  }finally{a.records.splice(count)}
+});
+test('customer and order associations save together and retain original complaint contact and workflow',()=>{
+  const source={id:'manual-test',customerId:'manual-40001',name:'来电登记的姓名',phone:'13800002901',member:'',channel:'legal',store:'原投诉门店',status:'客服处理中',linked:[],follows:[],logs:[]};
+  const r=copy(source),e=a.orderPickerState(r);assert.ok(a.selectPickerCustomer(e,'C28'));
+  const order=a.orderPickerOrders(e)[0];assert.ok(a.selectPickerOrder(e,order.id));assert.equal(JSON.stringify(r),JSON.stringify(source));
+  const entry=a.recordOrderAssociation(r,e,'2026-11-04 10:00');assert.ok(entry);assert.equal(r.customerId,'C28');assert.equal(r.member,order.member);assert.equal(r.name,order.name);assert.equal(r.linked[0].id,order.id);
+  assert.deepEqual(copy(r.originalContact),{name:source.name,phone:source.phone,fullPhone:''});assert.equal(r.status,source.status);assert.equal(r.store,source.store);assert.equal(r.channel,source.channel);
+  assert.ok(a.followTools().history(r).includes('原投诉联系人'));assert.ok(a.followTools().history(r).includes(source.name));assert.ok(a.summary(r).includes('原投诉联系人'));
+  const reopened=a.orderPickerState(JSON.parse(JSON.stringify(r)));assert.equal(reopened.orderBindingRequired,false);assert.ok(!a.orderPickerView(reopened).includes('id="uc-customer-search"'));
+  const invalid=copy(source),forged={...e,selection:[{id:a.orders[0].id}]};assert.equal(a.recordOrderAssociation(invalid,forged,'2026-11-04 10:01'),null);assert.deepEqual(invalid,source);
+  assert.equal(a.recordOrderAssociation({...copy(source),status:'已结案'},e,'2026-11-04 10:01'),null);
 });
 test('known customer without orders stays scoped instead of falling back to other customers',()=>{
   const e=a.orderPickerState({customerId:'no-orders',name:a.orders[0].name,phone:a.orders[0].phone,linked:[]});
   assert.equal(a.orderPickerOrders(e).length,0);const html=a.orderPickerView(e);
-  assert.ok(html.includes('该客户暂无订单'));assert.ok(!html.includes('id="uc-order-search"'));
+  assert.ok(html.includes('该客户暂无订单'));assert.ok(!html.includes('id="uc-customer-search"'));
 });
 test('opening and changing order selection preserves the parent until saving',()=>{
   const r=a.records.find(r=>r.id==='31001'),before=JSON.stringify(r),e=a.orderPickerState(r);
@@ -295,16 +359,19 @@ test('status filters and groups use department stages rather than fault attribut
     assert.equal(a.filtered({status:'待财务付款',department:'门店',channel:'hotline'}).length,1);
   }finally{a.records.splice(original)}
 });
-test('nine intake sources keep customer WeCom separate from employee handoff',()=>{
-  assert.equal(Object.keys(a.CHANNELS).length,9);assert.ok(a.CHANNELS.wecom.includes('客户'));assert.ok(a.CHANNELS.sales.includes('员工'));
+test('eleven intake sources use the requested names and order across filters, lists, details and exports',()=>{
+  assert.deepEqual(copy(Object.values(a.CHANNELS)),['门店发起售后','400客服热线','微信小程序','销售企微头像','销售企微侧边栏','销售微动后台','财务业绩核对','广告平台投诉','微信支付投诉','银盛支付投诉','工商/法人投诉']);
   const original=a.records.length;
   try{for(const channel of Object.keys(a.CHANNELS))a.records.push({...copy(record),id:'source-'+channel,channel});
-    for(const channel of Object.keys(a.CHANNELS))assert.equal(a.filtered({channel}).filter(r=>r.id.startsWith('source-')).length,1);
+    for(const [channel,label]of Object.entries(a.CHANNELS)){
+      const rows=a.filtered({channel}).filter(r=>r.id.startsWith('source-'));assert.equal(rows.length,1);
+      assert.ok(a.complaintRow(rows[0]).includes(label));assert.ok(a.summary(rows[0]).includes(label));assert.ok(a.complaintCSV(rows).includes(label));
+    }
   }finally{a.records.splice(original)}
 });
 test('list retains orders and complaint content with a single workflow status',()=>{
   const r={...copy(record),status:'待财务付款',statusDetail:'收款账户待核实',currentHandler:'财务甲',content:'完整投诉正文标记',member:'会员标记',phone:'电话标记',department:['门店'],responsible:['责任乙'],channel:'legal',type:'服务类',submitter:'客户本人'};
-  const html=a.complaintRow(r);for(const value of ['待财务付款','责任乙','法人电话',r.level,r.content,r.member,r.phone,r.linked[0].id,r.store])assert.ok(html.includes(value));
+  const html=a.complaintRow(r);for(const value of ['待财务付款','责任乙','工商/法人投诉',r.level,r.content,r.member,r.phone,r.linked[0].id,r.store])assert.ok(html.includes(value));
   for(const value of ['财务甲','当前事项 / 卡点','当前处理节点','发起人','客户本人'])assert.ok(!html.includes(value));
   const cells=html.split('</td>');assert.ok(cells[5].includes(r.statusDetail));assert.ok(cells[6].includes('责任乙'));
   assert.ok(cells[2].includes('售后类型：'+r.type));
@@ -722,6 +789,18 @@ test('failed storage writes retain records and the real cause; a concurrent upda
     context.localStorage.setItem=write;storage.set('weid.pc.complaints.v1','external-update');
     assert.equal(a.persist(copy(a.records)),false);assert.equal(storage.get('weid.pc.complaints.v1'),'external-update');assert.ok(messages.at(-1).includes('其他页面更新'));
   }finally{context.localStorage.setItem=write;context.ElementPlus.ElMessage=notify;storage.set('weid.pc.complaints.v1',saved)}
+});
+test('customer binding persists atomically, survives reload and retains the draft on storage failure or conflict',()=>{
+  const original={id:'40100',customerId:'manual-40100',name:'来电姓名',phone:'13800002901',member:'',store:'',channel:'legal',status:'客服已接单',created:'2026-11-04 09:00',linked:[],follows:[],logs:[],files:[]};
+  let raw=JSON.stringify([...copy(a.records),original]),fail=false;
+  const local={...context,window:{PCModules:{},addEventListener(){}},localStorage:{getItem:key=>key==='weid.pc.complaints.v1'?raw:null,setItem(key,value){if(fail)throw Error('QuotaExceededError');if(key==='weid.pc.complaints.v1')raw=value}}};
+  const boot=()=>{loadOptions(local);vm.runInNewContext(processCode,local);vm.runInNewContext(followCode,local);vm.runInNewContext(code.replace('  window.PCComplaints={mount,leave};',hook+'\n  window.PCComplaints={mount,leave};'),local);return local.window.testAPI};
+  let api=boot(),r=api.records.find(item=>item.id==='40100'),e=api.orderPickerState(r);
+  assert.ok(api.selectPickerCustomer(e,'C28'));assert.ok(api.selectPickerOrder(e,api.orderPickerOrders(e)[0].id));
+  const pending=copy(api.records),target=pending.find(item=>item.id===r.id);assert.ok(api.recordOrderAssociation(target,e,'2026-11-04 10:00'));
+  const before=raw,draft=JSON.stringify(e);fail=true;assert.equal(api.persist(pending),false);assert.equal(raw,before);assert.equal(r.customerId,'manual-40100');assert.equal(JSON.stringify(e),draft);
+  fail=false;raw=before+' ';assert.equal(api.persist(pending),false);assert.equal(raw,before+' ');assert.equal(JSON.stringify(e),draft);
+  raw=before;assert.ok(api.persist(pending));api=boot();r=api.records.find(item=>item.id==='40100');assert.equal(r.customerId,'C28');assert.equal(r.originalContact.name,'来电姓名');assert.equal(r.follows[0].kind,'association');assert.equal(api.orderPickerState(r).orderBindingRequired,false);
 });
 test('accepting requires an explicit valid grade before any mutation',()=>{
   const source={...copy(record),status:'待处理',follows:[]};

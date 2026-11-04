@@ -123,3 +123,13 @@
 .uc-scope .uc-follow-actions{justify-content:flex-end;margin:12px 0}
 @media(max-width:760px){.uc-info-facts,.uc-linked-order-facts{grid-template-columns:repeat(2,minmax(0,1fr))}.uc-info-customer{flex-wrap:wrap}.uc-linked-order-overview{flex-wrap:wrap}.uc-linked-order-head{flex-wrap:wrap}}
 @media(max-width:760px){.uc-scope .uc-details{grid-template-columns:minmax(0,1fr)}.uc-reference-row{flex-wrap:wrap}.uc-order-detail-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.uc-order-detail-summary>div:nth-child(3){grid-column:auto}.uc-scope .uc-drawer{width:100vw}}
+
+/* Customer lookup and order selection share one drawer and one draft. */
+.uc-orders-editor .uc-editor-body{display:flex;flex-direction:column}
+.uc-order-example{margin-top:auto;padding-top:24px;text-align:center}
+
+.uc-customer-search{--pc-search-actions-gap:0px}
+.uc-customer-search.query-module .pc-search-layout{display:grid;grid-template-columns:minmax(0,max-content) max-content;justify-content:start;align-items:center;gap:12px 24px}
+.uc-customer-search .pc-search-layout>:first-child{min-width:0;width:max-content;max-width:100%}
+.uc-customer-search .pc-search-form .el-form{width:auto;max-width:100%}
+.uc-customer-search.query-module .query-actions{width:auto;margin:0}
