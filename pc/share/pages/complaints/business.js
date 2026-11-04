@@ -21,7 +21,8 @@
     advertising:'广告平台投诉',
     wechat:'微信支付投诉',
     yinsheng:'银盛支付投诉',
-    legal:'工商/法人投诉'
+    legal:'工商/法人投诉',
+    originalRefund:'原路退款'
   };
   const ACTOR = '林晓（售后客服）';
   const ASSESSMENT_FIELDS=[['department','责任部门'],['type','售后类型'],['responsible','责任人'],['reason','责任原因']];

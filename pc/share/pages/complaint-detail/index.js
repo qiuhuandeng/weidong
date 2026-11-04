@@ -220,6 +220,7 @@ window.PCModules['complaint-detail']={render(){},create({btn,replyAction,canFoll
     const fieldsView=fields=>`<dl class="uc-process-result-facts">${fields.filter(([,value])=>present(value)).map(([label,value,full])=>`<div class="${[full?'uc-full':'',primaryFields.has(label)?'is-primary':''].filter(Boolean).join(' ')}"><dt>${esc(label)}</dt><dd>${esc(valueText(value))}</dd></div>`).join('')}</dl>`;
     const cards=[];
     const add=(title,fields,record={})=>{
+      if(node.key==='close'){fields=fields.filter(([label,value])=>label==='客户反馈'&&present(value)).map(([label,value])=>[label,value,true]);if(!fields.length)return;}
       const body=fieldsView(fields),time=record.time??record.at;
       cards.push({title,time:timestamp(time),html:`<article class="uc-process-result" aria-label="${esc(title)}结果摘要">${body}</article>`});
     };
@@ -259,7 +260,7 @@ window.PCModules['complaint-detail']={render(){},create({btn,replyAction,canFoll
     if(!cards.length&&node.source?.resultFields)add(node.title,node.source.resultFields,{time:node.completedAt||node.startedAt});
     const ordered=cards.sort((a,b)=>(a.time||0)-(b.time||0)),latest=ordered.at(-1),solution=node.key==='sales'?ordered.findLast(item=>item.title==='已确认解决方案'):null;
     const visible=solution&&latest!==solution?[solution,latest]:latest?[latest]:[];
-    return `<div class="uc-process-results" aria-label="${esc(node.title)}操作结果">${visible.length?visible.map(item=>item.html).join(''):`<p class="uc-process-result-empty">${node.state==='done'?'未记录操作结果':'暂无操作结果'}</p>`}</div>`;
+    return `<div class="uc-process-results" aria-label="${esc(node.title)}操作结果">${visible.length?visible.map(item=>item.html).join(''):`<p class="uc-process-result-empty">${node.key==='close'?'暂无客户反馈':node.state==='done'?'未记录操作结果':'暂无操作结果'}</p>`}</div>`;
   }
   function processTime(node,now){
     const at=value=>esc(deadlineText(value).replace(/^\d{4}-(\d{2})-(\d{2})[ T](\d{2}:\d{2}).*$/,'$1.$2 $3'));

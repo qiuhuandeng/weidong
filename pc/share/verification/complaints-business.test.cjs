@@ -359,8 +359,8 @@ test('status filters and groups use department stages rather than fault attribut
     assert.equal(a.filtered({status:'待财务付款',department:'门店',channel:'hotline'}).length,1);
   }finally{a.records.splice(original)}
 });
-test('eleven intake sources use the requested names and order across filters, lists, details and exports',()=>{
-  assert.deepEqual(copy(Object.values(a.CHANNELS)),['门店发起售后','400客服热线','微信小程序','销售企微头像','销售企微侧边栏','销售微动后台','财务业绩核对','广告平台投诉','微信支付投诉','银盛支付投诉','工商/法人投诉']);
+test('twelve intake sources use the requested names and order across filters, lists, details and exports',()=>{
+  assert.deepEqual(copy(Object.values(a.CHANNELS)),['门店发起售后','400客服热线','微信小程序','销售企微头像','销售企微侧边栏','销售微动后台','财务业绩核对','广告平台投诉','微信支付投诉','银盛支付投诉','工商/法人投诉','原路退款']);
   const original=a.records.length;
   try{for(const channel of Object.keys(a.CHANNELS))a.records.push({...copy(record),id:'source-'+channel,channel});
     for(const [channel,label]of Object.entries(a.CHANNELS)){
@@ -537,7 +537,7 @@ test('each status has a complete lifecycle example with results only on reached 
     if(index>=4)assert.ok(result(html,'采购审批中').includes(index===4?'审批中':'已通过'));
     if(index>=5)assert.ok(result(html,'待财务付款').includes(index===5?'待执行':'成功'));
     if(index>=6)assert.ok(result(html,'待采购发货').includes(index===6?'待安排发货':'DEMO-SF-'+record.id));
-    if(index>=7)assert.ok(result(html,'客服复核中').includes(index===7?'商品签收待确认':'客户确认处理完成'));
+    if(index>=7){const review=result(html,'客服复核中');assert.ok(review.includes('客户反馈'));assert.ok(review.includes(index===7?'客户确认退款已到账，等待签收置换商品。':'商品已签收，客户无其他诉求。'));assert.ok(!review.includes('<dt>复核结果</dt>'));assert.equal((review.match(/<dt>/g)||[]).length,1);}
     if(index===8)assert.ok(result(html,'已结案').includes(record.closeNote));
     assert.equal(JSON.stringify(record),before);
   });
@@ -619,7 +619,7 @@ test('review conclusions and missing results stay distinct, and repeated executi
   ]}};
   const html=a.processView(r);
   assert.equal(html.split('¥ 100.00').length-1,1);assert.equal(html.split('¥ 200.00').length-1,1);
-  assert.ok(html.includes('已处理并结案'));assert.ok(html.includes('客户确认已到账，处理完成'));assert.ok(!html.includes('客户退款'));
+  assert.ok(html.includes('暂无客户反馈'));assert.ok(!html.includes('<dt>复核结果</dt>'));assert.ok(!html.includes('客户确认已到账，处理完成'));assert.ok(!html.includes('客户退款'));
   const history=a.followTools().history(r,a.executionResultRecords(r));assert.ok(history.includes('客户退款'));assert.ok(history.includes('客户确认已到账，处理完成'));
   const blank=a.processView({status:'待财务付款',follows:[],logs:[]});assert.ok(blank.includes('暂无操作结果'));assert.ok(!blank.includes('付款成功'));
 });
