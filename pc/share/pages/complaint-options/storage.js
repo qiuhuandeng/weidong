@@ -3,7 +3,7 @@ window.PCComplaintOptions = (() => {
   const DEFAULTS={demands:['正和客户协商退款金额','正和门店协商退款业绩','已和客户达成退款金额，待付款','无法联系上客户','客户提出的赔偿金额不合理（退一赔三）','客户提出的赔偿金额不合理（退一赔十）'],types:['闭店','咨询报价','前端话术','门店环境','门店多收','祛斑反黑','顾客自身','光电操作','脱毛操作','门店服务','医美效果','皮肤效果','脱毛效果','光电效果','广告宣传','前后端服务','仪器资质','产品价格','负面新闻','门店加单','顾客交钱没做','抗衰效果','产品过敏']};
   const LABELS={demands:'客户诉求',types:'售后类型'},copy=value=>JSON.parse(JSON.stringify(value));
   const LEVELS=['1级','2级','3级','4级','5级'];
-  let current={schema:1,revision:0,...copy(DEFAULTS),demandTimings:{}},failure='',database,channel;
+  let current={schema:1,revision:0,...copy(DEFAULTS),demandTimings:{},defaultTimings:{}},failure='',database,channel;
   const listeners=new Set();
   function timingValue(value,unit='hours'){
     if(value===''||value===null||value===undefined)return null;
@@ -23,11 +23,19 @@ window.PCComplaintOptions = (() => {
     // Preserve existing uniform limits until the user changes a particular level.
     return timing.byLevel?copy(timing.byLevel):Object.fromEntries(LEVELS.map(level=>[level,timing.unit==='hours'?timing.value/24:timing.value]));
   }
-  function timingFor(config,name,level){
-    if(!LEVELS.includes(level)||!Object.hasOwn(config.demandTimings||{},name))return null;
-    const timing=config.demandTimings[name];
-    if(!timing.byLevel)return copy(timing);
-    return Object.hasOwn(timing.byLevel,level)?{value:timing.byLevel[level],unit:'days'}:null;
+  function resolveTiming(config,name,level){
+    if(!LEVELS.includes(level))return {timing:null,source:''};
+    if(name&&Object.hasOwn(config.demandTimings||{},name)){
+      const timing=config.demandTimings[name];
+      if(!timing.byLevel)return {timing:copy(timing),source:'demand'};
+      if(Object.hasOwn(timing.byLevel,level))return {timing:{value:timing.byLevel[level],unit:'days'},source:'demand'};
+    }
+    return Object.hasOwn(config.defaultTimings||{},level)?{timing:{value:config.defaultTimings[level],unit:'days'},source:'default'}:{timing:null,source:''};
+  }
+  const timingFor=(config,name,level)=>resolveTiming(config,name,level).timing;
+  function validateLevels(levels){
+    if(!levels||typeof levels!=='object'||Array.isArray(levels))throw Error('等级时效配置格式无效，原配置已保留');
+    for(const [level,days]of Object.entries(levels))if(!LEVELS.includes(level)||typeof days!=='number'||!dayValue(days))throw Error('等级时效配置无效，原配置已保留');
   }
   function validate(value){
     if(value?.schema!==1||!Number.isSafeInteger(value.revision)||value.revision<0)throw Error('下拉选项配置格式不兼容，原配置已保留');
@@ -42,11 +50,11 @@ window.PCComplaintOptions = (() => {
     for(const [name,timing]of Object.entries(timings)){
       if(!value.demands.includes(name)||!timing||typeof timing!=='object'||Array.isArray(timing))throw Error('处理时效配置无效，原配置已保留');
       if(Object.hasOwn(timing,'byLevel')){
-        if(!timing.byLevel||typeof timing.byLevel!=='object'||Array.isArray(timing.byLevel))throw Error('等级时效配置格式无效，原配置已保留');
-        for(const [level,days]of Object.entries(timing.byLevel))if(!LEVELS.includes(level)||typeof days!=='number'||!dayValue(days))throw Error('等级时效配置无效，原配置已保留');
+        validateLevels(timing.byLevel);
       }else if(!['hours','days'].includes(timing.unit)||typeof timing.value!=='number'||!timingValue(timing.value,timing.unit))throw Error('处理时效配置无效，原配置已保留');
     }
-    return {...value,demandTimings:copy(timings)};
+    const defaults=value.defaultTimings===undefined?{}:value.defaultTimings;validateLevels(defaults);
+    return {...value,demandTimings:copy(timings),defaultTimings:copy(defaults)};
   }
   function open(){
     if(database)return database;
@@ -75,7 +83,7 @@ window.PCComplaintOptions = (() => {
     }catch(error){failure=error.message||String(error);throw error}
   }
   async function save(draft,expected){
-    const next=validate({schema:1,revision:expected+1,demands:copy(draft.demands),types:copy(draft.types),demandTimings:copy(draft.demandTimings||{})}),db=await open();
+    const next=validate({schema:1,revision:expected+1,demands:copy(draft.demands),types:copy(draft.types),demandTimings:copy(draft.demandTimings||{}),defaultTimings:copy(draft.defaultTimings??{})}),db=await open();
     await new Promise((resolve,reject)=>{
       const tx=db.transaction('options','readwrite'),store=tx.objectStore('options'),request=store.get('dictionary');let cause;
       request.onsuccess=()=>{try{
@@ -99,5 +107,5 @@ window.PCComplaintOptions = (() => {
   async function refresh(){try{const before=JSON.stringify(current);await read();if(before!==JSON.stringify(current))listeners.forEach(listener=>listener())}catch{}}
   try{channel=new BroadcastChannel('weid.pc.complaint-options');channel.onmessage=refresh}catch{}
   window.addEventListener('focus',refresh);
-  return {LABELS,LEVELS,read,save,validate,timingValue,timingText,dayValue,daysByLevel,timingFor,options,refresh,subscribe:listener=>listeners.add(listener),get current(){return copy(current)},get error(){return failure}};
+  return {LABELS,LEVELS,read,save,validate,timingValue,timingText,dayValue,daysByLevel,timingFor,resolveTiming,options,refresh,subscribe:listener=>listeners.add(listener),get current(){return copy(current)},get error(){return failure}};
 })();

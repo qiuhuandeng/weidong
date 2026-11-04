@@ -18,7 +18,7 @@ const followCode=fs.readFileSync(path.join(__dirname,'../pages/complaint-follow/
 vm.runInNewContext(followCode,context);
 const processCode=fs.readFileSync(path.join(__dirname,'../pages/complaint-detail/index.js'),'utf8');
 vm.runInNewContext(processCode,context);
-const hook = `window.testAPI={executionResultRecords,planPanel,workflow,toCents,orderDateRange,filtered,matchingOrders,orderPickerState,orderPickerOrders,orderPickerView,selectPickerOrder,handlingMissing,validateCustomerSolution,solutionDraft,solutionTotals,solutionOrders,refundEntries,refundAvailable,solutionTools,solutionRead,recordAccept,recordRecognition,recordCompensation,recordFollow,followTools,recordClosure,hasHandlingScheme,canClose,responsibleOptions,complaintCSV,validHandlingFile,records,orders,persist,canAssess,STATUS_TABS,WORK_ORDER_STATUSES,CHANNELS,workOrderStatus,normalizeRecordStatus,statusScope,currentHandler,currentTask,detailActions,complaintRow,summary,phoneView,processingDepartment,processRecords,processView,select(id){main={record:records.find(r=>r.id===id)};return main.record;}};`;
+const hook = `window.testAPI={executionResultRecords,planPanel,workflow,toCents,orderDateRange,filtered,matchingOrders,orderPickerState,orderPickerOrders,orderPickerView,selectPickerOrder,handlingMissing,validateCustomerSolution,solutionDraft,solutionTotals,solutionOrders,refundEntries,refundAvailable,solutionTools,solutionRead,recordAccept,recordRecognition,recordCompensation,recordFollow,followTools,recordClosure,hasHandlingScheme,canClose,responsibleOptions,complaintCSV,validHandlingFile,records,orders,persist,canAssess,STATUS_TABS,WORK_ORDER_STATUSES,CHANNELS,workOrderStatus,normalizeRecordStatus,statusScope,currentHandler,currentTask,detailActions,complaintRow,complaintTiming,complaintTimingHTML,listProgressText,summary,phoneView,processingDepartment,processRecords,processView,select(id){main={record:records.find(r=>r.id===id)};return main.record;}};`;
 vm.runInNewContext(code.replace('  window.PCComplaints={mount,leave};',hook+'\n  window.PCComplaints={mount,leave};'),context);
 const a=context.window.testAPI;
 let count=0;
@@ -305,13 +305,64 @@ test('nine intake sources keep customer WeCom separate from employee handoff',()
 test('list retains orders and complaint content with a single workflow status',()=>{
   const r={...copy(record),status:'待财务付款',statusDetail:'收款账户待核实',currentHandler:'财务甲',content:'完整投诉正文标记',member:'会员标记',phone:'电话标记',department:['门店'],responsible:['责任乙'],channel:'legal',type:'服务类',submitter:'客户本人'};
   const html=a.complaintRow(r);for(const value of ['待财务付款','责任乙','法人电话',r.level,r.content,r.member,r.phone,r.linked[0].id,r.store])assert.ok(html.includes(value));
-  for(const value of ['收款账户待核实','财务甲','当前事项 / 卡点','当前处理节点','发起人','客户本人'])assert.ok(!html.includes(value));
-  const cells=html.split('</td>');
+  for(const value of ['财务甲','当前事项 / 卡点','当前处理节点','发起人','客户本人'])assert.ok(!html.includes(value));
+  const cells=html.split('</td>');assert.ok(cells[5].includes(r.statusDetail));assert.ok(cells[6].includes('责任乙'));
   assert.ok(cells[2].includes('售后类型：'+r.type));
   assert.ok(cells[3].includes('工单号：'+r.id));
   assert.ok(cells[3].includes(r.content));
   assert.ok(!cells[3].includes(r.type));
   assert.ok(a.complaintCSV([r]).includes('收款账户待核实'));
+});
+test('list timing uses the saved deadline and China time, showing overdue only after the deadline',()=>{
+  const r={...copy(record),status:'客服处理中',communicationPeriods:[{id:'p1',dueAt:'2026-11-04 10:00',endedAt:''}]},before=JSON.stringify(r);
+  const at=text=>Date.parse(text+'+08:00');
+  assert.equal(a.complaintTiming(r,at('2026-11-04T09:00:00')).overdue,0);assert.equal(a.complaintTiming(r,at('2026-11-04T10:00:00')).overdue,0);
+  assert.equal(a.complaintTiming(r,at('2026-11-04T10:00:20')).duration,'不足1分钟');
+  const late=a.complaintTiming(r,at('2026-11-04T12:35:00'));assert.equal(late.dueAt,'2026-11-04 10:00');assert.equal(late.duration,'2小时35分钟');assert.equal(late.overdue,155*60000);
+  assert.equal(a.complaintTiming(r,at('2026-11-06T13:00:00')).duration,'2天3小时');
+  assert.ok(a.complaintTimingHTML(r,at('2026-11-04T12:35:00')).includes('已超时 2小时35分钟'));
+  const early=a.complaintTimingHTML(r,at('2026-11-04T09:00:00'));assert.ok(early.includes('截止 11-04 10:00'));assert.ok(!early.includes('已超时'));
+  r.communicationPeriods[0].dueAt='2026-11-04T02:00:00Z';assert.equal(a.complaintTiming(r).dueAt,late.dueAt);r.communicationPeriods[0].dueAt='2026-11-04 10:00';assert.equal(JSON.stringify(r),before);
+});
+test('finished timing freezes overtime and missing timing never borrows an older period or current configuration',()=>{
+  const r={...copy(record),status:'财务审批中',communicationPeriods:[{id:'old',dueAt:'2026-11-03 10:00',endedAt:'2026-11-03 12:00'}]},farFuture=Date.parse('2030-01-01T00:00:00+08:00');
+  assert.equal(a.complaintTiming(r,farFuture).duration,'2小时');assert.equal(a.complaintTiming(r,farFuture).ended,true);
+  r.communicationPeriods.push({id:'new',dueAt:'',endedAt:''});assert.equal(a.complaintTiming(r,farFuture),null);
+  r.communicationPeriods[1].dueAt='invalid';assert.equal(a.complaintTiming(r,farFuture),null);
+  r.communicationPeriods[1].dueAt='2026-11-04 10:00';r.status='已结案';r.closedAt='2026-11-04 11:30';assert.equal(a.complaintTiming(r,farFuture).duration,'1小时30分钟');
+  r.closedAt='';r.follows=[];assert.equal(a.complaintTiming(r,farFuture).overdue,0);
+  r.status='待处理';assert.equal(a.complaintTiming(r,farFuture),null);
+  r.status='客服处理中';r.communicationPeriods=[];r.id='real-without-clock';assert.equal(a.complaintTiming(r,farFuture),null);assert.ok(!a.complaintTimingHTML(r).includes('截止'));
+});
+test('existing complaint fixtures show both pending deadlines and overtime without rewriting records or configuration',()=>{
+  const at=Date.parse('2026-11-04T12:00:00+08:00'),before=JSON.stringify(a.records),dictionary=context.window.PCComplaintOptions,configBefore=JSON.stringify(dictionary.current);
+  const active=a.records.filter(r=>r.status!=='待处理'),timings=active.map(r=>a.complaintTiming(r,at));
+  assert.ok(active.length>0);assert.ok(timings.every(Boolean));assert.ok(timings.some(timing=>!timing.ended&&timing.overdue>0));assert.ok(timings.some(timing=>!timing.ended&&timing.overdue===0));
+  for(const r of active)assert.ok(a.complaintTimingHTML(r,at).includes('截止 '));
+  assert.equal(JSON.stringify(a.records),before);assert.equal(JSON.stringify(dictionary.current),configBefore);
+  const r=copy(active[0]);r.communicationPeriods=[{id:'saved',dueAt:'2026-11-10 10:00',endedAt:''}];assert.equal(a.complaintTiming(r,at).dueAt,'2026-11-10 10:00');assert.equal(a.complaintTiming(r,at).mock,false);
+  r.communicationPeriods[0].dueAt='';assert.equal(a.complaintTiming(r,at),null);
+  r.communicationPeriods=[];r.name='真实客户';assert.equal(a.complaintTiming(r,at),null);
+});
+test('old fixture deadlines prefer configured demand overrides, falling back to grade defaults',()=>{
+  const dict=context.window.PCComplaintOptions,descriptor=Object.getOwnPropertyDescriptor(dict,'current');
+  const r=copy(a.records.find(r=>r.id==='31031')),config={...dict.current,defaultTimings:{'2级':3},demandTimings:{正和客户协商退款金额:{byLevel:{'2级':1}}}};
+  Object.defineProperty(dict,'current',{get:()=>copy(config)});
+  try{
+    const oneDay=a.complaintTiming(r);assert.equal(oneDay.dueAt,'2026-11-04 13:22');
+    delete config.demandTimings.正和客户协商退款金额;assert.equal(a.complaintTiming(r).dueAt,'2026-11-06 13:22');
+    r.communicationPeriods=[{dueAt:'2026-11-05 09:00',endedAt:''}];assert.equal(a.complaintTiming(r).dueAt,'2026-11-05 09:00');
+  }finally{Object.defineProperty(dict,'current',descriptor)}
+});
+test('list progress follows the latest actual blocker, keeps ordinary notes separate and clears old reasons after agreement',()=>{
+  const r={...copy(record),status:'客服处理中',customerSolution:null,compensatedAt:null,customerDemand:'旧诉求',follows:[{kind:'follow',time:'2026-11-04 12:00',note:'普通补充'},{kind:'follow',time:'2026-11-04 11:00',communication:{result:'ongoing',reason:'无法联系上客户',reasonSource:'demands'}}]};
+  assert.equal(a.listProgressText(r),'无法联系上客户');assert.ok(a.complaintRow(r).split('</td>')[5].includes('无法联系上客户'));
+  r.follows.unshift({kind:'follow',time:'2026-11-04 13:00',communication:{result:'ongoing',reason:'amount'}});assert.equal(a.listProgressText(r),'客户不认可方案金额');
+  r.follows.unshift({kind:'follow',time:'2026-11-04 14:00',communication:{result:'agreed'}});assert.equal(a.listProgressText(r),'客户已同意解决方案，待确认具体方案');
+  r.customerSolution={methods:['refund']};r.compensatedAt='2026-11-04 15:00';assert.equal(a.listProgressText(r),'方案已确认，待后续办理');
+  r.status='财务审批中';assert.equal(a.listProgressText(r),'待财务审批反馈');
+  r.status='待财务付款';r.statusDetail='收款账户待核实';assert.equal(a.listProgressText(r),r.statusDetail);
+  r.status='已结案';assert.equal(a.listProgressText(r),'');
 });
 test('process history uses recorded transitions without inventing department work or changing records',()=>{
   const r={id:'history',created:'2026-11-03 09:00',submitter:'客户',status:'待财务付款',department:['门店'],currentHandler:'财务甲',statusDetail:'收款账户待核实',logs:[],follows:[]};
@@ -709,11 +760,61 @@ test('switching communication operations preserves both drafts and detects hidde
 });
 test('duration configuration upgrades existing dictionaries without assigning arbitrary limits',()=>{
   const dict=context.window.PCComplaintOptions,old={schema:1,revision:3,demands:['原因甲'],types:['门店服务']},before=JSON.stringify(old);
-  assert.deepEqual(copy(dict.validate(old).demandTimings),{});assert.equal(JSON.stringify(old),before);
+  assert.deepEqual(copy(dict.validate(old).demandTimings),{});assert.deepEqual(copy(dict.validate(old).defaultTimings),{});assert.equal(JSON.stringify(old),before);
   assert.equal(dict.timingValue(''),null);assert.deepEqual(copy(dict.timingValue('24','hours')),{value:24,unit:'hours'});
   for(const [value,unit]of [[0,'hours'],[-1,'days'],[1.5,'hours'],[1,'weeks'],['bad','hours']])assert.throws(()=>dict.timingValue(value,unit));
   for(const timing of [{value:2},{value:0,unit:'hours'},{value:'2',unit:'hours'}])assert.throws(()=>dict.validate({...old,demandTimings:{原因甲:timing}}));
   assert.throws(()=>dict.validate({...old,demandTimings:{已删除的原因:{value:2,unit:'hours'}}}));
+});
+test('demand overrides fall back by grade, including absent demands, without inheriting another grade',()=>{
+  const dict=context.window.PCComplaintOptions,config={...dict.current,defaultTimings:{'1级':3,'2级':2,'3级':1},demandTimings:{无法联系上客户:{byLevel:{'1级':0.5}},正和客户协商退款金额:{value:12,unit:'hours'}}};
+  assert.doesNotThrow(()=>dict.validate(config));
+  assert.deepEqual(copy(dict.resolveTiming(config,'无法联系上客户','1级')),{timing:{value:0.5,unit:'days'},source:'demand'});
+  for(const name of ['无法联系上客户','','已删除的诉求'])assert.deepEqual(copy(dict.resolveTiming(config,name,'2级')),{timing:{value:2,unit:'days'},source:'default'});
+  assert.equal(dict.timingFor(config,'无法联系上客户','4级'),null);assert.equal(dict.timingFor(config,'',''),null);
+  assert.deepEqual(copy(dict.timingFor(config,'正和客户协商退款金额','2级')),{value:12,unit:'hours'});
+  config.demandTimings.无法联系上客户.byLevel={};assert.equal(dict.timingFor(config,'无法联系上客户','1级').value,3);
+  for(const defaults of [null,[],{'6级':1},{'1级':0},{'1级':'3'},{'1级':Infinity}])assert.throws(()=>dict.validate({...config,defaultTimings:defaults}));
+});
+test('acceptance without a demand starts a grade default snapshot; subsequent reasons use their own rules',()=>{
+  const dict=context.window.PCComplaintOptions,descriptor=Object.getOwnPropertyDescriptor(dict,'current'),config={...dict.current,revision:7,defaultTimings:{'2级':3},demandTimings:{无法联系上客户:{byLevel:{'2级':1}}}};
+  Object.defineProperty(dict,'current',{get:()=>copy(config)});
+  try{
+    const make=()=>({...copy(record),status:'待处理',customerDemand:'',customerSolution:null,compensatedAt:null,follows:[],communicationPeriods:[]});
+    const r=make(),entry=a.recordAccept(r,'2026-11-04 10:00',{level:'2级'}),first=a.followTools().activePeriod(r);
+    assert.equal(first.id,entry.timingPeriodId);assert.equal(first.dueAt,'2026-11-07 10:00');assert.equal(first.timingSource,'default');assert.equal(first.configRevision,7);
+    config.defaultTimings['2级']=2;assert.equal(first.dueAt,'2026-11-07 10:00');
+    assert.equal(a.recordAccept(r,'2026-11-04 10:30',{level:'2级'}),null);assert.equal(r.communicationPeriods.length,1);
+    const history=a.followTools().history(r);assert.ok(history.includes('3 天'));assert.ok(history.includes('2026-11-07 10:00'));
+    a.recordFollow(r,{operation:'unresolved',unresolvedReason:'无法联系上客户',note:'等待回电',files:[]},'2026-11-04 11:00');
+    assert.equal(first.endedAt,'2026-11-04 11:00');assert.equal(a.followTools().activePeriod(r).dueAt,'2026-11-05 11:00');assert.equal(a.followTools().activePeriod(r).timingSource,'demand');
+    a.recordFollow(r,{operation:'unresolved',unresolvedReason:'正和客户协商退款金额',note:'继续沟通',files:[]},'2026-11-04 12:00');
+    assert.equal(a.followTools().activePeriod(r).dueAt,'2026-11-06 12:00');assert.equal(a.followTools().activePeriod(r).timingSource,'default');
+    const unset=make();a.recordAccept(unset,'2026-11-04 10:00',{level:'1级'});assert.equal(unset.communicationPeriods.length,0);
+    const selected=make();selected.customerDemand='无法联系上客户';a.recordAccept(selected,'2026-11-04 10:00',{level:'2级'});assert.equal(a.followTools().activePeriod(selected).dueAt,'2026-11-05 10:00');
+    r.status='客服复核中';a.recordClosure(r,'2026-11-04 13:00','确认完成');assert.equal(a.followTools().activePeriod(r),undefined);
+  }finally{Object.defineProperty(dict,'current',descriptor)}
+});
+test('inline timing matrix preserves drafts, inheritance, validation and legacy durations',()=>{
+  const base=context.window.PCComplaintOptions,dictionary={...base,save:async()=>{throw Error('unexpected persistence')}},draft={...base.current,defaultTimings:{'1\u7ea7':3,'2\u7ea7':2},demandTimings:{[base.current.demands[3]]:{byLevel:{'1\u7ea7':1}},[base.current.demands[0]]:{value:12,unit:'hours'}}},body={},foot={},message={},layers=[],messages=[];
+  const layer={options:{draft,baseline:JSON.stringify(draft),tab:'demands',entries:{demands:{index:null,name:'draft option'},types:{index:null,name:''}},saving:false},el:{querySelector(selector){return selector==='.uc-drawer-body'?body:selector==='.uc-drawer-foot'?foot:selector==='[data-timing-error]'?message:null}}};layers.push(layer);
+  let focuses=0;const originalFocus=context.PCUI.focusControl;context.PCUI.focusControl=()=>focuses++;
+  const helper=context.window.PCModules['complaint-options'].create({dictionary,getLayers:()=>layers,esc:String,btn:(label,action)=>`<button data-uc="${action}">${label}</button>`,link:(label,action)=>`<button data-uc="${action}">${label}</button>`,section:(title,content,action='')=>title+action+content,field:(id,label,control)=>label+control,input:(id,value,placeholder,type,extra)=>`<input name="${id}" value="${value}" placeholder="${placeholder}" ${extra}>`,toast:message=>messages.push(message)});
+  const action=(name,data={})=>helper.optionAction(name,{dataset:data},layer),set=(name,value)=>helper.syncOptionDraft({name,value,removeAttribute(){},setAttribute(){}});
+  try{
+    action('options-tab',{key:'demands'});assert.ok(!body.innerHTML.includes('name="timing-'));assert.ok(!body.innerHTML.includes('data-uc="options-configure"'));
+    action('options-tab',{key:'timings'});assert.equal((body.innerHTML.match(/<table /g)||[]).length,1);assert.equal((body.innerHTML.match(/name="timing-/g)||[]).length,(draft.demands.length+1)*5);assert.ok(!body.innerHTML.includes('options-default-timing'));assert.ok(!body.innerHTML.includes('options-configure'));
+    assert.equal(set('optionName','ignored'),false);assert.equal(layer.options.entries.demands.name,'draft option');
+    const rendered=body.innerHTML;set('timing-default-0','4');assert.equal(draft.defaultTimings['1\u7ea7'],4);assert.equal(draft.demandTimings[draft.demands[3]].byLevel['1\u7ea7'],1);assert.equal(body.innerHTML,rendered);assert.ok(body.innerHTML.includes('placeholder=""'));assert.ok(!body.innerHTML.includes('data-timing-hint'));
+    set('timing-3-0','');set('timing-3-1','0.5');assert.deepEqual(copy(draft.demandTimings[draft.demands[3]].byLevel),{'2\u7ea7':0.5});assert.equal(base.timingFor(draft,draft.demands[3],'1\u7ea7').value,4);
+    set('timing-0-0','2');assert.deepEqual(copy(draft.demandTimings[draft.demands[0]].byLevel),{'1\u7ea7':2,'2\u7ea7':0.5,'3\u7ea7':0.5,'4\u7ea7':0.5,'5\u7ea7':0.5});
+    set('timing-3-1','-2');assert.equal(draft.demandTimings[draft.demands[3]].byLevel['2\u7ea7'],0.5);assert.equal(layer.options.timingErrors.length,1);assert.ok(helper.optionsDirty(layer.options));
+    action('options-tab',{key:'types'});assert.ok(!body.innerHTML.includes('name="timing-'));action('options-tab',{key:'timings'});assert.ok(body.innerHTML.includes('value="-2"'));assert.ok(body.innerHTML.includes('aria-invalid="true"'));
+    layer.options.entries.demands.name='';action('options-save');assert.equal(layer.options.saving,false);assert.equal(focuses,1);assert.ok(body.innerHTML.includes('role="alert"'));
+    set('timing-3-1','');assert.equal(layer.options.timingErrors.length,0);assert.equal(message.hidden,true);assert.equal(base.timingFor(draft,draft.demands[3],'2\u7ea7').value,2);
+    set('timing-default-0','');assert.equal(base.timingFor(draft,draft.demands[3],'1\u7ea7'),null);
+    assert.deepEqual(copy(base.current.defaultTimings),{});assert.equal(messages.length,0);
+  }finally{context.PCUI.focusControl=originalFocus}
 });
 test('level-specific day limits select only the matching grade and preserve legacy uniform settings',()=>{
   const dict=context.window.PCComplaintOptions,config={...dict.current,demandTimings:{无法联系上客户:{byLevel:{'1级':3,'2级':2,'3级':1,'4级':0.5}}}};
@@ -782,10 +883,10 @@ async function checkOptionStorage(){
   const local={setTimeout,clearTimeout,indexedDB:{open(){const request={result:db};queueMicrotask(()=>request.onsuccess());return request}},window:{addEventListener(){}}};
   const source=fs.readFileSync(path.join(__dirname,'../pages/complaint-options/storage.js'),'utf8');vm.runInNewContext(source,local);
   const dict=local.window.PCComplaintOptions,initial=await dict.read();assert.deepEqual(copy(initial.demandTimings),{});assert.equal(saved.demandTimings,undefined);
-  const next={...copy(initial),demandTimings:{原因甲:{byLevel:{'1级':3,'2级':2,'4级':0.5}}}};await dict.save(next,4);assert.equal(saved.revision,5);
-  const fresh={...local,window:{addEventListener(){}}};vm.runInNewContext(source,fresh);assert.deepEqual(copy((await fresh.window.PCComplaintOptions.read()).demandTimings),copy(next.demandTimings));
+  const next={...copy(initial),defaultTimings:{'1级':5,'2级':3,'3级':2},demandTimings:{原因甲:{byLevel:{'1级':3,'2级':2,'4级':0.5}}}};await dict.save(next,4);assert.equal(saved.revision,5);
+  const fresh={...local,window:{addEventListener(){}}};vm.runInNewContext(source,fresh);const reloaded=await fresh.window.PCComplaintOptions.read();assert.deepEqual(copy(reloaded.demandTimings),copy(next.demandTimings));assert.deepEqual(copy(reloaded.defaultTimings),copy(next.defaultTimings));assert.equal(fresh.window.PCComplaintOptions.timingFor(reloaded,'原因甲','3级').value,2);
   await assert.rejects(dict.save({...next,demandTimings:{}},4),/其他页面/);assert.equal(saved.revision,5);assert.equal(dict.current.demandTimings.原因甲.byLevel['2级'],2);
-  writeFailure=true;await assert.rejects(dict.save({...next,demandTimings:{}},5),/QuotaExceededError/);assert.equal(saved.revision,5);assert.equal(dict.current.demandTimings.原因甲.byLevel['2级'],2);
+  writeFailure=true;await assert.rejects(dict.save({...next,demandTimings:{},defaultTimings:{'1级':9}},5),/QuotaExceededError/);assert.equal(saved.revision,5);assert.equal(dict.current.demandTimings.原因甲.byLevel['2级'],2);assert.equal(saved.defaultTimings['1级'],5);assert.equal(dict.current.defaultTimings['1级'],5);
   writeFailure=false;saved={...saved,revision:6,demandTimings:{原因甲:{value:3,unit:'hours'}}};let notified=0;dict.subscribe(()=>notified++);await dict.refresh();assert.equal(dict.current.revision,6);assert.equal(notified,1);
   const unavailable={setTimeout,clearTimeout,indexedDB:{open(){throw Error('SecurityError')}},window:{addEventListener(){}}};vm.runInNewContext(source,unavailable);await assert.rejects(unavailable.window.PCComplaintOptions.read(),/SecurityError/);assert.equal(unavailable.window.PCComplaintOptions.error,'SecurityError');
   count++;console.log('PASS duration dictionaries preserve legacy data, reload, concurrent revisions and failed transactions');

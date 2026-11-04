@@ -12,17 +12,32 @@ window.PCModules['complaint-options']={render(){},create({dictionary,getLayers,g
       renderOptions(layer);
     }catch(error){if(getLayers().includes(layer)&&!layer.closing)layer.el.querySelector('.uc-drawer-body').innerHTML=`<div class="uc-error" role="alert">配置读取失败：${esc(error.message)}。原配置已保留，请关闭后重试。</div>`}
   }
-  function optionsDirty(config){return JSON.stringify(config.draft)!==config.baseline||Object.entries(config.entries).some(([key,entry])=>entry.name!==(entry.index===null?'':config.draft[key][entry.index]))}
-  function timingSummary(timing){
-    const days=dictionary.daysByLevel(timing);
-    return `<div class="uc-option-level-times">${dictionary.LEVELS.map(level=>`<span><span class="uc-muted">${esc(level)}</span> ${Object.hasOwn(days,level)?esc(Number(days[level].toFixed(6)))+'天':'<span class="uc-muted">未设置</span>'}</span>`).join('')}</div>`;
+  function optionsDirty(config){return !!config.timingErrors?.length||JSON.stringify(config.draft)!==config.baseline||Object.entries(config.entries).some(([key,entry])=>entry.name!==(entry.index===null?'':config.draft[key][entry.index]))}
+  const optionTabs={...dictionary.LABELS,timings:'时效配置'};
+  const timingName=(row,index)=>`timing-${row===null?'default':row}-${index}`;
+  const demandDays=(c,name)=>dictionary.daysByLevel(Object.hasOwn(c.draft.demandTimings,name)?c.draft.demandTimings[name]:null);
+  function timingCell(c,name,row,level,index,busy){
+    const days=name===null?c.draft.defaultTimings:demandDays(c,name);
+    const invalid=c.timingErrors?.find(error=>error.name===name&&error.level===level),value=invalid?.value??days[level]??'';
+    const controlName=timingName(row,index),label=(name??'默认时效')+'，'+level+'处理天数';
+    return `<td${name===null?' data-timing-default':''}><div class="uc-timing-cell" data-timing-field="${controlName}">${input(controlName,value,'','text',`inputmode="decimal" aria-label="${esc(label)}" ${invalid?'aria-invalid="true"':''} ${busy}`)}</div></td>`;
   }
-  function renderOptions(layer){
-    const c=layer.options,key=c.tab,items=c.draft[key],entry=c.entries[key],busy=c.saving?'disabled':'';
-    const demand=key==='demands',add=btn(entry.index===null?'添加':'确认修改','options-apply',busy,true)+(entry.index===null?'':btn('取消编辑','options-cancel-edit',busy));
+  function optionPanel(c,busy){
+    const key=c.tab,items=c.draft[key],entry=c.entries[key];
+    const add=btn(entry.index===null?'添加':'确认修改','options-apply',busy,true)+(entry.index===null?'':btn('取消编辑','options-cancel-edit',busy));
     const nameControl=input('optionName',entry.name,'请输入选项名称','text',`maxlength="50" aria-label="选项名称" style="flex:1;min-width:0" ${busy}`);
     const form=field('optionName','选项名称',`<div class="uc-actions">${nameControl}${add}</div>`,true,'',true);
-    layer.el.querySelector('.uc-drawer-body').innerHTML=`<nav class="pc-tabs" role="tablist" aria-label="投诉配置字段">${Object.entries(dictionary.LABELS).map(([key,label])=>`<button type="button" class="pc-tab" id="uc-options-tab-${key}" role="tab" aria-selected="${key===c.tab}" aria-controls="uc-options-panel" tabindex="${key===c.tab?'0':'-1'}" data-uc="options-tab" data-key="${key}" ${busy}>${label}</button>`).join('')}</nav><div role="tabpanel" id="uc-options-panel" aria-labelledby="uc-options-tab-${key}">${section((entry.index===null?'新增':'编辑')+dictionary.LABELS[key],`<div class="ub-form">${form}</div>`)}<div class="table-wrap"><table data-pc-scroll="parent" data-pc-align="left" data-pc-min-height="0" aria-label="${dictionary.LABELS[key]}选项"><colgroup><col style="width:50px"><col>${demand?'<col style="width:240px">':''}<col style="width:${demand?220:190}px"></colgroup><thead><tr><th>序号</th><th data-pc-min-width="160">选项名称</th>${demand?'<th>处理时效</th>':''}<th>操作</th></tr></thead><tbody>${items.map((name,index)=>`<tr><td>${index+1}</td><td>${esc(name)}</td>${demand?`<td>${timingSummary(Object.hasOwn(c.draft.demandTimings,name)?c.draft.demandTimings[name]:null)}</td>`:''}<td><div class="uc-actions">${demand?link('配置','options-configure',`data-index="${index}" ${busy}`):''}${link('编辑','options-edit',`data-index="${index}" ${busy}`)}${link('删除','options-remove',`data-index="${index}" ${busy}`)}${link('上移','options-move',`data-index="${index}" data-offset="-1" ${index===0||c.saving?'disabled':''}`)}${link('下移','options-move',`data-index="${index}" data-offset="1" ${index===items.length-1||c.saving?'disabled':''}`)}</div></td></tr>`).join('')}</tbody></table></div><p class="uc-help">保存后用于后续选择；改名或删除不会改写历史工单。${demand?'通过“配置”按客诉等级设置处理天数；调整仅影响后续新开始的计时。':'可通过上移、下移调整下拉顺序。'}</p></div>`;
+    return `${section((entry.index===null?'新增':'编辑')+dictionary.LABELS[key],`<div class="ub-form">${form}</div>`)}<div class="table-wrap"><table data-pc-scroll="parent" data-pc-align="left" data-pc-min-height="0" aria-label="${dictionary.LABELS[key]}选项"><colgroup><col style="width:50px"><col><col style="width:190px"></colgroup><thead><tr><th>序号</th><th data-pc-min-width="160">选项名称</th><th>操作</th></tr></thead><tbody>${items.map((name,index)=>`<tr><td>${index+1}</td><td>${esc(name)}</td><td><div class="uc-actions">${link('编辑','options-edit',`data-index="${index}" ${busy}`)}${link('删除','options-remove',`data-index="${index}" ${busy}`)}${link('上移','options-move',`data-index="${index}" data-offset="-1" ${index===0||c.saving?'disabled':''}`)}${link('下移','options-move',`data-index="${index}" data-offset="1" ${index===items.length-1||c.saving?'disabled':''}`)}</div></td></tr>`).join('')}</tbody></table></div><p class="uc-help">保存后用于后续选择；改名或删除不会改写历史工单。可通过上移、下移调整下拉顺序。</p>`;
+  }
+  function timingPanel(c,busy){
+    const defaults=`<tr><td data-timing-default><strong>默认时效</strong><span class="uc-muted">（未单独配置时使用）</span></td>${dictionary.LEVELS.map((level,index)=>timingCell(c,null,null,level,index,busy)).join('')}</tr>`;
+    const demands=c.draft.demands.map((name,row)=>`<tr><td>${esc(name)}</td>${dictionary.LEVELS.map((level,index)=>timingCell(c,name,row,level,index,busy)).join('')}</tr>`).join('');
+    const error=c.showTimingErrors?c.timingErrors?.[0]:null;
+    return `<p class="uc-help">按客诉等级设置默认时效；客户诉求可单独覆盖，留空沿用默认。单位：天。</p><div class="table-wrap uc-timing-table"><table data-pc-scroll="parent" data-pc-align="left" data-pc-min-height="0" aria-label="时效配置"><colgroup><col>${dictionary.LEVELS.map(()=>'<col style="width:110px">').join('')}</colgroup><thead><tr><th data-pc-min-width="220">客户诉求</th>${dictionary.LEVELS.map(level=>`<th data-pc-min-width="100">${esc(level)}</th>`).join('')}</tr></thead><tbody>${defaults}${demands}</tbody></table></div><p class="uc-error" data-timing-error role="alert" ${error?'':'hidden'}>${error?esc((error.name??'默认时效')+' · '+error.level+'：'+error.message):''}</p><p class="uc-help">1 天按 24 小时计算；调整配置仅影响后续新开始的计时。</p>`;
+  }
+  function renderOptions(layer){
+    const c=layer.options,key=c.tab,busy=c.saving?'disabled':'';
+    layer.el.querySelector('.uc-drawer-body').innerHTML=`<nav class="pc-tabs" role="tablist" aria-label="投诉配置字段">${Object.entries(optionTabs).map(([key,label])=>`<button type="button" class="pc-tab" id="uc-options-tab-${key}" role="tab" aria-selected="${key===c.tab}" aria-controls="uc-options-panel" tabindex="${key===c.tab?'0':'-1'}" data-uc="options-tab" data-key="${key}" ${busy}>${label}</button>`).join('')}</nav><div role="tabpanel" id="uc-options-panel" aria-labelledby="uc-options-tab-${key}">${key==='timings'?timingPanel(c,busy):optionPanel(c,busy)}</div>`;
     layer.el.querySelector('.uc-drawer-foot').innerHTML=btn('取消','dismiss',busy)+btn(c.saving?'保存中…':'保存配置','options-save',busy,true);
     layer.oldFoot=null;
   }
@@ -36,26 +51,17 @@ window.PCModules['complaint-options']={render(){},create({dictionary,getLayers,g
       const timing=c.draft.demandTimings[previous];delete c.draft.demandTimings[previous];
       Object.defineProperty(c.draft.demandTimings,name,{value:timing,enumerable:true,writable:true,configurable:true});
     }
+    if(key==='demands'&&previous!==name)for(const error of c.timingErrors||[])if(error.name===previous)error.name=name;
     if(entry===c.entries[key])c.entries[key]=blankEntry();if(render)renderOptions(layer);return true;
-  }
-  function configureTiming(layer,index){
-    const c=layer.options,name=c.draft.demands[index],timing=Object.hasOwn(c.draft.demandTimings,name)?c.draft.demandTimings[name]:null,days=dictionary.daysByLevel(timing);
-    PCUI.dialog({title:'处理时效配置',content:`<div class="uc-scope"><p class="uc-option-name">${esc(name)}</p><div id="uc-level-timing-form" class="ub-form">${dictionary.LEVELS.map((level,i)=>field('levelDays'+i,level,`<div class="uc-option-duration">${input('levelDays'+i,days[level]??'','未设置','number',`min="0" step="any" aria-label="${level}处理天数"`)}<span>天</span></div>`,false,'',true)).join('')}</div><p class="uc-help">留空表示该等级未设置时效；1 天按 24 小时计算。${timing&&!timing.byLevel?'原统一时效已换算为各等级天数，可分别调整。':''}</p></div>`,buttons:[{text:'取消',action:()=>PCUI.closeDialog()},{text:'确认配置',primary:true,action:()=>{
-      if(!getLayers().includes(layer)||layer.closing)return;
-      const form=document.getElementById('uc-level-timing-form');if(!form)return;
-      const byLevel={};
-      for(const [i,level]of dictionary.LEVELS.entries()){
-        const control=form.querySelector(`[name="levelDays${i}"]`);
-        try{const value=dictionary.dayValue(control.value);if(value!==null)byLevel[level]=value}
-        catch(error){toast(level+'：'+error.message);PCUI.focusControl(control);return}
-      }
-      Object.defineProperty(c.draft.demandTimings,name,{value:{byLevel},enumerable:true,writable:true,configurable:true});
-      renderOptions(layer);PCUI.closeDialog();
-    }}]});
   }
   async function saveOptions(layer){
     const c=layer.options;if(!c||c.saving)return;
     for(const key of Object.keys(dictionary.LABELS)){const entry=c.entries[key];if((entry.index!==null||entry.name)&&!applyOption(layer,key,false)){c.tab=key;renderOptions(layer);return}}
+    if(c.timingErrors?.length){
+      c.tab='timings';c.showTimingErrors=true;renderOptions(layer);
+      const error=c.timingErrors[0],row=error.name===null?null:c.draft.demands.indexOf(error.name);
+      PCUI.focusControl(layer.el.querySelector(`[name="${timingName(row,dictionary.LEVELS.indexOf(error.level))}"]`));return;
+    }
     c.saving=true;renderOptions(layer);
     try{
       await dictionary.save(c.draft,c.draft.revision);
@@ -69,10 +75,9 @@ window.PCModules['complaint-options']={render(){},create({dictionary,getLayers,g
     const c=layer?.options;if(!c||c.saving)return;
     const key=c.tab,entry=c.entries[key],index=Number(button.dataset.index),items=c.draft[key];
     if(action==='options-tab'){c.tab=button.dataset.key;renderOptions(layer);layer.el.querySelector('[aria-selected="true"]')?.focus({preventScroll:true})}
-    else if(action==='options-save')saveOptions(layer);
+    else if(action==='options-save')return saveOptions(layer);
     else if(action==='options-apply')applyOption(layer);
     else if(action==='options-cancel-edit'){c.entries[key]=blankEntry();renderOptions(layer)}
-    else if(action==='options-configure'&&key==='demands')configureTiming(layer,index);
     else if(action==='options-edit'){
       if(entry.name!==(entry.index===null?'':items[entry.index])){toast('请先确认当前选项修改，或取消编辑');return}
       c.entries[key]={...blankEntry(),index,name:items[index]};renderOptions(layer);
@@ -81,7 +86,7 @@ window.PCModules['complaint-options']={render(){},create({dictionary,getLayers,g
       if(items.length===1){toast(dictionary.LABELS[key]+'至少保留一个选项');return}
       PCUI.confirm({title:'删除选项',content:`确定删除“${esc(items[index])}”？保存配置后生效，历史工单保持原值。`,onConfirm:()=>{
         if(!getLayers().includes(layer)||layer.closing)return;
-        if(key==='demands')delete c.draft.demandTimings[items[index]];
+        if(key==='demands'){delete c.draft.demandTimings[items[index]];c.timingErrors=c.timingErrors?.filter(error=>error.name!==items[index]);}
         items.splice(index,1);if(entry.index===index)c.entries[key]=blankEntry();else if(entry.index>index)entry.index--;
         renderOptions(layer);
       }});
@@ -92,7 +97,25 @@ window.PCModules['complaint-options']={render(){},create({dictionary,getLayers,g
       renderOptions(layer);
     }
   }
-  function syncOptionDraft(el){const c=getLayers().at(-1)?.options,key=el.name==='optionName'?'name':'';if(!c||c.saving||!key)return false;c.entries[c.tab][key]=el.value;return true}
+  function syncOptionDraft(el){
+    const layer=getLayers().at(-1),c=layer?.options;if(!c||c.saving)return false;
+    const match=/^timing-(default|\d+)-(\d+)$/.exec(el.closest?.('[data-timing-field]')?.dataset.timingField||el.name);
+    if(match&&c.tab==='timings'){
+      const row=match[1]==='default'?null:Number(match[1]),name=row===null?null:c.draft.demands[row],level=dictionary.LEVELS[Number(match[2])];
+      if(!level||name===undefined)return false;
+      c.timingErrors=(c.timingErrors||[]).filter(error=>error.name!==name||error.level!==level);
+      try{
+        const value=dictionary.dayValue(el.value.trim()),days=name===null?c.draft.defaultTimings:demandDays(c,name);
+        if(value===null)delete days[level];else days[level]=value;
+        if(name!==null)Object.defineProperty(c.draft.demandTimings,name,{value:{byLevel:days},enumerable:true,writable:true,configurable:true});
+        el.removeAttribute('aria-invalid');
+      }catch(error){c.timingErrors.push({name,level,value:el.value,message:error.message});el.setAttribute('aria-invalid','true');}
+      const message=layer.el.querySelector('[data-timing-error]'),error=c.showTimingErrors?c.timingErrors[0]:null;
+      if(message){message.hidden=!error;message.textContent=error?(error.name??'默认时效')+' · '+error.level+'：'+error.message:'';}
+      return true;
+    }
+    if(el.name!=='optionName'||!c.entries[c.tab])return false;c.entries[c.tab].name=el.value;return true;
+  }
   function contactForm(){const d=getEditor().draft,contacts=responsibleOptions([d.firstContact,...getRecords().map(r=>r.firstContact)].filter(Boolean));return `<div class="uc-grid ub-form" data-pc-columns="2">${field('firstContact','第一联系人',select('firstContact',contacts,d.firstContact,'请选择员工，支持姓名搜索','data-filterable'),false)}${field('contactTime','投诉时间',input('contactTime',d.contactTime,'客户陈述的投诉时间','datetime-local'),false)}${field('customerDemand','客户诉求',select('customerDemand',dictionary.options('demands',d.customerDemand),d.customerDemand,'请选择客户诉求','data-filterable'),false,'',true)}${field('customerStatement','客户陈述',`<textarea id="uc-customerStatement" name="customerStatement" class="uc-input" rows="3" maxlength="500" show-word-limit placeholder="补充客户原话（选填）">${esc(d.customerStatement)}</textarea>`,false,'',true)}</div>`}
   function responsibilityForm(){const d=getEditor().draft,hasDepartment=multiValues(d.department).length>0,closed=d.type==='闭店';return `<div class="ub-form">${field('department','责任部门',assessmentChoices('department','责任部门',['推广','销售','门店'],d.department,true),true,'',true)}${field('type','售后类型',select('type',dictionary.options('types',d.type),d.type,hasDepartment?'请选择售后类型':'请先选择责任部门',`required aria-required="true" ${hasDepartment?'':'disabled'}`),true,'',true)}<div class="uc-full uc-rule" ${responsibilityRule(d.type)?'':'hidden'}><span>归因参考：</span><span id="uc-rule-text">${responsibilityRule(d.type)}</span></div>${field('responsible','责任人',multiSelect('responsible','责任人',responsibleOptions(d.responsible),d.responsible,hasDepartment&&d.type&&!closed?'required aria-required="true"':'disabled'),true,'',true).replace('data-field="responsible"','data-field="responsible"'+(closed?' hidden':''))}${field('reason','责任原因',`<textarea id="uc-reason" name="reason" class="uc-input" rows="3" maxlength="1000" show-word-limit placeholder="填写责任原因">${esc(d.reason)}</textarea>`,false,'',true)}</div>`}
   return {optionsDirty,optionAction,syncOptionDraft,contactForm,responsibilityForm};

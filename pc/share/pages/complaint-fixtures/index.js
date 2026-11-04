@@ -116,5 +116,18 @@
     }
     return true;
   }
-  window.PCModules['complaint-fixtures']={render(){},customers,demoScenarios,completeLifecycleExample};
+  // A read-only deadline example for existing prototype rows without a saved clock.
+  // Never seed configuration or attach demonstration clocks to customer-created rows.
+  function timingExample(r,configuredTiming=null){
+    const index=Number(r.id)-31001,customer=customers[index];
+    if(!r.demoDetailsVersion||!customer||customer[0]!==r.name||customer[1]!==r.phone||r.customerId!=='C'+index)return null;
+    const follows=r.follows||[],lastCommunication=follows.find(item=>item.kind==='follow'&&item.communication?.result==='ongoing');
+    const startedAt=lastCommunication?.time||r.acceptedAt||follows.find(item=>item.kind==='accept')?.time||r.startedAt||r.assessedAt||r.created;
+    const start=Date.parse(String(startedAt||'').replace(' ','T').slice(0,16)+':00+08:00');
+    const timing=configuredTiming||{value:({'1级':3,'2级':2,'3级':1,'4级':0.5,'5级':0.25})[r.level],unit:'days'};
+    if(!Number.isFinite(start)||!timing.value)return null;
+    const endings=[r.compensatedAt,r.closedAt,...follows.filter(item=>['compensation','closure'].includes(item.kind)||item.communication?.result==='agreed').map(item=>item.time)].filter(Boolean).sort();
+    return {startedAt,dueAt:start+timing.value*(timing.unit==='days'?86400000:3600000),endedAt:endings.find(value=>String(value).replace('T',' ')>=String(startedAt).replace('T',' '))||'',mock:true};
+  }
+  window.PCModules['complaint-fixtures']={render(){},customers,demoScenarios,completeLifecycleExample,timingExample};
 })();

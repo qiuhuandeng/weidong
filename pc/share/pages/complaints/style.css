@@ -4,11 +4,13 @@
 .uc-scope [hidden]{display:none!important}
 .uc-scope .uc-block{display:block}.uc-scope .uc-muted,.uc-help,.uc-saved-meta,.uc-case-meta{color:var(--el-text-color-secondary,#909399)}
 .uc-scope .uc-actions,.uc-scope .uc-section-head,.uc-scope .uc-case-customer,.uc-scope .uc-event-title{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.uc-option-duration{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.uc-option-level-times{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 12px}.uc-option-level-times>span{white-space:nowrap}
+.uc-timing-table tbody>tr:first-child>td{background-color:var(--el-color-primary-light-9)}
+.uc-timing-cell{min-width:0}
 .uc-search-card{background:#fff;margin-bottom:var(--pc-gap);border-radius:4px}
 .uc-card-head h3{font-size:14px;font-weight:500;margin:0}
 .uc-complaint-content{white-space:pre-wrap;overflow-wrap:anywhere}
+.uc-list-timing{margin-top:4px;font-size:12px}.uc-list-overdue{color:var(--el-color-danger)}
+.uc-progress-task{margin-top:4px;font-size:12px;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;overflow-wrap:anywhere}
 .uc-payment-list-summary{display:flex;gap:8px;flex-wrap:wrap;color:var(--el-text-color-secondary)}
 .uc-scope .uc-section{padding:0;margin:0 0 20px;background:transparent}
 .uc-scope .uc-section-head{justify-content:space-between;margin-bottom:12px;min-height:28px}

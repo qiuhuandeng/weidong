@@ -6,7 +6,7 @@
   const KEY = 'weid.pc.complaints.v1';
   const SOURCE_KEY = 'weidong.unified-complaints.v1';
   const dictionary = window.PCComplaintOptions;
-  const {customers,demoScenarios,completeLifecycleExample}=window.PCModules['complaint-fixtures'];
+  const {customers,demoScenarios,completeLifecycleExample,timingExample}=window.PCModules['complaint-fixtures'];
   const LEVELS = ['1级','2级','3级','4级','5级'];
   const LEVEL4_TYPES = ['报警','卫生局','监管局'];
   const level4Type = record => record.level==='4级'&&LEVEL4_TYPES.includes(record.level4Type)?record.level4Type:'';
@@ -182,7 +182,7 @@
   // Normalize in memory; changing status labels alone must not trigger another storage write.
   records.forEach(r=>{normalizeRecordStatus(r);const i=Number(r.id)-31001;if(!r.level&&customers[i]?.[0]===r.name)r.level=demoScenarios[i]?.[3]||'';});
   try{if(demoChanged||wechatChanged||!localStorage.getItem(KEY))localStorage.setItem(KEY,JSON.stringify(records))}catch(e){readFailure=true}
-  let root,portal,filters={},filterDraft={},page=1,pageSize=10,more=false,layers=[],main=null;
+  let root,portal,filters={},filterDraft={},page=1,pageSize=10,more=false,layers=[],main=null,listClock;
   let storageVersion;try{storageVersion=localStorage.getItem(KEY)}catch(e){readFailure=true}
   function persist(next){try{if(localStorage.getItem(KEY)!==storageVersion)throw Error('工单已在其他页面更新，请刷新后重试');const data=JSON.stringify(next);localStorage.setItem(KEY,data);storageVersion=data;records=next;return true}catch(e){toast('保存失败：'+e.message+'；已保留当前输入。');return false}}
   function toast(message){ElementPlus.ElMessage({message,type:'info',duration:4000,showClose:true});}
@@ -200,14 +200,55 @@
   function pagination(total,current,size,scope='list'){
     return `<div class="pagination" data-pc-pager='${esc(JSON.stringify({total,page:current,size,sizes:[10,20,50],action:'complaints',scope}))}'></div>`;
   }
+  function timingEpoch(value){
+    if(typeof value==='number')return value;
+    if(typeof value!=='string'||!value.trim())return NaN;
+    const iso=value.trim().replace(' ','T');
+    return Date.parse(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?$/.test(iso)?iso+'+08:00':iso);
+  }
+  function complaintTiming(r,referenceTime=Date.now()){
+    if(workOrderStatus(r.status,r)==='待处理')return null;
+    const periods=Array.isArray(r.communicationPeriods)?r.communicationPeriods:[];
+    const reason=(r.follows||[]).find(item=>item.kind==='follow'&&item.communication?.result==='ongoing')?.communication.reason||r.customerDemand||'';
+    const period=periods.find(item=>!item.endedAt)||periods.at(-1)||timingExample(r,dictionary.timingFor(dictionary.current,reason,r.level));
+    if(!period)return null;
+    const due=timingEpoch(period.dueAt);if(!Number.isFinite(due))return null;
+    const closed=workOrderStatus(r.status,r)==='已结案',ended=Boolean(period.endedAt)||closed;
+    const end=period.endedAt||(closed?(r.closedAt||(r.follows||[]).find(item=>item.kind==='closure')?.time):'');
+    const until=ended?timingEpoch(end):referenceTime,overdue=Number.isFinite(until)?Math.max(0,until-due):0;
+    const minutes=Math.floor(overdue/60000),days=Math.floor(minutes/1440),hours=Math.floor(minutes%1440/60),remaining=minutes%60;
+    const duration=days?days+'天'+(hours?hours+'小时':''):hours?hours+'小时'+(remaining?remaining+'分钟':''):minutes?minutes+'分钟':overdue?'不足1分钟':'';
+    const dueAt=new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date(due));
+    return {dueAt,ended,overdue,duration,mock:Boolean(period.mock)};
+  }
+  function complaintTimingHTML(r,referenceTime=Date.now()){
+    const timing=complaintTiming(r,referenceTime);if(!timing)return '<span class="uc-muted">—</span>';
+    return `<span class="pc-block uc-block uc-muted" title="${timing.mock?'示例时效：':''}${esc(timing.dueAt)}">截止 ${esc(timing.dueAt.slice(5))}</span>${timing.overdue?`<span class="pc-block uc-block uc-list-overdue" title="${timing.ended?'本轮计时已结束；':''}超时 ${Math.floor(timing.overdue/60000)} 分钟">已超时 ${esc(timing.duration)}</span>`:''}`;
+  }
+  function refreshListTimings(){
+    if(!root?.isConnected)return;
+    const referenceTime=Date.now();
+    for(const cell of root.querySelectorAll('[data-complaint-timing]')){
+      const record=records.find(item=>String(item.id)===cell.dataset.complaintTiming);if(!record)continue;
+      const html=complaintTimingHTML(record,referenceTime);if(cell.innerHTML!==html)cell.innerHTML=html;
+    }
+  }
+  function listProgressText(r){
+    const status=workOrderStatus(r.status,r);
+    if(status==='已结案')return '';
+    if(status==='客服处理中')return followTools().progressText(r)||(r.customerSolution||r.compensatedAt?'方案已确认，待后续办理':'')||r.statusDetail||r.currentTask||r.customerDemand||'待沟通处理方案';
+    if(status==='客服已接单')return r.statusDetail||r.currentTask||'待联系客户并核实诉求';
+    return currentTask(r);
+  }
   function complaintRow(r){
+    const progress=listProgressText(r);
     return `<tr><td class="uc-list-customer">${valueText(r.name).trim()?link(esc(r.name),'customer-detail',`data-customer="${esc(r.customerId||'')}" aria-label="查看客户详情：${esc(r.name)}"`):listValue('')}<span class="pc-block uc-block uc-muted">会员号 ${listValue(r.member)}</span><span class="pc-block uc-block uc-muted">${listValue(r.phone)}</span></td>
       <td class="uc-list-store-order"><span class="pc-block uc-block">${listValue(r.store)}</span><span class="pc-block uc-block">${r.linked.length?link(r.linked[0].id,'order-detail',`data-order="${esc(r.linked[0].id)}"`):listValue('')}</span>${r.linked.length>1?'<span class="pc-block uc-block uc-muted">共 '+r.linked.length+' 笔</span>':''}</td>
       <td>${listValue(CHANNELS[r.channel])}<span class="pc-block uc-block uc-muted">售后类型：${listValue(r.type)}</span><span class="pc-block uc-block uc-muted">${listValue(r.created?fmt(r.created):'')}</span></td>
       <td><span class="pc-block uc-block uc-muted">工单号：${listValue(r.id)}</span><div class="uc-complaint-content">${listValue(r.content)}</div></td>
-      <td>${levelTag(r.level)}${level4Type(r)?'<span class="pc-block uc-block uc-muted">'+esc(level4Type(r))+'</span>':''}</td>
+      <td>${levelTag(r.level)}${level4Type(r)?'<span class="pc-block uc-block uc-muted">'+esc(level4Type(r))+'</span>':''}<div class="uc-list-timing" data-complaint-timing="${esc(r.id)}">${complaintTimingHTML(r)}</div></td>
+      <td>${statusTag(r.status)}${progress?`<div class="uc-progress-task uc-muted" title="${esc(progress)}">${esc(progress)}</div>`:''}</td>
       <td>${listValue(valueText(r.department)||'待认定')}<span class="pc-block uc-block">责任人：${listValue(r.type==='闭店'?'无需填写':r.responsible)}</span></td>
-      <td>${statusTag(r.status)}</td>
       <td class="uc-fixed"><div class="uc-actions">${link('详情','detail',`data-id="${r.id}"`)}</div></td></tr>`;
   }
   function statusCount(status){return records.filter(record=>workOrderStatus(record.status,record)===status).length}
@@ -227,8 +268,8 @@
       <div class="query-actions"><button class="btn primary" type="submit" form="uc-search">搜索</button>${btn('重置','reset')}${link(more?'收起筛选':'更多筛选','more','aria-expanded="'+more+'"')}</div>
     </form><div id="uc-query-error" class="uc-error" role="alert"></div></div></section>
     <section class="panel content-module uc-card" role="tabpanel" id="uc-list-panel" aria-labelledby="uc-status-${STATUS_TABS.findIndex(([value])=>value===(filters.status||''))}"><div class="panel-head uc-card-head"><h3>投诉列表</h3><div class="uc-actions">${btn('新增工单','new-ticket','',true)}${btn('配置','options-open')}${btn('导出','export')}</div></div>
-      <div class="table-wrap uc-table-wrap"><table class="uc-table uc-main-table" data-pc-align="left"><colgroup><col><col><col><col><col style="width:85px"><col><col style="width:125px"><col style="width:70px"></colgroup>
-      <thead><tr>${['客户信息','关联订单 / 门店','售后来源 / 渠道','投诉内容','客诉等级','责任认定','工单状态','操作'].map((t,i)=>`<th data-pc-min-width="${[150,180,175,250,85,160,125,70][i]}"${i===7?' class="uc-fixed"':''}>${t}</th>`).join('')}</tr></thead>
+      <div class="table-wrap uc-table-wrap"><table class="uc-table uc-main-table" data-pc-align="left"><colgroup><col><col><col><col><col style="width:180px"><col style="width:190px"><col><col style="width:70px"></colgroup>
+      <thead><tr>${['客户信息','关联订单 / 门店','售后来源 / 渠道','投诉内容','客诉等级 / 时效','工单进度','责任认定','操作'].map((t,i)=>`<th data-pc-min-width="${[150,180,175,250,180,190,160,70][i]}"${i===7?' class="uc-fixed"':''}>${t}</th>`).join('')}</tr></thead>
       <tbody>${rows.length?rows.slice((page-1)*pageSize,page*pageSize).map(complaintRow).join(''):`<tr><td colspan="8">${empty('暂无符合条件的数据')}</td></tr>`}</tbody></table></div>
       ${pagination(rows.length,page,pageSize)}
     </section>`;
@@ -287,7 +328,7 @@
     const entry={id:r.id+'-compensation-'+Date.now()+'-'+r.follows.length,kind:'compensation',action:'保存解决方案',time,actor:ACTOR,beforeStatus,status:r.status,before,customerSolution:clone(solution),files:[]};
     r.follows.unshift(entry);return entry;
   }
-  function recordAccept(r,time,grade){if(r.suspension||r.legacySuspended||r.status!=='待处理'||followTools().gradeErrors(grade).length)return null;const beforeStatus=r.status,before=followTools().gradeValue(r);Object.assign(r,followTools().gradeValue(grade));r.status='客服已接单';r.acceptedAt=time;r.acceptedBy=ACTOR;delete r.statusDetail;delete r.currentTask;const entry={id:r.id+'-accept-'+Date.now(),kind:'accept',action:'客服接单',time,actor:ACTOR,note:'客服已接单，确认客诉等级为 '+r.level+(level4Type(r)?'（'+level4Type(r)+'）':'')+'。',before,...followTools().gradeValue(r),beforeStatus,status:r.status,files:[]};r.follows.unshift(entry);return entry}
+  function recordAccept(r,time,grade){if(r.suspension||r.legacySuspended||r.status!=='待处理'||followTools().gradeErrors(grade).length)return null;const beforeStatus=r.status,before=followTools().gradeValue(r);Object.assign(r,followTools().gradeValue(grade));r.status='客服已接单';r.acceptedAt=time;r.acceptedBy=ACTOR;delete r.statusDetail;delete r.currentTask;const entry={id:r.id+'-accept-'+Date.now(),kind:'accept',action:'客服接单',time,actor:ACTOR,note:'客服已接单，确认客诉等级为 '+r.level+(level4Type(r)?'（'+level4Type(r)+'）':'')+'。',before,...followTools().gradeValue(r),beforeStatus,status:r.status,files:[]};followTools().startAcceptedPeriod(r,entry);r.follows.unshift(entry);return entry}
   function markProcessing(r,time){if(r.status==='客服已接单'){r.status='客服处理中';r.startedAt??=time;r.startedBy??=ACTOR;delete r.statusDetail;delete r.currentTask}}
   function followTools(){return window.PCModules['complaint-follow'].create({ACTOR,canAssess,canFollow,canGrade,handlingOperations:workflow.handlingOperations,LEVELS,LEVEL4_TYPES,error,clearErrors,markProcessing,recognitionSnapshot,clone,esc,fmt,field,input,select,detail,section,tag,link,btn,empty,events,filesView,draftFiles,solutionRead,level4Type,valueText,planText,valuesFrom,RECOGNITION_FIELDS,solutionDraft,assessmentChoices,dictionary})}
   function recordFollow(r,d,time){return followTools().record(r,d,time)}
@@ -663,8 +704,8 @@
   function openOrderSnapshot(id){const order=orders.find(item=>item.id===id);if(!order){toast('该订单暂无更多资料');return}openLayer('订单详情',section('订单 '+esc(id),orderCards([{id}])) ,btn('关闭','dismiss'),2);}
   function openCustomerSnapshot(id){const record=records.find(item=>item.customerId===id);if(!record){toast('该客户暂无更多资料');return}openLayer('客户资料',section('基本信息',`<div class="uc-details">${detail('客户姓名',record.name)}${detail('会员号',record.member)}${detail('客户手机',record.phone)}${detail('所属门店',record.store)}${detail('客户微信',record.customerWechat||orders.find(o=>o.customerId===id)?.customerWechat)}</div>`),btn('关闭','dismiss'),2);}
   function bind(el){el.addEventListener('click',handleClick);el.addEventListener('change',handleChange);el.addEventListener('input',event=>{event.stopPropagation();syncDraft(event.target)});el.addEventListener('submit',handleSubmit,true);}
-  function mount(content){if(!content)return;root=content;root.classList.add('uc-scope');portal=document.getElementById('mergeDrawers');bind(root);renderList();if(readFailure)toast('本地记录读取失败，已恢复初始列表');if(dictionary.error)toast('下拉配置读取失败：'+dictionary.error+'；请在配置入口重试');}
-  function leave(){for(const layer of layers)layer.el.remove();layers=[];main=null;unlockBackground();}
+  function mount(content){if(!content)return;root=content;root.classList.add('uc-scope');portal=document.getElementById('mergeDrawers');bind(root);renderList();clearInterval(listClock);listClock=setInterval(refreshListTimings,60000);document.addEventListener('visibilitychange',refreshListTimings);if(readFailure)toast('本地记录读取失败，已恢复初始列表');if(dictionary.error)toast('下拉配置读取失败：'+dictionary.error+'；请在配置入口重试');}
+  function leave(){clearInterval(listClock);document.removeEventListener('visibilitychange',refreshListTimings);for(const layer of layers)layer.el.remove();layers=[];main=null;unlockBackground();}
   PCUI.registerPager('complaints',(value,config)=>{if(config.scope==='orders'){const e=main?.editor;if(!e)return;readOrderSearch();e.orderPage=value.currentPage;e.orderPageSize=value.pageSize;renderEditor();}else{filterDraft={...filterDraft,...Object.fromEntries(new FormData(root.querySelector('#uc-search')))};page=value.currentPage;pageSize=value.pageSize;renderList();}});
   document.addEventListener('keydown',keyboard,true);
   window.addEventListener('beforeunload',event=>{if(layers.some(dirty)){event.preventDefault();event.returnValue=''}});
