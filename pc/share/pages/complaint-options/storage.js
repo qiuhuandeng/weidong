@@ -13,7 +13,8 @@ window.PCComplaintOptions = (() => {
   ];
   const LABELS={demands:'未达成原因',types:'售后类型'},copy=value=>JSON.parse(JSON.stringify(value));
   const LEVELS=['1级','2级','3级','4级','5级'];
-  let current={schema:1,revision:0,...copy(DEFAULTS),requests:copy(REQUEST_DEFAULTS),demandTimings:{},defaultTimings:{}},failure='',database,channel;
+  const LEVEL_FIELDS={criteria:{label:'定级条件',limit:2000},keywords:{label:'识别关键词',limit:500},exclusions:{label:'排除条件',limit:2000}};
+  let current={schema:1,revision:0,...copy(DEFAULTS),requests:copy(REQUEST_DEFAULTS),demandTimings:{},defaultTimings:{},aiGradeEnabled:false,levelDefinitions:{}},failure='',database,channel;
   const listeners=new Set();
   function timingValue(value,unit='hours'){
     if(value===''||value===null||value===undefined)return null;
@@ -58,6 +59,18 @@ window.PCComplaintOptions = (() => {
     items.forEach(item=>names(item.reasons,'“'+item.name+'”的具体原因'));
     return copy(items);
   }
+  function validateDefinition(value){
+    if(!value||typeof value!=='object'||Array.isArray(value))throw Error('客诉等级定义格式无效，原配置已保留');
+    const definition={};
+    for(const [key,{label,limit}]of Object.entries(LEVEL_FIELDS)){
+      const text=value[key]===undefined?'':value[key];
+      if(typeof text!=='string'||text.length>limit)throw Object.assign(Error(label+'须为不超过 '+limit+' 个字符的文本'),{field:key});
+      definition[key]=text.trim();
+    }
+    if(!Object.values(definition).some(Boolean))return null;
+    if(!definition.criteria)throw Object.assign(Error('配置该等级时请填写定级条件，或清空全部字段以移除定义'),{field:'criteria'});
+    return definition;
+  }
   function validate(value){
     if(value?.schema!==1||!Number.isSafeInteger(value.revision)||value.revision<0)throw Error('下拉选项配置格式不兼容，原配置已保留');
     for(const [key,label]of Object.entries(LABELS)){
@@ -77,7 +90,15 @@ window.PCComplaintOptions = (() => {
     const defaults=value.defaultTimings===undefined?{}:value.defaultTimings;validateLevels(defaults);
     // Add the independent request dictionary only when upgrading old configuration.
     const requests=validateRequests(value.requests===undefined?REQUEST_DEFAULTS:value.requests);
-    return {...value,requests,demandTimings:copy(timings),defaultTimings:copy(defaults)};
+    const aiGradeEnabled=value.aiGradeEnabled===undefined?false:value.aiGradeEnabled;
+    if(typeof aiGradeEnabled!=='boolean')throw Error('AI 识别开关配置格式无效，原配置已保留');
+    const definitions=value.levelDefinitions===undefined?{}:value.levelDefinitions,levelDefinitions={};
+    if(!definitions||typeof definitions!=='object'||Array.isArray(definitions))throw Error('客诉等级定义格式无效，原配置已保留');
+    for(const [level,value]of Object.entries(definitions)){
+      if(!LEVELS.includes(level))throw Error('客诉等级定义仅支持 1–5 级，原配置已保留');
+      const definition=validateDefinition(value);if(definition)levelDefinitions[level]=definition;
+    }
+    return {...value,requests,demandTimings:copy(timings),defaultTimings:copy(defaults),aiGradeEnabled,levelDefinitions};
   }
   function open(){
     if(database)return database;
@@ -106,7 +127,7 @@ window.PCComplaintOptions = (() => {
     }catch(error){failure=error.message||String(error);throw error}
   }
   async function save(draft,expected){
-    const next=validate({schema:1,revision:expected+1,demands:copy(draft.demands),types:copy(draft.types),requests:copy(draft.requests??current.requests),demandTimings:copy(draft.demandTimings||{}),defaultTimings:copy(draft.defaultTimings??{})}),db=await open();
+    const next=validate({schema:1,revision:expected+1,demands:copy(draft.demands),types:copy(draft.types),requests:copy(draft.requests??current.requests),demandTimings:copy(draft.demandTimings||{}),defaultTimings:copy(draft.defaultTimings??{}),aiGradeEnabled:draft.aiGradeEnabled===undefined?current.aiGradeEnabled:draft.aiGradeEnabled,levelDefinitions:copy(draft.levelDefinitions===undefined?current.levelDefinitions:draft.levelDefinitions)}),db=await open();
     await new Promise((resolve,reject)=>{
       const tx=db.transaction('options','readwrite'),store=tx.objectStore('options'),request=store.get('dictionary');let cause;
       request.onsuccess=()=>{try{
@@ -132,5 +153,5 @@ window.PCComplaintOptions = (() => {
   window.addEventListener('focus',refresh);
   const requestTypes=()=>current.requests.map(item=>item.name);
   const requestReasons=name=>[...(current.requests.find(item=>item.name===name)?.reasons||[])];
-  return {requestEntryEnabled:REQUEST_ENTRY_ENABLED,LABELS,LEVELS,read,save,validate,validateRequests,requestTypes,requestReasons,timingValue,timingText,dayValue,daysByLevel,timingFor,resolveTiming,options,refresh,subscribe:listener=>listeners.add(listener),get current(){return copy(current)},get error(){return failure}};
+  return {requestEntryEnabled:REQUEST_ENTRY_ENABLED,LABELS,LEVELS,LEVEL_FIELDS,read,save,validate,validateDefinition,validateRequests,requestTypes,requestReasons,timingValue,timingText,dayValue,daysByLevel,timingFor,resolveTiming,options,refresh,subscribe:listener=>listeners.add(listener),get current(){return copy(current)},get error(){return failure}};
 })();

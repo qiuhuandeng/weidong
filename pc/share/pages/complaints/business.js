@@ -317,10 +317,8 @@
     portal.appendChild(el);bind(el);const layer={el,trigger,title,closing:false,parentView};layers.push(layer);lockBackground();
     requestAnimationFrame(()=>requestAnimationFrame(()=>{el.classList.add('show');el.querySelector('.uc-drawer').focus({preventScroll:true})}));return layer;
   }
-  function closeLayer(force=false){const layer=layers.at(-1);if(!layer||layer.closing||layer.options?.saving)return;if(!force&&dirty(layer)){showDiscard(layer);return}layer.closing=true;layer.el.classList.remove('show');layer.el.classList.add('is-closing');setTimeout(()=>{if(!layers.includes(layer))return;layer.el.remove();layers.pop();if(main?.editor?.layer===layer)main.editor=null;if(layers.length){const parent=layers.at(-1);parent.el.inert=false;if(layer.parentView){parent.el.querySelector('.uc-drawer-body').scrollTop=layer.parentView.scroll;if(main?.layer===parent)setDetailTab(layer.parentView.tab)}}else{unlockBackground();main=null}if(layer.trigger?.isConnected)layer.trigger.focus({preventScroll:true});else if(layers.length)layers.at(-1).el.querySelector('.uc-drawer').focus({preventScroll:true});else root.querySelector('input,button')?.focus({preventScroll:true})},matchMedia('(prefers-reduced-motion: reduce)').matches?0:290)}
+  function closeLayer(){const layer=layers.at(-1);if(!layer||layer.closing||layer.options?.saving)return;layer.closing=true;layer.el.classList.remove('show');layer.el.classList.add('is-closing');setTimeout(()=>{if(!layers.includes(layer))return;layer.el.remove();layers.pop();if(main?.editor?.layer===layer)main.editor=null;if(layers.length){const parent=layers.at(-1);parent.el.inert=false;if(layer.parentView){parent.el.querySelector('.uc-drawer-body').scrollTop=layer.parentView.scroll;if(main?.layer===parent)setDetailTab(layer.parentView.tab)}}else{unlockBackground();main=null}if(layer.trigger?.isConnected)layer.trigger.focus({preventScroll:true});else if(layers.length)layers.at(-1).el.querySelector('.uc-drawer').focus({preventScroll:true});else root.querySelector('input,button')?.focus({preventScroll:true})},matchMedia('(prefers-reduced-motion: reduce)').matches?0:290)}
   function dirty(layer){if(layer.options)return layer.options.saving||optionsDirty(layer.options);if(layer.creation){const form=layer.el.querySelector('[data-ticket-form]');return Boolean(form&&[...form.querySelectorAll('input,select,textarea')].some(control=>control.name&&control.value.trim()&&(control.name!=='channel'||control.value!=='hotline')))}const e=main?.editor;return Boolean(e?.layer===layer&&(e.uploading||followTools().operationDirty(e)||(e.selectingOrders&&(orderPickerDirty(e)||(e.exampleReturn&&orderPickerDirty(e.exampleReturn))))))}
-  function showDiscard(layer,action='close'){layer.discardAction=action;const foot=layer.el.querySelector('.uc-drawer-foot');if(foot.querySelector('.uc-discard'))return;layer.oldFoot=foot.innerHTML;foot.innerHTML=`<div class="uc-discard" role="alert"><span>有尚未保存的修改，是否放弃？</span>${link('继续填写','keep')}${btn('放弃修改','discard')}</div>`;foot.querySelector('button').focus()}
-  function restoreFoot(layer){if(layer.oldFoot){layer.el.querySelector('.uc-drawer-foot').innerHTML=layer.oldFoot;layer.oldFoot=null;layer.discardAction=null}}
   function recordById(id){return records.find(r=>r.id===id)}
   function isAssessed(r){return ASSESSMENT_FIELDS.every(([key])=>key==='level4Type'?r.level!=='4级'||Boolean(level4Type(r)):key==='responsible'&&r.type==='闭店'?true:valueText(r[key]).trim())}
   function valuesFrom(r,fields){return Object.fromEntries(fields.map(([key])=>[key,MULTI_FIELDS.includes(key)?multiValues(r[key]):r[key]||'']))}
@@ -477,7 +475,6 @@
   }
   function finishEditor(target){
     const e=main?.editor;if(target&&e?.layer.parentView)e.layer.parentView.tab=target;
-    if(e?.handling){e.baseline=JSON.stringify(e.draft);if(dirty(e.layer)){showDiscard(e.layer);e.layer.el.querySelector('.uc-discard span').textContent='本次操作已保存，另一项操作还有未保存内容，是否放弃？';return}}
     closeLayer(true);
   }
   function editorContext(r=main.record){return `<div class="uc-editor-context"><div><strong>${esc(r.name)}</strong><span>${esc(phoneView(r).value)}</span><span>${esc(r.store)}</span></div><div class="uc-muted">投诉 ${r.id} · ${CHANNELS[r.channel]} · ${fmt(r.created)}${statusTag(r.status)}</div></div>`}
@@ -491,7 +488,7 @@
     if(e.handling)content=`<div class="uc-handling-content"><section class="uc-detail-common" aria-label="工单概况">${summary(main.record,main.phoneVisible,true)}</section>`+(!e.followId&&canAssess(main.record)?followTools().operationChoice(e.kind):'')+`<section id="uc-operation-panel" aria-label="${followTools().OPERATIONS[e.kind][0]}">${content}</section></div>`;
     body.innerHTML=content;body.scrollTop=scroll;renderEditorFooter();
   }
-  function renderEditorFooter(){const e=main.editor;if(!e)return;const foot=e.layer.el.querySelector('.uc-drawer-foot');if(foot.querySelector('.uc-discard'))return;foot.innerHTML=followTools().editorFooter(e,e.kind==='compensation'?solutionFoot():'')}
+  function renderEditorFooter(){const e=main.editor;if(!e)return;const foot=e.layer.el.querySelector('.uc-drawer-foot');foot.innerHTML=followTools().editorFooter(e,e.kind==='compensation'?solutionFoot():'')}
   // Adapted from complaint-prototype/workflow proposalForm and ticket-operations.
   // The unified module uses its own customers, orders and saved handling records.
   const SOLUTION_METHODS={refund:'退款',exchange:'商品置换'};
@@ -591,7 +588,7 @@
     if(e.uploading){toast('附件正在读取，请稍后切换');return}const previous=e.kind;
     if(kind===e.kind)return;
     try{if(kind==='compensation')await loadSolutionTools();if(main?.editor!==e||e.kind!==previous||e.layer.closing||!canAssess(main.record))return;
-      followTools().switchOperation(e,kind,main.record);e.layer.oldFoot=null;e.layer.discardAction=null;renderEditor(true);
+      followTools().switchOperation(e,kind,main.record);renderEditor(true);
     }catch(error){toast(error.message)}
   }
   function editFollowRecord(id){const f=main.record.follows.find(f=>f.id===id);if(followTools().editable(f))openEditor('follow',followTools().draft(main.record,f),id)}
@@ -691,8 +688,6 @@
     else if(action==='upload-follow')main.editor.layer.el.querySelector('#uc-upload').click();
     else if(action==='upload-reply')main.editor.layer.el.querySelector('#uc-reply-upload').click();
     else if(action==='dismiss'){if(b.classList.contains('uc-layer')&&event.target!==b)return;closeLayer()}
-    else if(action==='keep')restoreFoot(layer);
-    else if(action==='discard'){restoreFoot(layer);closeLayer(true)}
     else if(action==='tab')selectDetailTab(b.dataset.tab);
     else if(action==='save-follow')saveFollow();
     else if(action==='edit-follow-record')editFollowRecord(b.dataset.follow);

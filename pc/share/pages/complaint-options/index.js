@@ -15,7 +15,24 @@ window.PCModules['complaint-options']={render(){},create({dictionary,getLayers,g
     }catch(error){if(getLayers().includes(layer)&&!layer.closing)layer.el.querySelector('.uc-drawer-body').innerHTML=`<div class="uc-error" role="alert">配置读取失败：${esc(error.message)}。原配置已保留，请关闭后重试。</div>`}
   }
   function optionsDirty(config){return !!config.timingErrors?.length||JSON.stringify(config.draft)!==config.baseline||Object.entries(config.entries).some(([key,entry])=>entry.name!==(entry.index===null?'':itemName(config.draft[key][entry.index])))}
-  const optionTabs={demands:dictionary.LABELS.demands,...(dictionary.requestEntryEnabled?{requests:'客户诉求'}:{}),types:dictionary.LABELS.types,timings:'时效配置'};
+  const optionTabs={demands:dictionary.LABELS.demands,...(dictionary.requestEntryEnabled?{requests:'客户诉求'}:{}),types:dictionary.LABELS.types,levels:'客诉等级',timings:'时效配置'};
+  function openLevelDefinition(parent,level){
+    if(!dictionary.LEVELS.includes(level)||parent.options.parent)return;
+    const layer=openLayer('客诉等级定义 · '+level,'','',2);
+    layer.el.querySelector('.uc-drawer').dataset.size='small';
+    layer.el.querySelector('.uc-drawer').style.setProperty('--archive-drawer-width','560px');
+    const draft={criteria:'',keywords:'',exclusions:'',...parent.options.draft.levelDefinitions[level]};
+    layer.options={draft,baseline:JSON.stringify(draft),tab:'level-definition',entries:{},saving:false,parent,level};
+    renderOptions(layer);
+  }
+  function levelDefinitionPanel(c){
+    const placeholders={criteria:'填写 AI 判断为该等级的具体情况、事实依据、适用边界及条件之间的关系',keywords:'填写典型用词或表达，多个关键词可用换行或逗号分隔',exclusions:'填写不应判入该等级的情况，以及容易误判的边界'};
+    return `<div class="ub-form">${field('definitionLevel','客诉等级',`<span>${esc(c.level)}</span>`,false,'',true)}${Object.entries(dictionary.LEVEL_FIELDS).map(([key,{label,limit}])=>field('level-'+key,label,`<textarea id="uc-level-${key}" name="level-${key}" class="uc-input" rows="${key==='keywords'?3:4}" maxlength="${limit}" show-word-limit placeholder="${placeholders[key]}">${esc(c.draft[key])}</textarea>`,false,'',true)).join('')}</div>`;
+  }
+  function levelsPanel(c,busy){
+    const switchControl=`<div class="uc-actions"><label class="switch"><input type="checkbox" id="uc-aiGradeEnabled" name="aiGradeEnabled" aria-label="开启 AI 识别客诉等级" ${c.draft.aiGradeEnabled?'checked':''} ${busy}></label><span data-ai-grade-state>${c.draft.aiGradeEnabled?'已开启':'已关闭'}</span></div>`;
+    return `<div class="ub-form">${field('aiGradeEnabled','AI 识别等级',switchControl,false,'',true)}</div><div class="table-wrap" data-level-definitions ${c.draft.aiGradeEnabled?'':'hidden'}><table data-pc-scroll="parent" data-pc-align="left" data-pc-min-height="0" aria-label="客诉等级定义"><colgroup><col style="width:80px"><col><col><col><col style="width:70px"></colgroup><thead><tr><th>客诉等级</th>${Object.values(dictionary.LEVEL_FIELDS).map(({label})=>`<th data-pc-min-width="150">${label}</th>`).join('')}<th>操作</th></tr></thead><tbody>${dictionary.LEVELS.map(level=>`<tr><td>${esc(level)}</td>${Object.keys(dictionary.LEVEL_FIELDS).map(key=>`<td><div class="uc-complaint-content">${c.draft.levelDefinitions[level]?.[key]?esc(c.draft.levelDefinitions[level][key]):'<span class="uc-muted">未配置</span>'}</div></td>`).join('')}<td>${link('编辑','options-level-edit',`data-level="${level}" aria-label="编辑${level}客诉等级定义" ${busy}`)}</td></tr>`).join('')}</tbody></table></div>`;
+  }
   function openReasons(parent,index){
     if(!dictionary.requestEntryEnabled)return;
     const request=parent.options.draft.requests[index];if(!request)return;
@@ -52,13 +69,12 @@ window.PCModules['complaint-options']={render(){},create({dictionary,getLayers,g
   function renderOptions(layer){
     const c=layer.options,key=c.tab,busy=c.saving?'disabled':'';
     if(c.parent){
-      layer.el.querySelector('.uc-drawer-body').innerHTML=optionPanel(c,busy);
+      layer.el.querySelector('.uc-drawer-body').innerHTML=c.level?levelDefinitionPanel(c):optionPanel(c,busy);
       layer.el.querySelector('.uc-drawer-foot').innerHTML=btn('取消','dismiss')+btn('确定','options-save','',true);
-      layer.oldFoot=null;return;
+      return;
     }
-    layer.el.querySelector('.uc-drawer-body').innerHTML=`<nav class="pc-tabs" role="tablist" aria-label="投诉配置字段">${Object.entries(optionTabs).map(([key,label])=>`<button type="button" class="pc-tab" id="uc-options-tab-${key}" role="tab" aria-selected="${key===c.tab}" aria-controls="uc-options-panel" tabindex="${key===c.tab?'0':'-1'}" data-uc="options-tab" data-key="${key}" ${busy}>${label}</button>`).join('')}</nav><div role="tabpanel" id="uc-options-panel" aria-labelledby="uc-options-tab-${key}">${key==='timings'?timingPanel(c,busy):optionPanel(c,busy)}</div>`;
+    layer.el.querySelector('.uc-drawer-body').innerHTML=`<nav class="pc-tabs" role="tablist" aria-label="投诉配置字段">${Object.entries(optionTabs).map(([key,label])=>`<button type="button" class="pc-tab" id="uc-options-tab-${key}" role="tab" aria-selected="${key===c.tab}" aria-controls="uc-options-panel" tabindex="${key===c.tab?'0':'-1'}" data-uc="options-tab" data-key="${key}" ${busy}>${label}</button>`).join('')}</nav><div role="tabpanel" id="uc-options-panel" aria-labelledby="uc-options-tab-${key}">${key==='levels'?levelsPanel(c,busy):key==='timings'?timingPanel(c,busy):optionPanel(c,busy)}</div>`;
     layer.el.querySelector('.uc-drawer-foot').innerHTML=btn('取消','dismiss',busy)+btn(c.saving?'保存中…':'保存配置','options-save',busy,true);
-    layer.oldFoot=null;
   }
   function applyOption(layer,key=layer.options.tab,render=true,entry=layer.options.entries[key]){
     const c=layer.options,items=c.draft[key],name=entry.name.trim();
@@ -78,6 +94,16 @@ window.PCModules['complaint-options']={render(){},create({dictionary,getLayers,g
     for(const key of Object.keys(c.entries)){const entry=c.entries[key];if((entry.index!==null||entry.name)&&!applyOption(layer,key,false)){c.tab=key;renderOptions(layer);return}}
     if(c.parent){
       if(!getLayers().includes(c.parent)||c.parent.closing)return;
+      if(c.level){
+        let definition;
+        try{definition=dictionary.validateDefinition(c.draft)}catch(error){
+          const control=layer.el.querySelector(`[name="level-${error.field||'criteria'}"]`),message=layer.el.querySelector('#uc-error-level-'+(error.field||'criteria'));
+          control?.setAttribute('aria-invalid','true');if(message)message.textContent=error.message;
+          PCUI.focusControl(control);toast(error.message);return;
+        }
+        if(definition)c.parent.options.draft.levelDefinitions[c.level]=definition;else delete c.parent.options.draft.levelDefinitions[c.level];
+        c.baseline=JSON.stringify(c.draft);renderOptions(c.parent);closeLayer(true);return;
+      }
       const request=c.parent.options.draft.requests[c.requestIndex];
       try{dictionary.validateRequests([{...request,reasons:c.draft.reasons}])}catch(error){toast(error.message);return}
       request.reasons=[...c.draft.reasons];c.baseline=JSON.stringify(c.draft);renderOptions(c.parent);closeLayer(true);return;
@@ -98,11 +124,12 @@ window.PCModules['complaint-options']={render(){},create({dictionary,getLayers,g
     closeLayer(true);refreshOptionConsumers();toast('配置已保存');
   }
   function optionAction(action,button,layer){
-    if(action==='options-open'){openOptions();return}
+    if(action==='options-open')return openOptions();
     const c=layer?.options;if(!c||c.saving)return;
     const key=c.tab,entry=c.entries[key],index=Number(button.dataset.index),items=c.draft[key];
     if(action==='options-tab'){if(!Object.hasOwn(optionTabs,button.dataset.key))return;c.tab=button.dataset.key;renderOptions(layer);layer.el.querySelector('[aria-selected="true"]')?.focus({preventScroll:true})}
     else if(action==='options-save')return saveOptions(layer);
+    else if(action==='options-level-edit')openLevelDefinition(layer,button.dataset.level);
     else if(action==='options-reasons')openReasons(layer,index);
     else if(action==='options-apply')applyOption(layer);
     else if(action==='options-cancel-edit'){c.entries[key]=blankEntry();renderOptions(layer)}
@@ -127,6 +154,18 @@ window.PCModules['complaint-options']={render(){},create({dictionary,getLayers,g
   }
   function syncOptionDraft(el){
     const layer=getLayers().at(-1),c=layer?.options;if(!c||c.saving)return false;
+    if(c.tab==='levels'&&el.name==='aiGradeEnabled'){
+      c.draft.aiGradeEnabled=el.checked;
+      const state=layer.el.querySelector('[data-ai-grade-state]');if(state)state.textContent=el.checked?'已开启':'已关闭';
+      const table=layer.el.querySelector('[data-level-definitions]');if(table)table.hidden=!el.checked;
+      return true;
+    }
+    if(c.level&&el.name?.startsWith('level-')){
+      const key=el.name.slice(6);if(!Object.hasOwn(dictionary.LEVEL_FIELDS,key))return false;
+      c.draft[key]=el.value;el.removeAttribute('aria-invalid');
+      const message=layer.el.querySelector('#uc-error-'+el.name);if(message)message.textContent='';
+      return true;
+    }
     const match=/^timing-(default|\d+)-(\d+)$/.exec(el.closest?.('[data-timing-field]')?.dataset.timingField||el.name);
     if(match&&c.tab==='timings'){
       const row=match[1]==='default'?null:Number(match[1]),name=row===null?null:c.draft.demands[row],level=dictionary.LEVELS[Number(match[2])];
