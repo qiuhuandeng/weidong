@@ -43,7 +43,7 @@ window.PCApp = (() => {
       node.onload = () => finish();
       node.onerror = () => finish(new Error('资源加载失败：' + url), true);
       if (type === 'style') {
-        // A shell-only route may load the theme before vendor styles are needed.
+        // A shell-only route may load the theme before business styles are needed.
         // Preserve the same cascade order on every navigation and failed-load retry.
         const next = [...document.head.querySelectorAll('link[data-pc-asset="style"]')]
           .find(link => styleOrder.indexOf(link.getAttribute('href')) > styleOrder.indexOf(url));

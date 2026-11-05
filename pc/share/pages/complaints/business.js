@@ -97,7 +97,7 @@
   }
   const channelTag = channel => tag(CHANNELS[channel],{mini:'blue',staff:'purple',wechat:'green'}[channel]);
   const field = (name,label,control,required=false,help='',full=false) => `<div class="field uc-field${full?' ub-span uc-full':''}" data-field="${name}"><label for="uc-${name}" class="${required?'required':''}">${label}</label>${control}${help?`<div class="uc-help">${help}</div>`:''}<div class="uc-error" id="uc-error-${name}"></div></div>`;
-  const input = (name,value='',placeholder='',type='text',extra='') => `<input id="uc-${name}" name="${name}" class="uc-input" type="${type}" value="${esc(value)}" placeholder="${esc(placeholder)}" ${extra}>`;
+  const input = (name,value='',placeholder='',type='text',extra='',fieldName=name) => `<input id="uc-${name}" name="${esc(fieldName)}" class="uc-input" type="${type}" value="${esc(value)}" placeholder="${esc(placeholder)}" ${extra}>`;
   const select = (name,items,value='',placeholder='全部',extra='') => `<select id="uc-${name}" name="${name}" class="uc-input" ${extra}>${opt(items,value,placeholder)}</select>`;
   const detail = (label,value,full=false,raw=false) => `<div class="uc-detail-field${full?' uc-full':''}"><span class="uc-detail-label">${label}</span><div class="uc-detail-value">${raw?value:esc(value||'未记录')}</div></div>`;
   const section = (title,content,actions='') => `<section class="uc-section"><div class="uc-section-head"><h4>${title}</h4>${actions}</div><div class="uc-section-content">${content}</div></section>`;
@@ -203,7 +203,7 @@
   let root,portal,filters={},filterDraft={},page=1,pageSize=10,more=false,layers=[],main=null,listClock;
   let storageVersion;try{storageVersion=localStorage.getItem(KEY)}catch(e){readFailure=true}
   function persist(next){try{if(localStorage.getItem(KEY)!==storageVersion)throw Error('工单已在其他页面更新，请刷新后重试');const data=JSON.stringify(next);localStorage.setItem(KEY,data);storageVersion=data;records=next;return true}catch(e){toast('保存失败：'+e.message+'；已保留当前输入。');return false}}
-  function toast(message){ElementPlus.ElMessage({message,type:'info',duration:4000,showClose:true});}
+  function toast(message){PCUI.message(message,{type:'info',duration:4000});}
   function interval(record){if(!record.contactTime)return '待补充客户陈述';const delta=new Date(record.created.replace(' ','T')+':00+08:00')-new Date(record.contactTime+':00+08:00');if(!Number.isFinite(delta))return '—';const minutes=Math.round(Math.abs(delta)/60000),duration=minutes<60?minutes+'分钟':minutes<1440?Math.floor(minutes/60)+'小时'+(minutes%60?minutes%60+'分':''):Math.floor(minutes/1440)+'天'+(Math.floor(minutes%1440/60)?Math.floor(minutes%1440/60)+'小时':'');return delta>=0?'联系至上报 '+duration:'提交后联系 '+duration}
   function complaintKeywordMatch(r,criteria){
     const query=(criteria.keyword||'').trim().toLowerCase();if(!query)return true;
@@ -367,8 +367,8 @@
   function createTicketForm(){
     return `<div id="uc-create-ticket" class="ub-form" data-ticket-form>
       ${field('createChannel','来源渠道',`<select id="uc-createChannel" name="channel" class="uc-input" aria-label="来源渠道">${Object.entries(CHANNELS).map(([value,label])=>`<option value="${esc(value)}"${value==='hotline'?' selected':''}>${esc(label)}</option>`).join('')}</select>`,false,'',true)}
-      ${field('createName','客户姓名',input('createName','','请输入客户姓名','text','name="name" autocomplete="name"'),true)}
-      ${field('createPhone','手机号',input('createPhone','','请输入手机号','tel','name="phone" inputmode="tel" autocomplete="tel"'),true)}
+      ${field('createName','客户姓名',input('createName','','请输入客户姓名','text','autocomplete="name"','name'),true)}
+      ${field('createPhone','手机号',input('createPhone','','请输入手机号','tel','inputmode="tel" autocomplete="tel"','phone'),true)}
       ${dictionary.requestEntryEnabled?field('createRequestType','客户诉求类型',`<select id="uc-createRequestType" name="requestType" class="uc-input" aria-label="客户诉求类型" aria-required="true">${opt(dictionary.requestTypes(),'','请选择客户诉求类型')}</select>`,true)+field('createRequestReason','具体原因',`<select id="uc-createRequestReason" name="requestReason" class="uc-input" aria-label="具体原因" aria-required="true" disabled>${opt([],'','请先选择客户诉求类型')}</select>`,true):''}
       ${field('createContent','补充说明',`<textarea id="uc-createContent" name="content" class="uc-input" rows="6" maxlength="2000" placeholder="请描述您的情况，以及希望我们如何帮助您"></textarea>`,false,'',true)}
     </div>`;

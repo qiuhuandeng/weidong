@@ -93,7 +93,7 @@
       S.salesWideField('可选项目数',integer('可选项目数',v.count,'count'),true),
       S.salesWideField('耗时（分钟）',I('耗时（分钟）',v.duration,'duration','number'),true)
     ]))+'<p class="stock-error" data-sales-multiple-error role="alert" hidden></p></div>',buttons:[{text:'取消',action:()=>{if(!saving)PCUI.closeDialog();}},{text:'确定',primary:true,action:save}]});
-    await Vue.nextTick();
+    await PCUI.whenReady();
     root=document.querySelector('[data-sales-multiple-editor]');
     const bind=event=>{
       const el=event.target;if(!el.matches('input,select,textarea')||!el.dataset.salesMultipleBind)return;

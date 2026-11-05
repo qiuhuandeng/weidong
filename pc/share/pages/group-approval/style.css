@@ -14,8 +14,8 @@
 :where(.pc-ga) :is(.ga-helper,.ga-sub,.oa-config-hint,.oa-summary,.oa-id,.ac-muted){color:var(--pc-muted);font-size:12px;line-height:1.7}
 :where(.pc-ga) .ga-sub{display:block}
 :where(.pc-ga) :is(.ga-helper,.oa-config-hint){margin-top:6px}
-:where(.pc-ga) .ga-required{color:var(--el-color-danger)}
-:where(.pc-ga) .form-error{color:var(--el-color-danger);line-height:1.7;white-space:pre-wrap;margin-bottom:var(--pc-gap)}
+:where(.pc-ga) .ga-required{color:var(--pc-danger)}
+:where(.pc-ga) .form-error{color:var(--pc-danger);line-height:1.7;white-space:pre-wrap;margin-bottom:var(--pc-gap)}
 :where(.pc-ga) .form-error:empty{display:none}
 :where(.pc-ga) .ga-empty{padding:32px 16px;text-align:center;color:var(--pc-muted)}
 :where(.pc-ga) .ga-empty .ico{margin-bottom:var(--pc-gap);width:32px;height:32px}
@@ -31,7 +31,7 @@
 :where(.pc-ga) .ga-type:hover{border-color:var(--pc-primary)}
 :where(.pc-ga) .ga-type strong{display:block;font-weight:500}
 :where(.pc-ga) .ga-type small{display:block;color:var(--pc-muted);margin-top:4px}
-:where(.pc-ga) :is(.ga-type-icon,.oa-form-icon,.oa-preview-icon){display:grid;place-items:center;flex:none;width:32px;height:32px;color:var(--pc-primary);background:var(--el-color-primary-light-9);border-radius:4px}
+:where(.pc-ga) :is(.ga-type-icon,.oa-form-icon,.oa-preview-icon){display:grid;place-items:center;flex:none;width:32px;height:32px;color:var(--pc-primary);background:var(--pc-primary-light);border-radius:4px}
 :where(.pc-ga) :is(.ga-work-todo,.ga-notice){display:flex;align-items:center;gap:var(--pc-gap);padding:var(--pc-gap) 16px;border-bottom:1px solid var(--pc-line)}
 :where(.pc-ga) :is(.ga-work-todo,.ga-notice):last-child{border-bottom:0}
 :where(.pc-ga) :is(.ga-work-todo p,.ga-detail-meta){font-size:12px;color:var(--pc-muted)}
@@ -51,7 +51,7 @@
 :where(.pc-ga) .ga-step:not(:last-child):before{content:'';position:absolute;left:11px;top:25px;bottom:0;border-left:1px solid var(--pc-border)}
 :where(.pc-ga) .ga-step-dot{position:absolute;left:0;top:0;display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--pc-page);color:var(--pc-muted);font-size:12px}
 :where(.pc-ga) .ga-step.active .ga-step-dot{background:var(--pc-primary);color:white}
-:where(.pc-ga) .ga-step.done .ga-step-dot{background:var(--el-color-success-light-9);color:var(--el-color-success)}
+:where(.pc-ga) .ga-step.done .ga-step-dot{background:var(--pc-success-light);color:var(--pc-success)}
 :where(.pc-ga) .ga-step p{font-size:12px;color:var(--pc-muted);margin-top:4px}
 :where(.pc-ga) :is(.ga-people,.oa-member-chips){display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
 :where(.pc-ga) .ga-person-chip{font-size:12px;color:var(--pc-text)}
@@ -122,7 +122,7 @@
 :where(.pc-ga) .oa-form-caption strong{color:var(--pc-title)}
 :where(.pc-ga) .oa-form-caption small{display:block;color:var(--pc-muted);line-height:1.6;margin-top:6px}
 :where(.pc-ga) .oa-field{position:relative;padding:var(--pc-gap) 16px;border:1px solid transparent;border-bottom-color:var(--pc-line);background:white;cursor:pointer}
-:where(.pc-ga) .oa-field:hover{background:var(--el-color-primary-light-9)}
+:where(.pc-ga) .oa-field:hover{background:var(--pc-primary-light)}
 :where(.pc-ga) .oa-field.selected{border-color:var(--pc-primary);box-shadow:inset 2px 0 var(--pc-primary)}
 :where(.pc-ga) .oa-field:focus-visible{outline:2px solid var(--pc-primary);outline-offset:-2px}
 :where(.pc-ga) .oa-field-label{display:flex;gap:8px;align-items:center;min-height:24px;margin-bottom:8px}
@@ -178,9 +178,9 @@
 :where(.pc-ga) .ga-canvas{flex:1;min-height:0;overflow:auto;background-color:var(--pc-page);background-image:radial-gradient(var(--pc-border) .65px,transparent .65px);background-size:16px 16px;scrollbar-width:thin}
 :where(.pc-ga) .ga-flow-tree{display:flex;align-items:center;flex-direction:column;min-width:max-content;zoom:var(--zoom,1);padding:32px}
 :where(.pc-ga) :is(.ac-node,.ac-condition-card){width:260px;flex:none;background:white;border:1px solid var(--pc-border);border-radius:var(--pc-radius);overflow:hidden}
-:where(.pc-ga) .ac-node{--ga-node-accent:var(--pc-primary);--ga-node-tint:var(--el-color-primary-light-9)}
-:where(.pc-ga) .ac-node-handling{--ga-node-accent:var(--el-color-warning);--ga-node-tint:var(--el-color-warning-light-9)}
-:where(.pc-ga) .ac-node-cc{--ga-node-accent:var(--el-color-success);--ga-node-tint:var(--el-color-success-light-9)}
+:where(.pc-ga) .ac-node{--ga-node-accent:var(--pc-primary);--ga-node-tint:var(--pc-primary-light)}
+:where(.pc-ga) .ac-node-handling{--ga-node-accent:var(--pc-warning);--ga-node-tint:var(--pc-warning-light)}
+:where(.pc-ga) .ac-node-cc{--ga-node-accent:var(--pc-success);--ga-node-tint:var(--pc-success-light)}
 :where(.pc-ga) .ac-node-start{--ga-node-accent:var(--pc-text);--ga-node-tint:var(--pc-page)}
 :where(.pc-ga) .ac-node:hover{border-color:var(--ga-node-accent)}
 :where(.pc-ga) :is(.ac-node-head,.ac-condition-card-head){display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:36px;padding:6px var(--pc-gap);border-bottom:1px solid var(--pc-line)}
@@ -209,8 +209,8 @@
 :where(.pc-ga) .ga-branch-end{flex:1;min-height:20px}
 :where(.pc-ga) .ga-branch-button{display:flex;align-items:center;gap:var(--pc-gap);padding:0 var(--pc-gap) 24px;position:relative}
 :where(.pc-ga) .ga-branch-button:after{content:'';position:absolute;bottom:0;left:50%;height:24px;border-left:1px solid var(--pc-border)}
-:where(.pc-ga) .ga-branch-label{color:var(--el-color-warning)}
-:where(.pc-ga) .ac-condition-card-head{background:var(--el-color-warning-light-9);color:var(--pc-text)}
+:where(.pc-ga) .ga-branch-label{color:var(--pc-warning)}
+:where(.pc-ga) .ac-condition-card-head{background:var(--pc-warning-light);color:var(--pc-text)}
 :where(.pc-ga) .ac-condition-card-head .small{color:var(--pc-muted);font-size:12px;white-space:nowrap}
 :where(.pc-ga) .ga-end{display:flex;align-items:center;gap:8px;padding:8px var(--pc-gap);color:var(--pc-muted);background:white;border:1px solid var(--pc-line);border-radius:var(--pc-radius)}
 :where(.pc-ga) .ga-end-dot{width:6px;height:6px;border-radius:50%;background:var(--pc-muted)}

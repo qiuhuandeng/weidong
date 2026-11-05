@@ -3,7 +3,6 @@ Sources live in share/. Deploy PC entries AND share/dist/ together. No CDN, npm 
 build service is needed. Older assets are deliberately retained for open tabs.
 """
 from pathlib import Path
-import base64
 import gzip
 import hashlib
 import json
@@ -13,8 +12,8 @@ ROOT = Path(__file__).resolve().parent.parent
 PROJECT = ROOT.parent
 OUT = ROOT / 'dist'
 ENTRY_BUDGET = 16000
-SHARED_GZIP_BUDGET = 1500000
-FIRST_ROUTE_GZIP_BUDGET = 1700000
+SHARED_GZIP_BUDGET = 100000
+FIRST_ROUTE_GZIP_BUDGET = 300000
 NEW_MODULE_GZIP_BUDGET = 60000
 LEGACY_MODULE_BUDGETS = {'customer': 180000, 'complaints': 40000}
 
@@ -80,10 +79,6 @@ def entry_redirects(entries, modules, scopes):
 
 
 def build():
-    manifest = json.loads(read('vendor/manifest.json'))
-    for filename, expected in manifest['files'].items():
-        if hashlib.sha256((ROOT / 'vendor' / filename).read_bytes()).hexdigest() != expected:
-            raise SystemExit(f'Vendor checksum mismatch: {filename}')
     routes = json.loads(read('routes.json'))
     entries = json.loads(read('entries.json'))
     def check_dependencies(name, chain=()):
@@ -120,7 +115,6 @@ def build():
     OUT.mkdir(parents=True, exist_ok=True)
     report = {}
     pending = {}
-    preferred_fonts = set()
 
     def asset(name, content, extension):
         data = content if isinstance(content, bytes) else content.encode()
@@ -134,45 +128,18 @@ def build():
     def compressed(urls):
         return sum(report[url.removeprefix('share/dist/')]['gzipBytes'] for url in urls)
 
-    def js(name, files, vendor=False):
-        content = '\n;\n'.join(read(file) for file in files)
-        if vendor:
-            content = content.replace('process.env.NODE_ENV', '"production"')
-            notices = '\n'.join(read('vendor/' + file) for file in ['NOTICE.txt', 'Vue-LICENSE', 'ElementPlus-LICENSE'])
-            content = '/*!\n' + notices.replace('*/', '* /') + '\n*/\n' + content
-        return asset(name, content, 'js')
+    def js(name, files):
+        return asset(name, '\n;\n'.join(read(file) for file in files), 'js')
 
     def css(name, files, layer=False):
         content = '\n'.join(read(file) for file in files)
-        # Keep the vendor CSS and all fallback formats intact, but let browsers
-        # download only the font format actually needed instead of all base64 copies.
-        def font_face(match):
-            block = match.group(0)
-            family = re.search(r'font-family:\s*([\w-]+)', block)
-            def font_url(source):
-                data = base64.b64decode(source.group(1), validate=True)
-                extension = {b'wOF2': 'woff2', b'wOFF': 'woff', b'\x00\x01\x00\x00': 'ttf'}.get(data[:4])
-                if not extension or not family:
-                    raise SystemExit('Unrecognized embedded vendor font')
-                url = asset(family.group(1), data, extension)
-                if extension == 'woff2':
-                    preferred_fonts.add(url)
-                return 'url(../' + url.removeprefix('share/dist/') + ')'
-            return re.sub(r'url\(data:[^,)]*;base64,([A-Za-z0-9+/=]+)\)', font_url, block)
-        content = re.sub(r'@font-face\s*\{[^}]+\}', font_face, content)
         if layer:
             content = '@layer pc-business {\n' + content + '\n}'
         return asset(name, content, 'css')
 
-    # Independent immutable downloads; the loader gates execution on successful
-    # initialization, not merely the insertion order of classic script tags.
-    scripts = [
-        {'src': js('vue', ['vendor/vue-3.5.13.js'], True), 'global': 'Vue'},
-        {'src': js('element-plus', ['vendor/element-plus-2.9.3.js', 'vendor/element-plus-zh-cn.js'], True), 'global': 'ElementPlus'},
-        {'src': js('by-components', ['vendor/by-components-v3-1.1.26.js'], True), 'global': 'ByComponentsV3'},
-        {'src': js('components', ['js/components.js']), 'global': 'PCUI'}
-    ]
-    styles = [css('business', ['css/legacy-business.css'], True), css('vendor', ['vendor/element-plus-2.9.3.css', 'vendor/by-components-v3-1.1.26.css']), css('theme', ['css/tokens.css', 'css/theme.css'])]
+    # Native UI and system fonts: no framework, component vendor or font downloads.
+    scripts = [{'src': js('components', ['js/components.js', 'js/ui-collections.js', 'js/ui-richtext.js']), 'global': 'PCUI'}]
+    styles = [css('business', ['css/legacy-business.css'], True), css('theme', ['css/tokens.css', 'css/theme.css'])]
     app = js('app', ['js/core.js', 'js/loader.js'])
     modules = {}
     for name, module in routes['modules'].items():
@@ -180,7 +147,7 @@ def build():
             raise SystemExit(f'Invalid module name: {name}')
         for file in [*module['scripts'], *module['styles']]:
             if not (ROOT / file).resolve().is_relative_to((ROOT / 'pages' / name).resolve()):
-                raise SystemExit(f'{name} sources must stay in pages/{name}/; reuse shared UI and vendor assets.')
+                raise SystemExit(f'{name} sources must stay in pages/{name}/; reuse the shared native UI.')
         module_js = js(name, module['scripts'])
         module_css = [css(name, module['styles'], True)] if module['styles'] else []
         size = compressed([module_js, *module_css])
@@ -195,7 +162,7 @@ def build():
             modules[name]['requiresUI'] = False
         if module.get('dependencies'):
             modules[name]['dependencies'] = module['dependencies']
-    shell_styles = [styles[0], styles[2]]
+    shell_styles = styles.copy()
     config = {'scripts': scripts, 'styles': styles, 'shellStyles': shell_styles}
     template = read('templates/entry.html').replace('<!-- pc-critical -->', '<style>\n' + critical_styles() + '\n</style>')
     bootstrap = read('js/bootstrap.js')
@@ -215,10 +182,7 @@ def build():
         if len(html.encode()) > ENTRY_BUDGET:
             raise SystemExit(f'{filename} exceeds {ENTRY_BUDGET:,} bytes; move business code to its module.')
         pages[filename] = html
-    # WOFF2 is already compressed; conservatively count both preferred fonts even
-    # on pages that do not use their glyphs. Fallback formats are not double-counted.
-    font_size = sum(report[url.removeprefix('share/dist/')]['bytes'] for url in preferred_fonts)
-    shared_size = compressed([app, *(script['src'] for script in scripts), *styles]) + font_size
+    shared_size = compressed([app, *(script['src'] for script in scripts), *styles])
     if shared_size > SHARED_GZIP_BUDGET:
         raise SystemExit(f'Shared assets exceed budget: {shared_size:,} > {SHARED_GZIP_BUDGET:,}')
     def dependency_assets(name, seen=None):
@@ -242,7 +206,7 @@ def build():
             path.write_bytes(data)
         elif path.read_bytes() != data:
             raise SystemExit(f'Asset hash collision: {filename}')
-    (ROOT / 'asset-manifest.json').write_text(json.dumps({'entryBytes': len(pages['pc.html'].encode()), 'entries': {name:len(html.encode()) for name,html in pages.items()}, 'sharedGzipBytes': shared_size, 'preferredFontBytes': font_size, 'firstRouteGzipBytes': first_sizes, 'files': report}, ensure_ascii=False, indent=2) + '\n')
+    (ROOT / 'asset-manifest.json').write_text(json.dumps({'entryBytes': len(pages['pc.html'].encode()), 'entries': {name:len(html.encode()) for name,html in pages.items()}, 'sharedGzipBytes': shared_size, 'firstRouteGzipBytes': first_sizes, 'files': report}, ensure_ascii=False, indent=2) + '\n')
     for filename, html in pages.items():
         (PROJECT / filename).write_text(html)
     print(f'Built {len(pages)} PC entries; pc.html: {len(pages["pc.html"].encode()):,} bytes; {len(report)} versioned assets. Shared gzip: {shared_size:,} bytes.')

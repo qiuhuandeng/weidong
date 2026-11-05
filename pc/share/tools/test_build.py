@@ -12,8 +12,6 @@ import sys
 import tempfile
 import unittest
 import re
-import base64
-import hashlib
 
 sys.dont_write_bytecode = True
 SOURCE = Path(__file__).resolve().parent.parent
@@ -63,18 +61,18 @@ class BuildChecks(unittest.TestCase):
         self.assertNotEqual(old_html, (self.root / 'pc.html').read_bytes())
         self.assertTrue(all((self.root / 'share/dist' / name).exists() for name in before['files']))
 
-    def test_fonts_preserve_vendor_bytes_and_relative_urls(self):
+    def test_native_runtime_has_no_vendor_or_font_dependency(self):
+        shutil.rmtree(self.root / 'share/vendor', ignore_errors=True)
         manifest = self.build()
-        css = (self.root / 'share/vendor/by-components-v3-1.1.26.css').read_text()
-        embedded = re.findall(r'url\(data:[^,)]*;base64,([A-Za-z0-9+/=]+)\)', ''.join(re.findall(r'@font-face\s*\{[^}]+\}', css)))
-        fonts = {name: info for name, info in manifest['files'].items() if name.startswith('fonts/')}
-        self.assertEqual(len(fonts), 6)
-        self.assertEqual({hashlib.sha256(base64.b64decode(data)).hexdigest() for data in embedded}, {info['sha256'] for info in fonts.values()})
-        published = next(self.root / 'share/dist' / name for name in manifest['files'] if name.startswith('css/vendor.'))
-        urls = re.findall(r'url\((\.\./fonts/[^)]+)\)', published.read_text())
-        self.assertEqual(len(urls), 6)
-        self.assertTrue(all((published.parent / url).is_file() for url in urls))
-        self.assertEqual(manifest['preferredFontBytes'], sum(info['bytes'] for name, info in fonts.items() if name.endswith('.woff2')))
+        self.assertFalse(any(name.startswith(('fonts/', 'css/vendor.', 'js/vue.', 'js/element-plus.', 'js/by-components.')) for name in manifest['files']))
+        for filename in ('pc.html', 'inventory.html'):
+            html = (self.root / filename).read_text()
+            config = json.loads(re.search(r'window.PC_ASSETS=(.*?);\n', html).group(1))
+            self.assertEqual([script['global'] for script in config['scripts']], ['PCUI'])
+            runtime = (self.root / config['scripts'][0]['src']).read_text()
+            self.assertIn("runtime:'native'", runtime)
+            self.assertNotRegex(runtime, r'Vue\.|ElementPlus\.|ByComponentsV3')
+        self.assertLess(manifest['sharedGzipBytes'], 100000)
 
     def test_shell_only_module_has_no_ui_preload(self):
         manifest = self.build()
@@ -84,7 +82,7 @@ class BuildChecks(unittest.TestCase):
         self.assertTrue(config['modules']['customer'].get('requiresUI', True))
         self.assertLess(manifest['firstRouteGzipBytes']['home'], 60000)
         self.assertEqual([script['global'] for script in config['scripts']],
-                         ['Vue', 'ElementPlus', 'ByComponentsV3', 'PCUI'])
+                         ['PCUI'])
         self.assertTrue(all((self.root / script['src']).is_file() for script in config['scripts']))
         self.assertNotIn('PC_BOOT_TIMER', html)
         self.assertNotIn('30000', html)
@@ -117,16 +115,12 @@ class BuildChecks(unittest.TestCase):
             self.build()
         self.assertEqual(previous_html, (self.root / 'pc.html').read_bytes())
 
-    def test_duplicate_routes_and_vendor_mutations_fail(self):
+    def test_duplicate_routes_fail(self):
         config_file = self.root / 'share/routes.json'
         config = json.loads(config_file.read_text())
         config['modules']['complaints']['routes'].append('rules')
         config_file.write_text(json.dumps(config))
         with self.assertRaisesRegex(SystemExit, 'Duplicate route'):
-            self.build()
-        vendor = self.root / 'share/vendor/vue-3.5.13.js'
-        vendor.write_text(vendor.read_text() + '\n// changed')
-        with self.assertRaisesRegex(SystemExit, 'Vendor checksum mismatch'):
             self.build()
 
     def test_multiple_entries_share_the_exact_same_assets(self):

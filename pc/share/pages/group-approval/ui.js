@@ -1,5 +1,5 @@
 /* PC presentation for the migrated approval workflows. All controls are mounted
- * through the existing PCUI adapter and the pinned company/Element Plus package. */
+ * through shared native PCUI controls, preserving business form elements. */
 window.PCGroupUI = (() => {
   const $ = selector => document.querySelector(selector);
   const routeMap = {'group-approval':'workbench','group-workbench':'workbench','group-list':'list/all','group-rules':'rules','group-organization':'organization','group-statistics':'statistics','group-mobile':'demo'};
@@ -67,31 +67,16 @@ window.PCGroupUI = (() => {
     confirming=true;dialogCancel=cancel;
     PCUI.dialog({title,content:`<div class="pc-ga"><p>${body}</p><div id="ga-confirm-error" class="form-error" role="alert"></div></div>`,buttons:[{text:'取消',action:()=>{confirming=false;cancel();PCUI.closeDialog();sync();}},{text:saveText,primary:true,action:async()=>{if($('#ga-confirm-error')?.dataset.busy)return;const el=$('#ga-confirm-error');if(el)el.dataset.busy='true';try{await fn();confirming=false;PCUI.closeDialog();sync();}catch(error){if(el){el.textContent=error.message;delete el.dataset.busy;}}}}]});sync();
   }
-  // ByForm owns the only native form. Business groups and field visibility stay
-  // in their original positions, with Element Plus form items inheriting PC sizes.
+  // Keep the original form, fields, IDs and event handlers in the document.
   function mountForm(source) {
-    const {h}=Vue,attributes=Object.fromEntries([...source.attributes].map(a=>[a.name,a.value]));
     const labels=[...source.querySelectorAll('.field-title,.ga-field-title,.ub-label')];
     const labelWidth=Math.min(160,Math.max(110,...labels.map(el=>Math.ceil((el.textContent.trim().length+1)*13+20))));
-    const nodes=[...source.childNodes],host=document.createElement('div');host.className='pc-form ga-form-host';host.dataset.pcIsland='form';source.replaceWith(host);
-    function node(v){
-      if(v.nodeType===3)return v.textContent;if(v.nodeType!==1)return null;
-      const props=Object.fromEntries([...v.attributes].map(a=>[a.name,a.value]));
-      if(v.hasAttribute('hidden'))props.hidden=true;
-      if(v.classList.contains('field')){
-        const label=v.querySelector(':scope > .field-title,:scope > .ga-field-title,:scope > label,:scope > .ub-label');
-        const control=v.cloneNode(true);control.querySelector(':scope > .field-title,:scope > .ga-field-title,:scope > label,:scope > .ub-label')?.remove();
-        const required=!!label?.querySelector('.ga-required')||!!label?.classList.contains('required');
-        props.class=v.className.replace(/\bfield\b/g,'ga-form-item');
-        return h('div',props,[h(ElementPlus.ElFormItem,{label:(label?.textContent||'').replace(/^\s*\*/,'').trim(),labelWidth:labelWidth+'px',required,style:{minHeight:Math.ceil(((label?.textContent.trim().length||0)+1)*13/(labelWidth-20))*32+'px'}},()=>h('div',{class:'pc-field-content',innerHTML:control.innerHTML}))]);
-      }
-      return v.querySelector('.field')?h(v.tagName.toLowerCase(),props,[...v.childNodes].map(node)):h(v.tagName.toLowerCase(),{...props,innerHTML:v.innerHTML});
-    }
-    PCUI.mount(host,{render:()=>h(ByComponentsV3.components.ByForm,{formItems:[{type:'custom',field:'body',labelWidth:'0',colLayout:{span:24},itemStyle:{marginBottom:0}}],modelValue:{},labelWidth:'110px',labelSuffix:'：',elSize:'default',rowAttrs:{gutter:0},otherOptions:{submit:false,reset:false}},{body:()=>h('div',{class:'pc-field-content ga-form-content'},nodes.map(node))})});
-    const actual=host.querySelector('form');for(const [name,value] of Object.entries(attributes))actual.setAttribute(name,value);
-    actual.dataset.gaMounted='true';actual.noValidate=true;
-    // Prevent native Enter in configuration panes from submitting the page.
-    actual.addEventListener('submit',event=>{if(!GA.forms[actual.id]&&actual.id!=='modal-form')event.preventDefault();});
+    source.classList.add('ga-form-host');source.style.setProperty('--pc-form-label-width',labelWidth+'px');
+    source.dataset.gaMounted='true';source.noValidate=true;
+    source.querySelectorAll('.field').forEach(field=>field.classList.add('ga-form-item'));
+    const groups=new Set([...source.querySelectorAll('.field')].map(field=>field.parentElement));
+    groups.forEach(group=>PCUI.form(group));
+    source.addEventListener('submit',event=>{if(!GA.forms[source.id]&&source.id!=='modal-form')event.preventDefault();});
   }
   function searchForm(form) {
     form.classList.add('filterbar');form.closest('.panel')?.classList.add('query-module');
@@ -108,8 +93,8 @@ window.PCGroupUI = (() => {
     root.querySelectorAll('.tabs,.oa-node-tabs,.oa-advanced > nav').forEach(el=>{if(!el.classList.contains('pc-tabs')){el.classList.add('tabs');el.querySelectorAll(':scope > button').forEach(b=>b.classList.remove('btn'));}});
     root.querySelectorAll('label.upload-label').forEach(label=>{const input=label.querySelector('input[type=file]');if(!input)return;const wrap=document.createElement('div');wrap.className='ga-upload-control';wrap.innerHTML=`<button type="button" class="btn" data-action="pc-upload" ${input.disabled?'disabled':''}>${escape(label.textContent.replace(/[＋+]/g,'').trim())}</button>`;input.hidden=true;input.tabIndex=-1;wrap.append(input);label.replaceWith(wrap);});
     root.querySelectorAll('.oa-device.phone').forEach(el=>{el.classList.remove('phone');el.classList.add('ga-device-phone');});
-    root.querySelectorAll('button:not(.el-button):not([role=tab])').forEach(b=>{
-      if(b.closest('.pc-tabs,.tabs'))return;
+    root.querySelectorAll('button:not([role=tab])').forEach(b=>{
+      if(b.closest('.pc-tabs,.tabs,[data-pc-ready],.pc-popover'))return;
       if(b.matches('.ga-type,.stat,.ac-node-body,.ac-branch-title,.oa-field'))return;
       b.classList.add('btn');if(b.classList.contains('quiet'))b.classList.add('text');
     });
@@ -120,7 +105,7 @@ window.PCGroupUI = (() => {
       table.querySelectorAll('th').forEach(th=>{if(/审批单|表单|项目|名称|任职|负责人|处理人|说明/.test(th.textContent))th.dataset.pcMinWidth='180';});
     });
     root.querySelectorAll('.ga-sub').forEach(el=>el.classList.add('pc-block'));
-    root.querySelectorAll('form:not([data-ga-mounted]):not(.el-form)').forEach(form=>{
+    root.querySelectorAll('form:not([data-ga-mounted]):not([data-pc-query])').forEach(form=>{
       if(form.closest('.pc-form,.pc-search-form'))return;
       if(form.matches('.ga-filters,#oa-form-search,#mobile-list-search'))searchForm(form);else mountForm(form);
     });

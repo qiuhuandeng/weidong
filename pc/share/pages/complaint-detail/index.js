@@ -23,7 +23,7 @@ window.PCModules['complaint-detail']={render(){},create({btn,replyAction,canFoll
   }
   function gradeBadge(r){
     const editable=canGrade(r),color={'1级':'success','2级':'primary','3级':'warning','4级':'danger','5级':'danger'}[r.level]||'info';
-    const badge=`<span class="uc-grade-badge" style="--uc-grade:var(--el-color-${color});--uc-grade-bg:var(--el-color-${color}-light-9);--uc-grade-line:var(--el-color-${color}-light-7)"><span class="uc-grade-caption">客诉等级</span><span class="uc-grade-value"><strong>${esc(r.level?.replace('级','')||'—')}</strong><span>级</span>${editable?icon('edit'):''}</span></span>`;
+    const badge=`<span class="uc-grade-badge" style="--uc-grade:var(--pc-${color});--uc-grade-bg:var(--pc-${color}-light);--uc-grade-line:var(--pc-${color}-line)"><span class="uc-grade-caption">客诉等级</span><span class="uc-grade-value"><strong>${esc(r.level?.replace('级','')||'—')}</strong><span>级</span>${editable?icon('edit'):''}</span></span>`;
     return editable?link(badge,'edit-grade',`aria-label="修改客诉等级，当前${esc(r.level)}" title="点击修改客诉等级"`).replace('btn text uc-link','btn text uc-link uc-grade-trigger'):badge;
   }
   function summary(r,phoneVisible=false,compact=false){

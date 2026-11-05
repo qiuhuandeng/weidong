@@ -8,7 +8,7 @@ const storage = new Map();
 const context = {URL, Date, Intl, console, icon:name=>`<svg aria-hidden="true" data-icon="${name}"></svg>`, btoa:s=>Buffer.from(s,'binary').toString('base64'),
   localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)},
   document:{addEventListener(){},getElementById(){return null}},
-  PCUI:{registerPager(){}},ElementPlus:{ElMessage(){}},window:{PCModules:{},addEventListener(){}}};
+  PCUI:{registerPager(){},message(){}},window:{PCModules:{},addEventListener(){}}};
 vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../pages/complaint-solutions/index.js'),'utf8'),context);
 const workflowCode=fs.readFileSync(path.join(__dirname,'../pages/complaint-workflow/index.js'),'utf8');
 vm.runInNewContext(workflowCode,context);
@@ -18,13 +18,21 @@ const followCode=fs.readFileSync(path.join(__dirname,'../pages/complaint-follow/
 vm.runInNewContext(followCode,context);
 const processCode=fs.readFileSync(path.join(__dirname,'../pages/complaint-detail/index.js'),'utf8');
 vm.runInNewContext(processCode,context);
-const hook = `window.testAPI={executionResultRecords,planPanel,workflow,toCents,orderDateRange,filtered,matchingOrders,customerIdOf,customerDirectory,matchingCustomers,orderPickerState,orderPickerTitle,orderPickerDirty,orderPickerCustomers,orderPickerOrders,orderPickerView,selectPickerCustomer,changePickerCustomer,selectPickerOrder,recordOrderAssociation,informationView,handlingMissing,validateCustomerSolution,solutionDraft,solutionTotals,solutionOrders,refundEntries,refundAvailable,solutionTools,solutionRead,recordAccept,recordRecognition,recordCompensation,recordFollow,followTools,recordClosure,hasHandlingScheme,canClose,responsibleOptions,complaintCSV,validHandlingFile,records,orders,persist,canAssess,STATUS_TABS,WORK_ORDER_STATUSES,CHANNELS,workOrderStatus,normalizeRecordStatus,statusScope,currentHandler,currentTask,detailActions,complaintRow,complaintTiming,complaintTimingHTML,listProgressText,summary,phoneView,processingDepartment,processRecords,processView,select(id){main={record:records.find(r=>r.id===id)};return main.record;}};`;
+const hook = `window.testAPI={createTicketForm,newTicketErrors,executionResultRecords,planPanel,workflow,toCents,orderDateRange,filtered,matchingOrders,customerIdOf,customerDirectory,matchingCustomers,orderPickerState,orderPickerTitle,orderPickerDirty,orderPickerCustomers,orderPickerOrders,orderPickerView,selectPickerCustomer,changePickerCustomer,selectPickerOrder,recordOrderAssociation,informationView,handlingMissing,validateCustomerSolution,solutionDraft,solutionTotals,solutionOrders,refundEntries,refundAvailable,solutionTools,solutionRead,recordAccept,recordRecognition,recordCompensation,recordFollow,followTools,recordClosure,hasHandlingScheme,canClose,responsibleOptions,complaintCSV,validHandlingFile,records,orders,persist,canAssess,STATUS_TABS,WORK_ORDER_STATUSES,CHANNELS,workOrderStatus,normalizeRecordStatus,statusScope,currentHandler,currentTask,detailActions,complaintRow,complaintTiming,complaintTimingHTML,listProgressText,summary,phoneView,processingDepartment,processRecords,processView,select(id){main={record:records.find(r=>r.id===id)};return main.record;}};`;
 vm.runInNewContext(code.replace('  window.PCComplaints={mount,leave};',hook+'\n  window.PCComplaints={mount,leave};'),context);
 const a=context.window.testAPI;
 let count=0;
 const test=(name,run)=>{run();count++;console.log('PASS '+name)};
 const copy=o=>JSON.parse(JSON.stringify(o));
 test('seed contains all three channels and 37 complaints / 41 orders',()=>{assert.equal(a.records.length,37);assert.equal(a.orders.length,41);assert.deepEqual([...new Set(a.records.map(r=>r.channel))].sort(),['mini','staff','wechat'])});
+test('new ticket inputs expose one business name and validate entered values',()=>{
+ const html=a.createTicketForm();
+ for(const [id,name] of [['createName','name'],['createPhone','phone']]){
+   const input=html.match(new RegExp('<input[^>]*id="uc-'+id+'"[^>]*>'))?.[0];
+   assert.ok(input);assert.equal((input.match(/\bname="/g)||[]).length,1);assert.ok(input.includes('name="'+name+'"'));
+ }
+ assert.deepEqual(JSON.parse(JSON.stringify(a.newTicketErrors({name:'测试客户',phone:'13800000000',content:'测试'}))),[]);
+});
 test('workflow owns status tabs, departments and action eligibility',()=>{
   assert.deepEqual(copy(a.workflow.statuses.map(([status])=>status)),copy(a.WORK_ORDER_STATUSES));
   assert.equal(a.workflow.department({status:'财务审批中'}),'财务');assert.equal(a.workflow.department({status:'待采购发货'}),'采购');
@@ -795,14 +803,14 @@ test('reason choices track customer-demand configuration while saved reasons and
 });
 test('failed storage writes retain records and the real cause; a concurrent update cannot be overwritten',()=>{
   const saved=storage.get('weid.pc.complaints.v1'),original=JSON.stringify(a.records),messages=[];
-  const write=context.localStorage.setItem,notify=context.ElementPlus.ElMessage;
-  context.ElementPlus.ElMessage=message=>messages.push(message.message);
+  const write=context.localStorage.setItem,notify=context.PCUI.message;
+  context.PCUI.message=message=>messages.push(message);
   try{
     context.localStorage.setItem=()=>{throw Error('QuotaExceededError')};assert.equal(a.persist(copy(a.records)),false);
     assert.equal(JSON.stringify(a.records),original);assert.equal(storage.get('weid.pc.complaints.v1'),saved);assert.ok(messages.at(-1).includes('QuotaExceededError'));
     context.localStorage.setItem=write;storage.set('weid.pc.complaints.v1','external-update');
     assert.equal(a.persist(copy(a.records)),false);assert.equal(storage.get('weid.pc.complaints.v1'),'external-update');assert.ok(messages.at(-1).includes('其他页面更新'));
-  }finally{context.localStorage.setItem=write;context.ElementPlus.ElMessage=notify;storage.set('weid.pc.complaints.v1',saved)}
+  }finally{context.localStorage.setItem=write;context.PCUI.message=notify;storage.set('weid.pc.complaints.v1',saved)}
 });
 test('customer binding persists atomically, survives reload and retains the draft on storage failure or conflict',()=>{
   const original={id:'40100',customerId:'manual-40100',name:'来电姓名',phone:'13800002901',member:'',store:'',channel:'legal',status:'客服已接单',created:'2026-11-04 09:00',linked:[],follows:[],logs:[],files:[]};
