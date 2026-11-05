@@ -272,11 +272,11 @@
   }
   function statusCount(status){return records.filter(record=>workOrderStatus(record.status,record)===status).length}
   function renderList(){const rows=filtered(),pages=Math.max(1,Math.ceil(rows.length/pageSize));page=Math.min(page,pages);root.innerHTML=`
-    <section class="uc-search-card"><nav class="uc-list-tabs pc-tabs pc-tabs-with-search" role="tablist" aria-label="工单状态">${STATUS_TABS.map(([value,label],i)=>{const count=value&&value!=='已结案'?` ${statusCount(value)}`:'';return `<button type="button" class="uc-list-tab pc-tab" role="tab" id="uc-status-${i}" aria-controls="uc-list-panel" aria-selected="${(filters.status||'')===value}" tabindex="${(filters.status||'')===value?'0':'-1'}" data-uc="status-tab" data-status="${value}">${label}${count}</button>`}).join('')}</nav><div class="query-module"><form id="uc-search" class="filterbar">
+    <section class="uc-search-card"><div class="query-module"><form id="uc-search" class="filterbar">
       <div class="mr-date" data-pc-label="投诉时间">${input('start',filterDraft.start,'开始日期','date','aria-label="投诉开始日期"')}<span>至</span>${input('end',filterDraft.end,'结束日期','date','aria-label="投诉结束日期"')}</div>
-      ${complaintKeywordControl()}
-      ${select('channel',Object.entries(CHANNELS),filterDraft.channel,'全部来源','aria-label="售后来源"')}
       ${select('level',LEVELS,filterDraft.level,'全部等级','aria-label="客诉等级"')}
+      ${select('channel',Object.entries(CHANNELS),filterDraft.channel,'全部来源','aria-label="售后来源"')}
+      ${complaintKeywordControl()}
       ${select('orderStatus',ORDER_STATUSES,filterDraft.orderStatus,'全部','aria-label="订单状态"')}
       ${more?[
         select('department',['推广','销售','门店'],filterDraft.department,'全部责任部门','aria-label="责任部门"'),
@@ -285,11 +285,12 @@
       ].join(''):''}
       <div class="query-actions"><button class="btn primary" type="submit" form="uc-search">搜索</button>${btn('重置','reset')}${link(more?'收起筛选':'更多筛选','more','aria-expanded="'+more+'"')}</div>
     </form><div id="uc-query-error" class="uc-error" role="alert"></div></div></section>
-    <section class="panel content-module uc-card" role="tabpanel" id="uc-list-panel" aria-labelledby="uc-status-${STATUS_TABS.findIndex(([value])=>value===(filters.status||''))}"><div class="panel-head uc-card-head"><h3>投诉列表</h3><div class="uc-actions">${btn('新增工单','new-ticket','',true)}${btn('配置','options-open')}${btn('导出','export')}</div></div>
-      <div class="table-wrap uc-table-wrap"><table class="uc-table uc-main-table" data-pc-align="left"><colgroup><col><col><col><col><col style="width:180px"><col style="width:190px"><col><col style="width:70px"></colgroup>
+    <section class="panel content-module uc-card"><div class="uc-list-header"><nav class="uc-list-tabs pc-tabs" role="tablist" aria-label="工单状态">${STATUS_TABS.map(([value,label],i)=>{const count=value&&value!=='已结案'?` ${statusCount(value)}`:'';return `<button type="button" class="uc-list-tab pc-tab" role="tab" id="uc-status-${i}" aria-controls="uc-list-panel" aria-selected="${(filters.status||'')===value}" tabindex="${(filters.status||'')===value?'0':'-1'}" data-uc="status-tab" data-status="${value}">${label}${count}</button>`}).join('')}</nav><div class="uc-actions" role="group" aria-label="投诉列表操作">${btn('新增工单','new-ticket','',true)}${btn('配置','options-open')}${btn('导出','export')}</div></div>
+      <div role="tabpanel" id="uc-list-panel" aria-labelledby="uc-status-${STATUS_TABS.findIndex(([value])=>value===(filters.status||''))}"><div class="table-wrap uc-table-wrap"><table class="uc-table uc-main-table" data-pc-align="left"><colgroup><col><col><col><col><col style="width:180px"><col style="width:190px"><col><col style="width:70px"></colgroup>
       <thead><tr>${['客户信息','关联订单 / 门店','售后来源 / 渠道','投诉内容','客诉等级 / 时效','工单进度','责任认定','操作'].map((t,i)=>`<th data-pc-min-width="${[150,180,175,250,180,190,160,70][i]}"${i===7?' class="uc-fixed"':''}>${t}</th>`).join('')}</tr></thead>
       <tbody>${rows.length?rows.slice((page-1)*pageSize,page*pageSize).map(complaintRow).join(''):`<tr><td colspan="8">${empty('暂无符合条件的数据')}</td></tr>`}</tbody></table></div>
       ${pagination(rows.length,page,pageSize)}
+      </div>
     </section>`;
     root.querySelectorAll('#uc-search [id]').forEach(el=>el.id=el.id.replace(/^uc-/,'uc-filter-'));
     root.querySelectorAll('#uc-search label[for]').forEach(el=>el.htmlFor=el.htmlFor.replace(/^uc-/,'uc-filter-'));

@@ -7,26 +7,26 @@
   "sharedGzipBytes": 1281721,
   "preferredFontBytes": 28440,
   "firstRouteGzipBytes": {
-    "customer": 1465047,
-    "management": 1342396,
-    "complaints": 1368643,
-    "home": 52654,
-    "complaint-order-linking": 55624,
-    "complaint-detail": 65580,
-    "complaint-fixtures": 60301,
-    "complaint-workflow": 53123,
-    "complaint-follow": 58451,
-    "complaint-options": 62788,
-    "complaint-solutions": 1291511,
-    "supply-chain": 1378396,
-    "inventory-core": 1331927,
-    "inventory-clinical": 1395880,
-    "group-approval": 1356670,
-    "group-approval-designer": 1376665,
-    "group-approval-data": 1305596,
-    "refund-risk": 82668,
-    "stock-management": 1331765,
-    "product-center": 1354348
+    "customer": 1465046,
+    "management": 1342395,
+    "complaints": 1368664,
+    "home": 52653,
+    "complaint-order-linking": 55623,
+    "complaint-detail": 65579,
+    "complaint-fixtures": 60300,
+    "complaint-workflow": 53122,
+    "complaint-follow": 58450,
+    "complaint-options": 62787,
+    "complaint-solutions": 1291510,
+    "supply-chain": 1378395,
+    "inventory-core": 1331926,
+    "inventory-clinical": 1395879,
+    "group-approval": 1356669,
+    "group-approval-designer": 1376664,
+    "group-approval-data": 1305595,
+    "refund-risk": 82667,
+    "stock-management": 1331764,
+    "product-center": 1354347
   },
   "files": {
     "js/vendor.27618b08a27e7019.js": {
@@ -99,15 +99,15 @@
       "gzipBytes": 55524,
       "sha256": "3aac76571935c4f7667f444f43d646b529275fc685896a67e6a605c1cdbdf8c1"
     },
-    "js/complaints.6887995ff78283ad.js": {
-      "bytes": 116650,
-      "gzipBytes": 35947,
-      "sha256": "6887995ff78283ad0861b30d688e35da05bdd78c12bc67b8feb781e95b0dbc9b"
+    "js/complaints.870f4e2ad0c0a640.js": {
+      "bytes": 116663,
+      "gzipBytes": 35941,
+      "sha256": "870f4e2ad0c0a6406da206d2d1650b3095c3911ead8dcec65a1285045bdf9896"
     },
-    "css/complaints.358eeeb8cf5efbf2.css": {
-      "bytes": 15651,
-      "gzipBytes": 3547,
-      "sha256": "358eeeb8cf5efbf246d8e46c670e9c1f9361db1e55a93b4399e00b7a47ed8eae"
+    "css/complaints.34cbd2a136afb90b.css": {
+      "bytes": 15858,
+      "gzipBytes": 3575,
+      "sha256": "34cbd2a136afb90b3f5a580a4472ff99ed8ac66d7f200baaabb20018c40b9be7"
     },
     "js/home.8970e33cacf3c9db.js": {
       "bytes": 531,
