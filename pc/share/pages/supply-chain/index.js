@@ -1,4 +1,4 @@
-/* Supply-chain screens: shared ByForm, ByTable, ByPager and layered drawers. */
+/* Supply-chain screens: shared native PCUI forms, tables, pagers and layered drawers. */
 (() => {
   const S=PCModules['supply-chain'],{copy,uid,must,positive,round}=S;
   const views={},states={},stack=[];let listening=false,expiryTimer=null;

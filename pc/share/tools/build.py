@@ -22,10 +22,51 @@ def read(filename):
     return (ROOT / filename).read_text()
 
 
+def runtime_source(filename):
+    """Enforce native, local runtime inputs before writing any release assets.
+
+    This is a dependency-boundary check, not a JavaScript security sandbox.
+    Business links, attachments and inline SVG are not runtime library imports.
+    """
+    path = Path(filename)
+    if (path.is_absolute() or not (ROOT / path).resolve().is_relative_to(ROOT.resolve()) or
+            any(part in {'vendor', 'node_modules'} for part in path.parts) or
+            re.match(r'(?i)(?:vue|element-plus|by-components|vxe(?:table|iconfont)?|react|jquery)(?:[.-]|$)', path.name)):
+        raise SystemExit(f'{filename}: native PC runtime cannot include vendor/package files')
+    content = read(filename)
+
+    def reject(pattern, reason, flags=0):
+        match = re.search(pattern, content, flags)
+        if match:
+            line = content.count('\n', 0, match.start()) + 1
+            raise SystemExit(f'{filename}:{line}: native PC runtime only; {reason}')
+
+    # Block the former UI globals and common framework entry points, including
+    # window["Vue"]. Local UMD require('./engine.js') remains usable by unit tests.
+    libraries = r'(?:Vue|ElementPlus|ByComponentsV3|VXETable|VxeUI|React|ReactDOM|jQuery)'
+    reject(r'\b' + libraries + r'\s*(?:\?\.|\.|\[|\()', 'third-party UI runtime reference')
+    reject(r'\b(?:window|globalThis)\s*(?:\.\s*' + libraries + r'\b|\[\s*[\'\"]' + libraries + r'[\'\"]\s*\])', 'third-party UI runtime global')
+    reject(r'(?<![\w$.\'\"])import\s*\(|(?:^|[;\n}])\s*(?:import\s*(?:[\'\"{*]|[\w$]+\s+(?:from\b|,))|export\s+[^;\n]*\bfrom\s*[\'\"])', 'register local modules in routes.json and load through PCApp.loadModule')
+    for match in re.finditer(r'\brequire\s*\(\s*([\'\"])(.*?)\1\s*\)', content):
+        target = match.group(2)
+        resolved = (ROOT / path.parent / target).resolve()
+        if (not target.startswith(('./', '../')) or not resolved.is_relative_to(ROOT.resolve()) or
+                'vendor' in Path(target).parts or 'node_modules' in Path(target).parts or not resolved.is_file()):
+            raise SystemExit(f'{filename}: native PC runtime cannot require package {target}')
+    reject(r'@font-face\b|\bnew\s+FontFace\s*\(', 'use system fonts and inline SVG; font packages are not allowed', re.I)
+    reject(r'@import\b', 'register local CSS in routes.json; CSS imports are not allowed', re.I)
+    reject(r'url\(\s*[\'\"]?(?:https?:|//)', 'remote CSS resources are not allowed', re.I)
+    reject(r'<script\b[^>]*\bsrc\s*=|<link\b[^>]*\bhref\s*=', 'scripts/styles must come from the generated local asset manifest', re.I)
+    reject(r'\bimportScripts\s*\(', 'worker runtime imports are not allowed')
+    if filename not in {'js/bootstrap.js', 'js/loader.js'}:
+        reject(r'\bcreateElement\s*\(\s*[\'\"](?:script|link)[\'\"]', 'only the shared loader may insert runtime resources', re.I)
+    return content
+
+
 def critical_styles():
     """Inline only tokens needed before the full theme arrives; keep one source."""
-    css = read('css/critical.css')
-    tokens = dict(re.findall(r'(--[\w-]+)\s*:\s*([^;{}]+);', read('css/tokens.css')))
+    css = runtime_source('css/critical.css')
+    tokens = dict(re.findall(r'(--[\w-]+)\s*:\s*([^;{}]+);', runtime_source('css/tokens.css')))
     required = set()
 
     def include(name):
@@ -119,8 +160,9 @@ def build():
     def asset(name, content, extension):
         data = content if isinstance(content, bytes) else content.encode()
         digest = hashlib.sha256(data).hexdigest()[:16]
-        directory = 'fonts' if extension in {'woff2', 'woff', 'ttf'} else extension
-        filename = f'{directory}/{name}.{digest}.{extension}'
+        if extension not in {'js', 'css'}:
+            raise SystemExit('PC runtime builds only native JS/CSS; font and vendor assets are not allowed')
+        filename = f'{extension}/{name}.{digest}.{extension}'
         pending[filename] = data
         report[filename] = {'bytes': len(data), 'gzipBytes': len(gzip.compress(data, mtime=0)), 'sha256': hashlib.sha256(data).hexdigest()}
         return 'share/dist/' + filename
@@ -129,10 +171,10 @@ def build():
         return sum(report[url.removeprefix('share/dist/')]['gzipBytes'] for url in urls)
 
     def js(name, files):
-        return asset(name, '\n;\n'.join(read(file) for file in files), 'js')
+        return asset(name, '\n;\n'.join(runtime_source(file) for file in files), 'js')
 
     def css(name, files, layer=False):
-        content = '\n'.join(read(file) for file in files)
+        content = '\n'.join(runtime_source(file) for file in files)
         if layer:
             content = '@layer pc-business {\n' + content + '\n}'
         return asset(name, content, 'css')
@@ -164,8 +206,8 @@ def build():
             modules[name]['dependencies'] = module['dependencies']
     shell_styles = styles.copy()
     config = {'scripts': scripts, 'styles': styles, 'shellStyles': shell_styles}
-    template = read('templates/entry.html').replace('<!-- pc-critical -->', '<style>\n' + critical_styles() + '\n</style>')
-    bootstrap = read('js/bootstrap.js')
+    template = runtime_source('templates/entry.html').replace('<!-- pc-critical -->', '<style>\n' + critical_styles() + '\n</style>')
+    bootstrap = runtime_source('js/bootstrap.js')
     pages = {}
     for filename, entry in entries.items():
         selected_modules = {name: modules[name] for name in scopes[filename]}

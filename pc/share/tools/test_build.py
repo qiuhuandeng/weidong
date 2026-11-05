@@ -87,6 +87,85 @@ class BuildChecks(unittest.TestCase):
         self.assertNotIn('PC_BOOT_TIMER', html)
         self.assertNotIn('30000', html)
 
+    def test_runtime_dependencies_fail_without_replacing_the_release(self):
+        self.build()
+        published = {name: (self.root / name).read_bytes() for name in
+                     ['pc.html', 'inventory.html', 'share/asset-manifest.json']}
+        source = self.root / 'share/pages/home/index.js'
+        original = source.read_text()
+        additions = [
+            'Vue.createApp({});',
+            'window["ElementPlus"].ElButton;',
+            'ByComponentsV3.components.ByForm;',
+            'VXETable.setup({});',
+            'React.createElement("div");',
+            'import ui from "vue";',
+            'import "some-ui-library";',
+            'const ui = import("./widget.js");',
+            'const ui = require("some-ui-library");',
+            'document.createElement("script");',
+            'document.createElement("link");',
+            'const markup = `<script src="./vendor/ui.js"></script>`;',
+            'const markup = `<link href="https://cdn.example/ui.css" rel="stylesheet">`;',
+            'new FontFace("icons", "url(./icons.woff2)");',
+            'importScripts("https://cdn.example/widget.js");',
+        ]
+        for addition in additions:
+            with self.subTest(addition=addition):
+                source.write_text(original + '\n' + addition)
+                try:
+                    with self.assertRaisesRegex(SystemExit, 'native PC runtime'):
+                        self.build()
+                    for name, data in published.items():
+                        self.assertEqual((self.root / name).read_bytes(), data)
+                finally:
+                    source.write_text(original)
+
+    def test_css_fonts_imports_and_template_resource_tags_are_rejected(self):
+        cases = [
+            ('css/theme.css', '@font-face{font-family:icons;src:url(./icons.woff2)}'),
+            ('css/theme.css', '@font-face{font-family:icons;src:url(data:font/woff2;base64,AAAA)}'),
+            ('css/theme.css', '@import "./vendor.css";'),
+            ('css/theme.css', '.remote{background:url(https://cdn.example/background.png)}'),
+            ('templates/entry.html', '<script src="https://cdn.example/ui.js"></script>'),
+            ('templates/entry.html', '<link rel="stylesheet" href="./vendor.css">'),
+            ('js/bootstrap.js', 'window.Vue.createApp({});'),
+        ]
+        for filename, addition in cases:
+            with self.subTest(filename=filename, addition=addition):
+                source = self.root / 'share' / filename
+                original = source.read_text()
+                try:
+                    source.write_text(original + '\n' + addition)
+                    with self.assertRaisesRegex(SystemExit, 'native PC runtime'):
+                        self.build()
+                finally:
+                    source.write_text(original)
+
+    def test_vendor_file_inside_a_business_module_is_not_a_local_native_dependency(self):
+        config_file = self.root / 'share/routes.json'
+        config = json.loads(config_file.read_text())
+        for name in ['vendor/widget.js', 'node_modules/widget/index.js', 'vue.global.js']:
+            with self.subTest(name=name):
+                filename = 'pages/home/' + name
+                target = self.root / 'share' / filename
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_text('/* vendor fixture */')
+                config['modules']['home']['scripts'] = ['pages/home/index.js', filename]
+                config_file.write_text(json.dumps(config))
+                with self.assertRaisesRegex(SystemExit, 'vendor/package files'):
+                    self.build()
+
+    def test_business_import_actions_links_and_inline_svg_remain_valid(self):
+        source = self.root / 'share/pages/home/index.js'
+        source.write_text(source.read_text() + '''
+const importActionMarkup = '<button data-action="import">导入数据</button>';
+const businessLink = '<a href="https://example.com/order">查看业务</a>';
+const attachment = '<img src="https://example.com/photo.png">';
+const localIcon = '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0"/></svg>';
+''')
+        self.build()
+
     def test_first_paint_tokens_follow_the_single_source_without_inlining_unused_tokens(self):
         css = self.builder.critical_styles()
         definitions = dict(re.findall(r'(--[\w-]+)\s*:\s*([^;{}]+);', css))
@@ -152,6 +231,9 @@ class BuildChecks(unittest.TestCase):
         spec.loader.exec_module(module)
         with redirect_stdout(io.StringIO()):
             module.create('inventory-probe', '库存', entry=True)
+        scaffold = (self.root / 'share/pages/inventory-probe/index.js').read_text()
+        self.assertIn('Native HTML/CSS/JS only', scaffold)
+        self.assertNotRegex(scaffold, r'ByForm|ByTable|ByCommonInput|ElementPlus|Vue\.')
         self.build()
         self.assertTrue((self.root / 'pc-inventory-probe.html').is_file())
         with self.assertRaisesRegex(SystemExit, '已存在'):

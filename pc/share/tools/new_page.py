@@ -1,4 +1,4 @@
-"""Scaffold a PC module using the existing shared UI. Does not build or publish."""
+"""Scaffold native HTML/CSS/JS with shared PCUI. Does not build or publish."""
 import argparse
 import json
 from pathlib import Path
@@ -36,7 +36,7 @@ def create(name, title, group='业务管理', entry=False):
     config_file.write_text(json.dumps(config, ensure_ascii=False, indent=2) + '\n')
     entries_file.write_text(json.dumps(entries, ensure_ascii=False, indent=2) + '\n')
     print(f'已创建 share/pages/{name}/index.js；入口 pc.html#{name}' + (f'，独立入口 {filename}' if entry else ''))
-    print('填写业务数据和操作后运行 python3 share/tools/build.py；请勿复制公共控件样式。')
+    print('使用原生 HTML/CSS/JS 与公共 PCUI；不引入第三方运行库、CDN 或字体包。填写业务后运行 python3 share/tools/build.py。')
 
 
 if __name__ == '__main__':

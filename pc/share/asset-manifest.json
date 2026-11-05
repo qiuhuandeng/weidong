@@ -4,28 +4,28 @@
     "pc.html": 12858,
     "inventory.html": 9108
   },
-  "sharedGzipBytes": 66365,
+  "sharedGzipBytes": 66374,
   "firstRouteGzipBytes": {
-    "customer": 249477,
-    "management": 126810,
-    "complaints": 152774,
-    "home": 52585,
-    "complaint-order-linking": 55555,
-    "complaint-detail": 65490,
-    "complaint-fixtures": 60232,
-    "complaint-workflow": 53054,
-    "complaint-follow": 58382,
-    "complaint-options": 62719,
-    "complaint-solutions": 75925,
-    "supply-chain": 162810,
-    "inventory-core": 116341,
-    "inventory-clinical": 180294,
-    "group-approval": 140403,
-    "group-approval-designer": 160398,
-    "group-approval-data": 90010,
-    "refund-risk": 82599,
-    "stock-management": 116179,
-    "product-center": 138747
+    "customer": 249486,
+    "management": 126819,
+    "complaints": 152783,
+    "home": 52594,
+    "complaint-order-linking": 55564,
+    "complaint-detail": 65499,
+    "complaint-fixtures": 60241,
+    "complaint-workflow": 53063,
+    "complaint-follow": 58391,
+    "complaint-options": 62728,
+    "complaint-solutions": 75934,
+    "supply-chain": 162821,
+    "inventory-core": 116350,
+    "inventory-clinical": 180309,
+    "group-approval": 140412,
+    "group-approval-designer": 160407,
+    "group-approval-data": 90019,
+    "refund-risk": 82608,
+    "stock-management": 116188,
+    "product-center": 138756
   },
   "files": {
     "js/components.f68f8826f2e8c00b.js": {
@@ -38,10 +38,10 @@
       "gzipBytes": 31453,
       "sha256": "7d50a32ca66727889effd3dcff7de98ff733fc2c01bf336079297e5577392335"
     },
-    "css/theme.69e16546ebc1b950.css": {
-      "bytes": 31736,
-      "gzipBytes": 7426,
-      "sha256": "69e16546ebc1b95006766e711d851f7f4aee9283554b52ccf59034f6eb3b7e84"
+    "css/theme.70558476256a67e0.css": {
+      "bytes": 31787,
+      "gzipBytes": 7435,
+      "sha256": "70558476256a67e044b7eaf53c05630eaeab8b397945a32f2e5ef500916e1a19"
     },
     "js/app.9d937e171bfaa7aa.js": {
       "bytes": 23223,
@@ -113,20 +113,20 @@
       "gzipBytes": 4639,
       "sha256": "41f4bb2a0d89ca3ab6c1ee83c5f80555c39a1628806401b8f2200c133b09c9ca"
     },
-    "js/supply-chain.c829405114ece78d.js": {
-      "bytes": 149706,
-      "gzipBytes": 46469,
-      "sha256": "c829405114ece78dc50236d54055744db5d4e3dff6002ca21f662161493b8550"
+    "js/supply-chain.4a9a7f7c6f5cc684.js": {
+      "bytes": 149715,
+      "gzipBytes": 46471,
+      "sha256": "4a9a7f7c6f5cc6842ef7eb5a5a759d3141c33a893eed02a470f74d8c6a5a37a8"
     },
     "js/inventory-core.a978ab25143d62e7.js": {
       "bytes": 143755,
       "gzipBytes": 45055,
       "sha256": "a978ab25143d62e7da5c9717075093dbee5121ac6cea32e4c415675781a4e4b4"
     },
-    "js/inventory-clinical.cfa7c42d9038642d.js": {
-      "bytes": 57297,
-      "gzipBytes": 17484,
-      "sha256": "cfa7c42d9038642d399645b48136d4eaa465334e5a621bf8bb4645bc2912b4b1"
+    "js/inventory-clinical.b657dec59faacd9f.js": {
+      "bytes": 57300,
+      "gzipBytes": 17488,
+      "sha256": "b657dec59faacd9fbde6f9442725c62b1ec9ef948d1e0dd32e49140119100bc3"
     },
     "js/group-approval.db740b3f7ec9788f.js": {
       "bytes": 148102,

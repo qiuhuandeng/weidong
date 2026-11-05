@@ -1,6 +1,11 @@
 /* New PC module: define business data/actions here; reuse shared UI and router.
  * No separate theme is needed for a standard search/table page.
- * Do not import vendor libraries, copy the navigation or add hash listeners. */
+ * Keep the current PC visual standard: tokens.css + theme.css own all UI skin.
+ * Compose queryModule/contentModule/table/btn/pageTabs; PCUI owns control behavior.
+ * Fields, columns, validation, persistence and layered drafts belong to this module.
+ * See docs/PC后台UI规范.md: 哪些规则全局管理 and 当前组件选型目录.
+ * Native HTML/CSS/JS only; use PCUI and PCApp.loadModule for shared local code.
+ * Do not add frameworks, UI packages, CDN assets, fonts or a second router. */
 window.PCModules[__MODULE_KEY__] = (() => {
   const moduleName = __MODULE_KEY__;
   const title = __PAGE_TITLE__;
@@ -22,7 +27,7 @@ window.PCModules[__MODULE_KEY__] = (() => {
     document.querySelector('#main').innerHTML = '<div class="pc-page-__MODULE_NAME__">' +
       queryModule('<input id="pc-__MODULE_NAME__-keyword" class="search" placeholder="搜索名称" value="' + esc(state.keyword) + '">', action('search'), action('reset')) +
       contentModule(esc(title), table(['序号', '名称'], rows.map((row, index) => [index + 1, esc(row.name)]))) + '</div>';
-    // The shared adapter mounts real ByForm / ByCommonInput / ByTable instances.
+    // PCUI enhances the original native fields and table, retaining their events.
   }
 
   return {

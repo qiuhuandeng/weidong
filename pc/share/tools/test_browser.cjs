@@ -19,7 +19,9 @@ await S('Page.enable');await S('Emulation.setFocusEmulationEnabled',{enabled:tru
   assert.equal(await b.E('typeof customerRender'), 'undefined');
   assert.equal(await b.E('typeof UB'), 'undefined');
   checks.push('Complaints does not load customer or management');
-  const config=JSON.parse(fs.readFileSync(path.join(__dirname,'../routes.json')));
+  assert.equal(await b.E('PCUI.runtime'),'native');
+  assert.equal(await b.E('!!(window.Vue||window.ElementPlus||window.ByComponentsV3||window.VXETable)'),false);
+  const config=await b.E('PC_ASSETS');
   for(const route of config.navigation.flatMap(group=>group.items.map(item=>item[0]))){
    await b.E(`go(${JSON.stringify(route)})`);
    await b.until(`window.PCApp?.ready && location.hash==='#${route}' && route==='${route}' && !document.querySelector('#main[aria-busy]')`);
@@ -38,6 +40,7 @@ await S('Page.enable');await S('Emulation.setFocusEmulationEnabled',{enabled:tru
   assert.deepEqual(b.page.events.filter(e=>e.method==='Runtime.exceptionThrown'),[]);
   const requested=b.page.events.filter(e=>e.method==='Network.requestWillBeSent').map(e=>e.params.request.url);
   assert.ok(requested.filter(url=>/^https?:/.test(url)).every(url=>new URL(url).origin===new URL(ENTRY).origin),'Unexpected third-party runtime dependency');
+  assert.ok(!requested.some(url=>/\/(?:vue|element-plus|by-components|vendor)[.-]|\.(?:woff2?|ttf|otf)(?:[?#]|$)/i.test(url)),'Legacy runtime/font request');
   checks.push('No duplicate module downloads or runtime errors');
   for(const width of [1440,1280,1024]){
    await b.S('Emulation.setDeviceMetricsOverride',{width,height:1000,deviceScaleFactor:1,mobile:false});
@@ -61,9 +64,9 @@ await S('Page.enable');await S('Emulation.setFocusEmulationEnabled',{enabled:tru
   await home.E(`go('home');go('complaints');go('home')`);
   await home.until(`PCApp.ready && PCApp.module==='home'`);
   assert.deepEqual(home.page.events.filter(e=>e.method==='Runtime.exceptionThrown'),[]);
-  checks.push('Welcome page skips UI downloads; business navigation loads real components');
+  checks.push('Welcome page skips UI downloads; business navigation loads native PCUI');
  }finally{await home.close()}
- for(const pattern of ['*share/dist/js/app.*.js','*share/dist/js/vue.*.js','*share/dist/js/element-plus.*.js','*share/dist/js/by-components.*.js','*share/dist/js/management.*.js']){
+ for(const pattern of ['*share/dist/js/app.*.js','*share/dist/js/components.*.js','*share/dist/js/management.*.js']){
   const page=await create();
   try{
    await page.S('Network.setBlockedURLs',{urls:[pattern]});

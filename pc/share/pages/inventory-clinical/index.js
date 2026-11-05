@@ -1,4 +1,4 @@
-/* Clinical screens reuse the inventory ByForm / ByTable / layered drawer adapters. */
+/* Clinical screens reuse the inventory native PCUI forms, tables and layered drawers. */
 (() => {
   const S=PCModules['supply-chain'],C=S.clinic,U=S.ui,{copy,must,uid}=S;
   const {form,open,top,collect,redraw,saved,validate,names,text,link}=U;

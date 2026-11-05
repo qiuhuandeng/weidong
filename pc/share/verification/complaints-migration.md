@@ -1,5 +1,7 @@
 # 投诉处理迁移及流程优化验收
 
+历史记录（非现行开发规范）：本文记载原生迁移前的实现和检查。旧库名称、版本及接入方式不再适用；后续开发统一遵循 [PC 后台 UI 规范](../../docs/PC后台UI规范.md) 的原生 HTML/CSS/JS 要求，不恢复第三方运行库或图标字体。
+
 日期：2026-10-22。入口：`pc.html#complaints`。业务源码：`pc/share/pages/complaints/business.js`；结构样式：`pc/share/pages/complaints/style.css`。对应 PC 规范 v1.10。
 
 ## 范围与运行方式
