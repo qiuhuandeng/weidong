@@ -1,35 +1,47 @@
-/* Route loader: one shared runtime, one download per module, last navigation wins. */
+/* Download ahead; execute only after dependencies succeed. One runtime per entry. */
 window.PCModules = Object.create(null);
-clearTimeout(window.PC_BOOT_TIMER);
 window.PCApp = (() => {
   const config = window.PC_ASSETS;
   const scripts = new Map(), styles = new Map(), modules = new Map();
   const styleOrder = [...config.styles, ...Object.values(config.modules).flatMap(module => module.styles)];
-  const preloaded = new Set([...document.querySelectorAll('[data-pc-preload]')].map(link => link.getAttribute('href'))), routeModules = new Map();
+  const routeModules = new Map();
   let activeModule = null, activeRoute = null, navigation = 0, shared;
   for (const [name, module] of Object.entries(config.modules)) {
     for (const path of module.routes) routeModules.set(path, name);
   }
 
-  function resource(url, type, ordered = true) {
+  function resource(url, type) {
     const cache = type === 'script' ? scripts : styles;
     if (cache.has(url)) return cache.get(url);
     const promise = new Promise((resolve, reject) => {
       const node = document.createElement(type === 'script' ? 'script' : 'link');
-      const cleanup = () => { clearTimeout(timeout); window.removeEventListener('error', executionFailed); };
-      const failed = error => { cleanup(); cache.delete(url); node.remove(); reject(error); };
-      // A downloaded script can throw before registering its module. Preserve
-      // that cause instead of reporting a missing module or a network failure.
-      const executionFailed = event => {
-        if (event.filename === node.src) failed(event.error || new Error(event.message));
+      let settled = false;
+      const finish = (error, retryable = false) => {
+        if (settled) return;
+        settled = true;
+        node.onload = node.onerror = null;
+        window.removeEventListener('error', executionFailed);
+        if (!error) { resolve(node); return; }
+        if (retryable) {
+          cache.delete(url);
+          window.PCBoot.forget(url);
+          node.remove();
+        }
+        // Execution errors are terminal for this document: running a partially
+        // executed classic script again can redeclare globals or duplicate writes.
+        reject(error);
       };
-      const timeout = setTimeout(() => failed(new Error('资源加载超时：' + url)), 30000);
-      if (type === 'script') { node.src = url; node.async = !ordered; }
+      const executionFailed = event => {
+        if (event.filename === node.src) finish(event.error || new Error(event.message));
+      };
+      // Let the browser finish the transfer. A wall-clock timer cannot distinguish
+      // a slow connection / suspended tab from a failed request.
+      if (type === 'script') { node.src = url; node.async = true; }
       else { node.rel = 'stylesheet'; node.href = url; }
       node.dataset.pcAsset = type;
       if (type === 'script') window.addEventListener('error', executionFailed);
-      node.onload = () => { cleanup(); resolve(node); };
-      node.onerror = () => failed(new Error('资源加载失败：' + url));
+      node.onload = () => finish();
+      node.onerror = () => finish(new Error('资源加载失败：' + url), true);
       if (type === 'style') {
         // A shell-only route may load the theme before vendor styles are needed.
         // Preserve the same cascade order on every navigation and failed-load retry.
@@ -41,22 +53,19 @@ window.PCApp = (() => {
     cache.set(url, promise);
     return promise;
   }
-  function preload(url, type) {
-    if (preloaded.has(url)) return;
-    preloaded.add(url);
-    const link = document.createElement('link');
-    link.rel = 'preload'; link.as = type; link.href = url;
-    document.head.appendChild(link);
-  }
   function common() {
     if (!shared) {
-      // Start independent downloads together; async=false preserves dependency order.
+      // Preloads fetch in parallel; inserting each executable script only after
+      // its predecessor succeeds prevents failures from cascading into business.
       shared = Promise.all([
         ...config.styles.map(url => resource(url, 'style')),
-        ...config.scripts.map(url => resource(url, 'script'))
-      ]).then(() => {
-        if (!window.PCUI) throw new Error('公共组件未就绪');
-      }).catch(error => { shared = null; throw error; });
+        (async () => {
+          for (const {src, global} of config.scripts) {
+            await resource(src, 'script');
+            if (!window[global]) throw new Error('依赖初始化未完成：' + global);
+          }
+        })()
+      ]).catch(error => { shared = null; throw error; });
     }
     return shared;
   }
@@ -64,30 +73,24 @@ window.PCApp = (() => {
     if (modules.has(name)) return modules.get(name);
     const module = config.modules[name];
     if (!module) return Promise.reject(new Error('页面依赖未登记：' + name));
-    if (module.dependencies?.length) {
-      const promise = Promise.all(module.dependencies.map(load)).then(() => loadOwn(name, module));
-      const guarded = promise.catch(error => { modules.delete(name); throw error; });
-      modules.set(name, guarded);
-      return guarded;
-    }
-    return loadOwn(name, module);
-  }
-  function loadOwn(name, module) {
-    preload(module.script, 'script');
-    // Insert after the shared scripts immediately, so the browser can stream-parse
-    // this module while dependencies download. async=false keeps execution ordered.
-    const dependencies = module.requiresUI === false
-      ? Promise.all(config.shellStyles.map(url => resource(url, 'style')))
-      : common();
-    const promise = Promise.all([dependencies, ...module.styles.map(url => resource(url, 'style')), resource(module.script, 'script', module.requiresUI !== false)])
-      .then(async () => {
-        if (!window.PCModules[name]) throw new Error('页面模块未就绪：' + name);
-        const instance = window.PCModules[name];
-        // Some business modules hydrate persistent data asynchronously.
-        await instance.ready;
-        if (typeof instance.render !== 'function') throw new Error('页面初始化未完成：' + name);
-        return instance;
-      }).catch(error => { modules.delete(name); throw error; });
+    // Register the promise before starting any dependency, including shared DAG
+    // branches requested by concurrent navigations.
+    const promise = Promise.resolve().then(async () => {
+      await Promise.all([
+        module.requiresUI === false
+          ? Promise.all(config.shellStyles.map(url => resource(url, 'style')))
+          : common(),
+        ...(module.dependencies || []).map(load),
+        ...module.styles.map(url => resource(url, 'style'))
+      ]);
+      await resource(module.script, 'script');
+      if (!window.PCModules[name]) throw new Error('页面模块未就绪：' + name);
+      const instance = window.PCModules[name];
+      // Some business modules hydrate persistent data asynchronously.
+      await instance.ready;
+      if (module.routes.length && typeof instance.render !== 'function') throw new Error('页面初始化未完成：' + name);
+      return instance;
+    }).catch(error => { modules.delete(name); throw error; });
     modules.set(name, promise);
     return promise;
   }
@@ -111,23 +114,25 @@ window.PCApp = (() => {
     if (!location.hash || !routeModules.has(location.hash.slice(1).split('?')[0])) {
       history.replaceState(null, '', '#' + path);
     }
-    activeModule?.leave?.();
-    window.PCUI?.closeDialog();
-    activeModule = null;
-    activeRoute = null;
-    route = path;
-    nav();
-    pending();
     const name = routeModules.get(path);
     try {
+      const previous = activeModule;
+      activeModule = null;
+      activeRoute = null;
+      previous?.leave?.();
+      window.PCUI?.closeDialog();
+      route = path;
+      nav();
+      pending();
+      window.PCBoot.prepare(name);
       const module = await load(name);
       if (turn !== navigation) return;
-      activeModule = module;
-      activeRoute = name;
       module.render();
       nav();
       document.querySelector('#main').removeAttribute('aria-busy');
       window.PCUI?.sweep();
+      activeModule = module;
+      activeRoute = name;
       performance.mark('pc-route-ready');
       window.dispatchEvent(new CustomEvent('pc:route-ready', {detail: {route, module: name}}));
     } catch (error) {
@@ -139,9 +144,14 @@ window.PCApp = (() => {
   function redraw() {
     if (activeModule) { (activeModule.redraw || activeModule.render)(); nav(); }
   }
+  function loadModule(name) {
+    if (!Object.hasOwn(config.modules, name)) return Promise.reject(new Error('页面依赖未登记：' + name));
+    window.PCBoot.prepare(name);
+    return load(name);
+  }
   window.addEventListener('hashchange', navigate);
   navigate();
-  return {retry:navigate, redraw, get module(){return activeRoute;}, get current(){return activeModule;}, get ready(){return !!activeModule;}};
+  return {retry:navigate, redraw, loadModule, get module(){return activeRoute;}, get current(){return activeModule;}, get ready(){return !!activeModule;}};
 })();
 
 function nav() {

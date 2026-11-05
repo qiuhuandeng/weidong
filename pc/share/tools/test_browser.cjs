@@ -51,7 +51,7 @@ await S('Page.enable');await S('Emulation.setFocusEmulationEnabled',{enabled:tru
   await home.S('Page.navigate',{url:ENTRY+'#home'});
   await home.until(`window.PCApp?.ready && PCApp.module==='home'`);
   assert.equal(await home.E('typeof PCUI'),'undefined');
-  assert.ok(!home.page.events.some(e=>e.method==='Network.requestWillBeSent'&&/\/(vendor|components|customer|management|complaints)\.[a-f0-9]+\./.test(e.params.request.url)));
+  assert.ok(!home.page.events.some(e=>e.method==='Network.requestWillBeSent'&&/\/(vue|element-plus|by-components|components|customer|management|complaints)\.[a-f0-9]+\./.test(e.params.request.url)));
   await home.E(`go('refunds')`);
   await home.until(`PCApp.ready && PCApp.module==='management' && !document.querySelector('#main[aria-busy]')`);
   assert.deepEqual(await home.E('PCUI.failures'),[]);
@@ -63,7 +63,7 @@ await S('Page.enable');await S('Emulation.setFocusEmulationEnabled',{enabled:tru
   assert.deepEqual(home.page.events.filter(e=>e.method==='Runtime.exceptionThrown'),[]);
   checks.push('Welcome page skips UI downloads; business navigation loads real components');
  }finally{await home.close()}
- for(const pattern of ['*share/dist/js/app.*.js','*share/dist/js/vendor.*.js','*share/dist/js/management.*.js']){
+ for(const pattern of ['*share/dist/js/app.*.js','*share/dist/js/vue.*.js','*share/dist/js/element-plus.*.js','*share/dist/js/by-components.*.js','*share/dist/js/management.*.js']){
   const page=await create();
   try{
    await page.S('Network.setBlockedURLs',{urls:[pattern]});

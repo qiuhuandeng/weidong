@@ -79,11 +79,24 @@ class BuildChecks(unittest.TestCase):
     def test_shell_only_module_has_no_ui_preload(self):
         manifest = self.build()
         html = (self.root / 'pc.html').read_text()
-        config = json.loads(re.search(r'window.PC_ASSETS=(.*?);\(function', html).group(1))
+        config = json.loads(re.search(r'window.PC_ASSETS=(.*?);\n', html).group(1))
         self.assertFalse(config['modules']['home']['requiresUI'])
-        self.assertTrue(config['modules']['customer']['requiresUI'])
+        self.assertTrue(config['modules']['customer'].get('requiresUI', True))
         self.assertLess(manifest['firstRouteGzipBytes']['home'], 60000)
-        self.assertEqual(len([url for url in config['scripts'] if '/vendor.' in url]), 1)
+        self.assertEqual([script['global'] for script in config['scripts']],
+                         ['Vue', 'ElementPlus', 'ByComponentsV3', 'PCUI'])
+        self.assertTrue(all((self.root / script['src']).is_file() for script in config['scripts']))
+        self.assertNotIn('PC_BOOT_TIMER', html)
+        self.assertNotIn('30000', html)
+
+    def test_first_paint_tokens_follow_the_single_source_without_inlining_unused_tokens(self):
+        css = self.builder.critical_styles()
+        definitions = dict(re.findall(r'(--[\w-]+)\s*:\s*([^;{}]+);', css))
+        self.assertEqual(set(definitions), set(re.findall(r'var\((--[\w-]+)', css)))
+        self.assertNotIn('--pc-table-padding:', css)
+        source = self.root / 'share/css/tokens.css'
+        source.write_text(source.read_text().replace('--pc-primary:#409eff;', '--pc-primary:#123456;'))
+        self.assertIn('--pc-primary:#123456;', self.builder.critical_styles())
 
     def test_new_module_is_independent_and_gets_default_budget(self):
         before = self.build()
@@ -124,7 +137,7 @@ class BuildChecks(unittest.TestCase):
         self.assertEqual(before['files'], after['files'])
         def config(filename):
             html = (self.root / filename).read_text()
-            return json.loads(re.search(r'window.PC_ASSETS=(.*?);\(function', html).group(1))
+            return json.loads(re.search(r'window.PC_ASSETS=(.*?);\n', html).group(1))
         main, second = config('pc.html'), config('pc-refunds.html')
         self.assertEqual(second.pop('defaultRoute'), 'refunds')
         main.pop('defaultRoute')
@@ -162,7 +175,7 @@ class BuildChecks(unittest.TestCase):
 
         def config(filename):
             html = (self.root / filename).read_text()
-            return json.loads(re.search(r'window.PC_ASSETS=(.*?);\(function', html).group(1))
+            return json.loads(re.search(r'window.PC_ASSETS=(.*?);\n', html).group(1))
 
         main, inventory = config('pc.html'), config('inventory.html')
         self.assertNotIn('supply-chain', main['modules'])

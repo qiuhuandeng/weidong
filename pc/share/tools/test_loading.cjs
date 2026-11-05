@@ -6,17 +6,18 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 const source = fs.readFileSync(path.join(__dirname, '../js/loader.js'), 'utf8');
+const bootstrap = fs.readFileSync(path.join(__dirname, '../js/bootstrap.js'), 'utf8');
 const tick = () => new Promise(resolve => setImmediate(resolve));
 
-function harness(execute, extraModules = {}) {
-  const events = new Map(), failures = [], downloads = [], timers = new Map();
+function harness(execute, extraModules = {}, assets = {}) {
+  const events = new Map(), failures = [], downloads = [], timers = new Map(), head = [];
   let sequence = 0;
   const element = () => ({innerHTML:'', scrollTop:0, dataset:{}, classList:{remove(){}},
-    setAttribute(){}, removeAttribute(){}, remove(){}, querySelectorAll:()=>[]});
+    setAttribute(){}, removeAttribute(){}, remove(){const i=head.indexOf(this);if(i>=0)head.splice(i,1)}, querySelectorAll:()=>[]});
   const nodes = Object.fromEntries(['#main','#nav','#sidebar','#crumb'].map(id => [id, element()]));
   const context = vm.createContext({
     URL, Promise, Error, console:{error(){}, warn(){}},
-    location:{hash:'#probe', search:''}, history:{replaceState(){}},
+    location:{hash:'#'+(assets.defaultRoute||'probe'), search:''}, history:{replaceState(){}},
     route:'', esc:String, icon:()=>'', mountSidebarGroups(){},
     performance:{mark(){}}, CustomEvent:class {constructor(type, init){this.type=type;this.detail=init?.detail}},
     setTimeout(fn){timers.set(++sequence, fn);return sequence}, clearTimeout(id){timers.delete(id)},
@@ -24,19 +25,24 @@ function harness(execute, extraModules = {}) {
     removeEventListener(type, fn){events.get(type)?.delete(fn)},
     dispatchEvent(event){for(const fn of [...(events.get(event.type)||[])])fn(event)},
     PC_BOOT_FAILED:error=>failures.push(error),
-    PC_ASSETS:{defaultRoute:'probe', navigation:[], scripts:[], styles:[], shellStyles:[],
-      modules:{probe:{routes:['probe'],styles:[],script:'probe.js',requiresUI:false}, ...extraModules}},
+    PC_ASSETS:{defaultRoute:'probe', navigation:[], routeRedirects:{}, scripts:[], styles:[], shellStyles:[],
+      modules:{probe:{routes:['probe'],styles:[],script:'probe.js',requiresUI:false}, ...extraModules}, ...assets},
     document:{body:element(),querySelector:id=>nodes[id],querySelectorAll:()=>[],
       createElement:tag=>Object.assign(element(),{tag,src:'',getAttribute(key){return this[key]}}),
-      head:{querySelectorAll:()=>[],appendChild(node){
+      head:{querySelectorAll:()=>head.filter(node=>node.dataset.pcAsset==='style'),
+      insertBefore(node,next){head.splice(next?head.indexOf(next):head.length,0,node);queueMicrotask(()=>node.onload?.())},
+      appendChild(node){
+        head.push(node);
         if(node.tag!=='script')return;
         downloads.push(node.src);
         queueMicrotask(()=>execute(context,node));
       }}}
   });
   context.window = context;
+  vm.runInContext(bootstrap, context);
   vm.runInContext(source, context);
-  return {context,failures,downloads,timers,events,nodes};
+  context.PC_BOOT_FAILED=error=>failures.push(error);
+  return {context,failures,downloads,timers,events,nodes,head};
 }
 
 test('waits for ready before rendering, including an asynchronous data initializer', async () => {
@@ -66,20 +72,21 @@ test('preserves the actual initialization failure instead of a network message',
   assert.equal(h.context.PCApp.ready,false);
 });
 
-test('captures top-level quota errors, clears failed cache and allows retry', async () => {
+test('execution failures preserve the cause and never re-execute a partial script', async () => {
   const error=Object.assign(new Error('localStorage quota exceeded'),{name:'QuotaExceededError'});
   let failed=true;
   const h=harness((w,node)=>{
     if(failed)w.dispatchEvent({type:'error',filename:node.src,error});
     else w.PCModules.probe={render(){}};
     // Browsers fire load even if executing a successfully downloaded script threw.
-    node.onload();
+    node.onload?.();
   });
   await tick();assert.equal(h.failures[0],error);
   assert.equal(h.events.get('error').size,0);
   failed=false;await h.context.PCApp.retry();
-  assert.equal(h.context.PCApp.ready,true);
-  assert.deepEqual(h.downloads,['probe.js','probe.js']);
+  assert.equal(h.context.PCApp.ready,false);
+  assert.equal(h.failures[1],error);
+  assert.deepEqual(h.downloads,['probe.js']);
 });
 
 test('network resource failures can retry without stale rejection or listeners', async () => {
@@ -93,14 +100,6 @@ test('network resource failures can retry without stale rejection or listeners',
   assert.equal(h.context.PCApp.ready,true);
   assert.equal(h.events.get('error').size,0);
   assert.equal(h.timers.size,0);
-});
-
-test('script timeout preserves a distinct cause and cleans up listeners', async () => {
-  const h=harness(()=>{});
-  await tick();
-  for(const expire of [...h.timers.values()])expire();
-  await tick();assert.match(h.failures[0].message,/资源加载超时/);
-  assert.equal(h.events.get('error').size,0);
 });
 
 test('unrelated window errors do not mark a successfully loaded module as failed', async () => {
@@ -124,6 +123,141 @@ test('dependency readiness precedes the dependent script', async () => {
   assert.equal(h.context.PCApp.ready,true);
 });
 
+test('a failed UI dependency must never execute the adapter or business script', async () => {
+  const h=harness((w,node)=>node.onerror(),
+    {probe:{routes:['probe'],styles:[],script:'probe.js',requiresUI:true}},
+    {scripts:[{src:'vendor.js',global:'Vue'},{src:'components.js',global:'PCUI'}]});
+  await tick();
+  assert.deepEqual(h.downloads,['vendor.js']);
+  assert.equal(h.failures.length,1);
+});
+
+test('a slow first download remains pending and can complete without reloading', async () => {
+  let complete;
+  const h=harness((w,node)=>{complete=()=>{w.PCModules.probe={render(){}};node.onload()}});
+  await tick();
+  for(const expire of [...h.timers.values()])expire();
+  await tick();
+  assert.equal(h.failures.length,0);
+  complete();await tick();
+  assert.equal(h.context.PCApp.ready,true);
+  assert.deepEqual(h.downloads,['probe.js']);
+});
+
+test('preloads a transitive dependency graph but executes each shared node once', async () => {
+  const h=harness((w,node)=>{
+    const name=node.src.slice(0,-3);
+    w.PCModules[name]={render(){}};node.onload();
+  },{
+    probe:{routes:['probe'],styles:[],script:'probe.js',requiresUI:false,dependencies:['left','right']},
+    left:{routes:[],styles:[],script:'left.js',requiresUI:false,dependencies:['data']},
+    right:{routes:[],styles:[],script:'right.js',requiresUI:false,dependencies:['data']},
+    data:{routes:[],styles:[],script:'data.js',requiresUI:false}
+  });
+  assert.deepEqual(h.head.filter(n=>n.rel==='preload').map(n=>n.href).sort(),['data.js','left.js','probe.js','right.js']);
+  await tick();
+  assert.equal(h.downloads[0],'data.js');
+  assert.equal(h.downloads.at(-1),'probe.js');
+  assert.equal(h.downloads.filter(src=>src==='data.js').length,1);
+  assert.equal(h.context.PCApp.ready,true);
+});
+
+test('dependency globals must be present before downstream scripts are executed', async () => {
+  const h=harness((w,node)=>node.onload(),
+    {probe:{routes:['probe'],styles:[],script:'probe.js',requiresUI:true}},
+    {scripts:[{src:'vue.js',global:'Vue'},{src:'components.js',global:'PCUI'}]});
+  await tick();
+  assert.deepEqual(h.downloads,['vue.js']);
+  assert.match(h.failures[0].message,/依赖初始化未完成：Vue/);
+});
+
+test('UI retry resumes at a failed transfer without rerunning successful dependencies', async () => {
+  let fail=true;
+  const h=harness((w,node)=>{
+    if(node.src==='vue.js')w.Vue={};
+    else if(node.src==='company.js'&&fail){node.onerror();return}
+    else if(node.src==='company.js')w.ByComponentsV3={};
+    else if(node.src==='components.js')w.PCUI={sweep(){}};
+    else w.PCModules.probe={render(){}};
+    node.onload();
+  },{probe:{routes:['probe'],styles:[],script:'probe.js',requiresUI:true}},
+    {scripts:[{src:'vue.js',global:'Vue'},{src:'company.js',global:'ByComponentsV3'},{src:'components.js',global:'PCUI'}]});
+  await tick();
+  assert.deepEqual(h.downloads,['vue.js','company.js']);
+  assert.ok(!h.head.some(n=>n.rel==='preload'&&n.href==='company.js'));
+  fail=false;await h.context.PCApp.retry();
+  assert.equal(h.context.PCApp.ready,true);
+  assert.deepEqual(h.downloads,['vue.js','company.js','company.js','components.js','probe.js']);
+});
+
+test('leaving a slow business route for home does not wait or show stale errors', async () => {
+  let fail, homeRenders=0;
+  const h=harness((w,node)=>{
+    if(node.src==='vue.js'){fail=()=>node.onerror();return}
+    w.PCModules.home={render(){homeRenders++}};node.onload();
+  },{probe:{routes:['probe'],styles:[],script:'probe.js',requiresUI:true},
+    home:{routes:['home'],styles:[],script:'home.js',requiresUI:false}},
+    {scripts:[{src:'vue.js',global:'Vue'}]});
+  await tick();
+  h.context.location.hash='#home';h.context.dispatchEvent({type:'hashchange'});await tick();
+  assert.equal(h.context.PCApp.module,'home');
+  assert.equal(homeRenders,1);
+  fail();await tick();
+  assert.equal(h.failures.length,0);
+  assert.equal(h.context.PCApp.module,'home');
+});
+
+test('concurrent navigation renders only the last route and reuses shared scripts', async () => {
+  let finish;const rendered=[];
+  const h=harness((w,node)=>{
+    if(node.src==='vue.js'){finish=()=>{w.Vue={};node.onload()};return}
+    const name=node.src.slice(0,-3);w.PCModules[name]={render(){rendered.push(name)}};node.onload();
+  },{probe:{routes:['probe'],styles:[],script:'probe.js',requiresUI:true},
+    second:{routes:['second'],styles:[],script:'second.js',requiresUI:true}},
+    {scripts:[{src:'vue.js',global:'Vue'}]});
+  await tick();
+  h.context.location.hash='#second';h.context.dispatchEvent({type:'hashchange'});await tick();
+  finish();await tick();
+  assert.deepEqual(rendered,['second']);
+  h.context.location.hash='#probe';await h.context.PCApp.retry();
+  assert.deepEqual(rendered,['second','probe']);
+  assert.equal(new Set(h.downloads).size,h.downloads.length);
+});
+
+test('lazy feature modules share the loader without requiring a route renderer', async () => {
+  const h=harness((w,node)=>{
+    w.PCModules[node.src.slice(0,-3)]=node.src==='feature.js'?{create(){return 'ready'}}:{render(){}};
+    node.onload();
+  },{feature:{routes:[],styles:[],script:'feature.js',requiresUI:false}});
+  await tick();
+  const [first,second]=await Promise.all([h.context.PCApp.loadModule('feature'),h.context.PCApp.loadModule('feature')]);
+  assert.equal(first,second);assert.equal(first.create(),'ready');
+  assert.deepEqual(h.downloads,['probe.js','feature.js']);
+  await assert.rejects(h.context.PCApp.loadModule('missing'),/未登记/);
+});
+
+test('a rendering exception does not leave the app falsely marked ready', async () => {
+  const error=new Error('render failed');
+  const h=harness((w,node)=>{w.PCModules.probe={render(){throw error}};node.onload()});
+  await tick();assert.equal(h.failures[0],error);
+  assert.equal(h.context.PCApp.ready,false);
+  assert.equal(h.context.PCApp.module,null);
+});
+
+test('shell-first and direct-business loads keep the same stylesheet cascade', async () => {
+  const assets={styles:['business.css','vendor.css','theme.css'],shellStyles:['business.css','theme.css']};
+  const definitions={probe:{routes:['probe'],styles:['probe.css'],script:'probe.js',requiresUI:true},
+    home:{routes:['home'],styles:[],script:'home.js',requiresUI:false}};
+  const execute=(w,node)=>{w.PCModules[node.src.slice(0,-3)]={render(){}};node.onload()};
+  const direct=harness(execute,definitions,assets);await tick();
+  const home=harness(execute,definitions,{...assets,defaultRoute:'home'});
+  await tick();
+  home.context.location.hash='#probe';await home.context.PCApp.retry();
+  const order=h=>h.head.filter(n=>n.dataset.pcAsset==='style').map(n=>n.href);
+  assert.deepEqual(order(direct),['business.css','vendor.css','theme.css','probe.css']);
+  assert.deepEqual(order(home),order(direct));
+});
+
 test('new-page scaffold registers before a synchronous initializer throws', async () => {
   let source=fs.readFileSync(path.join(__dirname,'../templates/module.js'),'utf8')
     .replaceAll('__MODULE_KEY__','"probe"').replaceAll('__MODULE_NAME__','probe').replaceAll('__PAGE_TITLE__','"测试"');
@@ -138,7 +272,7 @@ test('new-page scaffold registers before a synchronous initializer throws', asyn
 
 test('generated fallback renders error text safely and offers retry', () => {
   const html=fs.readFileSync(path.join(__dirname,'../../pc.html'),'utf8');
-  const fallback=html.match(/window\.PC_BOOT_FAILED=function\(error\)[\s\S]*?(?=;window\.PC_BOOT_TIMER)/)?.[0];
+  const fallback=html.match(/window\.PC_BOOT_FAILED = function \(error\)[\s\S]*?(?=window.PCBoot)/)?.[0];
   assert.ok(fallback,'build the PC entry first');
   const span={textContent:''},main={innerHTML:'',removeAttribute(){},querySelector:()=>span};
   const context=vm.createContext({document:{readyState:'complete',getElementById:()=>main}});context.window=context;

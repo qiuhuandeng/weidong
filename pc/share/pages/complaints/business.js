@@ -504,12 +504,8 @@
   const centsMoney=value=>'¥'+money(Number(value||0)/100);
   function savedRefundOrders(p){if(Array.isArray(p?.refundOrders))return p.refundOrders;if(p?.refundOrderId)return [{orderId:p.refundOrderId,refund:p.refund||0,refundItems:p.refundItems||[]}];return []}
   function refundKey(orderId,itemId){return orderId+':'+itemId}
-  let solutionLoading;
   function loadSolutionTools(){
-    if(window.PCModules['complaint-solutions'])return Promise.resolve();
-    if(solutionLoading)return solutionLoading;
-    solutionLoading=new Promise((resolve,reject)=>{const script=document.createElement('script'),fail=()=>{clearTimeout(timer);script.remove();solutionLoading=null;reject(new Error('解决方案加载失败，请重试'))},timer=setTimeout(fail,30000);script.src=window.PC_ASSETS.modules['complaint-solutions'].script;script.onload=()=>{clearTimeout(timer);window.PCModules['complaint-solutions']?resolve():fail()};script.onerror=fail;document.head.append(script)});
-    return solutionLoading;
+    return window.PCApp.loadModule('complaint-solutions');
   }
   function solutionTools(){return window.PCModules['complaint-solutions'].create({clone,solutionOrders,savedRefundOrders,refundEntries,refundKey,centsText,getRecord:()=>main.record,SOLUTION_METHODS,toCents,refundAvailable,SOLUTION_PRODUCTS,PAYOUT_METHODS,validHandlingFile,getRecords:()=>records,selectedRefundEntries,esc,centsMoney,input,link,field,select,empty,solutionTotals,renderSolutionFields})}
   function solutionDraft(saved){return solutionTools().solutionDraft(saved)}

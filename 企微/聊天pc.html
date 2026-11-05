@@ -2075,6 +2075,49 @@
             display: none;
         }
 
+        /* 客户标签沿用聊天侧栏的卡片、输入框和颜色。 */
+        .pc-tags-card { padding: 12px; }
+        .pc-tags-title { margin: 0 0 12px; color: #475569; font-size: 12px; font-weight: 600; }
+        .pc-tags-section + .pc-tags-section { margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--ui-line-strong); }
+        .pc-tags-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 7px; }
+        .pc-tags-heading h4 { margin: 0; color: #64748b; font-size: 12px; font-weight: 500; }
+        .pc-tags-heading small { margin-left: 6px; color: #94a3b8; font-size: 10px; font-weight: 400; }
+        .pc-tags-link { padding: 2px 0; color: var(--ui-blue); font-size: 11px; cursor: pointer; }
+        .pc-tags-link:hover { text-decoration: underline; }
+        .pc-tags-list { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; min-width: 0; }
+        .pc-tag-chip, .pc-tag-choice { display: inline-flex; align-items: center; gap: 5px; max-width: 100%; padding: 4px 8px; border: 1px solid var(--ui-line-strong); border-radius: 5px; background: var(--ui-subtle); color: #526078; font-size: 11px; line-height: 17px; overflow-wrap: anywhere; text-align: left; }
+        .pc-tag-chip.is-enterprise, .pc-tag-choice[aria-pressed="true"] { border-color: #bfdbfe; background: var(--ui-blue-soft); color: var(--ui-blue); }
+        .pc-tag-empty { color: #94a3b8; font-size: 11px; line-height: 22px; }
+        .pc-tag-add { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border: 1px dashed #cbd5e1; border-radius: 5px; background: #fff; color: #64748b; font-size: 11px; line-height: 18px; }
+        .pc-tag-add:hover { color: var(--ui-blue); border-color: #93c5fd; }
+        .pc-tag-dialog { width: min(480px, calc(100vw - 32px)); max-height: min(660px, calc(100vh - 40px)); margin: auto; padding: 0; border: 1px solid var(--ui-line); border-radius: 14px; background: #fff; color: var(--ui-text); box-shadow: 0 24px 64px rgba(15,23,42,.2); }
+        .pc-tag-dialog[open] { display: flex; flex-direction: column; }
+        .pc-tag-dialog::backdrop { background: rgba(15,23,42,.3); }
+        .pc-tag-dialog-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 18px 20px 14px; border-bottom: 1px solid var(--ui-line); }
+        .pc-tag-dialog-head h3 { margin: 0; font-size: 15px; font-weight: 600; }
+        .pc-tag-dialog-head p { margin: 6px 0 0; color: var(--ui-muted); font-size: 12px; overflow-wrap: anywhere; }
+        .pc-tag-close { display: grid; place-items: center; width: 26px; height: 26px; flex-shrink: 0; border-radius: 6px; color: var(--ui-muted); font-size: 18px; }
+        .pc-tag-close:hover { background: var(--ui-subtle); }
+        .pc-tag-dialog-body { min-height: 0; overflow-y: auto; padding: 16px 20px 20px; }
+        .pc-tag-hint { margin: 0 0 12px; color: var(--ui-muted); font-size: 12px; line-height: 1.6; }
+        .pc-tag-search { display: flex; gap: 8px; }
+        .pc-tag-search input { flex: 1; min-width: 0; }
+        .pc-tag-button { height: 34px; padding: 0 13px; flex-shrink: 0; border: 1px solid var(--ui-line-strong); border-radius: 8px; background: #fff; color: #475569; font-size: 12px; }
+        .pc-tag-button:hover { background: var(--ui-subtle); }
+        .pc-tag-button.is-primary { background: var(--ui-blue); border-color: var(--ui-blue); color: #fff; }
+        .pc-tag-button:disabled, .pc-tag-choice:disabled { opacity: .5; cursor: not-allowed; }
+        .pc-tag-selected { margin-top: 14px; padding-bottom: 14px; border-bottom: 1px solid var(--ui-line); }
+        .pc-tag-group { margin-top: 14px; }
+        .pc-tag-group h4, .pc-tag-selected h4 { margin: 0 0 8px; color: #64748b; font-size: 12px; font-weight: 500; }
+        .pc-tag-choice { background: #fff; font-size: 12px; cursor: pointer; }
+        .pc-tag-choice:hover { border-color: #93c5fd; }
+        .pc-tag-choice i, .pc-tag-chip i { flex-shrink: 0; }
+        .pc-tag-error { margin: 12px 0 0; color: #dc2626; font-size: 12px; line-height: 1.6; }
+        .pc-tag-dialog-foot { display: flex; align-items: center; gap: 8px; padding: 14px 20px; border-top: 1px solid var(--ui-line); }
+        .pc-tag-dialog-foot span { margin-right: auto; color: var(--ui-muted); font-size: 12px; }
+        .pc-tag-dialog button:focus-visible, .pc-tags-card button:focus-visible { outline: 2px solid #93c5fd; outline-offset: 2px; }
+        .pc-tag-dialog [hidden] { display: none; }
+
         .pc-detail-module-head {
             display: flex;
             align-items: center;
@@ -3497,12 +3540,26 @@
                             <span class="text-slate-400 w-24">备注备用电话:</span>
                             <span class="text-slate-400 flex-1 text-right">--</span>
                         </div>
-                        <div class="flex items-start justify-between text-xs">
-                            <span class="text-slate-400 w-24">标签:</span>
-                            <span class="text-slate-400 flex-1 text-right">--</span>
-                        </div>
                     </div>
                 </div>
+
+                <section class="pc-detail-card pc-tags-card" aria-labelledby="customer-tags-title">
+                    <h3 id="customer-tags-title" class="pc-tags-title">客户标签</h3>
+                    <section class="pc-tags-section" aria-labelledby="personal-tags-title">
+                        <div class="pc-tags-heading">
+                            <h4 id="personal-tags-title">个人标签<small>仅自己可见</small></h4>
+                            <button type="button" class="pc-tags-link" onclick="ChatTags.open('personal')">编辑</button>
+                        </div>
+                        <div id="customer-personal-tags" class="pc-tags-list" aria-live="polite"></div>
+                    </section>
+                    <section class="pc-tags-section" aria-labelledby="enterprise-tags-title">
+                        <div class="pc-tags-heading">
+                            <h4 id="enterprise-tags-title">企业标签<small>后台统一管理</small></h4>
+                            <button type="button" class="pc-tags-link" onclick="ChatTags.open('enterprise')">编辑</button>
+                        </div>
+                        <div id="customer-enterprise-tags" class="pc-tags-list" aria-live="polite"></div>
+                    </section>
+                </section>
 
                 <!-- 会话状态管理 -->
                 <div class="pc-detail-card p-3">
@@ -3776,6 +3833,28 @@
         </div>
     </div>
 
+
+    <dialog id="customer-tag-dialog" class="pc-tag-dialog" aria-labelledby="customer-tag-dialog-title" aria-describedby="customer-tag-hint" oncancel="event.preventDefault(); ChatTags.close()">
+        <header class="pc-tag-dialog-head">
+            <div><h3 id="customer-tag-dialog-title">编辑个人标签</h3><p id="customer-tag-dialog-client"></p></div>
+            <button type="button" class="pc-tag-close" aria-label="关闭标签编辑" onclick="ChatTags.close()"><i class="ph ph-x" aria-hidden="true"></i></button>
+        </header>
+        <div class="pc-tag-dialog-body">
+            <p id="customer-tag-hint" class="pc-tag-hint"></p>
+            <form class="pc-tag-search" onsubmit="event.preventDefault(); ChatTags.create()">
+                <input id="customer-tag-search" class="pc-detail-input" type="search" autocomplete="off" aria-label="搜索标签" oninput="ChatTags.search(this.value)">
+                <button id="customer-tag-create" class="pc-tag-button" type="submit">新建标签</button>
+            </form>
+            <div id="customer-tag-selected" class="pc-tag-selected"></div>
+            <div id="customer-tag-options"></div>
+            <p id="customer-tag-error" class="pc-tag-error" role="alert" hidden></p>
+        </div>
+        <footer class="pc-tag-dialog-foot">
+            <span id="customer-tag-count" aria-live="polite">已选 0 个</span>
+            <button type="button" class="pc-tag-button" onclick="ChatTags.close()">取消</button>
+            <button id="customer-tag-save" type="button" class="pc-tag-button is-primary" onclick="ChatTags.save()">保存</button>
+        </footer>
+    </dialog>
 
     <!-- ==================== JavaScript 核心交互逻辑 ==================== -->
     <script>
@@ -4053,6 +4132,260 @@
         let activeActionMessageIndex = null; // 当前点击后展开操作条的消息索引
         let activeActionMenuPosition = { x: 0, y: 0 };
 
+        // 标签为本地原型数据。个人标签按当前登录员工隔离；企微帐号筛选不代表切换员工。
+        // 接入登录服务时，此 ID 应由认证会话提供，权限校验由服务端执行。
+        const chatTagStaffId = 'staff-zihua';
+        window.ChatTags = (() => {
+            const $ = id => document.getElementById(id);
+            const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+            const normalize = value => value.trim().replace(/\s+/g, ' ');
+            const sameIds = (a, b) => JSON.stringify([...a].sort()) === JSON.stringify([...b].sort());
+            const dbs = new Map();
+            const changes = typeof BroadcastChannel === 'function' ? new BroadcastChannel('weid.chat-pc-tags.v1') : null;
+            const catalogChanges = typeof BroadcastChannel === 'function' ? new BroadcastChannel('weid.customer-tag-row-rules.v1') : null;
+            let draft = null, saving = false, refreshId = 0;
+
+            // 与中台 / 移动聊天页使用同一标签库、稳定 ID 和默认样例；只读取，不修改后台定义。
+            const catalogExamples = { schema: 1, groups: [
+                [0, '房产类型', ['自住房', '投资房', '别墅']],
+                [1, '车辆等级', ['经济型', '中高端', '豪华']],
+                [3, '消费决策权', ['本人决策', '伴侣决策', '共同决策']],
+                [6, '客户价值', ['高价值', '中价值', '低价值', '潜力客户']],
+                [8, '项目偏好', ['烫发偏好', '护肤偏好', '光电抗衰', '私密护理']],
+                [9, '服务偏好', ['安静服务', '详细讲解', '快速完成']],
+                [10, '隐私关注', ['不愿拍照', '不愿公开案例', '不愿家人知晓']],
+                [11, '投诉风险', ['价格争议', '恢复期焦虑', '服务不满']],
+                [12, '竞品机构', ['A机构', 'B机构', '线上平台']]
+            ].map(([id, name, values]) => ({ id: `tag-group-${id}`, name, status: '启用', mark: '手动', valueRows: values.map((name, index) => ({ id: `tag-value-${id}-${index}`, name, enabled: true })) })) };
+
+            function database(name, store) {
+                if (!dbs.has(name)) dbs.set(name, new Promise((resolve, reject) => {
+                    const request = indexedDB.open(name, 1);
+                    let blocked = false;
+                    request.onupgradeneeded = () => request.result.createObjectStore(store);
+                    request.onsuccess = () => {
+                        if (blocked) { request.result.close(); return; }
+                        request.result.onversionchange = () => { request.result.close(); dbs.delete(name); };
+                        resolve(request.result);
+                    };
+                    request.onerror = () => { dbs.delete(name); reject(request.error); };
+                    request.onblocked = () => { blocked = true; dbs.delete(name); reject(Error('请关闭旧版本页面后重试')); };
+                }).catch(ex => { dbs.delete(name); throw ex; }));
+                return dbs.get(name);
+            }
+
+            async function read(name, store, key) {
+                const db = await database(name, store);
+                return new Promise((resolve, reject) => {
+                    const request = db.transaction(store).objectStore(store).get(key);
+                    request.onsuccess = () => resolve(request.result);
+                    request.onerror = () => reject(request.error);
+                });
+            }
+
+            function recordKey(kind, customerId) { return kind === 'personal' ? `personal:${chatTagStaffId}` : `enterprise:${customerId}`; }
+            function validRecord(value, kind) {
+                if (!value) return kind === 'personal' ? { schema: 1, catalog: [], customers: {} } : { schema: 1, tags: [] };
+                if (value.schema !== 1 || (kind === 'personal' ? !Array.isArray(value.catalog) || !value.customers || typeof value.customers !== 'object' : !Array.isArray(value.tags))) throw Error('标签记录格式不兼容，原数据已保留');
+                return value;
+            }
+            async function readRecord(kind, customerId) { return validRecord(await read('weid.chat-pc-tags.v1', 'records', recordKey(kind, customerId)), kind); }
+            function assigned(record, kind, customerId) {
+                return kind === 'personal' ? record.catalog.filter(tag => (record.customers[customerId] || []).includes(tag.id)) : record.tags;
+            }
+            async function readCatalog() {
+                const value = await read('weid.customer-tag-row-rules.v1', 'config', 'current');
+                const catalog = value || structuredClone(catalogExamples);
+                if (catalog.schema !== 1 || !Array.isArray(catalog.groups) || catalog.groups.some(g => !Array.isArray(g.valueRows))) throw Error('企业标签库格式不兼容，请联系管理员');
+                return catalog;
+            }
+            function enterpriseChoices(catalog) {
+                return catalog.groups.filter(g => g.status === '启用' && String(g.mark).includes('手动')).map(g => ({
+                    name: g.name,
+                    tags: g.valueRows.filter(v => v.enabled).map(v => ({ id: v.id, name: v.name, groupId: g.id, groupName: g.name }))
+                })).filter(g => g.tags.length);
+            }
+            function currentTag(tag, catalog) {
+                for (const group of catalog?.groups || []) {
+                    const value = group.valueRows.find(v => v.id === tag.id);
+                    if (value) return { ...tag, name: value.name, groupName: group.name };
+                }
+                return tag;
+            }
+            function error(message) { $('customer-tag-error').textContent = message; $('customer-tag-error').hidden = !message; }
+
+            async function refresh() {
+                const requestId = ++refreshId, customerId = conversations[activeConvKey].guid;
+                for (const kind of ['personal', 'enterprise']) $('customer-' + kind + '-tags').innerHTML = '<span class="pc-tag-empty">正在读取…</span>';
+                await Promise.all(['personal', 'enterprise'].map(async kind => {
+                    const container = $('customer-' + kind + '-tags');
+                    try {
+                        const record = await readRecord(kind, customerId);
+                        let tags = assigned(record, kind, customerId);
+                        // 后台读取失败时仍展示客户已保存的标签快照；编辑时提示并禁止新增。
+                        if (kind === 'enterprise') {
+                            try { const catalog = await readCatalog(); tags = tags.map(tag => currentTag(tag, catalog)); } catch (_) {}
+                        }
+                        if (requestId !== refreshId) return;
+                        container.innerHTML = tags.map(tag => `<span class="pc-tag-chip ${kind === 'enterprise' ? 'is-enterprise' : ''}" title="${esc(tag.groupName || '个人标签')}">${esc(tag.name)}</span>`).join('')
+                            + (tags.length ? '' : '<span class="pc-tag-empty">暂无标签</span>')
+                            + `<button type="button" class="pc-tag-add" onclick="ChatTags.open('${kind}')" aria-label="添加${kind === 'personal' ? '个人' : '企业'}标签"><i class="ph ph-plus" aria-hidden="true"></i>添加</button>`;
+                    } catch (ex) {
+                        if (requestId !== refreshId) return;
+                        container.innerHTML = `<span class="pc-tag-error">读取失败：${esc(ex.message || String(ex))}</span><button type="button" class="pc-tags-link" onclick="ChatTags.refresh()">重试</button>`;
+                    }
+                }));
+            }
+
+            async function open(kind) {
+                if (saving || !['personal', 'enterprise'].includes(kind)) return;
+                const conv = conversations[activeConvKey];
+                const d = draft = { kind, customerId: conv.guid, query: '', selected: [], base: [], tags: [], created: [], groups: [], ready: false };
+                $('customer-tag-dialog-title').textContent = kind === 'personal' ? '编辑个人标签' : '选择企业标签';
+                $('customer-tag-dialog-client').textContent = conv.name;
+                $('customer-tag-hint').textContent = kind === 'personal' ? '仅自己可见，可选择已有标签，或创建新标签（1–20 个字）。' : '由后台统一维护，可多选；取消勾选可移除客户标签。';
+                $('customer-tag-search').value = '';
+                $('customer-tag-search').placeholder = kind === 'personal' ? '搜索或输入新标签名称' : '搜索标签或标签组';
+                $('customer-tag-create').hidden = kind !== 'personal';
+                error(''); render();
+                if (!$('customer-tag-dialog').open) $('customer-tag-dialog').showModal();
+                $('customer-tag-search').focus();
+                try {
+                    const [record, catalog] = await Promise.all([readRecord(kind, d.customerId), kind === 'enterprise' ? readCatalog() : Promise.resolve(null)]);
+                    if (draft !== d) return;
+                    const tags = assigned(record, kind, d.customerId);
+                    d.base = tags.map(t => t.id);
+                    d.selected = [...d.base];
+                    d.groups = kind === 'enterprise' ? enterpriseChoices(catalog) : [];
+                    d.tags = kind === 'personal' ? [...record.catalog] : [...d.groups.flatMap(g => g.tags), ...tags.filter(t => !d.groups.some(g => g.tags.some(v => v.id === t.id))).map(t => ({ ...currentTag(t, catalog), unavailable: true }))];
+                    d.ready = true; render(); $('customer-tag-search').focus({ preventScroll: true });
+                } catch (ex) {
+                    if (draft !== d) return;
+                    d.failed = true; error(`读取失败：${ex.message || String(ex)}`); render();
+                }
+            }
+            function close() {
+                if (saving) return false;
+                draft = null;
+                if ($('customer-tag-dialog').open) $('customer-tag-dialog').close();
+                return true;
+            }
+            function search(value) { if (!draft || saving) return; draft.query = value; render(); }
+            function toggle(id) {
+                if (!draft?.ready || saving || !draft.tags.some(t => t.id === id)) return;
+                const index = draft.selected.indexOf(id);
+                if (index >= 0) draft.selected.splice(index, 1);
+                else if (!draft.tags.find(t => t.id === id).unavailable) draft.selected.push(id);
+                error(''); render();
+            }
+            function create() {
+                if (!draft?.ready || draft.kind !== 'personal' || saving) return;
+                const name = normalize($('customer-tag-search').value);
+                if (!name || [...name].length > 20) { error('标签名称请输入 1–20 个字。'); $('customer-tag-search').focus(); return; }
+                let tag = draft.tags.find(t => t.name.toLocaleLowerCase() === name.toLocaleLowerCase());
+                if (!tag) {
+                    tag = { id: 'personal-' + crypto.randomUUID(), name };
+                    draft.tags.push(tag); draft.created.push(tag);
+                }
+                if (!draft.selected.includes(tag.id)) draft.selected.push(tag.id);
+                draft.query = ''; $('customer-tag-search').value = ''; error(''); render(); $('customer-tag-search').focus();
+            }
+            function render() {
+                const d = draft;
+                if (!d) return;
+                $('customer-tag-search').disabled = saving || !d.ready;
+                $('customer-tag-create').disabled = saving || !d.ready;
+                $('customer-tag-save').disabled = saving || !d.ready;
+                $('customer-tag-save').textContent = saving ? '保存中…' : '保存';
+                $('customer-tag-count').textContent = `已选 ${d.selected.length} 个`;
+                $('customer-tag-selected').hidden = !d.selected.length;
+                $('customer-tag-selected').innerHTML = '<h4>已选标签</h4><div class="pc-tags-list">' + d.selected.map(id => {
+                    const tag = d.tags.find(t => t.id === id);
+                    return `<button type="button" class="pc-tag-chip ${d.kind === 'enterprise' ? 'is-enterprise' : ''}" data-tag-id="${esc(id)}" onclick="ChatTags.toggle(this.dataset.tagId)" aria-label="移除${esc(tag.name)}" ${saving ? 'disabled' : ''}>${esc(tag.name)}<i class="ph ph-x" aria-hidden="true"></i></button>`;
+                }).join('') + '</div>';
+                if (!d.ready) {
+                    $('customer-tag-options').innerHTML = d.failed ? `<button type="button" class="pc-tags-link" onclick="ChatTags.open('${d.kind}')">重新加载</button>` : '<p class="pc-tag-empty">正在读取标签…</p>';
+                    return;
+                }
+                const query = d.query.trim().toLocaleLowerCase();
+                const groups = d.kind === 'personal' ? [{ name: '我的标签', tags: d.tags }] : [...d.groups, { name: '已停用或已删除的标签（仅可移除）', tags: d.tags.filter(t => t.unavailable && d.selected.includes(t.id)) }];
+                $('customer-tag-options').innerHTML = groups.map(g => {
+                    const tags = g.tags.filter(t => (g.name + ' ' + t.name).toLocaleLowerCase().includes(query));
+                    if (!tags.length) return '';
+                    return `<section class="pc-tag-group"><h4>${esc(g.name)}</h4><div class="pc-tags-list">${tags.map(t => `<button type="button" class="pc-tag-choice" data-tag-id="${esc(t.id)}" onclick="ChatTags.toggle(this.dataset.tagId)" aria-pressed="${d.selected.includes(t.id)}" ${saving ? 'disabled' : ''}><i class="ph ${d.selected.includes(t.id) ? 'ph-check-square' : 'ph-square'}" aria-hidden="true"></i>${esc(t.name)}</button>`).join('')}</div></section>`;
+                }).join('') || `<p class="pc-tag-empty">${query ? (d.kind === 'personal' ? '未找到标签，可点击“新建标签”创建。' : '未找到匹配的企业标签。') : (d.kind === 'personal' ? '还没有个人标签，输入名称即可创建。' : '暂无可选标签，请联系管理员配置。')}</p>`;
+            }
+
+            async function save() {
+                const d = draft;
+                if (!d?.ready || saving) return;
+                saving = true; error(''); render();
+                try {
+                    // 保存前再次读取后台库，防止把编辑期间已停用的标签新增给客户。
+                    let choices = [];
+                    if (d.kind === 'enterprise') {
+                        const catalog = await readCatalog();
+                        choices = enterpriseChoices(catalog).flatMap(g => g.tags);
+                        if (d.selected.some(id => !d.base.includes(id) && !choices.some(t => t.id === id))) throw Error('部分所选企业标签已停用或删除，请移除后重新保存。');
+                    }
+                    const db = await database('weid.chat-pc-tags.v1', 'records');
+                    await new Promise((resolve, reject) => {
+                        const tx = db.transaction('records', 'readwrite'), store = tx.objectStore('records');
+                        const key = recordKey(d.kind, d.customerId), request = store.get(key);
+                        let failure;
+                        request.onsuccess = () => {
+                            try {
+                                const record = validRecord(request.result, d.kind);
+                                if (!sameIds(assigned(record, d.kind, d.customerId).map(t => t.id), d.base)) throw Error('该客户的标签已在其他页面更新，请关闭后重新编辑。');
+                                if (d.kind === 'personal') {
+                                    // 在事务内合并个人词库，其他客户的标签和并发新建的同名标签均保留。
+                                    for (const tag of d.created) {
+                                        if (!record.catalog.some(t => t.name.toLocaleLowerCase() === tag.name.toLocaleLowerCase())) record.catalog.push(tag);
+                                    }
+                                    const ids = d.selected.map(id => {
+                                        const tag = d.tags.find(t => t.id === id);
+                                        let stored = record.catalog.find(t => t.id === id || t.name.toLocaleLowerCase() === tag.name.toLocaleLowerCase());
+                                        if (!stored) { stored = tag; record.catalog.push(stored); }
+                                        return stored.id;
+                                    });
+                                    record.customers[d.customerId] = [...new Set(ids)];
+                                } else {
+                                    record.tags = d.selected.map(id => choices.find(t => t.id === id) || record.tags.find(t => t.id === id));
+                                }
+                                record.revision = (record.revision || 0) + 1;
+                                store.put(record, key);
+                            } catch (ex) { failure = ex; tx.abort(); }
+                        };
+                        tx.oncomplete = resolve;
+                        tx.onabort = () => reject(failure || tx.error || Error('保存被中止'));
+                        tx.onerror = () => { failure = failure || tx.error; };
+                    });
+                    saving = false; close(); changes?.postMessage({ customerId: d.customerId }); refresh(); showToast('客户标签已保存');
+                } catch (ex) {
+                    error(`保存失败：${ex.message || String(ex)}。当前选择已保留。`);
+                } finally { saving = false; render(); }
+            }
+
+            async function refreshCatalog() {
+                refresh();
+                const d = draft;
+                if (!d?.ready || d.kind !== 'enterprise' || saving) return;
+                try {
+                    const catalog = await readCatalog();
+                    if (draft !== d || saving) return;
+                    d.groups = enterpriseChoices(catalog);
+                    const tags = d.groups.flatMap(g => g.tags);
+                    d.tags = [...tags, ...d.tags.filter(t => d.selected.includes(t.id) && !tags.some(v => v.id === t.id)).map(t => ({ ...currentTag(t, catalog), unavailable: true }))];
+                    render();
+                } catch (ex) { if (draft === d) error(`企业标签读取失败：${ex.message || String(ex)}`); }
+            }
+            changes?.addEventListener('message', refresh);
+            catalogChanges?.addEventListener('message', refreshCatalog);
+            window.addEventListener('focus', refreshCatalog);
+            $('customer-tag-dialog').addEventListener('click', event => { if (event.target === event.currentTarget) { const box = event.currentTarget.getBoundingClientRect(); if (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom) close(); } });
+            return { refresh, open, close, search, toggle, create, save };
+        })();
+
         // 2. 初始化与会话切换
         function selectConversation(key) {
             if (isMultiSelectMode) {
@@ -4062,6 +4395,7 @@
                 exitMultiSelectMode();
             }
 
+            if (!ChatTags.close()) return;
             // 切换聊天时自动取消当前聊天累积的引用回复
             cancelReply();
             closeMessageActions();
@@ -4105,6 +4439,7 @@
                 relationStatus.className = `pc-relation-status ${relation.className} flex-1 text-right`;
             }
             updateDetailActionCustomer(conv);
+            ChatTags.refresh();
 
             // 重新渲染聊天信息流
             renderChatMessages();

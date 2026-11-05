@@ -23,6 +23,26 @@ def read(filename):
     return (ROOT / filename).read_text()
 
 
+def critical_styles():
+    """Inline only tokens needed before the full theme arrives; keep one source."""
+    css = read('css/critical.css')
+    tokens = dict(re.findall(r'(--[\w-]+)\s*:\s*([^;{}]+);', read('css/tokens.css')))
+    required = set()
+
+    def include(name):
+        if name in required:
+            return
+        if name not in tokens:
+            raise SystemExit('Unknown critical CSS token: ' + name)
+        required.add(name)
+        for dependency in re.findall(r'var\((--[\w-]+)', tokens[name]):
+            include(dependency)
+
+    for name in re.findall(r'var\((--[\w-]+)', css):
+        include(name)
+    return ':root{' + ''.join(f'{name}:{value};' for name, value in tokens.items() if name in required) + '}\n' + css
+
+
 def entry_scopes(entries, modules):
     """Select an entry's module registry before emitting routes and navigation."""
     scopes = {}
@@ -144,11 +164,13 @@ def build():
             content = '@layer pc-business {\n' + content + '\n}'
         return asset(name, content, 'css')
 
+    # Independent immutable downloads; the loader gates execution on successful
+    # initialization, not merely the insertion order of classic script tags.
     scripts = [
-        # Fixed dependencies keep their original order and public exports. One
-        # immutable request avoids three independent CDN response waits.
-        js('vendor', ['vendor/vue-3.5.13.js', 'vendor/element-plus-2.9.3.js', 'vendor/element-plus-zh-cn.js', 'vendor/by-components-v3-1.1.26.js'], True),
-        js('components', ['js/components.js'])
+        {'src': js('vue', ['vendor/vue-3.5.13.js'], True), 'global': 'Vue'},
+        {'src': js('element-plus', ['vendor/element-plus-2.9.3.js', 'vendor/element-plus-zh-cn.js'], True), 'global': 'ElementPlus'},
+        {'src': js('by-components', ['vendor/by-components-v3-1.1.26.js'], True), 'global': 'ByComponentsV3'},
+        {'src': js('components', ['js/components.js']), 'global': 'PCUI'}
     ]
     styles = [css('business', ['css/legacy-business.css'], True), css('vendor', ['vendor/element-plus-2.9.3.css', 'vendor/by-components-v3-1.1.26.css']), css('theme', ['css/tokens.css', 'css/theme.css'])]
     app = js('app', ['js/core.js', 'js/loader.js'])
@@ -168,14 +190,15 @@ def build():
             raise SystemExit(f'{name} exceeds compressed module budget: {size:,} > {budget:,}. Split the business module; do not raise the limit to bypass this check.')
         if 'requiresUI' in module and not isinstance(module['requiresUI'], bool):
             raise SystemExit(f'{name} requiresUI must be a boolean')
-        modules[name] = {'routes': module['routes'], 'script': module_js, 'styles': module_css, 'requiresUI': module.get('requiresUI', True), 'dependencies': module.get('dependencies', [])}
+        modules[name] = {'routes': module['routes'], 'script': module_js, 'styles': module_css}
+        if module.get('requiresUI') is False:
+            modules[name]['requiresUI'] = False
+        if module.get('dependencies'):
+            modules[name]['dependencies'] = module['dependencies']
     shell_styles = [styles[0], styles[2]]
     config = {'scripts': scripts, 'styles': styles, 'shellStyles': shell_styles}
-    template = read('templates/entry.html').replace('<!-- pc-critical -->', '<style>\n' + read('css/tokens.css') + read('css/critical.css') + '\n</style>')
-    # Discover the selected route's assets before downloading/executing the shell.
-    # Preload does not block first paint like a stylesheet link would.
-    hints = """(function(c){var r=location.hash.slice(1).split('?')[0]||c.defaultRoute;if(Object.hasOwn(c.routeRedirects,r))return;var m=Object.values(c.modules).find(function(m){return m.routes.includes(r)})||Object.values(c.modules).find(function(m){return m.routes.includes(c.defaultRoute)});[[(m.requiresUI?c.scripts:[]).concat(m.script),'script'],[(m.requiresUI?c.styles:c.shellStyles).concat(m.styles),'style']].forEach(function(g){g[0].forEach(function(url){var l=document.createElement('link');l.rel='preload';l.as=g[1];l.href=url;l.dataset.pcPreload='';document.head.appendChild(l)})})})(window.PC_ASSETS);"""
-    fallback = """window.PC_BOOT_FAILED=function(error){function show(){var main=document.getElementById('main');main.removeAttribute('aria-busy');main.innerHTML='<div class="pc-loading" role="alert"><span></span><button type="button" onclick="location.reload()">重新加载</button></div>';main.querySelector('span').textContent=error&&error.message?'页面加载失败：'+error.message:'页面资源加载失败，请重新加载后重试。'}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',show,{once:true});else show()};window.PC_BOOT_TIMER=setTimeout(function(){if(!window.PCApp)PC_BOOT_FAILED()},30000);"""
+    template = read('templates/entry.html').replace('<!-- pc-critical -->', '<style>\n' + critical_styles() + '\n</style>')
+    bootstrap = read('js/bootstrap.js')
     pages = {}
     for filename, entry in entries.items():
         selected_modules = {name: modules[name] for name in scopes[filename]}
@@ -188,14 +211,14 @@ def build():
         entry_config = {**config, 'defaultRoute': entry['route'], 'modules': selected_modules,
                         'navigation': navigation, 'routeRedirects': redirects[filename]}
         config_json = json.dumps(entry_config, ensure_ascii=False, separators=(',', ':')).replace('<', '\\u003c')
-        html = template.replace('<!-- pc-assets -->', '<script defer fetchpriority="high" src="' + app + '" onerror="PC_BOOT_FAILED()"></script>\n<script>window.PC_ASSETS=' + config_json + ';' + hints + fallback + '</script>')
+        html = template.replace('<!-- pc-assets -->', '<script>window.PC_ASSETS=' + config_json + ';\n' + bootstrap + '</script>\n<script defer fetchpriority="high" src="' + app + '" onerror="PC_BOOT_FAILED(new Error(\'入口资源加载失败\'))" onload="if(!window.PCApp)PC_BOOT_FAILED(new Error(\'入口初始化未完成\'))"></script>')
         if len(html.encode()) > ENTRY_BUDGET:
             raise SystemExit(f'{filename} exceeds {ENTRY_BUDGET:,} bytes; move business code to its module.')
         pages[filename] = html
     # WOFF2 is already compressed; conservatively count both preferred fonts even
     # on pages that do not use their glyphs. Fallback formats are not double-counted.
     font_size = sum(report[url.removeprefix('share/dist/')]['bytes'] for url in preferred_fonts)
-    shared_size = compressed([app, *scripts, *styles]) + font_size
+    shared_size = compressed([app, *(script['src'] for script in scripts), *styles]) + font_size
     if shared_size > SHARED_GZIP_BUDGET:
         raise SystemExit(f'Shared assets exceed budget: {shared_size:,} > {SHARED_GZIP_BUDGET:,}')
     def dependency_assets(name, seen=None):
@@ -204,11 +227,11 @@ def build():
             return []
         seen.add(name)
         module = modules[name]
-        return [module['script'], *module['styles'], *(asset for dep in module['dependencies'] for asset in dependency_assets(dep, seen))]
+        return [module['script'], *module['styles'], *(asset for dep in module.get('dependencies', []) for asset in dependency_assets(dep, seen))]
 
     first_sizes = {}
     for name, module in modules.items():
-        common_size = shared_size if module['requiresUI'] else compressed([app, *shell_styles])
+        common_size = shared_size if module.get('requiresUI', True) else compressed([app, *shell_styles])
         first_sizes[name] = common_size + max(len(gzip.compress(html.encode(), mtime=0)) for html in pages.values()) + compressed(dependency_assets(name))
         if first_sizes[name] > FIRST_ROUTE_GZIP_BUDGET:
             raise SystemExit(f'{name} first-load budget exceeded: {first_sizes[name]:,} > {FIRST_ROUTE_GZIP_BUDGET:,}')
