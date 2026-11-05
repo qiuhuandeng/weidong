@@ -7,9 +7,7 @@
 .uc-timing-table tbody>tr:first-child>td{background-color:var(--el-color-primary-light-9)}
 .uc-timing-cell{min-width:0}
 .uc-search-card{background:#fff;margin-bottom:var(--pc-gap);border-radius:4px}
-.uc-list-header{display:flex;align-items:stretch}
-.uc-list-header>.pc-tabs{flex:1;min-width:0}
-.uc-scope .uc-list-header>.uc-actions{flex-shrink:0;flex-wrap:nowrap;margin-bottom:var(--pc-gap);padding-right:16px;border-bottom:1px solid var(--el-border-color-light)}
+.uc-card-head>.uc-actions{margin-left:auto}
 .uc-complaint-content{white-space:pre-wrap;overflow-wrap:anywhere}
 .uc-list-timing{margin-top:4px;font-size:12px}.uc-list-overdue{color:var(--el-color-danger)}
 .uc-progress-task{margin-top:4px;font-size:12px;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;overflow-wrap:anywhere}

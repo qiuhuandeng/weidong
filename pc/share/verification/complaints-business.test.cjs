@@ -373,8 +373,8 @@ test('list retains orders and complaint content with a single workflow status',(
   const r={...copy(record),status:'待财务付款',statusDetail:'收款账户待核实',currentHandler:'财务甲',content:'完整投诉正文标记',member:'会员标记',phone:'电话标记',department:['门店'],responsible:['责任乙'],channel:'legal',type:'服务类',submitter:'客户本人'};
   const html=a.complaintRow(r);for(const value of ['待财务付款','责任乙','工商/法人投诉',r.level,r.content,r.member,r.phone,r.linked[0].id,r.store])assert.ok(html.includes(value));
   for(const value of ['财务甲','当前事项 / 卡点','当前处理节点','发起人','客户本人'])assert.ok(!html.includes(value));
-  const cells=html.split('</td>');assert.ok(cells[5].includes(r.statusDetail));assert.ok(cells[6].includes('责任乙'));
-  assert.ok(cells[2].includes('售后类型：'+r.type));
+  const cells=html.split('</td>');assert.ok(!cells[5].includes(r.statusDetail));assert.ok(cells[6].includes('责任乙'));
+  assert.ok(cells[6].includes('售后类型：'+r.type));
   assert.ok(cells[3].includes('工单号：'+r.id));
   assert.ok(cells[3].includes(r.content));
   assert.ok(!cells[3].includes(r.type));
@@ -421,15 +421,29 @@ test('old fixture deadlines prefer configured demand overrides, falling back to 
     r.communicationPeriods=[{dueAt:'2026-11-05 09:00',endedAt:''}];assert.equal(a.complaintTiming(r).dueAt,'2026-11-05 09:00');
   }finally{Object.defineProperty(dict,'current',descriptor)}
 });
-test('list progress follows the latest actual blocker, keeps ordinary notes separate and clears old reasons after agreement',()=>{
+test('accepted list progress shows the recorded acceptor, independent of the current handler',()=>{
+  const r={...copy(record),status:'客服已接单',acceptedBy:'客服甲',currentHandler:'客服乙',statusDetail:'旧事项',follows:[{kind:'accept',actor:'客服甲'}]};
+  assert.equal(a.listProgressText(r),'接单人：客服甲');
+  const cell=a.complaintRow(r).split('</td>')[5];assert.ok(cell.includes('客服已接单'));assert.ok(cell.includes('接单人：客服甲'));assert.ok(!cell.includes('客服乙'));assert.ok(!cell.includes('旧事项'));
+  delete r.acceptedBy;assert.equal(a.listProgressText(r),'接单人：客服甲');
+  r.follows=[];assert.equal(a.listProgressText(r),'');
+});
+test('list progress follows the latest unresolved reason and clears old reasons after agreement or confirmation',()=>{
   const r={...copy(record),status:'客服处理中',customerSolution:null,compensatedAt:null,customerDemand:'旧诉求',follows:[{kind:'follow',time:'2026-11-04 12:00',note:'普通补充'},{kind:'follow',time:'2026-11-04 11:00',communication:{result:'ongoing',reason:'无法联系上客户',reasonSource:'demands'}}]};
   assert.equal(a.listProgressText(r),'无法联系上客户');assert.ok(a.complaintRow(r).split('</td>')[5].includes('无法联系上客户'));
   r.follows.unshift({kind:'follow',time:'2026-11-04 13:00',communication:{result:'ongoing',reason:'amount'}});assert.equal(a.listProgressText(r),'客户不认可方案金额');
-  r.follows.unshift({kind:'follow',time:'2026-11-04 14:00',communication:{result:'agreed'}});assert.equal(a.listProgressText(r),'客户已同意解决方案，待确认具体方案');
-  r.customerSolution={methods:['refund']};r.compensatedAt='2026-11-04 15:00';assert.equal(a.listProgressText(r),'方案已确认，待后续办理');
-  r.status='财务审批中';assert.equal(a.listProgressText(r),'待财务审批反馈');
-  r.status='待财务付款';r.statusDetail='收款账户待核实';assert.equal(a.listProgressText(r),r.statusDetail);
-  r.status='已结案';assert.equal(a.listProgressText(r),'');
+  r.follows.unshift({kind:'follow',time:'2026-11-04 14:00',communication:{result:'agreed'}});assert.equal(a.listProgressText(r),'');
+  r.customerSolution={methods:['refund']};r.compensatedAt='2026-11-04 15:00';assert.equal(a.listProgressText(r),'');
+  r.follows=[];r.customerSolution=null;r.compensatedAt=null;r.customerDemand='无法联系上客户';r.statusDetail='旧事项';r.currentTask='待客服处理';assert.equal(a.listProgressText(r),'无法联系上客户');
+  r.customerDemand='';assert.equal(a.listProgressText(r),'');
+  r.customerDemand='旧诉求';r.follows=[{kind:'compensation'}];assert.equal(a.listProgressText(r),'');
+});
+test('pending and later list stages retain only the status even when operation details exist',()=>{
+  const r={...copy(record),acceptedBy:'客服甲',customerDemand:'无法联系上客户',statusDetail:'收款账户待核实',currentTask:'旧事项',follows:[{kind:'follow',communication:{result:'ongoing',reason:'无法联系上客户'}}]};
+  for(const status of a.WORK_ORDER_STATUSES.filter(status=>!['客服已接单','客服处理中'].includes(status))){
+    r.status=status;assert.equal(a.listProgressText(r),'');
+    const cell=a.complaintRow(r).split('</td>')[5];assert.ok(cell.includes(status));assert.ok(!cell.includes('uc-progress-task'));
+  }
 });
 test('process history uses recorded transitions without inventing department work or changing records',()=>{
   const r={id:'history',created:'2026-11-03 09:00',submitter:'客户',status:'待财务付款',department:['门店'],currentHandler:'财务甲',statusDetail:'收款账户待核实',logs:[],follows:[]};
