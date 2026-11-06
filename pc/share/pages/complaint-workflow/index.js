@@ -10,7 +10,9 @@ window.PCModules['complaint-workflow']={render(){},create({normalizeStatus}){
   const active=record=>!record.suspension&&!record.legacySuspended;
   const directClosureStatuses=['财务审批中','采购审批中','待财务付款','待采购发货','客服复核中'];
   function can(record,action){
-    const value=state(record);if(!active(record))return false;
+    const value=state(record);
+    if(action==='editAssessment')return known.has(value)&&value!=='已结案'&&Boolean(record.assessedAt||(record.follows||[]).some(f=>['handling','assessment'].includes(f.kind)));
+    if(!active(record))return false;
     if(action==='accept')return value==='待处理';
     if(action==='assess')return ['客服已接单','客服处理中'].includes(value);
     if(action==='follow')return known.has(value)&&value!=='待处理';

@@ -56,6 +56,7 @@
 .uc-recognition-summary,.uc-scheme-meta{display:flex;gap:6px 16px;flex-wrap:wrap;color:var(--pc-muted);margin:8px 0}
 .uc-scope #uc-section-follows .uc-details{grid-template-columns:minmax(0,1fr);gap:6px;line-height:var(--pc-table-line)}
 .uc-scope #uc-section-follows .uc-event-title{min-height:28px;gap:8px;margin-bottom:6px}
+.uc-event-actions{display:flex;align-items:center;margin-inline-start:auto;flex-shrink:0}
 .uc-follow-body{display:grid;gap:8px;min-width:0}
 .uc-follow-body>.uc-attachments{margin-top:0}
 .uc-scheme-meta{border-top:1px solid var(--pc-border-lighter);padding-top:12px}

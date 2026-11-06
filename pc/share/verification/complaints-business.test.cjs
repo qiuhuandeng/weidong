@@ -18,7 +18,7 @@ const followCode=fs.readFileSync(path.join(__dirname,'../pages/complaint-follow/
 vm.runInNewContext(followCode,context);
 const processCode=fs.readFileSync(path.join(__dirname,'../pages/complaint-detail/index.js'),'utf8');
 vm.runInNewContext(processCode,context);
-const hook = `window.testAPI={createTicketForm,newTicketErrors,executionResultRecords,planPanel,workflow,toCents,orderDateRange,filtered,matchingOrders,customerIdOf,customerDirectory,matchingCustomers,orderPickerState,orderPickerTitle,orderPickerDirty,orderPickerCustomers,orderPickerOrders,orderPickerView,selectPickerCustomer,changePickerCustomer,selectPickerOrder,recordOrderAssociation,informationView,handlingMissing,validateCustomerSolution,solutionDraft,solutionTotals,solutionOrders,refundEntries,refundAvailable,solutionTools,solutionRead,recordAccept,recordRecognition,recordCompensation,recordFollow,followTools,recordClosure,hasHandlingScheme,canClose,responsibleOptions,complaintCSV,validHandlingFile,records,orders,persist,canAssess,STATUS_TABS,WORK_ORDER_STATUSES,CHANNELS,workOrderStatus,normalizeRecordStatus,statusScope,currentHandler,currentTask,detailActions,complaintRow,complaintTiming,complaintTimingHTML,listProgressText,summary,phoneView,processingDepartment,processRecords,processView,select(id){main={record:records.find(r=>r.id===id)};return main.record;}};`;
+const hook = `window.testAPI={createTicketForm,newTicketErrors,executionResultRecords,followPanel,detailPanels,sections,detailTabKey,workflow,toCents,orderDateRange,filtered,matchingOrders,customerIdOf,customerDirectory,matchingCustomers,orderPickerState,orderPickerTitle,orderPickerDirty,orderPickerCustomers,orderPickerOrders,orderPickerView,selectPickerCustomer,changePickerCustomer,selectPickerOrder,recordOrderAssociation,informationView,handlingMissing,validateCustomerSolution,solutionDraft,solutionTotals,solutionOrders,refundEntries,refundAvailable,solutionTools,solutionRead,recordAccept,recordRecognition,recordCompensation,recordFollow,followTools,recordClosure,hasHandlingScheme,canClose,responsibleOptions,complaintCSV,validHandlingFile,records,orders,persist,canAssess,STATUS_TABS,WORK_ORDER_STATUSES,CHANNELS,workOrderStatus,normalizeRecordStatus,statusScope,currentHandler,currentTask,detailActions,complaintRow,complaintTiming,complaintTimingHTML,listProgressText,summary,phoneView,processingDepartment,processRecords,processView,select(id){main={record:records.find(r=>r.id===id),tab:detailTabKey()};return main.record;}};`;
 vm.runInNewContext(code.replace('  window.PCComplaints={mount,leave};',hook+'\n  window.PCComplaints={mount,leave};'),context);
 const a=context.window.testAPI;
 let count=0;
@@ -313,7 +313,7 @@ test('handling attachment formats retain MIME verification',()=>{for(const f of 
 test('CSV preserves filtered rows, Chinese BOM, quotes and formula protection',()=>{const csv=a.complaintCSV([{...copy(record),name:'=1+1',content:'包含,逗号和\"引号\"'}]);assert.equal(csv[0],'\uFEFF');assert.equal(csv.split('\r\n').length,2);assert.ok(csv.includes("\"'=1+1\""));assert.ok(csv.includes('\"包含,逗号和\"\"引号\"\"\"'));assert.ok(csv.includes('\"已结案\"'))});
 test('all five downstream stages expose direct closure while notes preserve their status',()=>{
   for(const status of ['财务审批中','采购审批中','待财务付款','待采购发货','客服复核中']){
-    const r={...copy(record),status,assessedAt:null,handlingPlan:'',department:'',responsible:[],customerSolution:null,execution:{index:0,steps:[{kind:'payment',type:'handling',done:false},{kind:'procurement',type:'handling',done:false}]}};
+    const r={...copy(record),status,assessedAt:null,handlingPlan:'',department:'',responsible:[],customerSolution:null,follows:[],execution:{index:0,steps:[{kind:'payment',type:'handling',done:false},{kind:'procurement',type:'handling',done:false}]}};
     assert.equal(a.canClose(r),true);
     assert.equal(a.recordRecognition(r,draft,'2026-11-02 12:00'),null);assert.equal(r.status,status);
     {assert.ok(a.recordFollow(r,{note:'继续核实',files:[]},'2026-11-02 12:01'));assert.equal(r.status,status)}
@@ -670,13 +670,13 @@ test('review conclusions and missing results stay distinct, and repeated executi
   const history=a.followTools().history(r,a.executionResultRecords(r));assert.ok(history.includes('客户退款'));assert.ok(history.includes('客户确认已到账，处理完成'));
   const blank=a.processView({status:'待财务付款',follows:[],logs:[]});assert.ok(blank.includes('暂无操作结果'));assert.ok(!blank.includes('付款成功'));
 });
-test('follow history includes only reached communication and execution outcomes in lifecycle examples',()=>{
+test('follow history includes reached attribution, communication and execution outcomes in lifecycle examples',()=>{
   const expected=[[],[],['communication'],['solution','communication'],['solution','communication'],['solution','communication'],['payment','solution','communication'],['review','shipment','payment','solution','communication'],['closure','review','shipment','payment','solution','communication']];
   expected.forEach((kinds,index)=>{
     const r=a.records.find(item=>item.id===String(31029+index)),before=JSON.stringify(r),helper=a.followTools();
-    const rows=helper.historyRecords(r,a.executionResultRecords(r));assert.deepEqual(copy(rows.map(item=>item.historyKind)),kinds,r.id);
+    const rows=helper.historyRecords(r,a.executionResultRecords(r));assert.deepEqual(copy(rows.map(item=>item.historyKind)),index>=2?[...kinds,'attribution']:kinds,r.id);
     const html=helper.history(r,a.executionResultRecords(r));
-    for(const label of ['客服接单','责任认定','财务审批','采购审批','待执行','待安排发货'])assert.ok(!html.includes(label),r.id+': '+label);
+    for(const label of ['客服接单','财务审批','采购审批','待执行','待安排发货'])assert.ok(!html.includes(label),r.id+': '+label);
     assert.equal(JSON.stringify(r),before);
   });
 });
@@ -694,9 +694,9 @@ test('follow history keeps manual communication, original form snapshots and att
     {id:'accept',kind:'accept',time:'2026-11-06 10:00',note:'已接单'}
   ]};
   const before=JSON.stringify(r),helper=a.followTools(),rows=helper.historyRecords(r),html=helper.history(r);
-  assert.deepEqual(copy(rows.map(f=>f.id)),['reply','note','plan','reason']);
+  assert.deepEqual(copy(rows.map(f=>f.id)),['reply','note','plan','reason','assessment']);
   for(const value of ['已告知预计办理时间','客户补充收货要求','客户确认退款金额','正和客户协商退款金额','¥500.00','data-kind="solution-history" data-index="3"','data-kind="follow" data-index="4"'])assert.ok(html.includes(value),value);
-  for(const value of ['内部责任原因','内部转派','¥900.00'])assert.ok(!html.includes(value));
+  for(const value of ['内部转派','¥900.00'])assert.ok(!html.includes(value));
   assert.equal(JSON.stringify(r),before);assert.equal(helper.history(JSON.parse(before)),html);
 });
 test('follow history retains failed retries and shipment batches and prefers execution proof over duplicate workflow summaries',()=>{
@@ -723,7 +723,7 @@ test('closure history appears once, preserves later communication and supports l
   ]};
   const helper=a.followTools(),extra=[{kind:'execution-result',historyKind:'closure',time:r.closedAt,fields:[['结案说明','重复的状态回执']]}],before=JSON.stringify(r);
   const rows=helper.historyRecords(r,extra),html=helper.history(r,extra);assert.equal(rows.filter(f=>f.historyKind==='closure').length,1);assert.equal(rows[0].id,'after');assert.ok(html.includes('无赔付直接结案'));assert.ok(!html.includes('内部责任原因'));assert.ok(!html.includes('重复的状态回执'));assert.equal(JSON.stringify(r),before);
-  const legacy={...r,closedAt:'2026-11-06 10:59',follows:[r.follows[2]]};assert.equal(helper.historyRecords(legacy).length,1);assert.ok(helper.history(legacy).includes(r.closeNote));assert.ok(!helper.history(legacy).includes('内部责任原因'));
+  const legacy={...r,closedAt:'2026-11-06 10:59',follows:[r.follows[2]]};assert.equal(helper.historyRecords(legacy).filter(f=>f.historyKind==='closure').length,1);assert.equal(helper.historyRecords(legacy).filter(f=>f.historyKind==='attribution').length,1);assert.ok(helper.history(legacy).includes(r.closeNote));assert.ok(!helper.history(legacy).includes('内部责任原因'));
   const closeOnly={...r,follows:[]};assert.equal(helper.historyRecords(closeOnly).length,1);assert.ok(helper.history(closeOnly).includes(r.closeNote));
 });
 test('no-payout closure preserves the selected result after serialization',()=>{
@@ -731,10 +731,62 @@ test('no-payout closure preserves the selected result after serialization',()=>{
   const entry=a.recordClosure(r,'2026-11-06 15:00','客户确认无需退赔','no-payout');assert.ok(entry);assert.equal(entry.closureType,'no-payout');
   const reopened=JSON.parse(JSON.stringify(r));assert.ok(a.followTools().history(reopened).includes('无赔付直接结案'));assert.equal(a.followTools().historyRecords(reopened).filter(f=>f.historyKind==='closure').length,1);
 });
-test('plan sections keep independent empty content without filled or unfilled badges',()=>{
-  const r={...copy(a.records[0]),status:'客服已接单',handlingPlan:'',assessedAt:null,customerSolution:null,follows:[]};
-  const html=a.planPanel(r);assert.ok(html.includes('责任认定'));assert.ok(html.includes('跟进处理'));
-  assert.ok(!html.includes('>未填写</span>'));assert.ok(!html.includes('>已填写</span>'));assert.ok(html.includes('暂无责任认定'));assert.ok(html.includes('暂无跟进处理'));
+test('removing the plan tab preserves the complete information panel and its default selection',()=>{
+  assert.deepEqual(copy(a.sections()),[['info','工单信息'],['follows','跟进记录']]);
+  assert.equal(a.detailTabKey(),'info');assert.equal(a.detailTabKey('info'),'info');
+  for(const key of ['plan','attribution','solution'])assert.equal(a.detailTabKey(key),'follows');
+  for(const saved of a.records){
+    const r=a.select(saved.id),html=a.detailPanels(r);
+    const originalInfo='<section class="uc-tab-panel" role="tabpanel" id="uc-section-info" aria-labelledby="uc-tab-info" >'+a.informationView(r)+a.processView(r)+'</section>';
+    assert.ok(html.startsWith(originalInfo),r.id);
+    assert.ok(html.includes('id="uc-section-follows" aria-labelledby="uc-tab-follows" hidden'));assert.ok(!html.includes('uc-section-plan'));
+  }
+});
+test('attribution is a dated timeline node with snapshots, attachments and editing on its latest record',()=>{
+  const r=copy(a.records.find(r=>r.id==='31031')),previous=copy(r.follows.find(f=>['handling','assessment'].includes(f.kind))),proof={name:'责任认定凭证.png',data:'data:image/png;base64,eA=='};
+  const entry=a.recordRecognition(r,{...r,firstContact:'首次联系员工',contactTime:'2026-11-06T09:30',customerDemand:'正和客户协商退款金额',customerStatement:'客户表示希望退款，并说明沟通过程。',reason:'核实后的责任原因',handlingFiles:[proof]},'2026-11-06 15:00');assert.ok(entry);assert.equal(entry.action,'修改责任认定');
+  const helper=a.followTools(),before=JSON.stringify(r),rows=helper.historyRecords(r),html=helper.history(r);
+  assert.equal(rows.filter(f=>f.historyKind==='attribution').length,2);assert.equal(rows[0].id,entry.id);assert.deepEqual(copy(r.follows.find(f=>f.id===previous.id)),previous);
+  const nodes=[...html.matchAll(/<article class="uc-event">[\s\S]*?<\/article>/g)].map(match=>match[0]);
+  assert.equal(nodes.filter(node=>node.includes('data-uc="begin-assessment"')).length,1);
+  for(const value of ['2026-11-06 15:00','第一联系人','首次联系员工','投诉时间','2026-11-06 09:30','未达成原因','正和客户协商退款金额','客户陈述','客户表示希望退款，并说明沟通过程。','核实后的责任原因','责任部门','售后类型','责任人','处理结果','data-uc="begin-assessment"','data-kind="handling-history" data-index="0"'])assert.ok(nodes[0].includes(value),value);
+  assert.equal(JSON.stringify(r),before);assert.equal(helper.history(JSON.parse(before)),html);
+  for(const status of a.WORK_ORDER_STATUSES)assert.equal(helper.history({...r,status}).includes('data-uc="begin-assessment"'),status!=='已结案',status);
+  const legacy={...r,follows:[]};for(const value of ['核实后的责任原因','首次联系员工','2026-11-06 09:30','正和客户协商退款金额','客户表示希望退款，并说明沟通过程。','data-kind="handling"'])assert.ok(helper.history(legacy).includes(value),value);
+  const later={...r,firstContact:'后续员工',contactTime:'2026-11-07T09:00',customerDemand:'后续原因',customerStatement:'后续陈述'};
+  assert.equal(helper.history(later),html);
+});
+test('editing existing attribution stays available before closure without changing downstream progress',()=>{
+  for(const status of ['待处理','财务审批中','采购审批中','待财务付款','待采购发货','客服复核中']){
+    const r={...copy(a.records.find(r=>r.id==='31031')),status,currentTask:'保留当前任务',statusDetail:'保留当前办理结果',customerSolution:copy(valid.value),execution:{index:1,steps:[{kind:'sales',done:true},{kind:'payment',type:'handling',done:false}]}};
+    const before=copy(r),helper=a.followTools();
+    assert.ok(helper.history(r).includes('aria-label="编辑当前责任认定"'),status);
+    const entry=a.recordRecognition(r,{...helper.operationDraft('assessment',r),reason:'补充责任核实资料',handlingPlan:'resolved',customerSolution:null},'2026-11-06 16:00');
+    assert.ok(entry,status);assert.equal(entry.action,'修改责任认定');assert.equal(r.status,status);assert.equal(r.handlingPlan,before.handlingPlan);
+    for(const key of ['currentTask','statusDetail','execution','customerSolution','closedAt','communicationPeriods'])assert.deepEqual(copy([r[key]]),copy([before[key]]),key);
+    assert.deepEqual(copy(r.follows.slice(1)),before.follows);assert.equal(r.reason,'补充责任核实资料');
+    const after=JSON.stringify(r);assert.equal(a.recordRecognition(r,helper.operationDraft('assessment',r),'2026-11-06 16:01'),null);assert.equal(JSON.stringify(r),after);
+    assert.equal(a.recordCompensation(r,valid.value,'2026-11-06 16:02'),null);
+  }
+});
+test('closed attribution cannot be edited and timeline node names use plain text',()=>{
+  for(const saved of a.records){
+    const r=copy(saved),helper=a.followTools(),html=helper.history(r,a.executionResultRecords(r));
+    for(const heading of html.matchAll(/<div class="uc-event-title">([\s\S]*?)<\/div>/g))assert.ok(!heading[1].includes('class="pill'),r.id);
+    if(!r.assessedAt)continue;
+    r.status='已结案';const before=JSON.stringify(r);
+    assert.ok(!helper.history(r).includes('data-uc="begin-assessment"'));
+    assert.equal(a.recordRecognition(r,{...helper.operationDraft('assessment',r),reason:'禁止结案后修改'},'2026-11-06 16:00'),null);
+    assert.equal(JSON.stringify(r),before);
+  }
+  assert.ok(a.followTools().history(a.records.find(r=>r.id==='31031')).includes('<span>责任认定</span>'));
+  const footer=a.followTools().editorFooter({kind:'assessment',assessmentOnly:true,draft:{handlingPlan:'resolved'}});
+  assert.ok(footer.includes('保存责任认定'));assert.ok(!footer.includes('保存并结案'));
+});
+test('legacy attribution with no recorded handling result can still be corrected in downstream stages',()=>{
+  const r={...copy(a.records.find(r=>r.id==='31031')),status:'采购审批中',handlingPlan:''};
+  const entry=a.recordRecognition(r,{...a.followTools().operationDraft('assessment',r),reason:'补充历史责任原因'},'2026-11-06 16:00');
+  assert.ok(entry);assert.equal(r.handlingPlan,'');assert.equal(r.status,'采购审批中');assert.equal(r.reason,'补充历史责任原因');
 });
 test('suspension pauses node timing and closure does not mark unexecuted route nodes complete',()=>{
   const r={status:'已挂起',taskDeadline:'2020-01-01 10:00',execution:{index:0,steps:[
@@ -967,7 +1019,7 @@ test('acceptance without a demand starts a grade default snapshot; subsequent re
   const dict=context.window.PCComplaintOptions,descriptor=Object.getOwnPropertyDescriptor(dict,'current'),config={...dict.current,revision:7,defaultTimings:{'2级':3},demandTimings:{无法联系上客户:{byLevel:{'2级':1}}}};
   Object.defineProperty(dict,'current',{get:()=>copy(config)});
   try{
-    const make=()=>({...copy(record),status:'待处理',customerDemand:'',customerSolution:null,compensatedAt:null,follows:[],communicationPeriods:[]});
+    const make=()=>({...copy(record),status:'待处理',customerDemand:'',customerSolution:null,compensatedAt:null,assessedAt:null,follows:[],communicationPeriods:[]});
     const r=make(),entry=a.recordAccept(r,'2026-11-04 10:00',{level:'2级'}),first=a.followTools().activePeriod(r);
     assert.equal(first.id,entry.timingPeriodId);assert.equal(first.dueAt,'2026-11-07 10:00');assert.equal(first.timingSource,'default');assert.equal(first.configRevision,7);
     config.defaultTimings['2级']=2;assert.equal(first.dueAt,'2026-11-07 10:00');
