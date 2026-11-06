@@ -71,7 +71,7 @@
     reconcileBase(l.data);
     const d=l.data,v=d.value,locked=d.locked?'disabled':'',names=[v.baseUnit,...v.units.map(x=>x.name)].filter(Boolean),options=names.map(x=>[x,x]),dictionary=unitNames(v);
     const rowLocked=i=>d.locked&&i<(M.spec(S.data,d.pid,v.id)?.units.length||0);
-    let body=S.form([F('规格名称',I('规格名称',v.name,'value.name'),true)]);
+    let body=S.form([F('规格名称',I('规格名称',v.name,'value.name'),true)],120);
     body+=S.tabs(['单位与换算','价格设置'],d.tab,'specTab');
     if(d.tab==='单位与换算'){
       const fields=[F('最小单位',C('最小单位',[['','请选择'],...dictionary],v.baseUnit,'value.baseUnit',locked+' data-stock-action="materialBaseChange"'),true)];
@@ -83,14 +83,14 @@
         ['可填小数',(x,i)=>C('该单位可填小数 '+(i+1),[['false','否'],['true','是']],String(x.allowFraction),'value.units.'+i+'.allowFraction',rowLocked(i)?'disabled':''),100],
         ['操作',(x,i)=>rowLocked(i)?'已引用':L('移除','materialUnitRemove',String(i)),80]
       ];
-      body+=S.section('最小单位与多单位换算',S.form(fields)+(v.units.length?S.table(columns,v.units):''),B('添加上一级','materialUnitAdd'));
+      body+=S.section('最小单位与多单位换算','<div class="stock-material-units">'+S.form(fields,120)+(v.units.length?S.table(columns,v.units):'')+'</div>',B('添加上一级','materialUnitAdd'));
       if(d.locked)body+='<p>该规格已有引用，最小单位及已有换算关系已锁定；可增加新单位，或调整默认业务单位。</p>';
       if(v.uses>1)body+='<p>历史使用次数：'+E(v.uses)+'。此值仅保留历史含义，不参与单位换算。</p>';
-      body+=S.section('业务计量单位',S.form(Object.entries(roleLabels).map(([k,label])=>F(label,C(label,[['','请选择'],...options],v.defaults[k],'value.defaults.'+k),true))));
+      body+=S.section('业务计量单位',S.form(Object.entries(roleLabels).map(([k,label])=>F(label,C(label,[['','请选择'],...options],v.defaults[k],'value.defaults.'+k),true)),120));
     }else{
-      body+=S.form([F('参考成本（元 / '+v.baseUnit+'）',I('最小单位参考成本',v.cost,'value.cost','number')),F('建议售价（元 / '+v.defaults.sale+'）',I('建议售价',v.price,'value.price','number'))]);
+      body+=S.form([F('参考成本（元 / '+v.baseUnit+'）',I('最小单位参考成本',v.cost,'value.cost','number')),F('建议售价（元 / '+v.defaults.sale+'）',I('建议售价',v.price,'value.price','number'))],120);
     }
-    return {body,footer:B('取消','close')+B('确定规格','saveMaterialSpec','','','primary')};
+    return {body:'<div class="stock-material-spec">'+body+'</div>',footer:B('取消','close')+B('确定规格','saveMaterialSpec','','','primary')};
   };
   S.actions.materialBaseChange=()=>{try{reconcileBase(S.top.data);}finally{S.actions.drawRefresh();}};
   S.actions.materialUnitAdd=()=>{

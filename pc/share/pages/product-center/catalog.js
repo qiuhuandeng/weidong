@@ -43,13 +43,54 @@
   S.actions.salesMaterialRemove=id=>{S.top.data.value.materials.splice(Number(id),1);S.actions.drawRefresh();};
   S.actions.salesImage=async(key,extra,input)=>{const l=S.top,images=await S.readImages(input.files);if(!S.state.layers.includes(l))return;if(key==='thumbnail')l.data.value.thumbnail=images[0]?.src||l.data.value.thumbnail;else l.data.value[key].push(...images);S.actions.drawRefresh();};
   S.actions.salesImageRemove=(key,index)=>{if(key==='thumbnail')S.top.data.value[key]='';else S.top.data.value[key].splice(Number(index),1);S.actions.drawRefresh();};
-  S.actions.salesMaterials=()=>S.open('salesMaterials',{query:'',category:'',selected:S.top.data.value.materials.map(x=>M.key(x.pid,x.sid))},'选择库存物料',860);
-  S.drawers.salesMaterials=l=>{
-    const d=l.data,rows=M.catalog(S.data).filter(x=>x.product.enabled&&x.enabled!==false&&S.matches(x.product.name+' '+x.product.code,d.query)&&S.inCategory(x.product.category,d.category));
-    return {body:S.layerSearch([I('物料名称',d.query,'query','text','placeholder="物料名称 / 编号"'),C('所属分类',S.categoryOptions(),d.category,'category')])+S.table([['选择',x=>S.check('',d.selected.includes(x.key),'salesPickMaterial',x.key),70],['编号',x=>E(x.product.code)],['物料名称',x=>E(x.product.name),180],['所属分类',x=>E(S.cat(x.product.category))],['单位',x=>E(x.baseUnit)],['规格型号',x=>E(x.name),140]],rows),footer:B('取消','close')+B('确定','salesConfirmMaterials','','','primary')};
+  const materialPickerRows=d=>S.data.products.filter(x=>x.enabled&&x.specs.some(v=>v.enabled!==false)&&S.matches([x.name,x.code,...x.specs.filter(v=>v.enabled!==false||d.selected.includes(M.key(x.id,v.id))).map(v=>v.code)].join(' '),d.appliedQuery)&&S.inCategory(x.category,d.appliedCategory));
+  S.actions.salesMaterials=()=>{
+    const materials=S.top.data.value.materials;
+    S.open('salesMaterials',{query:'',category:'',appliedQuery:'',appliedCategory:'',expanded:[...new Set(materials.map(x=>x.pid))],selected:materials.map(x=>M.key(x.pid,x.sid))},'选择库存物料',860);
   };
-  S.actions.salesPickMaterial=(id,extra,input)=>{const set=new Set(S.top.data.selected);input.checked?set.add(id):set.delete(id);S.top.data.selected=[...set];};
-  S.actions.salesConfirmMaterials=()=>{const ids=S.top.data.selected,parent=S.state.layers.at(-2).data.value,old=parent.materials;parent.materials=ids.map(id=>{const [pid,sid]=id.split(':');return old.find(x=>M.key(x.pid,x.sid)===id)||{pid,sid,qty:1,unit:M.defaultUnit(S.data,pid,sid,parent.type==='商品'?'sale':'consume')};});S.close();S.actions.drawRefresh();};
+  S.drawers.salesMaterials=l=>{
+    const d=l.data;
+    const toggle=product=>'<button type="button" class="pc-tree-toggle" data-stock-action="salesToggleMaterial" data-stock-id="'+E(product.id)+'" aria-label="'+(d.expanded.includes(product.id)?'收起':'展开')+E(product.name)+'的规格" aria-expanded="'+d.expanded.includes(product.id)+'">'+(d.expanded.includes(product.id)?'−':'+')+'</button>';
+    const rows=materialPickerRows(d).map(product=>{
+      const specs=product.specs.filter(x=>x.enabled!==false||d.selected.includes(M.key(product.id,x.id)));
+      const heading='<tr data-pc-full-row><td colspan="4"><div class="sales-material-group"><div class="sales-material-heading">'+toggle(product)+'<span>'+E(product.name)+'</span></div><span class="sales-field-hint">'+E(S.cat(product.category))+'</span></div></td></tr>';
+      return heading+(d.expanded.includes(product.id)?specs.map(spec=>{
+        const key=M.key(product.id,spec.id),checkbox=S.check('',d.selected.includes(key),'salesPickMaterial',key,product.id).replace('aria-label="选择此行"','aria-label="选择'+E(product.name+' '+spec.name)+'"');
+        return '<tr data-sales-material-spec="'+E(key)+'"><td>'+checkbox+'</td><td>'+E(spec.code||'—')+'</td><td>'+E(spec.name)+(spec.enabled===false?'（已停用）':'')+'</td><td>'+E(spec.baseUnit)+'</td></tr>';
+      }).join(''):'');
+    }).join('');
+    const table='<div class="table-wrap"><table data-pc-align="left" data-pc-min-height="0" data-pc-scroll="parent"><thead><tr><th data-pc-min-width="64">选择</th><th data-pc-min-width="190">规格编号</th><th data-pc-min-width="390">规格名称</th><th data-pc-min-width="140">最小单位</th></tr></thead><tbody>'+(rows||'<tr><td colspan="4">暂无符合条件的数据</td></tr>')+'</tbody></table></div>';
+    return {body:'<div>'+S.layerSearch([I('物料名称',d.query,'query','text','placeholder="物料名称 / 规格编号"'),C('所属分类',S.categoryOptions(),d.category,'category')])+table+'</div>',footer:B('取消','close')+B('确定','salesConfirmMaterials','','','primary')};
+  };
+  // Search (including Enter) expands the results; toggling never reapplies draft filters.
+  const refreshLayer=S.actions.drawRefresh,resetLayer=S.actions.layerReset;
+  S.actions.drawRefresh=()=>{
+    if(S.top?.type==='salesMaterials'){
+      const d=S.top.data;d.appliedQuery=d.query;d.appliedCategory=d.category;d.expanded=materialPickerRows(d).map(x=>x.id);
+    }
+    refreshLayer();
+  };
+  S.actions.layerReset=()=>{
+    if(S.top?.type!=='salesMaterials')return resetLayer();
+    const d=S.top.data;d.query='';d.category='';d.appliedQuery='';d.appliedCategory='';d.expanded=[...new Set(d.selected.map(key=>key.split(':')[0]))];refreshLayer();
+  };
+  S.actions.salesToggleMaterial=id=>{
+    const layer=S.top,d=layer.data,root=document.querySelector('#stock-layer-'+(S.state.layers.length-1)),scroll=root?.querySelector('.merge-drawer-body')?.scrollTop||0;
+    d.expanded=d.expanded.includes(id)?d.expanded.filter(x=>x!==id):[...d.expanded,id];refreshLayer();
+    requestAnimationFrame(()=>{if(S.top!==layer)return;const current=document.querySelector('#stock-layer-'+(S.state.layers.length-1));current?.querySelector('.merge-drawer-body')?.scrollTo({top:scroll});[...current?.querySelectorAll('[data-stock-action=salesToggleMaterial]')||[]].find(x=>x.dataset.stockId===id)?.focus({preventScroll:true});});
+  };
+  S.actions.salesPickMaterial=(id,pid,input)=>{
+    const d=S.top.data,set=new Set(d.selected);input.checked?set.add(id):set.delete(id);d.selected=[...set];
+  };
+  S.actions.salesConfirmMaterials=()=>{
+    const ids=S.top.data.selected,parent=S.state.layers.at(-2).data.value,old=parent.materials;
+    parent.materials=ids.map(id=>{
+      const previous=old.find(x=>M.key(x.pid,x.sid)===id);if(previous)return previous;
+      const [pid,sid]=id.split(':'),product=M.product(S.data,pid),spec=M.spec(S.data,pid,sid);
+      if(!product?.enabled||!spec||spec.enabled===false)throw Error('所选物料或规格已停用或不存在，请重新选择。');
+      return {pid,sid,qty:1,unit:M.defaultUnit(S.data,pid,sid,parent.type==='商品'?'sale':'consume')};
+    });S.close();S.actions.drawRefresh();
+  };
   S.actions.salesStores=()=>S.open('salesStores',{query:'',selected:[...S.top.data.value.stores]},'维护门店选择',860);
   S.drawers.salesStores=l=>({body:'<div data-sales-maintenance-stores data-pc-hierarchy="'+E(JSON.stringify({nodes:P.storeTree(S.data),value:l.data.selected,query:l.data.query,entityLabel:'门店'}))+'"></div>',footer:B('取消','close')+B('确定','salesConfirmStores','','','primary')});
   document.addEventListener('pc-hierarchy-change',e=>{if(e.target.matches('[data-sales-maintenance-stores]')&&S.top?.type==='salesStores')S.top.data.selected=e.detail;});

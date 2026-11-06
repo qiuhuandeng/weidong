@@ -1,0 +1,8 @@
+@layer pc-business {
+/* Layout only; tables, forms, tabs, inputs and drawers keep the shared PCUI skin. */
+.pc-page-sales-recipes{min-width:0}
+.recipe-drawer-content{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--pc-gap)}
+.recipe-drawer-content>.stock-section{margin:0}
+.recipe-drawer-content>.stock-summary{margin:0}
+
+}

@@ -286,6 +286,21 @@
         "stock-categories"
       ]
     },
+    "sales-recipes": {
+      "dependencies": [
+        "product-center"
+      ],
+      "scripts": [
+        "pages/sales-recipes/model.js",
+        "pages/sales-recipes/index.js"
+      ],
+      "styles": [
+        "pages/sales-recipes/style.css"
+      ],
+      "routes": [
+        "sales-recipes"
+      ]
+    },
     "product-center": {
       "dependencies": [
         "stock-management"
@@ -309,6 +324,21 @@
         "sales-prices"
       ],
       "gzipBudget": 40000
+    },
+    "stock-overview": {
+      "scripts": [
+        "pages/stock-overview/model.js",
+        "pages/stock-overview/index.js"
+      ],
+      "styles": [
+        "pages/stock-overview/style.css"
+      ],
+      "routes": [
+        "stock-overview"
+      ],
+      "dependencies": [
+        "stock-management"
+      ]
     }
   },
   "navigation": [
@@ -662,6 +692,11 @@
       "group": "库存",
       "items": [
         [
+          "stock-overview",
+          "库存总览",
+          "file"
+        ],
+        [
           "stock-reports",
           "库存报表",
           "file"
@@ -719,6 +754,11 @@
         [
           "sales-basics",
           "基础产品",
+          "file"
+        ],
+        [
+          "sales-recipes",
+          "配方管理",
           "file"
         ],
         [

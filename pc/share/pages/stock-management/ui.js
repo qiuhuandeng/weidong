@@ -10,7 +10,7 @@ window.StockPC=(()=>{
   S.select=(label,options,value,bind='',extra='')=>'<select aria-label="'+E(label)+'" data-filterable'+(bind?' data-stock-bind="'+E(bind)+'"':'')+' '+extra+'>'+options.map(o=>{const [id,name]=Array.isArray(o)?o:[o,o];return '<option value="'+E(id)+'"'+((Array.isArray(value)?value.includes(id):String(value??'')===String(id))?' selected':'')+'>'+E(name)+'</option>';}).join('')+'</select>';
   S.check=(label,checked,action,id='',extra='')=>'<label><input type="checkbox" aria-label="'+E(label||'选择此行')+'" '+(checked?'checked':'')+' data-stock-action="'+E(action)+'" data-stock-id="'+E(id)+'" data-stock-extra="'+E(extra)+'">'+E(label)+'</label>';
   S.field=(label,control,required=false)=>'<div class="field"><label class="'+(required?'required':'')+'">'+E(label)+'</label>'+control+'</div>';
-  S.form=fields=>'<div class="ub-form">'+fields.join('')+'</div>';
+  S.form=(fields,labelWidth)=>'<div class="ub-form"'+(labelWidth?' style="--pc-form-label-width:'+Number(labelWidth)+'px"':'')+'>'+fields.join('')+'</div>';
   S.tag=status=>'<span class="pill '+(/^(已完成|完全入库|已出库|已采购|已收货|启用)$/.test(status)?'green':/拒绝|撤销|取消|作废|禁用/.test(status)?'red':'blue')+'">'+E(status)+'</span>';
   S.wh=id=>M.warehouse(S.data,id)?.name||'—';
   S.cat=id=>S.data.categories.find(x=>x.id===id)?.name||'—';

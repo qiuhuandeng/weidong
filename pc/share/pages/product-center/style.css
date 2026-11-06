@@ -31,3 +31,7 @@
 /* The multiple-product dialog keeps its selected items beside their quantities. */
 .sales-multiple-editor .sales-multiple-options{display:flex;flex-direction:column;gap:var(--pc-gap);min-width:0}
 .sales-multiple-editor .sales-multiple-picker{display:flex;align-items:center;gap:var(--pc-gap);min-width:0}
+
+/* Material headings span the shared table; specification rows own SKU fields. */
+.sales-material-group{display:flex;align-items:center;justify-content:space-between;gap:var(--pc-gap);min-width:0}
+.sales-material-heading{display:flex;align-items:center;gap:var(--pc-gap);min-width:0;flex-wrap:wrap}

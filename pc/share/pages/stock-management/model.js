@@ -91,7 +91,7 @@
     if(delta<0)assert(stock.qty+delta>=-1e-7,'“'+product(s,line.pid).name+' / '+spec(s,line.pid,line.sid).name+'”库存不足。');
     const sourceCost=line.stockCost,unitCost=delta<0?stock.cost:(sourceCost??(line.unitPrice!==undefined?Number(line.unitPrice)/(line.conversion?.factor||1):stock.cost));
     const costEstimated=sourceCost!==undefined?!!line.costEstimated:delta<0?stock.estimated:!!line.priceEstimated||line.unitPrice===undefined||!!line.conversion?.legacy&&line.purchasePrice===undefined;
-    s.ledger.push({id:uid('L'),token,wid,pid:line.pid,sid:line.sid,delta:round(delta),baseUnit:line.conversion?.baseUnit||spec(s,line.pid,line.sid).baseUnit||product(s,line.pid).unit,unitCost,costEstimated,value:Math.round(delta*unitCost*100)/100,type,doc,at:now(),note});
+    s.ledger.push({id:uid('L'),token,wid,pid:line.pid,sid:line.sid,delta:round(delta),before:stock.qty,after:round(stock.qty+delta),baseUnit:line.conversion?.baseUnit||spec(s,line.pid,line.sid).baseUnit||product(s,line.pid).unit,unitCost,costEstimated,value:Math.round(delta*unitCost*100)/100,type,doc,at:now(),note});
     return {unitCost,costEstimated};
   }
   function normalizeLines(s,lines,strict=true,kind=''){
@@ -179,11 +179,12 @@
       }
       case 'shipTransfer':
         requireStatus(d,['待发货']);assert(d.kind==='transfer','此单据不是调拨单。');
-        for(const l of d.lines){const cost=entry(s,d.wid,l,-lineBase(l,l.qty),'调拨出库',d.id,'ship');l.stockCost=cost.unitCost;l.costEstimated=cost.costEstimated;}
+        if(d.cleanup)assert(warehouse(s,d.to)?.enabled,'调入仓库已停用，不能继续发货。');
+        for(const l of d.lines){const cost=entry(s,d.wid,l,-lineBase(l,l.qty),'调拨出库',d.id,'ship',d.cleanup?d.note:'');l.stockCost=cost.unitCost;l.costEstimated=cost.costEstimated;}
         d.status='待收货';d.shippedAt=at;d.shipper=actor;break;
       case 'receiveTransfer':
         requireStatus(d,['待收货']);assert(d.kind==='transfer','此单据不是调拨单。');
-        for(const l of d.lines)entry(s,d.to,l,lineBase(l,l.qty),'调拨入库',d.id,'receive');
+        for(const l of d.lines)entry(s,d.to,l,lineBase(l,l.qty),'调拨入库',d.id,'receive',d.cleanup?d.note:'');
         d.status='已完成';d.receivedAt=at;d.completedAt=at;d.receiver=actor;break;
       case 'verify':
         requireStatus(d,['待核数']);assert(d.kind==='replenish','当前单据不能核数。');
@@ -345,12 +346,59 @@
     for(const l of lines)entry(s,d.wid,l,(incoming?1:-1)*l.baseQty,incoming?'退货入库':'退货出库',d.id,'return',p.reason);
     log(d,'退回登记',origin.no);s.documents.unshift(d);return d.id;
   }
+  function adjustInventory(s,p){
+    assert(['gain','loss'].includes(p.direction),'请选择盘盈或盘亏。');
+    assert(warehouse(s,p.wid),'门店仓库不存在。');
+    const productRow=product(s,p.pid),sku=spec(s,p.pid,p.sid);
+    assert(productRow&&sku,'物料规格不存在。');
+    const unit=skuDefaults(productRow,sku).baseUnit,conversionRow=conversion(s,p.pid,p.sid,unit);
+    const qty=convert(p.qty,conversionRow,false),before=balance(s,p.wid,p.pid,p.sid),delta=p.direction==='gain'?qty:-qty;
+    assert(Number(p.before)===before,'当前库存已变化，请重新打开并核对。');
+    assert(before+delta>=0,'盘亏数量不能超过当前库存。');
+    assert(p.requestId&&!s.documents.some(d=>d.requestId===p.requestId),'该库存调整已经提交，请勿重复操作。');
+    const at=now(),actor=p.actor||'当前用户',type=p.direction==='gain'?'盘盈入库':'盘亏出库',note=String(p.note||'').trim();
+    const line={pid:p.pid,sid:p.sid,key:key(p.pid,p.sid),code:skuDefaults(productRow,sku).code,name:productRow.name,spec:sku.name,unit,conversion:conversionRow,qty,baseQty:qty,before,after:round(before+delta),difference:delta};
+    const d={id:uid('TZ'),no:'TZ'+at.replace(/\D/g,'')+String(++s.sequence).padStart(3,'0'),kind:'adjustment',requestId:p.requestId,wid:p.wid,type,status:'已完成',createdAt:at,completedAt:at,createdBy:actor,lines:[line],logs:[],note};
+    entry(s,p.wid,line,delta,type,d.id,'adjust',note);
+    log(d,type,'调整前 '+before+' '+unit+'，调整后 '+line.after+' '+unit+(note?'；'+note:''),actor);
+    s.documents.unshift(d);return d.id;
+  }
+  function cleanupInventory(s,p){
+    assert(['transfer','loss'].includes(p.mode),'请选择批量调拨或批量盘亏。');
+    assert(warehouse(s,p.wid),'门店仓库不存在。');
+    assert(p.requestId&&!s.documents.some(d=>d.requestId===p.requestId),'该批量操作已经提交，请勿重复操作。');
+    const note=String(p.note||'').trim();assert(note,'请填写操作原因。');
+    if(p.mode==='transfer'){
+      assert(p.wid!==p.to,'调出仓库和调入仓库不能相同。');
+      assert(warehouse(s,p.to)?.enabled,'请选择启用的调入仓库。');
+    }
+    assert(Array.isArray(p.lines)&&p.lines.length,'请至少选择一项有库存的物料规格。');
+    const seen=new Set(),lines=p.lines.map(l=>{
+      const productRow=product(s,l.pid),sku=spec(s,l.pid,l.sid),k=key(l.pid,l.sid);
+      assert(productRow&&sku,'物料规格不存在。');assert(!seen.has(k),'同一物料规格不能重复添加。');seen.add(k);
+      const unit=skuDefaults(productRow,sku).baseUnit,c=conversion(s,l.pid,l.sid,unit),qty=convert(l.qty,c,false),before=balance(s,p.wid,l.pid,l.sid);
+      assert(l.unit===unit,'物料计量单位已变化，请重新选择。');
+      assert(Number(l.before)===before,'“'+productRow.name+' / '+sku.name+'”当前库存已变化，请重新打开并核对。');
+      assert(before>0&&qty<=before,'“'+productRow.name+' / '+sku.name+'”操作数量不能超过当前库存。');
+      return {pid:l.pid,sid:l.sid,key:k,code:skuDefaults(productRow,sku).code,name:productRow.name,spec:sku.name,unit,conversion:c,qty,baseQty:qty,before,after:round(before-qty),difference:-qty};
+    });
+    const at=now(),actor=p.actor||'当前用户',transfer=p.mode==='transfer',prefix=transfer?'DB':'TZ';
+    const d={id:uid(prefix),no:prefix+at.replace(/\D/g,'')+String(++s.sequence).padStart(3,'0'),kind:transfer?'transfer':'adjustment',requestId:p.requestId,cleanup:true,origin:'库存总览',wid:p.wid,to:transfer?p.to:'',type:transfer?'调拨出库':'盘亏出库',status:transfer?'待审核':'已完成',createdAt:at,createdBy:actor,lines,logs:[],comments:[],shipments:[],note};
+    if(!transfer){
+      d.completedAt=at;
+      for(const l of lines)entry(s,p.wid,l,-l.qty,'盘亏出库',d.id,'adjust',note);
+    }
+    log(d,transfer?'提交批量调拨':'批量盘亏出库',warehouse(s,p.wid).name+(transfer?' → '+warehouse(s,p.to).name:'')+'；'+lines.length+' 项规格；'+quantityText(lines)+'；'+note,actor);
+    s.documents.unshift(d);return d.id;
+  }
   function apply(s,command,p={}){
     validate(s);let result;
     if(command==='document.save')result=newDocument(s,p);
     else if(command==='document.fromSales')result=fromSales(s,p);
     else if(command==='document.return')result=returnDocument(s,p);
     else if(command==='document.action')result=documentAction(s,p);
+    else if(command==='inventory.adjust')result=adjustInventory(s,p);
+    else if(command==='inventory.cleanup')result=cleanupInventory(s,p);
     else if(command==='catalog.save')result=saveCatalog(s,p);
     else if(command==='catalog.delete'){
       assert(['categories','tags'].includes(p.type),'此资料不支持删除。');

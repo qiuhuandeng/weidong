@@ -1,7 +1,7 @@
 (function(S){
   'use strict';
   const {M,E}=S,B=S.button,L=S.link,I=S.input,F=S.field,C=S.select;
-  const titles={transfer:'调拨',inbound:'入库',purchase:'采购',replenish:'补货',issue:'领用',sale:'销售',consume:'消耗',returnIn:'退回入库',returnOut:'退回出库'};
+  const titles={adjustment:'库存调整',transfer:'调拨',inbound:'入库',purchase:'采购',replenish:'补货',issue:'领用',sale:'销售',consume:'消耗',returnIn:'退回入库',returnOut:'退回出库'};
   const section=(title,body,actions='')=>'<section class="stock-section"><div class="stock-section-head"><h3>'+E(title)+'</h3><div class="actions">'+actions+'</div></div>'+body+'</section>';
   const summary=values=>'<div class="stock-summary">'+Object.entries(values).map(([k,v])=>'<div><span>'+E(k)+'：</span><div>'+E(v||'—')+'</div></div>').join('')+'</div>';
   S.section=section;S.summary=summary;
@@ -11,7 +11,7 @@
   S.actions.document=id=>{
     const d=S.data.documents.find(x=>x.id===id);if(!d)throw Error('单据不存在。');
     if(d.status==='待提交')S.open('docForm',{...d,step:2},'编辑'+titles[d.kind]+'申请',860);
-    else S.open('document',{...d,quantities:Object.fromEntries(d.lines.map(l=>[l.key,d.kind==='replenish'?(l.expected??l.approved??l.qty):l.qty-(l.received||0)])),comment:''},titles[d.kind]+'单详情',d.kind==='replenish'?1120:860);
+    else S.open('document',{...d,quantities:Object.fromEntries(d.lines.map(l=>[l.key,d.kind==='replenish'?(l.expected??l.approved??l.qty):l.qty-(l.received||0)])),comment:''},titles[d.kind]+'单详情',d.kind==='replenish'||d.cleanup?1120:860);
   };
   S.drawers.docForm=l=>{
     const d=l.data,kind=d.kind;
@@ -54,6 +54,7 @@
   S.drawers.document=l=>{
     const d=l.data,review=d.kind==='replenish'&&d.status==='待审核',verify=d.kind==='replenish'&&d.status==='待核数',receive=d.kind==='inbound'&&['待入库','部分入库'].includes(d.status);
     let columns=[...lineCols,['本仓库存',x=>d.wid?M.balance(S.data,d.wid,x.pid,x.sid)+' '+E(S.baseUnit(x.pid,x.sid)):'—',140],['折合库存数量',x=>(x.baseQty??x.qty)+' '+E(x.conversion?.baseUnit||x.unit),150],['申请数量',x=>x.qty]];
+    if(d.kind==='adjustment')columns=[...lineCols,['调整前库存',x=>x.before],['调整数量',x=>(x.difference>0?'+':'')+x.difference],['调整后库存',x=>x.after]];
     if(d.kind==='inbound')columns.push(['采购单价（元）',x=>x.unitPrice??x.cost,140],['已入库数量',x=>x.received||0],['确认入库数量',x=>receive?I('本次入库数量',d.quantities[x.key],'quantities.'+x.key,'number'):x.received||0,160]);
     if(d.kind==='replenish'){
       columns.push(['审核数量',(x,i)=>review?I('审核数量',x.approved??x.qty,'lines.'+i+'.approved','number'):x.approved??'—',140],['应发数量',x=>verify?I('应发数量',d.quantities[x.key],'quantities.'+x.key,'number'):x.expected??'—',140],['实发数量',x=>M.sum(d.shipments.filter(sh=>sh.lineKey===x.key&&sh.status!=='待发货'),'qty')],['实收数量',x=>M.sum(d.shipments.filter(sh=>sh.lineKey===x.key),'actual')]);
@@ -61,6 +62,8 @@
     }
     if(d.kind==='purchase')columns.push(['采购状态',x=>E(x.purchaseStatus||(['待提交','待审核'].includes(d.status)?'—':'待采购'))],['操作',x=>['待采购','部分采购','待入库','部分入库','已完成'].includes(d.status)?L('采购处理','purchaseItem',d.id,x.key):'—',120]);
     const info={...(d.source?{'业务记录号':d.source}:{}),...(d.originId?{'原单据':S.data.documents.find(x=>x.id===d.originId)?.no,'退回原因':d.reason}:{}),'单据编号':d.no,'状态':d.status,'门店仓库':S.wh(d.wid),...(d.kind==='transfer'?{'调入门店仓库':S.wh(d.to)}:{}),'申请人':d.createdBy,'申请时间':d.createdAt,'审核人':d.reviewer,'审核时间':d.reviewAt,...(d.kind==='inbound'?{'入库类型':d.type,'入库时间':d.receivedAt}:{}),...(d.kind==='replenish'?{'核对人':d.verifier,'核对时间':d.verifiedAt,'完成时间':d.completedAt}:{})};
+    if(d.kind==='adjustment'){delete info['申请人'];delete info['申请时间'];delete info['审核人'];delete info['审核时间'];Object.assign(info,{'调整类型':d.type,'操作人':d.createdBy,'操作时间':d.createdAt,'备注':d.note||'—'});}
+    if(d.cleanup){delete info['备注'];Object.assign(info,{'发起入口':d.origin,'操作原因':d.note});}
     let footer=B('关闭','close');
     if(['sale','issue','inbound'].includes(d.kind)&&S.data.ledger.some(x=>x.doc===d.id))footer+=B('退回登记','returnForm',d.id);
     if(d.status==='待审核')footer+=(review?B('保存草稿','docAction','reviewDraft'):'')+B('通过审核','docAction','approve','','primary')+B('拒绝申请','docAction','reject');
@@ -71,7 +74,8 @@
     if(d.kind==='transfer'&&d.status==='待审核')footer+=B('撤销申请','docAction','revoke');
     if(d.kind==='replenish'&&['待发货','在途','部分收货','已完成'].includes(d.status))footer+=B('发货管理','shipping',d.id,'','primary');
     const history=section('操作记录',S.table([['时间',x=>E(x.at),170],['操作人',x=>E(x.actor)],['操作',x=>E(x.action)],['备注',x=>E(x.note||'—'),200]],d.logs||[]));
-    return {body:summary(info)+(d.reason?'<p>拒绝原因：'+E(d.reason)+'</p>':'')+section('物料信息',S.table(columns,d.lines),review?B('添加物料','pickProducts'):'')+(d.kind==='replenish'?comments(d):'')+history,footer};
+    const movements=d.cleanup&&d.kind==='transfer'?section('库存变动记录',S.table([['门店仓库',x=>E(S.wh(x.wid)),140],['SKU编号',x=>E(d.lines.find(l=>l.pid===x.pid&&l.sid===x.sid)?.code),120],['类型',x=>E(x.type)],['变动前库存',x=>x.before??'—'],['变动数量',x=>(x.delta>0?'+':'')+x.delta],['变动后库存',x=>x.after??'—'],['单位',x=>E(x.baseUnit),65],['操作时间',x=>E(x.at),170]],S.data.ledger.filter(x=>x.doc===d.id))):'';
+    return {body:summary(info)+(d.reason?'<p>拒绝原因：'+E(d.reason)+'</p>':'')+section('物料信息',S.table(columns,d.lines),review?B('添加物料','pickProducts'):'')+(d.kind==='replenish'?comments(d):'')+movements+history,footer};
   };
   S.actions.docAction=action=>{
     const l=S.top,p={id:l.data.id,action,lines:l.data.lines,quantities:l.data.quantities};

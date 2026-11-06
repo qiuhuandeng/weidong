@@ -1,0 +1,7 @@
+@layer pc-business {
+/* Only the two-column business layout; all controls and surfaces use PCUI. */
+.stock-overview-layout{display:grid;grid-template-columns:280px minmax(0,1fr);gap:var(--pc-gap);align-items:start;min-width:0}
+.stock-overview-layout>section{min-width:0;margin:0}
+@media(max-width:900px){.stock-overview-layout{grid-template-columns:minmax(0,1fr)}}
+
+}
