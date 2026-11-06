@@ -119,7 +119,7 @@ window.PCModules['complaint-follow']={render(){},create({ACTOR,canAssess,canFoll
     if(e.kind==='orders')return (e.exampleRecord?btn('返回当前工单','return-order-example'):cancel)+btn('确定','confirm-orders',e.orderCustomerId&&e.selection.length===1?'':'disabled',true);
     if(e.kind==='reply')return cancel+btn('保存回复','save-reply',busy,true);
     if(e.kind==='assessment')return cancel+btn(!e.assessmentOnly&&e.draft.handlingPlan==='resolved'?'保存并结案':'保存责任认定','save-assessment',busy,true);
-    if(e.kind==='compensation')return totals+cancel+btn('确认方案','save-compensation',busy,true);
+    if(e.kind==='compensation')return totals+cancel+btn(e.submitLabel||'确认方案并提交','save-compensation',busy,true);
     if(e.kind==='closure')return cancel+btn('确认结案','save-closure',busy,true);
     return cancel+btn(e.followId?'保存修改':'保存跟进','save-follow',busy,true);
   }

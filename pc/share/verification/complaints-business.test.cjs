@@ -18,13 +18,13 @@ const followCode=fs.readFileSync(path.join(__dirname,'../pages/complaint-follow/
 vm.runInNewContext(followCode,context);
 const processCode=fs.readFileSync(path.join(__dirname,'../pages/complaint-detail/index.js'),'utf8');
 vm.runInNewContext(processCode,context);
-const hook = `window.testAPI={createTicketForm,newTicketErrors,executionResultRecords,followPanel,attributionPanel,detailPanels,sections,detailTabKey,workflow,toCents,orderDateRange,filtered,matchingOrders,customerIdOf,customerDirectory,matchingCustomers,orderPickerState,orderPickerTitle,orderPickerDirty,orderPickerCustomers,orderPickerOrders,orderPickerView,selectPickerCustomer,changePickerCustomer,selectPickerOrder,recordOrderAssociation,informationView,handlingMissing,validateCustomerSolution,solutionDraft,solutionTotals,solutionOrders,refundEntries,refundAvailable,solutionTools,solutionRead,recordAccept,recordRecognition,recordCompensation,recordFollow,followTools,recordClosure,hasHandlingScheme,canClose,responsibleOptions,complaintCSV,validHandlingFile,records,orders,persist,canAssess,STATUS_TABS,WORK_ORDER_STATUSES,CHANNELS,workOrderStatus,normalizeRecordStatus,statusScope,currentHandler,currentTask,detailActions,complaintRow,complaintTiming,complaintTimingHTML,listProgressText,summary,phoneView,processingDepartment,processRecords,processView,select(id){main={record:records.find(r=>r.id===id),tab:detailTabKey()};return main.record;}};`;
+const hook = `window.testAPI={financeApprovalView,createTicketForm,newTicketErrors,executionResultRecords,followPanel,attributionPanel,detailPanels,sections,detailTabKey,workflow,toCents,orderDateRange,filtered,matchingOrders,customerIdOf,customerDirectory,matchingCustomers,orderPickerState,orderPickerTitle,orderPickerDirty,orderPickerCustomers,orderPickerOrders,orderPickerView,selectPickerCustomer,changePickerCustomer,selectPickerOrder,recordOrderAssociation,informationView,handlingMissing,validateCustomerSolution,solutionDraft,solutionTotals,solutionOrders,refundEntries,refundAvailable,solutionTools,solutionRead,recordAccept,recordRecognition,recordCompensation,recordFollow,followTools,recordClosure,hasHandlingScheme,canClose,responsibleOptions,complaintCSV,validHandlingFile,records,orders,persist,canAssess,STATUS_TABS,WORK_ORDER_STATUSES,CHANNELS,workOrderStatus,normalizeRecordStatus,statusScope,currentHandler,currentTask,detailActions,complaintRow,complaintTiming,complaintTimingHTML,listProgressText,summary,phoneView,processingDepartment,processRecords,processView,select(id){main={record:records.find(r=>r.id===id),tab:detailTabKey()};return main.record;}};`;
 vm.runInNewContext(code.replace('  window.PCComplaints={mount,leave};',hook+'\n  window.PCComplaints={mount,leave};'),context);
 const a=context.window.testAPI;
 let count=0;
 const test=(name,run)=>{run();count++;console.log('PASS '+name)};
 const copy=o=>JSON.parse(JSON.stringify(o));
-test('seed contains all three channels and 37 complaints / 41 orders',()=>{assert.equal(a.records.length,37);assert.equal(a.orders.length,41);assert.deepEqual([...new Set(a.records.map(r=>r.channel))].sort(),['mini','staff','wechat'])});
+test('seed contains all three channels and 39 complaints / 43 orders',()=>{assert.equal(a.records.length,39);assert.equal(a.orders.length,43);assert.deepEqual([...new Set(a.records.map(r=>r.channel))].sort(),['mini','staff','wechat'])});
 test('new ticket inputs expose one business name and validate entered values',()=>{
  const html=a.createTicketForm();
  for(const [id,name] of [['createName','name'],['createPhone','phone']]){
@@ -251,7 +251,7 @@ test('solutions can be saved only during customer-service handling',()=>{
     const r={...copy(record),status},before=JSON.stringify(r);
     const entry=a.recordCompensation(r,valid.value,'2026-10-26 14:00');
     if(['客服已接单','客服处理中'].includes(status)){
-      assert.equal(entry.kind,'compensation');assert.equal(entry.beforeStatus,status);assert.equal(r.status,'客服处理中');
+      assert.equal(entry.kind,'compensation');assert.equal(entry.beforeStatus,status);assert.equal(r.status,'财务审批中');
       assert.deepEqual(copy(r.customerSolution),copy(valid.value));assert.equal(a.hasHandlingScheme(r),false);
       const saved=JSON.stringify(r);assert.equal(a.recordCompensation(r,valid.value,'2026-10-26 14:01'),null);assert.equal(JSON.stringify(r),saved);
     }else{assert.equal(entry,null);assert.equal(JSON.stringify(r),before)}
@@ -272,11 +272,12 @@ test('accepting assigns the handler before processing and does not create a sche
 test('accepted complaints enter processing when a business result is saved without another start action',()=>{
   const r=copy(record);assert.equal(r.status,'客服已接单');
   const result=a.recordCompensation(r,{...copy(valid.value),content:'更新方案'},'2026-10-22 14:29');
-  assert.equal(result.beforeStatus,'客服已接单');assert.equal(r.status,'客服处理中');assert.equal(r.startedAt,'2026-10-22 14:29');
+  assert.equal(result.beforeStatus,'客服已接单');assert.equal(r.status,'财务审批中');assert.equal(r.startedAt,'2026-10-22 14:29');
   assert.equal(r.assessedAt,undefined);assert.equal(a.canClose(r),false);assert.ok(!r.follows.some(f=>f.kind==='start'));
 });
 test('started and followed complaints cannot close before a saved handling scheme',()=>{const r=copy(record),original=JSON.stringify(r);assert.equal(a.canClose(r),false);assert.equal(a.recordClosure(r,'2026-10-22 14:29'),null);assert.equal(JSON.stringify(r),original);assert.ok(a.recordFollow(r,{note:'follow',files:[]},'2026-10-22 14:29'));assert.equal(a.recordClosure(r,'2026-10-22 14:29'),null);r.handlingPlan='unresolved';assert.equal(a.canClose(r),false)});
-test('first scheme retains independently saved compensation and ignores solution fields from handling',()=>{assert.ok(a.recordCompensation(record,valid.value,'2026-10-22 14:29'));const result=a.recordRecognition(record,{...draft,customerSolution:null},'2026-10-22 14:30');assert.ok(result);assert.equal(result.action,'责任认定');assert.equal(record.status,'客服处理中');assert.equal(record.follows[0].customerSolution.refundOrders.length,2)});
+test('first scheme retains independently saved compensation and ignores solution fields from handling',()=>{assert.ok(a.recordCompensation(record,valid.value,'2026-10-22 14:29'));const approval=a.workflow.financeApproval(record);assert.ok(a.workflow.returnFinance(record,{approvalId:approval.id,result:'rejected',time:'2026-10-22 14:29',actor:'财务甲',reason:'请核对资料'}));const result=a.recordRecognition(record,{...draft,customerSolution:null},'2026-10-22 14:30');assert.ok(result);assert.equal(result.action,'责任认定');assert.equal(record.status,'客服处理中');assert.equal(record.follows[0].customerSolution.refundOrders.length,2)});
+record.execution=null;record.financeApprovals=[];delete record.currentTask;delete record.statusDetail;
 test('closure eligibility accepts saved and historical schemes but not pending or completed',()=>{assert.equal(a.canClose(record),true);const legacy=copy(record);delete legacy.assessedAt;assert.equal(a.canClose(legacy),true);assert.equal(a.canClose({...legacy,status:'待处理'}),false);assert.equal(a.canClose({...legacy,status:'已结案'}),false);assert.equal(a.canClose({...legacy,handlingPlan:''}),false)});
 test('handling, responsibility and eligible closure are direct buttons without More',()=>{
   const primary=html=>(html.match(/class="btn primary"[^>]*data-uc="([^"]+)"/)||[])[1];
@@ -311,8 +312,8 @@ test('closed-store type skips responsibility and clears stale assignments only o
 test('responsibility options include departed staff, historical snapshots and selected missing names',()=>{const options=a.responsibleOptions(['当前显示但不在册'],[{name:'离职责任人',employmentStatus:'离职'}],[{responsible:['历史责任人'],follows:[{responsible:['跟进责任人'],before:{responsible:['调整前责任人']}}]}],[{consultant:'订单顾问',projects:[{operator:'操作老师'}]}]);const map=new Map(options);for(const n of ['当前显示但不在册','历史责任人','跟进责任人','调整前责任人','订单顾问','操作老师'])assert.equal(map.get(n),n);assert.equal(map.get('离职责任人'),'离职责任人（离职）');assert.equal(a.responsibleOptions().find(([name])=>name==='张宁')[1],'张宁（离职）')});
 test('handling attachment formats retain MIME verification',()=>{for(const f of [{name:'x.png',type:'image/png'},{name:'x.pdf',type:'application/pdf'},{name:'x.amr',type:''},{name:'x.m4a',type:'audio/x-m4a'}])assert.ok(a.validHandlingFile(f));for(const f of [{name:'x.exe',type:''},{name:'x.png',type:'application/pdf'},{name:'x.html',type:'text/html'}])assert.equal(a.validHandlingFile(f),false)});
 test('CSV preserves filtered rows, Chinese BOM, quotes and formula protection',()=>{const csv=a.complaintCSV([{...copy(record),name:'=1+1',content:'包含,逗号和\"引号\"'}]);assert.equal(csv[0],'\uFEFF');assert.equal(csv.split('\r\n').length,2);assert.ok(csv.includes("\"'=1+1\""));assert.ok(csv.includes('\"包含,逗号和\"\"引号\"\"\"'));assert.ok(csv.includes('\"已结案\"'))});
-test('all five downstream stages expose direct closure while notes preserve their status',()=>{
-  for(const status of ['财务审批中','采购审批中','待财务付款','待采购发货','客服复核中']){
+test('other four downstream stages retain direct closure while notes preserve their status',()=>{
+  for(const status of ['采购审批中','待财务付款','待采购发货','客服复核中']){
     const r={...copy(record),status,assessedAt:null,handlingPlan:'',department:'',responsible:[],customerSolution:null,follows:[],execution:{index:0,steps:[{kind:'payment',type:'handling',done:false},{kind:'procurement',type:'handling',done:false}]}};
     assert.equal(a.canClose(r),true);
     assert.ok(a.recordRecognition(r,draft,'2026-11-02 12:00'));assert.equal(r.status,status);
@@ -324,10 +325,10 @@ test('all five downstream stages expose direct closure while notes preserve thei
   }
 });
 test('direct closure does not invent completed approvals, payment or shipment in demo timelines',()=>{
-  const r=copy(a.records.find(item=>item.id==='31032'));
+  const r=copy(a.records.find(item=>item.id==='31033'));
   assert.ok(a.recordClosure(r,'2026-11-03 14:00','无需继续退款和发货'));
   const html=a.processView(r);
-  assert.ok(html.includes('已终止'));assert.ok(!html.includes('is-current'));assert.ok(!html.includes('财务审批中操作结果'));assert.ok(!html.includes('待财务付款操作结果'));assert.ok(!html.includes('待采购发货操作结果'));
+  assert.ok(html.includes('已终止'));assert.ok(!html.includes('is-current'));assert.ok(html.includes('财务审批中操作结果'));assert.ok(!html.includes('采购审批中操作结果'));assert.ok(!html.includes('待财务付款操作结果'));assert.ok(!html.includes('待采购发货操作结果'));
   assert.ok(html.includes('无需继续退款和发货'));assert.ok(html.includes('11.03 14:00'));assert.equal(a.executionResultRecords(r).some(item=>['financeApproval','payment','procurement'].includes(item.stage)),false);
 });
 test('legacy labels normalize without losing the actual blocking issue or external status',()=>{
@@ -590,8 +591,8 @@ test('each status has a complete lifecycle example with results only on reached 
   const closed=examples.at(-1),history=a.followTools().history(closed,a.executionResultRecords(closed));
   for(const value of ['正和客户协商退款金额','退款金额','DEMO-PAY-'+closed.id,'DEMO-SF-'+closed.id,'客户确认处理完成',closed.closeNote])assert.ok(history.includes(value),value);
 });
-test('all old and new examples have dated results without skipped nodes, and intake shows only the submitter',()=>{
-  for(const saved of a.records){
+test('original lifecycle examples have dated results without skipped nodes, and intake shows only the submitter',()=>{
+  for(const saved of a.records.filter(r=>Number(r.id)<=31037)){
     for(const record of [copy(saved),{...copy(saved),status:'已结案'}]){
       const before=JSON.stringify(record),html=a.processView(record),nodes=[...html.matchAll(/<li class="uc-process-node[\s\S]*?<\/li>/g)].map(match=>match[0]);
       assert.equal(nodes.length,9,record.id);
@@ -906,9 +907,9 @@ test('old complaints receive pending examples once without resetting existing wo
   const existing=copy(a.records.filter(r=>Number(r.id)<31019));existing.forEach(r=>r.status='已结案');let raw=JSON.stringify(existing);
   const local={...context,window:{PCModules:{},addEventListener(){}},localStorage:{getItem:k=>k==='weid.pc.complaints.v1'?raw:null,setItem:(k,v)=>{assert.equal(k,'weid.pc.complaints.v1');raw=v}}};
   const boot=()=>{loadOptions(local);vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../pages/complaint-workflow/index.js'),'utf8'),local);vm.runInNewContext(processCode,local);vm.runInNewContext(followCode,local);vm.runInNewContext(code.replace('  window.PCComplaints={mount,leave};',hook+'\n  window.PCComplaints={mount,leave};'),local);return local.window.testAPI.records};
-  const loaded=boot();assert.equal(loaded.length,37);assert.ok(loaded.filter(r=>Number(r.id)<31019).every(r=>r.status==='已结案'));
+  const loaded=boot();assert.equal(loaded.length,39);assert.ok(loaded.filter(r=>Number(r.id)<31019).every(r=>r.status==='已结案'));
   for(const id of ['31019','31020','31021','31022','31023']){const r=loaded.find(r=>r.id===id);assert.equal(r.status,'待处理');assert.ok(r.level);assert.equal(r.follows.length,0);assert.equal(r.linked.length,1);assert.equal(r.customerSolution,undefined)}
-  const refreshed=boot();assert.equal(refreshed.length,37);assert.equal(refreshed.filter(r=>r.status==='待处理').length,6);
+  const refreshed=boot();assert.equal(refreshed.length,39);assert.equal(refreshed.filter(r=>r.status==='待处理').length,6);
   const pending=refreshed.filter(r=>Number(r.id)>=31021&&Number(r.id)<=31023);assert.deepEqual(copy(pending.map(r=>r.channel).sort()),['mini','staff','wechat']);
   for(const r of pending){assert.ok(r.files.length);assert.ok(local.window.testAPI.detailActions(r).includes('accept-case'));assert.ok(local.window.testAPI.recordAccept(r,'2026-11-03 11:00',{level:r.level}));}
   assert.ok(local.window.testAPI.persist(refreshed));
@@ -1161,4 +1162,82 @@ async function checkOptionStorage(){
   const unavailable={setTimeout,clearTimeout,indexedDB:{open(){throw Error('SecurityError')}},window:{addEventListener(){}}};vm.runInNewContext(source,unavailable);await assert.rejects(unavailable.window.PCComplaintOptions.read(),/SecurityError/);assert.equal(unavailable.window.PCComplaintOptions.error,'SecurityError');
   count++;console.log('PASS duration dictionaries preserve legacy data, reload, concurrent revisions and failed transactions');
 }
+const financeTicket=()=>({...copy(record),id:'finance-test',status:'客服处理中',acceptedBy:'原客服',financeApprovals:[],execution:null,customerSolution:null,compensatedAt:null,follows:[],logs:[],statusDetail:'',currentTask:'',communicationPeriods:[]});
+test('confirming a refund creates one immutable approval and locks the submitted solution',()=>{
+  const r=financeTicket(),solution=copy(valid.value),entry=a.recordCompensation(r,solution,'2026-11-06 10:00');
+  assert.equal(r.status,'财务审批中');assert.equal(a.listProgressText(r),'处理中');assert.equal(r.financeApprovals.length,1);assert.equal(entry.approvalId,r.financeApprovals[0].id);
+  assert.equal(a.canAssess(r),false);assert.equal(a.canClose(r),false);assert.ok(!a.detailActions(r).includes('close-case'));
+  assert.ok(a.workflow.can(r,'editAssessment'));assert.ok(a.processView(r).includes('view-finance-approval'));
+  const before=JSON.stringify(r);assert.equal(a.recordCompensation(r,solution,'2026-11-06 10:01'),null);assert.equal(JSON.stringify(r),before);
+  solution.refund=1;assert.notEqual(r.financeApprovals[0].customerSolution.refund,1);
+  assert.ok(a.recordFollow(r,{note:'已向客户说明审批进度',files:[]},'2026-11-06 10:02'));assert.equal(r.status,'财务审批中');
+  assert.equal(a.recordFollow(r,{operation:'unresolved',unresolvedReason:'无法联系上客户',files:[]},'2026-11-06 10:03'),null);
+  assert.equal(a.recordClosure(r,'2026-11-06 10:04'),null);
+});
+test('rejection and confirmed withdrawal return ownership, preserve the scheme and allow unchanged resubmission',()=>{
+  for(const result of ['rejected','withdrawn']){
+    const r=financeTicket();a.recordCompensation(r,valid.value,'2026-11-06 10:00');const approval=r.financeApprovals[0],snapshot=JSON.stringify(approval.customerSolution);
+    const event=a.workflow.returnFinance(r,{approvalId:approval.id,result,reason:'核对资料后重新提交',actor:'审批操作人',time:'2026-11-06 10:10'});
+    assert.ok(event);assert.equal(r.status,'客服处理中');assert.equal(r.currentHandler,'原客服');assert.equal(r.currentDepartment,'售后客服');assert.equal(a.canAssess(r),true);
+    const label=result==='rejected'?'财务驳回':'审批已撤销';assert.equal(a.listProgressText(r),label);assert.equal(a.currentTask(r),label);
+    const cell=a.complaintRow(r).split('</td>')[5];assert.equal(cell.includes('uc-error'),result==='rejected');assert.ok(cell.includes(label));
+    const html=a.processView(r);for(const text of [label,'核对资料后重新提交','调整方案并重新提交'])assert.ok(html.includes(text));
+    const history=a.followTools().historyRecords(r,a.executionResultRecords(r));assert.ok(!history.some(f=>f.kind==='workflow'&&f.action==='财务审批'));
+    assert.ok(a.recordCompensation(r,copy(approval.customerSolution),'2026-11-06 10:20'));assert.equal(r.status,'财务审批中');assert.equal(r.financeApprovals.length,2);assert.equal(a.listProgressText(r),'处理中');
+    assert.equal(JSON.stringify(r.financeApprovals[0].customerSolution),snapshot);assert.equal(r.financeApprovals[0].status,result);assert.equal(r.financeApprovals[1].status,'pending');
+    const process=a.processView(r),current=[...process.matchAll(/<li class="uc-process-node[\s\S]*?<\/li>/g)].map(match=>match[0]).filter(node=>node.includes('aria-current="step"'));assert.ok(process.includes('第 1 次'));assert.ok(process.includes('第 2 次'));assert.equal(current.length,1);assert.ok(current[0].includes('第 2 次'));assert.ok(!current[0].includes(label));
+    assert.equal(r.follows.filter(f=>f.kind==='compensation').length,2);
+  }
+});
+test('new communication replaces the return hint, ordinary notes and editing older communication do not',()=>{
+  const r=financeTicket();a.recordCompensation(r,valid.value,'2026-11-06 10:00');const approval=r.financeApprovals[0];
+  a.workflow.returnFinance(r,{approvalId:approval.id,result:'rejected',reason:'核对金额',actor:'财务',time:'2026-11-06 10:10'});
+  assert.ok(a.recordFollow(r,{note:'内部核对中',files:[]},'2026-11-06 10:11'));assert.equal(a.listProgressText(r),'财务驳回');
+  const follow=a.recordFollow(r,{operation:'unresolved',unresolvedReason:'无法联系上客户',note:'再次联系',files:[]},'2026-11-06 10:12');assert.equal(a.listProgressText(r),'无法联系上客户');assert.equal(a.currentTask(r),'无法联系上客户');
+  const draft=a.followTools().draft(r,follow);draft.unresolvedReason='正和客户协商退款金额';a.followTools().edit(r,follow.id,draft,'2026-11-06 10:13');assert.equal(a.listProgressText(r),'正和客户协商退款金额');
+  a.recordCompensation(r,valid.value,'2026-11-06 10:14');const second=r.financeApprovals.at(-1);a.workflow.returnFinance(r,{approvalId:second.id,result:'withdrawn',time:'2026-11-06 10:15'});
+  draft.unresolvedReason='无法联系上客户';a.followTools().edit(r,follow.id,draft,'2026-11-06 10:16');assert.equal(a.listProgressText(r),'审批已撤销');
+});
+test('same-second event order and custom reason names keep return hints and colors accurate',()=>{
+  const r=financeTicket();a.recordCompensation(r,valid.value,'2026-11-06 10:00');const approval=r.financeApprovals[0];
+  a.workflow.returnFinance(r,{approvalId:approval.id,result:'rejected',reason:'核对金额',time:'2026-11-06 10:10'});
+  const follow=a.recordFollow(r,{operation:'unresolved',unresolvedReason:'无法联系上客户',files:[]},'2026-11-06 10:10');assert.equal(a.listProgressText(r),'无法联系上客户');
+  follow.communication.reason='财务驳回';assert.equal(a.listProgressText(r),'财务驳回');assert.ok(!a.complaintRow(r).split('</td>')[5].includes('uc-error'));
+});
+test('confirming a replacement without refund ends the old return hint without creating another finance round',()=>{
+  const r=financeTicket();a.recordCompensation(r,valid.value,'2026-11-06 10:00');const approval=r.financeApprovals[0];a.workflow.returnFinance(r,{approvalId:approval.id,result:'withdrawn',time:'2026-11-06 10:10'});
+  assert.ok(a.recordCompensation(r,{...copy(valid.value),handlingMethods:['exchange'],refund:0,refundOrders:[]},'2026-11-06 10:20'));assert.equal(r.status,'客服处理中');assert.equal(r.financeApprovals.length,1);assert.equal(a.workflow.financeReturn(r),null);assert.equal(a.listProgressText(r),'');
+});
+test('duplicate and outdated approval results cannot return a new round or closed case',()=>{
+  const r=financeTicket();a.recordCompensation(r,valid.value,'2026-11-06 10:00');const first=r.financeApprovals[0];
+  const event={approvalId:first.id,result:'rejected',reason:'资料不全',time:'2026-11-06 10:10'};assert.ok(a.workflow.returnFinance(r,event));
+  const before=JSON.stringify(r);assert.equal(a.workflow.returnFinance(r,event),null);assert.equal(JSON.stringify(r),before);
+  a.recordCompensation(r,valid.value,'2026-11-06 10:20');const pending=JSON.stringify(r);assert.equal(a.workflow.returnFinance(r,event),null);assert.equal(JSON.stringify(r),pending);
+  const current=r.financeApprovals.at(-1);r.status='已结案';const closed=JSON.stringify(r);assert.equal(a.workflow.returnFinance(r,{...event,approvalId:current.id}),null);assert.equal(JSON.stringify(r),closed);
+});
+test('exception fixtures show complete editable proposals and readonly approval snapshots',()=>{
+  for(const id of ['31038','31039']){
+    const r=a.select(id),approval=a.workflow.financeApproval(r);assert.equal(r.status,'客服处理中');assert.equal(a.validateCustomerSolution(a.solutionDraft(r.customerSolution)).errors.length,0);
+    const html=a.financeApprovalView(r,approval);for(const text of ['审批编号','提交时间','处理时间','已提交方案',approval.reason])assert.ok(html.includes(text),text);
+    assert.ok(!html.includes('save-compensation'));assert.ok(!html.includes('begin-compensation'));assert.equal(r.financeApprovals.length,1);
+  }
+  a.select('31001');
+});
+test('legacy finance results migrate once without overwriting their evidence or other stages',()=>{
+  for(const [label,status]of [['财务驳回','rejected'],['审批已撤销','withdrawn']]){
+    const r=financeTicket();r.status='财务审批中';r.customerSolution=copy(valid.value);r.compensatedAt='2026-11-06 10:00';r.statusDetail=label;
+    r.execution={index:0,steps:[{id:'legacy',kind:'financeApproval',type:'approval',approvalResult:label,result:'原审批意见',startedAt:r.compensatedAt}]};
+    assert.ok(a.workflow.reconcileFinance(r));assert.equal(r.status,'客服处理中');assert.equal(r.financeApprovals[0].status,status);assert.equal(r.financeApprovals[0].reason,'原审批意见');
+    const saved=JSON.stringify(r);assert.equal(a.workflow.reconcileFinance(r),false);assert.equal(JSON.stringify(r),saved);
+  }
+  const procurement={...financeTicket(),status:'采购审批中',statusDetail:'采购驳回'},before=JSON.stringify(procurement);assert.equal(a.workflow.reconcileFinance(procurement),false);assert.equal(JSON.stringify(procurement),before);
+});
+test('approval drafts persist atomically and restore both rounds after reload',()=>{
+  let raw=JSON.stringify(a.records.map(r=>r.id==='31038'?copy(r):r)),fail=false;
+  const local={...context,window:{PCModules:{},addEventListener(){}},localStorage:{getItem:k=>k==='weid.pc.complaints.v1'?raw:null,setItem:(k,v)=>{if(fail)throw Error('QuotaExceededError');raw=v}}};
+  const boot=()=>{loadOptions(local);vm.runInNewContext(processCode,local);vm.runInNewContext(followCode,local);vm.runInNewContext(code.replace('  window.PCComplaints={mount,leave};',hook+'\n  window.PCComplaints={mount,leave};'),local);return local.window.testAPI};
+  let api=boot(),next=copy(api.records),r=next.find(r=>r.id==='31038');assert.ok(api.recordCompensation(r,r.customerSolution,'2026-11-06 12:00'));
+  const original=raw;fail=true;assert.equal(api.persist(next),false);assert.equal(raw,original);assert.equal(api.records.find(item=>item.id===r.id).status,'客服处理中');
+  fail=false;assert.ok(api.persist(next));api=boot();r=api.records.find(r=>r.id==='31038');assert.equal(r.status,'财务审批中');assert.equal(r.financeApprovals.length,2);assert.equal(api.listProgressText(r),'处理中');assert.equal(api.workflow.financeApproval(r).status,'pending');
+});
 checkOptionStorage().then(()=>console.log(`${count} business checks passed.`)).catch(error=>{console.error(error);process.exitCode=1});

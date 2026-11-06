@@ -1,8 +1,14 @@
 /* Read-only complaint overview and progress. No workflow state or stored data is changed. */
-window.PCModules['complaint-detail']={render(){},create({btn,replyAction,canFollow,canAssess,canGrade,canClose,workflowActions,workflowDepartment,hasHandlingScheme,handlingMissing,icon,workOrderStatus,valueText,planText,detail,statusTag,currentHandler,currentTask,events,esc,empty,section,fmt,levelTag,level4Type,CHANNELS,interval,filesView,link,tag,resolveLink,orderProjects,money,iconFile,paymentView,paymentMoney,detailReference,customerIdOf=record=>String(record.customerId||''),isDemoRecord=()=>false}){
+window.PCModules['complaint-detail']={render(){},create({btn,replyAction,canFollow,canAssess,canGrade,canClose,workflowActions,workflowDepartment,financeApproval=()=>null,financeReturn=()=>null,hasHandlingScheme,handlingMissing,icon,workOrderStatus,valueText,planText,detail,statusTag,currentHandler,currentTask,events,esc,empty,section,fmt,levelTag,level4Type,CHANNELS,interval,filesView,solutionRead,approvalLabels,link,tag,resolveLink,orderProjects,money,iconFile,paymentView,paymentMoney,detailReference,customerIdOf=record=>String(record.customerId||''),isDemoRecord=()=>false}){
+  function financeApprovalView(r,approval){
+    const index=(r.financeApprovals||[]).findIndex(item=>item.id===approval.id),snapshot=approval.customerSolution;
+    const fields=[['审批编号',approval.id],['审批结果',approvalLabels[approval.status]],['提交人',approval.submittedBy||'未记录'],['提交时间',fmt(approval.submittedAt)],...(approval.status==='pending'?[]:[['处理人',approval.returnedBy||'未记录'],['处理时间',fmt(approval.returnedAt)],[approval.status==='rejected'?'驳回原因':'撤销原因',approval.reason||'未提供',true]])];
+    const solution=snapshot?solutionRead({...snapshot,attachments:[]})+filesView(snapshot.attachments||[],index>=0?'approval':'solution',index):empty('未记录已提交方案');
+    return section('财务审批 · 第 '+approval.round+' 次',`<div class="uc-details">${fields.map(args=>detail(...args)).join('')}</div>`)+section('已提交方案',solution);
+  }
   function closureReady(r){
     if(!hasHandlingScheme(r)||handlingMissing(r).length)return false;
-    const pending=(r.execution?.steps||[]).some(node=>['handling','approval'].includes(node.type)&&!['intake','sales','close'].includes(node.kind)&&!node.done&&!node.skipped);
+    const pending=(r.execution?.steps||[]).some(node=>['handling','approval'].includes(node.type)&&!['intake','sales','close'].includes(node.kind)&&!node.done&&!node.skipped&&!node.terminated);
     return !pending&&(r.status==='客服复核中'||r.handlingPlan==='resolved'||Boolean(r.customerSolution?.methods?.length||r.customerSolution?.handlingMethods?.length));
   }
   function detailActions(r){
@@ -135,13 +141,13 @@ window.PCModules['complaint-detail']={render(){},create({btn,replyAction,canFoll
   function processNodes(r){
     const status=workOrderStatus(r.status,r),closed=status==='已结案',paused=!!(r.suspension||r.legacySuspended||r.status==='已挂起');
     if(r.execution?.steps?.some(node=>['handling','approval'].includes(node.type))){
-      const expected=stageForStatus(status),at=r.execution.index,exact=r.execution.steps.findIndex(node=>node.status===status&&!node.done&&!node.skipped),matched=r.execution.steps.findIndex((node,index)=>index>=at&&!node.done&&!node.skipped&&stageKind(node)===expected),activeIndex=exact>=0?exact:matched<0?at:matched;
+      const expected=stageForStatus(status),at=r.execution.index,exact=r.execution.steps.findIndex(node=>node.status===status&&!node.done&&!node.skipped&&!node.terminated&&!node.approvalReturned),matched=r.execution.steps.findIndex((node,index)=>index>=at&&!node.done&&!node.skipped&&!node.terminated&&!node.approvalReturned&&stageKind(node)===expected),activeIndex=exact>=0?exact:matched<0?at:matched;
       const rows=r.execution.steps.flatMap((node,index)=>{
         if(!['handling','approval'].includes(node.type))return [];
-        const current=!closed&&index===activeIndex&&!node.done&&!node.skipped;
-        const state=node.terminated?'terminated':node.skipped?'skipped':node.done?'done':current?(paused?'paused':'current'):node.returnedAt?'returned':closed?(r.closedFromStatus?'terminated':'skipped'):'future';
-        return [{id:node.id,key:stageKind(node),source:node,sourceIndex:index,startedAt:node.startedAt,title:node.status||stageTitles[stageKind(node)]||(current&&node.kind==='store'&&r.legacyStoreAssignment?'客服处理':node.title||'办理节点'),state,current,type:node.type,
-          label:current?status:node.conditional?'待方案确认':undefined,note:current?r.statusDetail||r.currentTask:'',
+        const current=!closed&&index===activeIndex&&!node.done&&!node.skipped&&!node.terminated&&!node.approvalReturned;
+        const state=node.approvalReturned||node.returnedAt?'returned':node.terminated?'terminated':node.skipped?'skipped':node.done?'done':current?(paused?'paused':'current'):closed?(r.closedFromStatus?'terminated':'skipped'):'future';
+        return [{id:node.id,key:stageKind(node),source:node,sourceIndex:index,startedAt:node.startedAt,title:node.approvalId?node.title:node.status||stageTitles[stageKind(node)]||(current&&node.kind==='store'&&r.legacyStoreAssignment?'客服处理':node.title||'办理节点'),state,current,type:node.type,
+          label:node.approvalReturned||node.returnedAt?node.approvalResult:current?status:node.conditional?'待方案确认':undefined,note:current?currentTask(r):'',
           people:current?currentHandler(r)||valueText(node.people):valueText(node.people)||node.completedBy||(node.kind==='close'?r.closedBy:'')||'',
           completedAt:node.completedAt||(node.kind==='close'&&node.done?r.closedAt:''),returnedAt:node.returnedAt,
           deadline:current?r.taskDeadline:node.deadline,reason:node.returnReason||'',external:node.external}];
@@ -172,7 +178,7 @@ window.PCModules['complaint-detail']={render(){},create({btn,replyAction,canFoll
     const active=arrive(stage(status)||rows.at(-1)?.key||'paused');
     active.state=closed?'done':paused?'paused':'current';active.current=!closed;
     active.people=(closed?r.closedBy:currentHandler(r))||active.people;
-    active.deadline=r.taskDeadline;active.note=r.statusDetail||r.currentTask;
+    active.deadline=r.taskDeadline;active.note=currentTask(r);
     if(closed)active.completedAt=r.closedAt||processRecords(r).findLast(item=>item.status==='已结案')?.time||active.completedAt;
     if(!closed&&!paused)active.label=status;
     return rows;
@@ -286,9 +292,12 @@ window.PCModules['complaint-detail']={render(){},create({btn,replyAction,canFoll
       const pending=node.key==='pending';
       const people=valueText(pending?(r.submitter||(r.logs||[]).find(item=>item.action==='收到投诉')?.actor||node.people):node.people).replace(/[（(][^（）()]*[）)]/g,'').trim()||(node.state==='future'?'到达后分派':node.state==='terminated'?'未办理':node.label==='待处理'?'待接单':node.current?'待分派':'未记录');
       const url=node.external?.url,approvalURL=typeof url==='string'&&/^https?:\/\//i.test(url)?url:'';
-      return `<li class="uc-process-node is-${node.state}"${node.current?' aria-current="step"':''}><span class="uc-process-marker" aria-hidden="true">${node.state==='done'||node.current?`<svg viewBox="0 0 20 20">${marker(node.state)}</svg>`:index+1}</span><div class="uc-process-body"><div class="uc-process-heading"><strong class="uc-process-title">${esc(node.title)}</strong><div class="uc-process-time"><span class="uc-process-label">办理时间：</span>${processTime(node,now)}</div></div><div class="uc-process-people"><span class="uc-process-assignee"><span class="${pending?'uc-process-submitter-label':'uc-process-label'}">${pending?'提交人：':'处理人：'}</span>${esc(people)}</span><span class="uc-process-status"><span class="uc-process-label">状态：</span>${esc(label)}</span>${approvalURL?`<a class="uc-link" href="${esc(approvalURL)}" target="_blank" rel="noopener noreferrer">查看审批</a>`:''}</div>${node.state==='returned'&&node.reason||node.note?`<p class="uc-process-note">${esc(node.state==='returned'?node.reason:node.note)}</p>`:''}${processResultView(r,node,rows)}</div></li>`;
+      const approval=(r.financeApprovals||[]).find(item=>item.id===node.id)||(node.key==='financeApproval'&&node.current?financeApproval(r):null),returned=node.current&&node.key==='sales'?financeReturn(r):null;
+      const approvalAction=approval?link('查看审批','view-finance-approval',`data-approval="${esc(approval.id)}"`):approvalURL?`<a class="uc-link" href="${esc(approvalURL)}" target="_blank" rel="noopener noreferrer">查看审批</a>`:'';
+      const reworkActions=returned?`<div class="uc-actions">${link(returned.status==='rejected'?'查看驳回原因':'查看撤销记录','view-finance-approval',`data-approval="${esc(returned.id)}"`)}${canAssess(r)?btn('调整方案并重新提交','begin-compensation'):''}</div>`:'';
+      return `<li class="uc-process-node is-${node.state}"${node.current?' aria-current="step"':''}><span class="uc-process-marker" aria-hidden="true">${node.state==='done'||node.current?`<svg viewBox="0 0 20 20">${marker(node.state)}</svg>`:index+1}</span><div class="uc-process-body"><div class="uc-process-heading"><strong class="uc-process-title">${esc(node.title)}</strong><div class="uc-process-time"><span class="uc-process-label">办理时间：</span>${processTime(node,now)}</div></div><div class="uc-process-people"><span class="uc-process-assignee"><span class="${pending?'uc-process-submitter-label':'uc-process-label'}">${pending?'提交人：':'处理人：'}</span>${esc(people)}</span><span class="uc-process-status"><span class="uc-process-label">状态：</span>${esc(label)}</span>${approvalAction}</div>${node.state==='returned'&&node.reason||node.note?`<p class="uc-process-note">${esc(node.state==='returned'?node.reason:node.note)}</p>`:''}${reworkActions}${processResultView(r,node,rows)}</div></li>`;
     }).join('')}</ol>`;
     return `<div class="uc-info-primary">${section('处理流程',content,closed?'':`<span class="uc-muted">已完成 ${rows.filter(node=>node.state==='done').length} / ${rows.length}</span>`)}</div>`;
   }
-  return {summary,phoneView,informationView,orderCards,processingDepartment,processRecords,processView,executionResultRecords,detailActions,closureReady};
+  return {financeApprovalView,summary,phoneView,informationView,orderCards,processingDepartment,processRecords,processView,executionResultRecords,detailActions,closureReady};
 }};

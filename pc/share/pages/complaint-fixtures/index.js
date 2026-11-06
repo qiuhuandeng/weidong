@@ -78,8 +78,12 @@
     customers.push([name,phone,'杭州上城店',['mini','staff','wechat'][i%3],lifecycleContent[i],`2026-11-03 13:${String(i).padStart(2,'0')}`,'客户本人',lifecycleStatuses[i],'门店','门店服务']);
     demoScenarios.push(['门店','门店服务','manager','2级',lifecycleContent[i],'服务介绍与实际交付存在差异，门店解释及跟进不及时。','客户希望核对退款金额并确认置换商品。','客户确认退款到账、商品签收，同意结案。']);
   });
+  for(const [name,phone,content]of [['魏女士','138****2910','退款方案被财务驳回，请客服核对未消费项目后重新提交。'],['姚女士','139****2911','退款审批已在钉钉撤销，待客服修正收款账号后重新提交。']]){
+    customers.push([name,phone,'杭州上城店','mini',content,'2026-11-06 09:00','客户本人','客服处理中','门店','门店服务']);
+    demoScenarios.push(['门店','门店服务','manager','2级',content,'退款资料需要进一步核实。','','']);
+  }
   function completeLifecycleExample(r,order){
-    const i=Number(r.id)-31029;if(i<0||i>=lifecycleStatuses.length)return false;
+    const i=['31038','31039'].includes(r.id)?3:Number(r.id)-31029;if(i<0||i>=lifecycleStatuses.length)return false;
     const actor='林晓（售后客服）',staff=['',actor,actor,'陆清（财务）','王珊（采购）','陈敏（财务）','李江（采购）',actor,actor];
     const at=minutes=>new Date(Date.parse(r.created.replace(' ','T')+':00Z')+minutes*60000).toISOString().slice(0,16).replace('T',' ');
     const add=(kind,minutes,data)=>r.follows.unshift({id:`${r.id}-lifecycle-${kind}-${minutes}`,kind,time:at(minutes),actor,files:[],mock:true,...data});
@@ -94,6 +98,7 @@
     add('follow',20,{beforeStatus:'客服处理中',status:'客服处理中',communication:{result:'ongoing',reason:'正和客户协商退款金额',reasonSource:'demands'},note:'客户认为退款金额偏低，已核对消费明细，继续协商退款及商品置换方案。'});
     if(i===2)return true;
     const item=order.projects[0],solution={detailsVersion:5,handlingMethods:['refund','exchange'],refund,refundOrders:[{orderId:order.id,store:order.store,customerName:r.name,refund,refundItems:[{itemId:item.id,name:item.name,quantity:item.quantity,consumedQuantity:0,refundedQuantity:0,reservedQuantity:0,remainingBefore:1,refundQuantity:1,remainingAfter:0,paid:item.paid,amount:refund}]}],exchangeItems:[product],delivery:{name:r.name,phone:r.phone,address:'杭州市上城区客户确认收货地址（示例）'},payout:{method:'wechat',name:r.name,account:'示例客户微信收款账户'},attachments:[]};
+    if(['31038','31039'].includes(r.id))solution.delivery.phone=r.id==='31038'?'13800002910':'13900002911';
     Object.assign(r,{customerSolution:solution,compensatedAt:at(30),compensatedBy:actor});
     add('compensation',30,{action:'保存解决方案',beforeStatus:'客服处理中',status:'财务审批中',customerSolution:solution,note:'客户确认退款及商品置换方案。'});
     for(const [step,minutes,action,next]of [[3,40,'财务审批','采购审批中'],[4,50,'采购审批','待财务付款']]){
