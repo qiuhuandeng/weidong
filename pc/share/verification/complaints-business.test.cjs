@@ -120,7 +120,7 @@ test('customer and order associations save together and retain original complain
   const order=a.orderPickerOrders(e)[0];assert.ok(a.selectPickerOrder(e,order.id));assert.equal(JSON.stringify(r),JSON.stringify(source));
   const entry=a.recordOrderAssociation(r,e,'2026-11-04 10:00');assert.ok(entry);assert.equal(r.customerId,'C28');assert.equal(r.member,order.member);assert.equal(r.name,order.name);assert.equal(r.linked[0].id,order.id);
   assert.deepEqual(copy(r.originalContact),{name:source.name,phone:source.phone,fullPhone:''});assert.equal(r.status,source.status);assert.equal(r.store,source.store);assert.equal(r.channel,source.channel);
-  assert.ok(a.followTools().history(r).includes('原投诉联系人'));assert.ok(a.followTools().history(r).includes(source.name));assert.ok(a.summary(r).includes('原投诉联系人'));
+  assert.ok(!a.followTools().history(r).includes('原投诉联系人'));assert.equal(r.follows[0].originalContact.name,source.name);assert.ok(a.summary(r).includes('原投诉联系人'));
   const reopened=a.orderPickerState(JSON.parse(JSON.stringify(r)));assert.equal(reopened.orderBindingRequired,false);assert.ok(!a.orderPickerView(reopened).includes('id="uc-customer-search"'));
   const invalid=copy(source),forged={...e,selection:[{id:a.orders[0].id}]};assert.equal(a.recordOrderAssociation(invalid,forged,'2026-11-04 10:01'),null);assert.deepEqual(invalid,source);
   assert.equal(a.recordOrderAssociation({...copy(source),status:'已结案'},e,'2026-11-04 10:01'),null);
@@ -446,9 +446,33 @@ test('list progress follows the latest unresolved reason and clears old reasons 
   r.customerDemand='';assert.equal(a.listProgressText(r),'');
   r.customerDemand='旧诉求';r.follows=[{kind:'compensation'}];assert.equal(a.listProgressText(r),'');
 });
-test('pending and later list stages retain only the status even when operation details exist',()=>{
+test('approval list progress shows the current department result and marks rejection in red',()=>{
+  for(const department of ['财务','采购']){
+    const r={...copy(record),status:department+'审批中',compensatedAt:null,statusDetail:'',currentTask:'',execution:null,follows:[]};
+    assert.equal(a.listProgressText(r),'处理中');
+    r.follows=[{kind:'workflow',action:department+'审批',time:'2026-11-06 10:00',fields:[['审批结果','已驳回']]}];
+    assert.equal(a.listProgressText(r),department+'驳回');
+    const cell=a.complaintRow(r).split('</td>')[5];assert.ok(cell.includes(department+'审批中'));assert.ok(cell.includes('uc-progress-task uc-error'));assert.ok(cell.includes(department+'驳回'));
+    r.statusDetail=department+'驳回';r.follows=[];assert.equal(a.listProgressText(r),department+'驳回');
+    r.execution={index:0,steps:[{type:'approval',title:department+'审批',approvalResult:'审批中'}]};
+    assert.equal(a.listProgressText(r),'处理中');assert.ok(!a.complaintRow(r).split('</td>')[5].includes('uc-error'));
+    r.execution.steps[0].approvalResult='未通过';assert.equal(a.listProgressText(r),department+'驳回');
+  }
+});
+test('approval list progress does not reuse another department or a previous submission result',()=>{
+  const r={...copy(record),status:'采购审批中',compensatedAt:'2026-11-06 10:00',statusDetail:'',currentTask:'',execution:null,follows:[
+    {kind:'workflow',action:'采购审批',time:'2026-11-06 09:00',fields:[['审批结果','已驳回']]},
+    {kind:'workflow',action:'财务审批',time:'2026-11-06 11:00',fields:[['审批结果','已通过']]}
+  ]};
+  assert.equal(a.listProgressText(r),'处理中');
+  r.follows.push({kind:'workflow',action:'采购审批',time:'2026-11-06 12:00',fields:[['审批结果','已驳回']]});
+  assert.equal(a.listProgressText(r),'采购驳回');
+  r.follows.push({kind:'workflow',action:'采购审批',time:'2026-11-06 13:00',fields:[['审批结果','审批中']]});
+  const before=JSON.stringify(r);assert.equal(a.listProgressText(r),'处理中');assert.equal(JSON.stringify(r),before);
+});
+test('pending, payment, shipment and later list stages retain only the status even when operation details exist',()=>{
   const r={...copy(record),acceptedBy:'客服甲',customerDemand:'无法联系上客户',statusDetail:'收款账户待核实',currentTask:'旧事项',follows:[{kind:'follow',communication:{result:'ongoing',reason:'无法联系上客户'}}]};
-  for(const status of a.WORK_ORDER_STATUSES.filter(status=>!['客服已接单','客服处理中'].includes(status))){
+  for(const status of a.WORK_ORDER_STATUSES.filter(status=>!['客服已接单','客服处理中','财务审批中','采购审批中'].includes(status))){
     r.status=status;assert.equal(a.listProgressText(r),'');
     const cell=a.complaintRow(r).split('</td>')[5];assert.ok(cell.includes(status));assert.ok(!cell.includes('uc-progress-task'));
   }
@@ -583,7 +607,8 @@ test('all old and new examples have dated results without skipped nodes, and int
   }
   const old={...copy(a.records.find(r=>r.id==='31016')),status:'已结案'};
   const history=a.followTools().history(old,a.executionResultRecords(old));
-  for(const text of ['财务审批','采购审批','财务付款','采购发货','客服复核','DEMO-SF-'+old.id])assert.ok(history.includes(text),text);
+  for(const text of ['财务付款','采购发货','客服复核','DEMO-SF-'+old.id])assert.ok(history.includes(text),text);
+  for(const text of ['财务审批','采购审批'])assert.ok(!history.includes(text),text);
 });
 test('customer-service examples mirror unresolved communication and confirmed solution forms without replacing saved follow-ups',()=>{
   const sales=record=>[...a.processView(record).matchAll(/<li class="uc-process-node[\s\S]*?<\/li>/g)].map(match=>match[0]).find(node=>node.includes('<strong class="uc-process-title">客服处理中</strong>'));
@@ -644,6 +669,67 @@ test('review conclusions and missing results stay distinct, and repeated executi
   assert.ok(html.includes('暂无客户反馈'));assert.ok(!html.includes('<dt>复核结果</dt>'));assert.ok(!html.includes('客户确认已到账，处理完成'));assert.ok(!html.includes('客户退款'));
   const history=a.followTools().history(r,a.executionResultRecords(r));assert.ok(history.includes('客户退款'));assert.ok(history.includes('客户确认已到账，处理完成'));
   const blank=a.processView({status:'待财务付款',follows:[],logs:[]});assert.ok(blank.includes('暂无操作结果'));assert.ok(!blank.includes('付款成功'));
+});
+test('follow history includes only reached communication and execution outcomes in lifecycle examples',()=>{
+  const expected=[[],[],['communication'],['solution','communication'],['solution','communication'],['solution','communication'],['payment','solution','communication'],['review','shipment','payment','solution','communication'],['closure','review','shipment','payment','solution','communication']];
+  expected.forEach((kinds,index)=>{
+    const r=a.records.find(item=>item.id===String(31029+index)),before=JSON.stringify(r),helper=a.followTools();
+    const rows=helper.historyRecords(r,a.executionResultRecords(r));assert.deepEqual(copy(rows.map(item=>item.historyKind)),kinds,r.id);
+    const html=helper.history(r,a.executionResultRecords(r));
+    for(const label of ['客服接单','责任认定','财务审批','采购审批','待执行','待安排发货'])assert.ok(!html.includes(label),r.id+': '+label);
+    assert.equal(JSON.stringify(r),before);
+  });
+});
+test('follow history keeps manual communication, original form snapshots and attachment source indices',()=>{
+  const proof={name:'沟通凭证.png',data:'data:image/png;base64,eA=='},solution={handlingMethods:['refund'],refund:50000,attachments:[proof]};
+  const r={status:'客服处理中',customerSolution:{...solution,refund:90000},follows:[
+    {id:'grade',kind:'grading',time:'2026-11-06 10:08',actor:'客服甲',before:{level:'1级'},level:'2级'},
+    {id:'reply',kind:'reply',time:'2026-11-06 10:07',actor:'客服甲',note:'已告知预计办理时间',files:[proof]},
+    {id:'note',kind:'follow',time:'2026-11-06 10:06',actor:'客服甲',note:'客户补充收货要求',files:[]},
+    {id:'plan',kind:'compensation',time:'2026-11-06 10:05',actor:'客服甲',customerSolution:solution,note:'客户确认退款金额'},
+    {id:'reason',kind:'follow',time:'2026-11-06 10:04',actor:'客服甲',note:'客户暂未接受金额',communication:{result:'ongoing',reason:'正和客户协商退款金额',reasonSource:'demands'},files:[proof]},
+    {id:'assessment',kind:'handling',action:'责任认定',time:'2026-11-06 10:03',customerSolution:solution,reason:'内部责任原因'},
+    {id:'association',kind:'association',time:'2026-11-06 10:02',action:'关联订单'},
+    {id:'transfer',kind:'transfer',time:'2026-11-06 10:01',note:'内部转派'},
+    {id:'accept',kind:'accept',time:'2026-11-06 10:00',note:'已接单'}
+  ]};
+  const before=JSON.stringify(r),helper=a.followTools(),rows=helper.historyRecords(r),html=helper.history(r);
+  assert.deepEqual(copy(rows.map(f=>f.id)),['reply','note','plan','reason']);
+  for(const value of ['已告知预计办理时间','客户补充收货要求','客户确认退款金额','正和客户协商退款金额','¥500.00','data-kind="solution-history" data-index="3"','data-kind="follow" data-index="4"'])assert.ok(html.includes(value),value);
+  for(const value of ['内部责任原因','内部转派','¥900.00'])assert.ok(!html.includes(value));
+  assert.equal(JSON.stringify(r),before);assert.equal(helper.history(JSON.parse(before)),html);
+});
+test('follow history retains failed retries and shipment batches and prefers execution proof over duplicate workflow summaries',()=>{
+  const proof={name:'实际付款凭证.png',data:'data:image/png;base64,eA=='};
+  const r={status:'客服复核中',follows:[{kind:'workflow',action:'财务付款',time:'2026-11-06 10:00',fields:[['付款结果','成功'],['交易流水号','PAY-1']]}],payments:[
+    {id:'payment',at:'2026-11-06 10:00',result:'失败',amount:0,reason:'账户异常'},
+    {id:'payment',at:'2026-11-06 10:00',result:'成功',amount:50000,reference:'PAY-1',proof:[proof]},
+    {id:'waiting',at:'2026-11-06 10:10',result:'待执行',amount:20000}
+  ],handlingRecords:[
+    {id:'batch-1',kind:'procurement',at:'2026-11-06 11:00',items:[{name:'修护霜',quantity:1}],trackingNumber:'SF-1'},
+    {id:'batch-2',kind:'procurement',at:'2026-11-06 11:30',items:[{name:'修护霜',quantity:1}],trackingNumber:'SF-2'},
+    {id:'batch-3',kind:'procurement',at:'2026-11-06 11:30',items:[{name:'修护霜',quantity:1}],trackingNumber:'SF-2',note:'同一物流单的另一批次'}
+  ]};
+  const before=JSON.stringify(r),helper=a.followTools(),rows=helper.historyRecords(r,a.executionResultRecords(r)),html=helper.history(r,a.executionResultRecords(r));
+  assert.equal(rows.filter(f=>f.historyKind==='payment').length,2);assert.equal(rows.filter(f=>f.historyKind==='shipment').length,3);
+  for(const value of ['账户异常','PAY-1','SF-1','SF-2','实际付款凭证.png','data-kind="payment-proof" data-index="1"'])assert.ok(html.includes(value),value);
+  assert.ok(!html.includes('待执行'));assert.ok(!html.includes('客户确认已到账'));assert.ok(!html.includes('客户已签收'));assert.equal(JSON.stringify(r),before);
+});
+test('closure history appears once, preserves later communication and supports legacy combined forms without using responsibility reasons',()=>{
+  const r={status:'已结案',closedAt:'2026-11-06 11:00',closedBy:'客服甲',closeNote:'解释服务范围后，双方确认处理完成',follows:[
+    {id:'after',kind:'follow',time:'2026-11-06 12:00',note:'结案后回访',files:[]},
+    {id:'close',kind:'closure',closureType:'no-payout',time:'2026-11-06 11:00',actor:'客服甲',note:'无需退赔，双方确认处理完成',files:[]},
+    {id:'legacy',kind:'handling',action:'责任认定',time:'2026-11-06 10:59',status:'已完成',beforeStatus:'处理中',handlingPlan:'resolved',note:'内部责任原因'}
+  ]};
+  const helper=a.followTools(),extra=[{kind:'execution-result',historyKind:'closure',time:r.closedAt,fields:[['结案说明','重复的状态回执']]}],before=JSON.stringify(r);
+  const rows=helper.historyRecords(r,extra),html=helper.history(r,extra);assert.equal(rows.filter(f=>f.historyKind==='closure').length,1);assert.equal(rows[0].id,'after');assert.ok(html.includes('无赔付直接结案'));assert.ok(!html.includes('内部责任原因'));assert.ok(!html.includes('重复的状态回执'));assert.equal(JSON.stringify(r),before);
+  const legacy={...r,closedAt:'2026-11-06 10:59',follows:[r.follows[2]]};assert.equal(helper.historyRecords(legacy).length,1);assert.ok(helper.history(legacy).includes(r.closeNote));assert.ok(!helper.history(legacy).includes('内部责任原因'));
+  const closeOnly={...r,follows:[]};assert.equal(helper.historyRecords(closeOnly).length,1);assert.ok(helper.history(closeOnly).includes(r.closeNote));
+});
+test('no-payout closure preserves the selected result after serialization',()=>{
+  const r={...copy(a.records.find(r=>r.id==='31031')),status:'客服处理中',handlingPlan:'resolved',customerSolution:null,execution:null};
+  const entry=a.recordClosure(r,'2026-11-06 15:00','客户确认无需退赔','no-payout');assert.ok(entry);assert.equal(entry.closureType,'no-payout');
+  const reopened=JSON.parse(JSON.stringify(r));assert.ok(a.followTools().history(reopened).includes('无赔付直接结案'));assert.equal(a.followTools().historyRecords(reopened).filter(f=>f.historyKind==='closure').length,1);
 });
 test('plan sections keep independent empty content without filled or unfilled badges',()=>{
   const r={...copy(a.records[0]),status:'客服已接单',handlingPlan:'',assessedAt:null,customerSolution:null,follows:[]};
@@ -838,7 +924,7 @@ test('independent grade changes preserve workflow, retain history and clear inap
     const r={...copy(record),status,level:'4级',level4Type:'监管局',follows:[]},before=JSON.stringify(r),entry=helper.recordGrade(r,{level:'2级',level4Type:'监管局'},'2026-11-03 15:01');
     if(['待处理','已结案'].includes(status)){assert.equal(entry,null);assert.equal(JSON.stringify(r),before);continue}
     assert.equal(r.status,status);assert.equal(r.level,'2级');assert.equal(r.level4Type,'');assert.equal(entry.before.level,'4级');assert.equal(entry.before.level4Type,'监管局');
-    assert.equal(entry.beforeStatus,entry.status);assert.ok(helper.history(r).includes('4级 · 监管局 → 2级'));assert.equal(helper.editable(entry),false);
+    assert.equal(entry.beforeStatus,entry.status);assert.ok(!helper.history(r).includes('4级 · 监管局 → 2级'));assert.equal(helper.editable(entry),false);
     assert.equal(helper.recordGrade(r,{level:'2级'},'2026-11-03 15:02'),null);assert.equal(r.follows.length,1);
     assert.ok(a.summary(r).includes('data-uc="edit-grade"'));assert.ok(!a.summary(r,false,true).includes('data-uc="edit-grade"'));
   }
@@ -886,7 +972,7 @@ test('acceptance without a demand starts a grade default snapshot; subsequent re
     assert.equal(first.id,entry.timingPeriodId);assert.equal(first.dueAt,'2026-11-07 10:00');assert.equal(first.timingSource,'default');assert.equal(first.configRevision,7);
     config.defaultTimings['2级']=2;assert.equal(first.dueAt,'2026-11-07 10:00');
     assert.equal(a.recordAccept(r,'2026-11-04 10:30',{level:'2级'}),null);assert.equal(r.communicationPeriods.length,1);
-    const history=a.followTools().history(r);assert.ok(history.includes('3 天'));assert.ok(history.includes('2026-11-07 10:00'));
+    assert.equal(a.followTools().historyRecords(r).length,0);assert.ok(a.processRecords(r).some(item=>item.title==='客服接单'));
     a.recordFollow(r,{operation:'unresolved',unresolvedReason:'无法联系上客户',note:'等待回电',files:[]},'2026-11-04 11:00');
     assert.equal(first.endedAt,'2026-11-04 11:00');assert.equal(a.followTools().activePeriod(r).dueAt,'2026-11-05 11:00');assert.equal(a.followTools().activePeriod(r).timingSource,'demand');
     a.recordFollow(r,{operation:'unresolved',unresolvedReason:'正和客户协商退款金额',note:'继续沟通',files:[]},'2026-11-04 12:00');

@@ -179,19 +179,21 @@ window.PCModules['complaint-detail']={render(){},create({btn,replyAction,canFoll
   }
   function executionResultRecords(r){
     const amount=value=>value!==undefined&&value!==null&&value!==''&&Number.isFinite(Number(value))?'¥ '+money(Number(value)/100):'';
-    const record=(data,stage,action,fields,brief,files=[],fileKind='',fileIndex='')=>({kind:'execution-result',nodeId:data.nodeId,stage,action,time:(data.time??data.at)?deadlineText(data.time??data.at):'',actor:data.actorName||data.actor||data.by||data.completedBy||'',fields:fields.filter(([,value])=>value!==undefined&&value!==null&&value!==''),brief,files,fileKind,fileIndex});
-    const result=(r.payments||[]).map((p,index)=>record(p,'payment','财务付款',[
+    const record=(data,stage,action,fields,brief,files=[],fileKind='',fileIndex='')=>({kind:'execution-result',sourceId:data.id,nodeId:data.nodeId,stage,action,historyKind:data.historyKind||'',time:(data.time??data.at)?deadlineText(data.time??data.at):'',actor:data.actorName||data.actor||data.by||data.completedBy||'',fields:fields.filter(([,value])=>value!==undefined&&value!==null&&value!==''),brief,files,fileKind,fileIndex});
+    const result=(r.payments||[]).map((p,index)=>record({...p,historyKind:p.result&&!/^(待|等待|处理中|付款中|pending|processing)/i.test(p.result)?'payment':''},'payment','财务付款',[
       ['付款结果',p.result],['实际金额',amount(p.amount)],['交易流水号',p.reference],['失败原因',p.reason,true]
     ],['付款结果','实际金额','失败原因'],p.proof||[],'payment-proof',index));
-    for(const [index,s]of (r.handlingRecords||[]).entries())if(s.kind==='procurement'||s.action==='shipment')result.push(record(s,'procurement','采购发货',[
+    for(const [index,s]of (r.handlingRecords||[]).entries())if(s.kind==='procurement'||s.action==='shipment')result.push(record({...s,historyKind:'shipment'},'procurement','采购发货',[
       ['发货方式',s.method],['发货内容',(s.items||[]).map(item=>`${item.name||item.productId} × ${item.quantity}`).join('；'),true],['物流单号',s.trackingNumber],['交付单据号',s.reference],['备注',s.note,true]
     ],['发货内容','发货方式','物流单号'],s.files||[],'handling-record',index));
     for(const n of r.execution?.steps||[]){
       const key=stageKind(n);
       if(n.type==='approval'||!n.result||n.id&&result.some(item=>item.nodeId===n.id))continue;
       if((r.follows||[]).some(item=>item.nodeId===n.id&&n.id||key==='close'&&item.kind==='closure'||key==='sales'&&item.kind==='compensation'))continue;
-      result.push(record({nodeId:n.id,time:n.completedAt,actor:n.completedBy||valueText(n.people)},key,stageTitles[key]||n.title,[
-        ...(key==='close'?[['复核结果',n.done?'已处理并结案':''],['售后类型',r.aftercareType]]:[]),[key==='close'?'结案说明':'处理说明',n.result,true]
+      const closing=key==='close'&&n.done&&workOrderStatus(r.status,r)==='已结案';
+      const historyKind=n.done||n.completedAt||!/^(待|等待|正在)/.test(String(n.result).trim())?({payment:'payment',procurement:'shipment',sales:'communication',close:closing?'closure':'review'})[key]||'':'';
+      result.push(record({nodeId:n.id,time:n.completedAt,actor:n.completedBy||valueText(n.people),historyKind},key,stageTitles[key]||n.title,[
+        ...(key==='close'?[[closing?'结案结果':'复核结果',n.done?(closing?'已结案':'已完成复核'):''],['售后类型',r.aftercareType]]:[]),[key==='close'?(closing?'结案说明':'复核说明'):'处理说明',n.result,true]
       ],key==='close'?['复核结果','结案说明']:['处理说明']));
     }
     const example=exampleProcess(r);
@@ -200,7 +202,8 @@ window.PCModules['complaint-detail']={render(){},create({btn,replyAction,canFoll
       const kinds={intake:['accept'],sales:['handling','assessment','compensation','follow'],close:['closure'],closed:['closure']}[node.kind]||[];
       const saved=(r.follows||[]).some(item=>kinds.includes(item.kind)||item.kind==='workflow'&&item.action===stageTitles[node.kind]);
       if(saved&&!node.salesPreview||result.some(item=>item.stage===node.kind))continue;
-      result.push({...record({nodeId:node.id,time:node.completedAt||node.startedAt,actor:valueText(node.people)},node.kind,stageTitles[node.kind],node.resultFields,node.resultFields.map(([label])=>label)),mock:true});
+      const historyKind=({sales:node.resultFields.some(([label,value])=>label==='本次操作'&&value==='已确认解决方案')?'solution':'communication',payment:node.done?'payment':'',procurement:node.done?'shipment':'',close:node.done?'review':'',closed:node.done?'closure':''})[node.kind]||'';
+      result.push({...record({nodeId:node.id,time:node.completedAt||node.startedAt,actor:valueText(node.people),historyKind},node.kind,stageTitles[node.kind],node.resultFields,node.resultFields.map(([label])=>label)),mock:true});
     }
     return result;
   }

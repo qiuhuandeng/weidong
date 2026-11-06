@@ -254,6 +254,17 @@
   }
   function listProgressText(r){
     const status=workOrderStatus(r.status,r);
+    if(['财务审批中','采购审批中'].includes(status)){
+      const department=status.slice(0,2),node=r.execution?.steps?.[r.execution.index];
+      const nodeDepartment=node?.kind==='purchaseApproval'||/采购/.test(node?.title||node?.templateId||'')||node?.templateId==='approval-purchase'?'采购':'财务';
+      const current=node?.type==='approval'&&nodeDepartment===department;
+      const latest=(r.follows||[]).filter(f=>f.kind==='workflow'&&f.action===department+'审批'&&(!r.compensatedAt||String(f.time||'').replace('T',' ')>=String(r.compensatedAt).replace('T',' '))).sort((a,b)=>String(b.time||'').replace('T',' ').localeCompare(String(a.time||'').replace('T',' ')))[0];
+      const detail=[r.statusDetail,r.currentTask].find(value=>value&&!value.includes(department==='财务'?'采购':'财务')&&/^(?:财务|采购)?(?:审批)?(?:已)?(?:驳回|拒绝|退回|未通过|不通过|通过|处理中|审批中|待审批|发起失败|待同步)/.test(value));
+      const result=String(current?node.approvalResult||detail||'':detail||latest?.fields?.find(([label])=>['审批结果','处理结果'].includes(label))?.[1]||'').trim();
+      if(/驳回|拒绝|退回|未通过|不通过|rejected|returned/i.test(result))return department+'驳回';
+      if(/通过|同意|approved/i.test(result))return department+'通过';
+      return !result||/^(待|等待|审批中|处理中|pending|processing)/i.test(result)?'处理中':result;
+    }
     if(status==='客服已接单'){
       const actor=r.acceptedBy||(r.follows||[]).find(f=>f.kind==='accept')?.actor;
       return actor?'接单人：'+actor:'';
@@ -272,7 +283,7 @@
       <td>${listValue(CHANNELS[r.channel])}<span class="pc-block uc-block uc-muted">${listValue(r.created?fmt(r.created):'')}</span></td>
       <td><span class="pc-block uc-block uc-muted">工单号：${listValue(r.id)}</span><div class="uc-complaint-content">${listValue(r.content)}</div></td>
       <td>${levelTag(r.level)}${level4Type(r)?'<span class="pc-block uc-block uc-muted">'+esc(level4Type(r))+'</span>':''}<div class="uc-list-timing" data-complaint-timing="${esc(r.id)}">${complaintTimingHTML(r)}</div></td>
-      <td>${statusTag(r.status)}${progress?`<div class="uc-progress-task uc-muted" title="${esc(progress)}">${esc(progress)}</div>`:''}</td>
+      <td>${statusTag(r.status)}${progress?`<div class="uc-progress-task ${/^(财务|采购)驳回$/.test(progress)?'uc-error':'uc-muted'}" title="${esc(progress)}">${esc(progress)}</div>`:''}</td>
       <td>${listValue(valueText(r.department)||'待认定')}<span class="pc-block uc-block uc-muted">售后类型：${listValue(r.type)}</span><span class="pc-block uc-block">责任人：${listValue(r.type==='闭店'?'无需填写':r.responsible)}</span></td>
       <td class="uc-fixed"><div class="uc-actions">${link('详情','detail',`data-id="${r.id}"`)}</div></td></tr>`;
   }
@@ -356,7 +367,7 @@
   function recordFollow(r,d,time){return followTools().record(r,d,time)}
   function hasHandlingScheme(r){return validPlan(r.handlingPlan)&&Boolean(r.assessedAt||(r.follows||[]).some(f=>['handling','assessment'].includes(f.kind)))}
   function canClose(r){return workflow.can(r,'close')&&(workflow.can(r,'closeDirectly')||closureReady(r))}
-  function recordClosure(r,time,note=''){if(!canClose(r))return null;const beforeStatus=r.status;r.status='已结案';delete r.statusDetail;delete r.currentTask;r.handlingPlan='resolved';r.closedAt=time;r.closedBy=ACTOR;r.closedFromStatus=beforeStatus;followTools().stopPeriod(r,time,'已处理并结案');const entry={id:r.id+'-close-'+Date.now(),kind:'closure',time,actor:ACTOR,note:String(note||'').trim()||'已确认客诉处理完成，予以结案。',status:r.status,beforeStatus,...recognitionSnapshot(r),files:[]};r.closeNote=entry.note;r.follows.unshift(entry);return entry}
+  function recordClosure(r,time,note='',closureType=''){if(!canClose(r))return null;const beforeStatus=r.status;r.status='已结案';delete r.statusDetail;delete r.currentTask;r.handlingPlan='resolved';r.closedAt=time;r.closedBy=ACTOR;r.closedFromStatus=beforeStatus;followTools().stopPeriod(r,time,'已处理并结案');const entry={id:r.id+'-close-'+Date.now(),kind:'closure',time,actor:ACTOR,note:String(note||'').trim()||'已确认客诉处理完成，予以结案。',status:r.status,beforeStatus,...(closureType==='no-payout'?{closureType}:{}),...recognitionSnapshot(r),files:[]};r.closeNote=entry.note;r.follows.unshift(entry);return entry}
   function replyAction(){return `<div class="uc-footer-reply">${btn('回复客户','reply-customer')}</div>`}
 
   function followPanel(r){return followTools().history(r,executionResultRecords(r))+(r.channel==='wechat'?wechatView(r):'')}
@@ -541,7 +552,7 @@
     if(action==='solution-add-product'){if(p.exchangeItems.length>=20){toast('最多添加 20 项商品');return}p.exchangeItems.push({productId:'',quantity:'1'});renderSolutionFields('uc-solution-product-'+(p.exchangeItems.length-1))}
     if(action==='solution-remove-product'){p.exchangeItems.splice(+b.dataset.index,1);renderSolutionFields();e.layer.el.querySelector('[data-uc=solution-add-product]')?.focus({preventScroll:true})}
   }
-  function solutionRead(p,historyIndex=''){
+  function solutionRead(p,historyIndex='',extraFields=[]){
     if(!p)return '<span class="uc-muted">暂未填写解决方案</span>';
     const methods=p.handlingMethods||[],has=key=>methods.includes(key),labels=methods.map(key=>key==='compensation'?'赔偿（历史）':SOLUTION_METHODS[key]).filter(Boolean),details=[];
     if(labels.length)details.push(detail('处理方式',labels.join('、'),true));
@@ -550,6 +561,7 @@
     if(has('exchange'))details.push(detail('置换商品',(p.exchangeItems||[]).map(i=>i.name+' × '+i.quantity+' · '+centsMoney(i.unitPrice*i.quantity)).join('；'),true),detail('收货人',(p.delivery?.name||'')+' · '+(p.delivery?.phone||'')),detail('收货地址',p.delivery?.address,true));
     if(p.payout)details.push(detail('收款方式',PAYOUT_METHODS[p.payout.method]),detail('收款人',p.payout.name),detail('收款账号',p.payout.account),...(p.payout.method==='bank'?[detail('开户银行',p.payout.bank)]:[]));
     if(has('service')&&p.content)details.push(detail('处理说明',p.content,true));
+    details.push(...extraFields.map(([label,value,full])=>detail(label,value,full)));
     return (details.length?`<div class="uc-details">${details.join('')}</div>`:'')+filesView(p.attachments||[],historyIndex===''?'solution':'solution-history',historyIndex);
   }
   function responsibleOptions(selected=[],directory=EMPLOYEES,items=records,orderItems=orders){
@@ -630,12 +642,12 @@
     if(!entry){toast('该记录已不可修改，请重新查看工单');return}
     const log=JSON.stringify({note:entry.note,communication:entry.communication});
     if(!commitRecord(next,e.followId?'修改跟进':'新增跟进',log))return;
-    finishEditor('follows');toast('未达成原因已记录');
+    finishEditor('follows');toast(e.followId?'跟进记录已更新':entry.communication?.result==='ongoing'?'未达成原因已记录':'跟进记录已保存');
   }
   function saveClosure(){
     const e=main?.editor;if(e?.kind!=='closure')return;
     if(!canClose(main.record)){toast('请先完成责任认定及后续待办流程后再结案');return}
-    const next=clone(records),r=next.find(r=>r.id===main.record.id),entry=recordClosure(r,now(),e.draft.note);
+    const next=clone(records),r=next.find(r=>r.id===main.record.id),entry=recordClosure(r,now(),e.draft.note,canAssess(r)?'no-payout':'');
     if(!entry){toast('当前工单暂不可结案');return}
     if(!commitRecord(next,'结案',entry.note))return;
     finishEditor('follows');toast('工单已结案');
