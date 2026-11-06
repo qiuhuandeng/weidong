@@ -10,6 +10,25 @@ function setup(html){
  return {dom,w,d:w.document,ui:w.PCUI,close:()=>w.close()};
 }
 const tick=()=>new Promise(r=>setTimeout(r,0));
+test('optional search columns align mixed widths and adapt without changing field values',()=>{
+ const e=setup('<section class="query-module"><form class="filterbar" data-pc-query-align="columns"><div class="mr-date" data-pc-label="投诉时间"><input type="date" name="start"><span>至</span><input type="date" name="end"></div>'+['客诉等级','售后来源','关键词','订单状态','接单人'].map((label,i)=>`<input name="field${i}" aria-label="${label}" value="保留${i}">`).join('')+'</form><form class="filterbar"><input aria-label="普通搜索"></form></section>');
+ try{
+  let available=1540;const observers=[],computed=e.w.getComputedStyle.bind(e.w);
+  e.w.ResizeObserver=class{constructor(callback){this.callback=callback;observers.push(this)}observe(){}disconnect(){this.disconnected=true}};
+  Object.defineProperty(e.w.HTMLElement.prototype,'clientWidth',{configurable:true,get(){return this.classList.contains('pc-search-items')?available:0}});
+  e.w.HTMLElement.prototype.getBoundingClientRect=function(){return {width:this.classList.contains('pc-search-label')?68:0,height:32}};
+  e.w.getComputedStyle=el=>{const style=computed(el);return new Proxy(style,{get(target,key){if(key==='getPropertyValue')return name=>name==='--pc-search-field-width'?(el.querySelector('.pc-query-range')?'320px':'280px'):target.getPropertyValue(name);if(key==='columnGap')return '24px';const value=target[key];return typeof value==='function'?value.bind(target):value}})};
+  const form=e.d.querySelector('form'),original=[...form.querySelectorAll('input')];e.ui.sweep();
+  const items=form.querySelector('.pc-search-items');assert.ok(items.classList.contains('pc-search-items-aligned'));
+  const tracks=()=>Array.from(items.style.gridTemplateColumns.matchAll(/minmax\(0(?:px)?,\s*(\d+)px\)/g),match=>Number(match[1]));
+  for(const [width,expected]of [[1540,[388,348,348,348]],[1200,[388,348,348]],[800,[388,348]],[340,[340]],[1540,[388,348,348,348]]]){
+   available=width;observers.forEach(observer=>observer.callback());assert.deepEqual(tracks(),expected);
+  }
+  assert.ok(original.every(input=>input.isConnected&&form.contains(input)));assert.equal(new e.w.FormData(form).get('field3'),'保留3');
+  const ordinary=e.d.querySelectorAll('form')[1].querySelector('.pc-search-items');assert.equal(ordinary.classList.contains('pc-search-items-aligned'),false);assert.equal(ordinary.style.gridTemplateColumns,'');
+  form.remove();e.ui.sweep();assert.ok(observers.every(observer=>observer.disconnected));
+ }finally{e.close()}
+});
 test('enhancement preserves original fields, form identity, listeners and FormData',async()=>{
  const e=setup('<section class="query-module"><form id="search" class="filterbar"><input id="keyword" name="keyword" aria-label="关键词" value="原值"><select id="state" name="state" aria-label="类型"><option value="a">甲</option><option value="b">乙</option></select><div class="query-actions"><button type="submit">搜索</button></div></form></section>');
  try{const original=e.d.querySelector('#state'),form=e.d.querySelector('form');let changes=0;original.addEventListener('change',()=>changes++);e.ui.sweep();assert.equal(e.d.querySelector('#state'),original);assert.equal(e.d.querySelector('form'),form);e.d.querySelector('.pc-select-trigger').click();e.d.querySelectorAll('.pc-select-option')[1].click();assert.equal(original.value,'b');assert.equal(changes,1);assert.deepEqual([...new e.w.FormData(form)],[['keyword','原值'],['state','b']]);form.reset();await tick();assert.equal(e.d.querySelector('.pc-select-caption').textContent,'甲');}finally{e.close();}

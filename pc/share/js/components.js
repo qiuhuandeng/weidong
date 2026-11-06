@@ -256,7 +256,23 @@ window.PCUI = (() => {
     }
     layout.append(items);if(extras.childNodes.length)layout.append(extras);
     if(actions){actions.classList.add('query-actions');layout.append(actions);}source.append(layout);
-    const measure=()=>{const labels=[...items.querySelectorAll('.pc-search-label')];labels.forEach(label=>label.style.width='auto');const width=Math.ceil(Math.max(0,...labels.map(label=>label.getBoundingClientRect().width)));labels.forEach(label=>label.style.width=width+'px');};
+    const alignColumns=source.dataset.pcQueryAlign==='columns';
+    const arrange=()=>{
+      if(!alignColumns||!items.clientWidth)return;
+      const fields=[...items.children],widths=fields.map(item=>item.querySelector('.pc-search-label').getBoundingClientRect().width+(parseFloat(getComputedStyle(item).getPropertyValue('--pc-search-field-width'))||280)),gap=parseFloat(getComputedStyle(items).columnGap)||24;
+      let columns=[];
+      for(let count=fields.length;count>0;count--){
+        columns=Array.from({length:count},(_,column)=>Math.max(...widths.filter((_,index)=>index%count===column)));
+        if(columns.reduce((sum,width)=>sum+width,0)+gap*(count-1)<=items.clientWidth||count===1)break;
+      }
+      const tracks=columns.map(width=>`minmax(0px, ${Math.min(width,items.clientWidth)}px)`).join(' ');
+      if(items.style.gridTemplateColumns!==tracks)items.style.gridTemplateColumns=tracks;
+    };
+    if(alignColumns){
+      items.classList.add('pc-search-items-aligned');
+      if(typeof ResizeObserver!=='undefined'){const observer=new ResizeObserver(arrange);observer.observe(items);[...items.children].forEach(item=>observer.observe(item));cleanups.set(items,()=>observer.disconnect());}
+    }
+    const measure=()=>{const labels=[...items.querySelectorAll('.pc-search-label')];labels.forEach(label=>label.style.width='auto');const width=Math.ceil(Math.max(0,...labels.map(label=>label.getBoundingClientRect().width)));labels.forEach(label=>label.style.width=width+'px');arrange();};
     measure();if(document.fonts)document.fonts.ready.then(()=>source.isConnected&&measure());
   }
   function table(source) {

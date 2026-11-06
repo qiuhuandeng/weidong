@@ -18,7 +18,7 @@ const followCode=fs.readFileSync(path.join(__dirname,'../pages/complaint-follow/
 vm.runInNewContext(followCode,context);
 const processCode=fs.readFileSync(path.join(__dirname,'../pages/complaint-detail/index.js'),'utf8');
 vm.runInNewContext(processCode,context);
-const hook = `window.testAPI={financeApprovalView,createTicketForm,newTicketErrors,executionResultRecords,followPanel,attributionPanel,detailPanels,sections,detailTabKey,workflow,toCents,orderDateRange,filtered,matchingOrders,customerIdOf,customerDirectory,matchingCustomers,orderPickerState,orderPickerTitle,orderPickerDirty,orderPickerCustomers,orderPickerOrders,orderPickerView,selectPickerCustomer,changePickerCustomer,selectPickerOrder,recordOrderAssociation,informationView,handlingMissing,validateCustomerSolution,solutionDraft,solutionTotals,solutionOrders,refundEntries,refundAvailable,solutionTools,solutionRead,recordAccept,recordRecognition,recordCompensation,recordFollow,followTools,recordClosure,hasHandlingScheme,canClose,responsibleOptions,complaintCSV,validHandlingFile,records,orders,persist,canAssess,STATUS_TABS,WORK_ORDER_STATUSES,CHANNELS,workOrderStatus,normalizeRecordStatus,statusScope,currentHandler,currentTask,detailActions,complaintRow,complaintTiming,complaintTimingHTML,listProgressText,summary,phoneView,processingDepartment,processRecords,processView,select(id){main={record:records.find(r=>r.id===id),tab:detailTabKey()};return main.record;}};`;
+const hook = `window.testAPI={hasAssessment,financeApprovalView,createTicketForm,newTicketErrors,executionResultRecords,followPanel,attributionPanel,detailPanels,sections,detailTabKey,workflow,toCents,orderDateRange,filtered,matchingOrders,customerIdOf,customerDirectory,matchingCustomers,orderPickerState,orderPickerTitle,orderPickerDirty,orderPickerCustomers,orderPickerOrders,orderPickerView,selectPickerCustomer,changePickerCustomer,selectPickerOrder,recordOrderAssociation,informationView,handlingMissing,validateCustomerSolution,solutionDraft,solutionTotals,solutionOrders,refundEntries,refundAvailable,solutionTools,solutionRead,recordAccept,recordRecognition,recordCompensation,recordFollow,followTools,recordClosure,hasHandlingScheme,canClose,responsibleOptions,complaintCSV,validHandlingFile,records,orders,persist,canAssess,STATUS_TABS,WORK_ORDER_STATUSES,CHANNELS,workOrderStatus,normalizeRecordStatus,statusScope,currentHandler,currentTask,detailActions,complaintRow,complaintTiming,complaintTimingHTML,listProgressText,summary,phoneView,processingDepartment,processRecords,processView,select(id){main={record:records.find(r=>r.id===id),tab:detailTabKey()};return main.record;}};`;
 vm.runInNewContext(code.replace('  window.PCComplaints={mount,leave};',hook+'\n  window.PCComplaints={mount,leave};'),context);
 const a=context.window.testAPI;
 let count=0;
@@ -38,7 +38,7 @@ test('workflow owns status tabs, departments and action eligibility',()=>{
   assert.equal(a.workflow.department({status:'财务审批中'}),'财务');assert.equal(a.workflow.department({status:'待采购发货'}),'采购');
   assert.deepEqual(copy(a.workflow.detailActions({status:'待处理'})),['reply','accept']);
   assert.deepEqual(copy(a.workflow.detailActions({status:'客服已接单'})),['reply','handling','assessment']);
-  assert.ok(a.workflow.detailActions({status:'客服处理中'},{canClose:true}).includes('closure'));
+  assert.ok(!a.workflow.detailActions({status:'客服处理中'},{canClose:true}).includes('closure'));
   assert.equal(a.workflow.can({status:'已结案'},'grade'),false);
 });
 test('PC writes only its own storage key',()=>assert.deepEqual([...storage.keys()],['weid.pc.complaints.v1']));
@@ -286,9 +286,9 @@ test('handling, responsibility and eligible closure are direct buttons without M
     assert.equal(primary(html),status==='待处理'?'accept-case':'begin-handling',status);
     assert.ok(html.includes('reply-customer'));assert.equal((html.match(/class="btn primary"/g)||[]).length,1);
     for(const action of ['begin-compensation','write-follow'])assert.ok(!html.includes(action));
-    assert.equal(html.includes('begin-assessment'),a.canAssess(r));
+    assert.equal(html.includes('begin-assessment'),a.canAssess(r)&&!a.hasAssessment(r));
     assert.ok(!html.includes('data-pc-menu'));
-    assert.equal(html.includes('close-case'),a.canClose(r));
+    assert.equal(html.includes('close-case'),status!=='客服处理中'&&a.canClose(r));
   }
 });
 test('unfinished downstream work blocks closure through both save and close actions',()=>{
@@ -794,8 +794,10 @@ test('legacy attribution with no recorded handling result can still be corrected
 test('first attribution can be saved in every open stage and unchanged saves add no follow nodes',()=>{
   for(const status of a.WORK_ORDER_STATUSES.filter(status=>status!=='已结案')){
     const r={...copy(a.records.find(r=>r.id==='31029')),status,follows:[]};delete r.handlingPlan;
+    assert.equal(a.detailActions(r).includes('data-uc="begin-assessment"'),a.canAssess(r));
     const helper=a.followTools(),entry=a.recordRecognition(r,{...helper.operationDraft('assessment',r),department:['门店'],type:'门店服务',responsible:['陈佳'],reason:'首次补填责任认定',handlingPlan:'unresolved'},'2026-11-06 17:00');
     assert.ok(entry,status);assert.equal(r.status,status==='客服已接单'?'客服处理中':status);
+    assert.ok(!a.detailActions(r).includes('data-uc="begin-assessment"'));assert.ok(a.attributionPanel(r).includes('>编辑</button>'));
     assert.ok(a.attributionPanel(r).includes('首次补填责任认定'));assert.ok(!helper.history(r).includes('责任认定'));
     const saved=JSON.stringify(r);assert.equal(a.recordRecognition(r,helper.operationDraft('assessment',r),'2026-11-06 17:01'),null);assert.equal(JSON.stringify(r),saved);
   }

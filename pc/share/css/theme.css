@@ -76,6 +76,7 @@ input[type=checkbox],input[type=radio]{accent-color:#409eff;width:14px;height:14
 .pc-calendar-months{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px 0}.pc-calendar-months [aria-pressed=true]{color:#409eff;border-color:#409eff}.pc-calendar-foot{display:flex;gap:12px;justify-content:flex-end;border-top:1px solid #ebeef5;padding-top:8px}.pc-calendar-time{display:flex;align-items:center;gap:12px;margin:12px 0}.pc-calendar-time input{flex:1;min-width:0}
 .query-module .filterbar{padding:var(--pc-search-padding);min-height:0;border:0;display:block;container:pc-search / inline-size}
 .pc-search-layout{width:100%;min-width:0}.pc-search-items{display:flex;flex-wrap:wrap;align-items:flex-start;gap:var(--pc-search-row-gap) 24px}
+.pc-search-items.pc-search-items-aligned{display:grid;justify-content:start;align-items:start}
 .pc-search-item{display:flex;align-items:center;min-height:32px;width:max-content;max-width:100%;min-width:0;flex:0 1 auto}.pc-search-label{display:block;flex:none;font-size:13px;line-height:32px;white-space:nowrap;padding-right:8px;color:#606266}
 .pc-query-field{display:flex;flex:0 1 var(--pc-search-field-width);width:var(--pc-search-field-width);min-width:0;align-items:center;gap:8px;min-height:32px}
 .pc-query-field>input,.pc-query-field>select,.pc-query-field>.pc-select,.pc-query-field>.pc-date,.pc-query-field>.mr-date,.pc-query-field>.btn.pc-native-button{width:100%;min-width:0;max-width:none;flex:1}

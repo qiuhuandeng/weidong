@@ -41,7 +41,7 @@
     const previous=[r.suspension?.returnState,r.resumeStatus,r.beforeStatus,...(r.follows||[]).map(f=>f.beforeStatus)].find(value=>value&&value!=='已挂起');
     return stage||STATUS_ALIASES[status]||(previous?workOrderStatus(previous):r.startedAt||r.assessedAt?'客服处理中':r.acceptedAt?'客服已接单':'待处理');
   }
-  const workflow=window.PCModules['complaint-workflow'].create({normalizeStatus:workOrderStatus});
+  const workflow=window.PCModules['complaint-workflow'].create({normalizeStatus:workOrderStatus,hasAssessment});
   const WORK_ORDER_STATUSES=workflow.statuses.map(([status])=>status);
   const statusScope=status=>['待处理','客服已接单'].includes(workOrderStatus(status))?'pending':workOrderStatus(status)==='已结案'?'closed':'active';
   const STATUS_TABS=workflow.tabs;
@@ -212,8 +212,10 @@
   }
   function complaintKeywordControl(){const key=filterDraft.keywordType||'phone',label=ORDER_KEYWORDS.find(([value])=>value===key)?.[1]||'客户手机';return `<div class="refund-keyword" data-pc-label="关键词"><select id="uc-keywordType" name="keywordType" class="uc-input" aria-label="关键词类型">${ORDER_KEYWORDS.map(([value,text])=>`<option value="${value}"${key===value?' selected':''}>${text}</option>`).join('')}</select>${input('keyword',filterDraft.keyword,'输入'+label,'text','aria-label="投诉关键词"')}</div>`}
   function linkedOrderState(item){return orders.find(order=>order.id===item.id)?.state||item.state||''}
-  function filtered(criteria=filters){return records.filter(r=>{
-    return complaintKeywordMatch(r,criteria)&&(!criteria.channel||r.channel===criteria.channel)&&(!criteria.status||r.status===workOrderStatus(criteria.status))&&(!criteria.scope||statusScope(r.status)===criteria.scope)&&(!criteria.department||multiValues(r.department).includes(criteria.department))&&(!criteria.type||r.type===criteria.type)&&(!criteria.level||r.level===criteria.level)&&(!criteria.store||r.store===criteria.store)&&(!criteria.orderStatus||r.linked.some(item=>linkedOrderState(item)===criteria.orderStatus))&&(!criteria.start||r.created.slice(0,10)>=criteria.start)&&(!criteria.end||r.created.slice(0,10)<=criteria.end)
+  function acceptanceActor(r){return r.acceptedBy||(r.follows||[]).find(f=>f.kind==='accept')?.actor||''}
+  function readListSearch(form=root.querySelector('#uc-search')){const data=new FormData(form);return {...Object.fromEntries(data),orderStatus:data.getAll('orderStatus')}}
+  function filtered(criteria=filters){const orderStatuses=multiValues(criteria.orderStatus);return records.filter(r=>{
+    return complaintKeywordMatch(r,criteria)&&(!criteria.channel||r.channel===criteria.channel)&&(!criteria.status||r.status===workOrderStatus(criteria.status))&&(!criteria.scope||statusScope(r.status)===criteria.scope)&&(!criteria.acceptedBy||acceptanceActor(r)===criteria.acceptedBy)&&(!criteria.department||multiValues(r.department).includes(criteria.department))&&(!criteria.type||r.type===criteria.type)&&(!criteria.level||r.level===criteria.level)&&(!criteria.store||r.store===criteria.store)&&(!orderStatuses.length||r.linked.some(item=>orderStatuses.includes(linkedOrderState(item))))&&(!criteria.start||r.created.slice(0,10)>=criteria.start)&&(!criteria.end||r.created.slice(0,10)<=criteria.end)
   }).sort((a,b)=>b.created.localeCompare(a.created))}
   function pagination(total,current,size,scope='list'){
     return `<div class="pagination" data-pc-pager='${esc(JSON.stringify({total,page:current,size,sizes:[10,20,50],action:'complaints',scope}))}'></div>`;
@@ -257,7 +259,7 @@
       return workflow.approvalProgress(r,status);
     }
     if(status==='客服已接单'){
-      const actor=r.acceptedBy||(r.follows||[]).find(f=>f.kind==='accept')?.actor;
+      const actor=acceptanceActor(r);
       return actor?'接单人：'+actor:'';
     }
     if(status==='客服处理中'){
@@ -280,12 +282,13 @@
       <td class="uc-fixed"><div class="uc-actions">${link('详情','detail',`data-id="${r.id}"`)}</div></td></tr>`;
   }
   function renderList(){const rows=filtered(),pages=Math.max(1,Math.ceil(rows.length/pageSize));page=Math.min(page,pages);root.innerHTML=`
-    <section class="uc-search-card"><nav class="uc-list-tabs pc-tabs pc-tabs-with-search" role="tablist" aria-label="工单状态">${STATUS_TABS.map(([value,label],i)=>`<button type="button" class="uc-list-tab pc-tab" role="tab" id="uc-status-${i}" aria-controls="uc-list-panel" aria-selected="${(filters.status||'')===value}" tabindex="${(filters.status||'')===value?'0':'-1'}" data-uc="status-tab" data-status="${value}">${label}</button>`).join('')}</nav><div class="query-module"><form id="uc-search" class="filterbar">
+    <section class="uc-search-card"><nav class="uc-list-tabs pc-tabs pc-tabs-with-search" role="tablist" aria-label="工单状态">${STATUS_TABS.map(([value,label],i)=>`<button type="button" class="uc-list-tab pc-tab" role="tab" id="uc-status-${i}" aria-controls="uc-list-panel" aria-selected="${(filters.status||'')===value}" tabindex="${(filters.status||'')===value?'0':'-1'}" data-uc="status-tab" data-status="${value}">${label}</button>`).join('')}</nav><div class="query-module"><form id="uc-search" class="filterbar" data-pc-query-align="columns">
       <div class="mr-date" data-pc-label="投诉时间">${input('start',filterDraft.start,'开始日期','date','aria-label="投诉开始日期"')}<span>至</span>${input('end',filterDraft.end,'结束日期','date','aria-label="投诉结束日期"')}</div>
       ${select('level',LEVELS,filterDraft.level,'全部等级','aria-label="客诉等级"')}
       ${select('channel',Object.entries(CHANNELS),filterDraft.channel,'全部来源','aria-label="售后来源"')}
       ${complaintKeywordControl()}
-      ${select('orderStatus',ORDER_STATUSES,filterDraft.orderStatus,'全部','aria-label="订单状态"')}
+      <select id="uc-orderStatus" name="orderStatus" class="uc-input" multiple placeholder="全部订单状态" aria-label="订单状态">${ORDER_STATUSES.map(state=>`<option value="${esc(state)}"${multiValues(filterDraft.orderStatus).includes(state)?' selected':''}>${esc(state)}</option>`).join('')}</select>
+      ${select('acceptedBy',[...new Set(records.map(acceptanceActor).filter(Boolean))],filterDraft.acceptedBy,'全部接单人','aria-label="接单人" data-filterable')}
       ${more?[
         select('department',['推广','销售','门店'],filterDraft.department,'全部责任部门','aria-label="责任部门"'),
         select('type',dictionary.options('types',filterDraft.type,records.map(r=>r.type)),filterDraft.type,'全部售后类型','aria-label="售后类型"'),
@@ -306,7 +309,7 @@
   const {optionsDirty,optionAction,syncOptionDraft,contactForm,responsibilityForm}=window.PCModules['complaint-options'].create({dictionary,getLayers:()=>layers,getEditor:()=>main?.editor,getRecords:()=>records,responsibleOptions,assessmentChoices,multiValues,multiSelect,responsibilityRule,select,openLayer,closeLayer,refreshOptionConsumers,btn,link,esc,section,field,input,toast});
   function refreshOptionConsumers(){
     if(!root?.isConnected)return;
-    filterDraft={...filterDraft,...Object.fromEntries(new FormData(root.querySelector('#uc-search')))};
+    filterDraft={...filterDraft,...readListSearch()};
     renderList();
     const creation=layers.find(layer=>layer.creation);if(creation)syncCreateRequestFields(creation.el);
     const e=main?.editor;for(const [name,key]of e?.kind==='assessment'?[['type','types'],['customerDemand','demands']]:e?.kind==='follow'?[['unresolvedReason','demands']]:[]){
@@ -329,6 +332,7 @@
   function dirty(layer){if(layer.options)return layer.options.saving||optionsDirty(layer.options);if(layer.creation){const form=layer.el.querySelector('[data-ticket-form]');return Boolean(form&&[...form.querySelectorAll('input,select,textarea')].some(control=>control.name&&control.value.trim()&&(control.name!=='channel'||control.value!=='hotline')))}const e=main?.editor;return Boolean(e?.layer===layer&&(e.uploading||followTools().operationDirty(e)||(e.selectingOrders&&(orderPickerDirty(e)||(e.exampleReturn&&orderPickerDirty(e.exampleReturn))))))}
   function recordById(id){return records.find(r=>r.id===id)}
   function isAssessed(r){return ASSESSMENT_FIELDS.every(([key])=>key==='level4Type'?r.level!=='4级'||Boolean(level4Type(r)):key==='responsible'&&r.type==='闭店'?true:valueText(r[key]).trim())}
+  function hasAssessment(r){return Boolean(r.assessedAt||(r.follows||[]).some(f=>['handling','assessment'].includes(f.kind))||isAssessed(r))}
   function valuesFrom(r,fields){return Object.fromEntries(fields.map(([key])=>[key,MULTI_FIELDS.includes(key)?multiValues(r[key]):r[key]||'']))}
   function recognitionSnapshot(r){return {...Object.fromEntries(RECOGNITION_FIELDS.map(([key])=>[key,MULTI_FIELDS.includes(key)?multiValues(r[key]):String(r[key]||'').trim()])),level:r.level||'',level4Type:level4Type(r),linked:clone(r.linked),handlingPlan:r.handlingPlan||'',handlingFiles:clone(r.handlingFiles||[]),customerSolution:r.customerSolution?clone(r.customerSolution):null}}
   function recognitionLog(snapshot){return {...snapshot,handlingFiles:(snapshot.handlingFiles||[]).map(({name,type,size})=>({name,type,size}))}}
@@ -460,7 +464,7 @@
       ['附件',r.handlingFiles?.length?filesView(r.handlingFiles,'handling'):'无',true,true],
       ...(r.assessedAt?[['认定人',r.assessedBy||'未记录'],['认定时间',fmt(r.assessedAt)]]:[])
     ];
-    return section('责任认定',`<div class="uc-details">${fields.map(args=>detail(...args)).join('')}</div>`,canEditAssessment(r)?btn(r.assessedAt||isAssessed(r)?'编辑':'填写责任认定','begin-assessment','aria-label="填写或编辑责任认定"'):'');
+    return section('责任认定',`<div class="uc-details">${fields.map(args=>detail(...args)).join('')}</div>`,canEditAssessment(r)?btn(hasAssessment(r)?'编辑':'填写责任认定','begin-assessment','aria-label="填写或编辑责任认定"'):'');
   }
   function detailPanels(r){return panel('info',detailCommon(r)+processView(r))+panel('follows',followPanel(r))+panel('attribution',attributionPanel(r))}
   function renderDetail(){if(!main.layer)return;const r=main.record,layer=main.layer,body=layer.el.querySelector('.uc-drawer-body');if(body.children.length)main.scrollPositions[main.tab]=body.scrollTop;layer.el.querySelector('.uc-drawer').classList.add('uc-detail-drawer','uc-workspace');layer.el.querySelector('.uc-layer-top').innerHTML='';body.classList.add('uc-detail-body');body.innerHTML=`<section class="uc-detail-common" aria-label="工单概况">${summary(r,main.phoneVisible)}</section>${detailTabs()}<div class="uc-detail-panels">${detailPanels(r)}</div>`;body.scrollTop=main.scrollPositions[main.tab]||0;layer.el.querySelector('.uc-drawer-foot').innerHTML=detailActions(r)}
@@ -727,21 +731,21 @@
     else if(action==='upload-handling')main.editor.layer.el.querySelector('#uc-handling-upload').click();
     else if(action==='upload-solution')main.editor.layer.el.querySelector('#uc-solution-upload').click();
     else if(action==='remove-file'){const e=main.editor;if(e.uploading)return;const files=e.kind==='compensation'?e.draft.customerSolution.attachments:e.kind==='assessment'?e.draft.handlingFiles:e.draft.files;files.splice(Number(b.dataset.file),1);e.layer.el.querySelector('#uc-upload-list').innerHTML=draftFiles(files,e.kind==='reply')}
-    else if(action==='status-tab'){filterDraft={...filterDraft,...Object.fromEntries(new FormData(root.querySelector('#uc-search')))};filters={...filters,status:b.dataset.status};page=1;renderList();root.querySelector('.uc-list-tab[aria-selected=true]')?.focus({preventScroll:true})}
+    else if(action==='status-tab'){filterDraft={...filterDraft,...readListSearch()};filters={...filters,status:b.dataset.status};page=1;renderList();root.querySelector('.uc-list-tab[aria-selected=true]')?.focus({preventScroll:true})}
     else if(action==='reset'){filters={status:filters.status||''};filterDraft={};page=1;renderList()}
-    else if(action==='more'){filterDraft={...filterDraft,...Object.fromEntries(new FormData(root.querySelector('#uc-search')))};more=!more;renderList()}
+    else if(action==='more'){filterDraft={...filterDraft,...readListSearch()};more=!more;renderList()}
     else if(action==='page'){const target=Number(b.dataset.page);if(b.dataset.pagination==='orders'){const e=main.editor;e.orderPage=Math.max(1,Math.min(target,Math.ceil(orderPickerOrders(e).length/e.orderPageSize)||1));renderEditor()}else{page=Math.max(1,Math.min(target,Math.ceil(filtered().length/pageSize)||1));renderList()}}
     else if(action==='export')exportRows();
   }
   function handleChange(event){event.stopPropagation();const el=event.target;if(layers.at(-1)?.creation&&['requestType','requestReason'].includes(el.name)){syncCreateRequestFields(layers.at(-1).el,el.name==='requestType');return;}if(el.name==='operation'&&el.checked){const e=main.editor,kind=el.value;followTools().resetOperation(e);if(kind!==e.kind)chooseOperation(kind);return}if(el.dataset.orderChoice&&el.checked){if(selectPickerOrder(main.editor,el.dataset.orderChoice))renderEditorFooter();return}syncDraft(el);if(el.id==='uc-customerKeywordType'){const e=main.editor;e.customerSearch.keyword='';const input=e.layer.el.querySelector('#uc-customerKeyword');input.value='';input.placeholder='输入'+(CUSTOMER_KEYWORDS.find(([key])=>key===el.value)?.[1]||'客户手机');PCUI.syncControl(input);PCUI.focusControl(input)}if(el.id==='uc-filter-keywordType'){const input=root.querySelector('#uc-filter-keyword');input.value='';input.placeholder='输入'+(ORDER_KEYWORDS.find(([key])=>key===el.value)?.[1]||'客户手机');input.focus()}if(el.dataset.pageSize==='list'){pageSize=Number(el.value);page=1;renderList()}if(el.dataset.pageSize==='orders'){const e=main.editor;e.orderPageSize=Number(el.value);e.orderPage=1;renderEditor()}if(el.dataset.upload)uploadFiles(el)}
-  function handleSubmit(event){event.preventDefault();event.stopPropagation();const layer=layers.at(-1);if(layer?.options){if(!layer.options.saving&&layer.options.entries[layer.options.tab])optionAction('options-apply',event.target,layer);return}if(layer?.creation){saveNewTicket();return}if(event.target.id==='uc-search'){const values=Object.fromEntries(new FormData(event.target));filterDraft={...filterDraft,...values};if(filterDraft.start&&filterDraft.end&&filterDraft.start>filterDraft.end){root.querySelector('#uc-query-error').textContent='投诉结束日期不能早于开始日期';return}filters={...filterDraft,status:filters.status||''};page=1;renderList()}if(event.target.id==='uc-customer-search'){const e=main.editor,q=readCustomerSearch();if(!q.keyword?.trim()){e.layer.el.querySelector('#uc-customer-search-error').textContent='请输入客户手机号、姓名或会员号';return}e.customerFilters=clone(q);e.customerPage=1;renderEditor()}}
+  function handleSubmit(event){event.preventDefault();event.stopPropagation();const layer=layers.at(-1);if(layer?.options){if(!layer.options.saving&&layer.options.entries[layer.options.tab])optionAction('options-apply',event.target,layer);return}if(layer?.creation){saveNewTicket();return}if(event.target.id==='uc-search'){const values=readListSearch(event.target);filterDraft={...filterDraft,...values};if(filterDraft.start&&filterDraft.end&&filterDraft.start>filterDraft.end){root.querySelector('#uc-query-error').textContent='投诉结束日期不能早于开始日期';return}filters={...filterDraft,status:filters.status||''};page=1;renderList()}if(event.target.id==='uc-customer-search'){const e=main.editor,q=readCustomerSearch();if(!q.keyword?.trim()){e.layer.el.querySelector('#uc-customer-search-error').textContent='请输入客户手机号、姓名或会员号';return}e.customerFilters=clone(q);e.customerPage=1;renderEditor()}}
   function keyboard(event){if(!root?.isConnected||document.querySelector('#modal .pc-company-dialog'))return;if(event.target.closest('.pc-tabs')&&['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;if(PCUI.isPopupOpen())return;if(!layers.length){if(event.target.matches('.uc-list-tab')&&['ArrowLeft','ArrowRight'].includes(event.key)){event.preventDefault();const tabs=[...root.querySelectorAll('.uc-list-tab')],i=tabs.indexOf(event.target);tabs[(i+(event.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length].click()}return;}const layer=layers.at(-1);if(event.key==='Escape'){event.preventDefault();event.stopImmediatePropagation();closeLayer();return}if(event.target.matches('.uc-tab')&&['ArrowLeft','ArrowRight'].includes(event.key)){event.preventDefault();const tabs=[...layer.el.querySelectorAll('.uc-tab')],i=tabs.indexOf(event.target);tabs[(i+(event.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length].click();return}if(event.key==='Tab'){const all=[...layer.el.querySelectorAll('button:not(:disabled),input:not(:disabled),select:not(:disabled),textarea:not(:disabled),summary,[tabindex="0"]')].filter(e=>e.getClientRects().length&&e.tabIndex>=0);if(!all.length){event.preventDefault();return}if(event.shiftKey&&(document.activeElement===all[0]||document.activeElement===layer.el.querySelector('.uc-drawer'))){event.preventDefault();all.at(-1).focus()}else if(!event.shiftKey&&(document.activeElement===all.at(-1)||!layer.el.contains(document.activeElement))){event.preventDefault();all[0].focus()}}}
   function openOrderSnapshot(id){const order=orders.find(item=>item.id===id);if(!order){toast('该订单暂无更多资料');return}openLayer('订单详情',section('订单 '+esc(id),orderCards([{id}])) ,btn('关闭','dismiss'),2);}
   function openCustomerSnapshot(id){const record=records.find(item=>item.customerId===id);if(!record){toast('该客户暂无更多资料');return}openLayer('客户资料',section('基本信息',`<div class="uc-details">${detail('客户姓名',record.name)}${detail('会员号',record.member)}${detail('客户手机',record.phone)}${detail('所属门店',record.store)}${detail('客户微信',record.customerWechat||orders.find(o=>o.customerId===id)?.customerWechat)}</div>`),btn('关闭','dismiss'),2);}
   function bind(el){el.addEventListener('click',handleClick);el.addEventListener('change',handleChange);el.addEventListener('input',event=>{event.stopPropagation();syncDraft(event.target)});el.addEventListener('submit',handleSubmit,true);}
   function mount(content){if(!content)return;root=content;root.classList.add('uc-scope');portal=document.getElementById('mergeDrawers');bind(root);renderList();clearInterval(listClock);listClock=setInterval(refreshListTimings,60000);document.addEventListener('visibilitychange',refreshListTimings);if(readFailure)toast('本地记录读取失败，已恢复初始列表');if(dictionary.error)toast('下拉配置读取失败：'+dictionary.error+'；请在配置入口重试');}
   function leave(){clearInterval(listClock);document.removeEventListener('visibilitychange',refreshListTimings);for(const layer of layers)layer.el.remove();layers=[];main=null;unlockBackground();}
-  PCUI.registerPager('complaints',(value,config)=>{if(config.scope==='orders'||config.scope==='order-customers'){const e=main?.editor;if(!e)return;if(config.scope==='orders'){e.orderPage=value.currentPage;e.orderPageSize=value.pageSize}else{e.customerPage=value.currentPage;e.customerPageSize=value.pageSize}renderEditor();}else{filterDraft={...filterDraft,...Object.fromEntries(new FormData(root.querySelector('#uc-search')))};page=value.currentPage;pageSize=value.pageSize;renderList();}});
+  PCUI.registerPager('complaints',(value,config)=>{if(config.scope==='orders'||config.scope==='order-customers'){const e=main?.editor;if(!e)return;if(config.scope==='orders'){e.orderPage=value.currentPage;e.orderPageSize=value.pageSize}else{e.customerPage=value.currentPage;e.customerPageSize=value.pageSize}renderEditor();}else{filterDraft={...filterDraft,...readListSearch()};page=value.currentPage;pageSize=value.pageSize;renderList();}});
   document.addEventListener('keydown',keyboard,true);
   window.addEventListener('beforeunload',event=>{if(layers.some(dirty)){event.preventDefault();event.returnValue=''}});
   window.PCComplaints={mount,leave};

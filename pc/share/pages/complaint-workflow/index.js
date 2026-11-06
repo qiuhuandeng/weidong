@@ -1,5 +1,5 @@
 /* One source of truth for complaint workflow statuses and available actions. */
-window.PCModules['complaint-workflow']={render(){},create({normalizeStatus}){
+window.PCModules['complaint-workflow']={render(){},create({normalizeStatus,hasAssessment=record=>Boolean(record.assessedAt)}){
   const statuses=[
     ['待处理','售后客服'],['客服已接单','售后客服'],['客服处理中','售后客服'],
     ['财务审批中','财务'],['采购审批中','采购'],['待财务付款','财务'],
@@ -103,8 +103,8 @@ window.PCModules['complaint-workflow']={render(){},create({normalizeStatus}){
     const actions=['reply'];
     if(can(record,'accept'))return [...actions,'accept'];
     if(can(record,'follow'))actions.push('handling');
-    if(can(record,'assess'))actions.push('assessment');
-    if(canClose&&can(record,'close'))actions.push('closure');
+    if(can(record,'assess')&&!hasAssessment(record))actions.push('assessment');
+    if(canClose&&can(record,'close')&&state(record)!=='客服处理中')actions.push('closure');
     return actions;
   }
   return {statuses,tabs:[['','全部'],...statuses.map(([status])=>[status,status])],handlingOperations,state,department:record=>labels[state(record)]||'—',can,detailActions,approvalProgress,approvalLabels,financeApproval,financeReturn,financeHint,submitFinance,returnFinance,reconcileFinance};

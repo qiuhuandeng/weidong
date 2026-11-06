@@ -29,5 +29,7 @@
   "纠错审核详情内容": "subsection-22",
   "移动档案工作台（新版）": "subsection-23",
   "新建规则": "drawerTitle",
-  "中台统一执行原则": "project-standard"
+  "中台统一执行原则": "project-standard",
+  "线上发布与按需加载": "online-publishing",
+  "后续开发的性能约束": "online-performance-rules"
 }

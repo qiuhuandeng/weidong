@@ -4,44 +4,44 @@
     "pc.html": 12858,
     "inventory.html": 9108
   },
-  "sharedGzipBytes": 66374,
+  "sharedGzipBytes": 66725,
   "firstRouteGzipBytes": {
-    "customer": 249489,
-    "management": 126822,
-    "complaints": 157508,
-    "home": 52597,
-    "complaint-order-linking": 55567,
-    "complaint-detail": 66315,
-    "complaint-fixtures": 60417,
-    "complaint-workflow": 55436,
-    "complaint-follow": 59236,
-    "complaint-options": 62731,
-    "complaint-solutions": 75937,
-    "supply-chain": 162824,
-    "inventory-core": 116353,
-    "inventory-clinical": 180312,
-    "group-approval": 140415,
-    "group-approval-designer": 160410,
-    "group-approval-data": 90022,
-    "refund-risk": 82611,
-    "stock-management": 116191,
-    "product-center": 138759
+    "customer": 249834,
+    "management": 127167,
+    "complaints": 158150,
+    "home": 52608,
+    "complaint-order-linking": 55578,
+    "complaint-detail": 66383,
+    "complaint-fixtures": 60428,
+    "complaint-workflow": 55480,
+    "complaint-follow": 59247,
+    "complaint-options": 62742,
+    "complaint-solutions": 76282,
+    "supply-chain": 163169,
+    "inventory-core": 116698,
+    "inventory-clinical": 180657,
+    "group-approval": 140760,
+    "group-approval-designer": 160755,
+    "group-approval-data": 90367,
+    "refund-risk": 82622,
+    "stock-management": 116536,
+    "product-center": 139104
   },
   "files": {
-    "js/components.f68f8826f2e8c00b.js": {
-      "bytes": 64247,
-      "gzipBytes": 19090,
-      "sha256": "f68f8826f2e8c00bc6affca1df8dc951592895d10244b10fbf4e1830440f5911"
+    "js/components.ddba8681c45a8839.js": {
+      "bytes": 65473,
+      "gzipBytes": 19424,
+      "sha256": "ddba8681c45a88391fbd644c921f77c020b3071917263dbb135bc1e598345492"
     },
     "css/business.7d50a32ca6672788.css": {
       "bytes": 167514,
       "gzipBytes": 31453,
       "sha256": "7d50a32ca66727889effd3dcff7de98ff733fc2c01bf336079297e5577392335"
     },
-    "css/theme.70558476256a67e0.css": {
-      "bytes": 31787,
-      "gzipBytes": 7435,
-      "sha256": "70558476256a67e044b7eaf53c05630eaeab8b397945a32f2e5ef500916e1a19"
+    "css/theme.9b4ccfbf3b2ecc29.css": {
+      "bytes": 31882,
+      "gzipBytes": 7452,
+      "sha256": "9b4ccfbf3b2ecc2996330703fc1245dbcbb06a25e1d5df2c512e941af1a46a82"
     },
     "js/app.9d937e171bfaa7aa.js": {
       "bytes": 23223,
@@ -58,10 +58,10 @@
       "gzipBytes": 55524,
       "sha256": "3aac76571935c4f7667f444f43d646b529275fc685896a67e6a605c1cdbdf8c1"
     },
-    "js/complaints.c7b6c6c0ab839ac0.js": {
-      "bytes": 117100,
-      "gzipBytes": 36200,
-      "sha256": "c7b6c6c0ab839ac0c0dcb7ee5fe9e7d6ee5d68ab42ef51d16a5017ee7860883d"
+    "js/complaints.38eac54620ed5054.js": {
+      "bytes": 117786,
+      "gzipBytes": 36407,
+      "sha256": "38eac54620ed5054a20ff17836a1ea6184feaf23ea1feb77ae0ef5a24edd71b4"
     },
     "css/complaints.40769f0bcc36edf3.css": {
       "bytes": 15471,
@@ -78,10 +78,10 @@
       "gzipBytes": 3359,
       "sha256": "110d34e90a0045997d9208711449720fc5eef8428afd60663ee40221d76a51cd"
     },
-    "js/complaint-detail.68cd9ec2040f3b48.js": {
-      "bytes": 40087,
-      "gzipBytes": 12942,
-      "sha256": "68cd9ec2040f3b48f852572f6c5f6a7bc81d2db21caf87551ab1afe7a25e4585"
+    "js/complaint-detail.35c43f7046e0db31.js": {
+      "bytes": 40251,
+      "gzipBytes": 12999,
+      "sha256": "35c43f7046e0db31c32ff344a5c8a945f743f09cc6b6e231af8ccbf72ecbd20d"
     },
     "css/complaint-detail.d61ccd0257bf9a51.css": {
       "bytes": 3872,
@@ -93,10 +93,10 @@
       "gzipBytes": 8209,
       "sha256": "b50fd77ef4ed94b476878303f8bd05f83ffb17d4f16670daceff1faf0a68789c"
     },
-    "js/complaint-workflow.4466396ad611800d.js": {
-      "bytes": 10282,
-      "gzipBytes": 3228,
-      "sha256": "4466396ad611800db1e62472624e78f861c4f32349510761abb023064aa215fd"
+    "js/complaint-workflow.77520ea61df77910.js": {
+      "bytes": 10390,
+      "gzipBytes": 3261,
+      "sha256": "77520ea61df77910604aa9435dc5e09f4a7536570ffc11e8ab10d8775ddf7a5e"
     },
     "js/complaint-follow.6bdb63d70c3acaf6.js": {
       "bytes": 20931,
