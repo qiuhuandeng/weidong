@@ -150,16 +150,17 @@
           event.preventDefault(); navigate(raw);
         }
       });
-      const ready = () => { scanFrames(win.document); if (!embedded && page === 'index.html') installLazyPages(win); };
+      const ready = () => scanFrames(win.document);
       if (win.document.readyState === 'loading') win.document.addEventListener('DOMContentLoaded', ready, {once: true});
       else ready();
     }
-    return Object.freeze({version: 3, release: config.release, page, source: path => texts.get(path), virtual: () => virtual(page), sourceURL: virtual,
+    return Object.freeze({version: 4, release: config.release, page, source: path => texts.get(path), readText: source, modules: config.lazy,
+      styleText: (path, text) => text.replace(/url\(\s*(['"]?)([^\s)'"\)]+)\1\s*\)/gi, (whole, q, value) => /^(?:data:|blob:|#)/i.test(value) ? whole : 'url("' + new URL(value, asset(path)).href + '")'), virtual: () => virtual(page), sourceURL: virtual,
       query: () => embedded ? logical.search : win.location.search,
       url: value => resolve(value, page), install, navigate: value => navigate(value), replace: value => navigate(value, true),
       loadFrame: setFrame, retryFrame: frame => mountFrame(frame), list: () => Object.keys(files),
       async exportSources() {
-        const entries = await Promise.all(Object.keys(files).map(async path => [path, files[path].type.startsWith('text/') ? {type: files[path].type, text: await source(path)} : {type: files[path].type, url: asset(path)}]));
+        const entries = await Promise.all(Object.keys(files).map(async path => [path, files[path].type.startsWith('text/') || files[path].type === 'application/json' ? {type: files[path].type, text: await source(path)} : {type: files[path].type, url: asset(path)}]));
         return Object.fromEntries(entries);
       },
       attach(child, url) {
@@ -169,84 +170,24 @@
       }
     });
   }
-  function installLazyPages(win) {
-    const loads = new Map(), elements = new Map(), complete = new Set();
-    function loadElement(tag, path) {
-      if (elements.has(path)) return elements.get(path);
-      const request = new Promise((resolve, reject) => {
-        const node = win.document.createElement(tag);
-        if (tag === 'script') { node.src = asset(path); node.async = false; }
-        else { node.rel = 'stylesheet'; node.href = asset(path); }
-        node.onload = () => resolve(node);
-        node.onerror = () => { node.remove(); elements.delete(path); reject(Error('功能资源加载失败，请重试或刷新页面')); };
-        win.document.head.appendChild(node);
-      });
-      elements.set(path, request);
-      return request;
-    }
-    function load(name) {
-      if (!loads.has(name)) {
-        const group = config.lazy[name];
-        const task = (async () => {
-          await Promise.all(group.dependencies.map(load));
-          await loadElement('link', group.style);
-          if (!win[group.global]) await loadElement('script', group.script);
-          if (!win[group.global]) throw Error('功能初始化失败，请刷新页面');
-          complete.add(name);
-        })().catch(error => { loads.delete(name); throw error; });
-        loads.set(name, task);
-      }
-      return loads.get(name);
-    }
-    function activate(name) {
-      const group = config.lazy[name], page = win.document.getElementById(group.page);
-      if (!page || page.dataset.weidLoading || complete.has(name)) return;
-      const controls = [...page.querySelectorAll('button,input,select,textarea')].map(node => [node, node.disabled]);
-      controls.forEach(([node]) => { node.disabled = true; });
-      page.dataset.weidLoading = 'true'; page.setAttribute('aria-busy', 'true');
-      page.querySelector('[data-weid-load-error]')?.remove();
-      load(name).catch(error => {
-        const notice = win.document.createElement('div'); notice.dataset.weidLoadError = 'true'; notice.setAttribute('role', 'alert');
-        notice.className = 'panel'; notice.style.padding = '16px';
-        notice.textContent = error.message + '。 ';
-        const retry = win.document.createElement('button'); retry.type = 'button'; retry.className = 'btn btn-default'; retry.textContent = '重新加载';
-        retry.onclick = () => { notice.remove(); activate(name); };
-        notice.appendChild(retry); page.prepend(notice);
-      }).finally(() => {
-        controls.forEach(([node, disabled]) => { if (node.isConnected) node.disabled = disabled; });
-        delete page.dataset.weidLoading; page.removeAttribute('aria-busy');
-      });
-    }
-    const scan = () => Object.entries(config.lazy).forEach(([name, group]) => {
-      const page = win.document.getElementById(group.page);
-      if (page?.classList.contains('active') && !page.querySelector('[data-weid-load-error]')) activate(name);
-    });
-    // Observe navigation only, not every field update in a business drawer.
-    const observer = new win.MutationObserver(scan);
-    Object.values(config.lazy).forEach(group => { const page = win.document.getElementById(group.page); if (page) observer.observe(page, {attributes: true, attributeFilter: ['class']}); });
-    const fromHash = () => {
-      const pageId = win.location.hash.slice(1);
-      if (Object.values(config.lazy).some(group => group.page === 'page-' + pageId) && typeof win.showPage === 'function') win.showPage(pageId);
-    };
-    win.addEventListener('hashchange', fromHash);
-    fromHash();
-    scan();
-  }
   async function boot() {
     let page = new URLSearchParams(location.search).get('__weid_page') || 'index.html';
     if (!hasFile(page) || !page.endsWith('.html')) page = 'index.html';
     const current = new URL(location.href);
     if (page === 'index.html') current.searchParams.delete('__weid_page');
     window.WEID = createContext(window, current.href);
+    if (page === 'index.html') { WEID.install(); return; }
+    document.querySelector('.layout')?.setAttribute('hidden', '');
     const html = await render(page);
     document.open(); document.write(html); document.close();
   }
   boot().catch(error => {
-    const container = document.querySelector('.weid-boot-main');
-    if (container) {
-      container.replaceChildren(document.createTextNode('页面加载失败，请检查网络后重试。'));
-      const retry = document.createElement('button'); retry.textContent = '重新加载'; retry.onclick = () => location.reload(); container.appendChild(retry);
-    }
+    // Independent entries hide the host while loading; their retry must remain visible.
+    const container = document.createElement('div'); container.setAttribute('role', 'alert');
+    container.style.cssText = 'min-height:100vh;display:grid;place-content:center;gap:12px;font:14px system-ui;color:#64748b';
+    container.textContent = '页面加载失败，请检查网络后重试。';
+    const retry = document.createElement('button'); retry.textContent = '重新加载'; retry.onclick = () => location.reload(); container.appendChild(retry);
+    document.body.prepend(container);
     console.error('WEID startup:', error);
   });
 })(/*__WEID_CONFIG__*/);

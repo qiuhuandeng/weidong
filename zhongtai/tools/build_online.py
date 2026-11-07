@@ -16,7 +16,7 @@ import re
 import shutil
 import tempfile
 from pathlib import Path
-from urllib.parse import unquote, urlsplit
+from urllib.parse import quote, unquote, urlsplit
 
 from online_checks import check_boundaries, check_sizes, read_policy
 
@@ -24,10 +24,7 @@ PROJECT = Path(__file__).resolve().parents[1]
 ROOT = PROJECT.parent
 SOURCE = PROJECT / "zhongtai.html"
 TABLE = re.compile(r'<script[^>]*id="weid-embedded-files"[^>]*>([\s\S]*?)</script>')
-LAZY = {
-    "tags": {"page": "page-dict-customer-tag", "global": "TagValueRules", "prefix": "tag-value-rule", "dependencies": []},
-    "broadcast": {"page": "page-broadcast-rules", "global": "BroadcastRules", "prefix": "broadcast-rules", "dependencies": ["tags"]},
-}
+MODULES = "host/modules.json"
 
 
 def compact(value):
@@ -45,16 +42,48 @@ def unpack(raw):
     match = TABLE.search(raw)
     if not match:
         raise ValueError("中台源文件缺少 weid-embedded-files，停止构建")
-    resources = json.loads(match.group(1))
+    catalog = json.loads(match.group(1))
+    resources = {}
+    blocks = {key: body for key, body in re.findall(r'<script[^>]*id="([^"]+)"[^>]*>([\s\S]*?)</script>', raw)}
+    for key, item in catalog.items():
+        if "block" not in item or item["block"] not in blocks:
+            raise ValueError(f"内嵌资源索引无效：{key}")
+        resources[key] = json.loads(blocks[item["block"]])
+        if resources[key]["type"] != item["type"]:
+            raise ValueError(f"内嵌资源类型不一致：{key}")
+    head = re.search(r'<!-- weid-host-head -->([\s\S]*?)<!-- /weid-host-head -->', raw)
+    body = re.search(r'<!-- weid-host-body -->([\s\S]*?)<!-- /weid-host-body -->', raw)
+    if not head or not body:
+        raise ValueError("源文件缺少静态首页壳层")
+    style = re.search(r'<style id="weid-shell-style">([\s\S]*?)</style>', head[1])
+    if not style:
+        raise ValueError("源文件缺少首页样式")
+    resources["host/shell.css"] = {"type": "text/css", "text": style[1]}
+    host_head = head[1].replace(style[0], '<link data-weid-shell rel="stylesheet" href="host/shell.css">')
+    resources["index.html"] = {"type": "text/html", "text": '<!DOCTYPE html><html lang="zh-CN"><head>' + host_head + '</head><body>' + body[1] + '<script src="host/shell.js"></script></body></html>'}
     if not resources.get("index.html", {}).get("text"):
         raise ValueError("中台源文件缺少宿主页面")
-    return resources, raw[:match.start()]
+    return resources, ""
+
+
+def lazy_modules(resources):
+    return json.loads(resources[MODULES]["text"])
+
+
+def bundle_host_styles(resources, lazy):
+    """One request per route for its shared rules; source rules remain stored once."""
+    for name, group in lazy.items():
+        paths = [path for path in group["styles"] if path.startswith("host/styles/") or path == "host/shell.css"]
+        if not paths:
+            continue
+        key = f"online-styles/{name}.css"
+        resources[key] = {"type": "text/css", "text": "\n".join(resources[path]["text"] for path in paths)}
+        group["styles"] = [key] + [path for path in group["styles"] if path not in paths]
 
 
 def split_inline(resources):
-    """Extract complete inline blocks; do not split the coupled main script."""
+    """Extract complete child-page blocks. Host modules are already explicit resources."""
     origins = {key: key for key in resources}
-    lazy = json.loads(compact(LAZY))
     for page, item in list(resources.items()):
         if item["type"] != "text/html":
             continue
@@ -71,35 +100,15 @@ def split_inline(resources):
                 return match.group(0)
             sequence += 1
             key = f"online-inline/{page.replace('/', '-')}/{sequence:02d}.{'js' if tag == 'script' else 'css'}"
-            group = next((value for value in lazy.values() if page == "index.html" and f'id="{value["prefix"]}-{tag}"' in attrs), None)
-            if group and tag == "script":
-                needle = "document.addEventListener('DOMContentLoaded',install);"
-                if body.count(needle) != 1:
-                    raise ValueError(f"{group['prefix']} 初始化边界已变化，请先核对构建适配")
-                body = body.replace(needle, "if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);else install();")
-                if group["global"] == "BroadcastRules":
-                    # The online router activates a direct link before loading.
-                    # A slow response must not pull a user back after navigation.
-                    route = "if(location.hash==='#broadcast-rules')showPage('broadcast-rules');"
-                    if body.count(route) != 1:
-                        raise ValueError("群发规则直达入口已变化，请先核对构建适配")
-                    body = body.replace(route, "if(location.hash==='#broadcast-rules'&&document.getElementById('page-broadcast-rules')?.classList.contains('active'))showPage('broadcast-rules');")
             resources[key] = {"type": "text/javascript" if tag == "script" else "text/css", "text": body}
             origins[key] = page
-            if group:
-                group[tag] = key
-                return ""
             relative = posixpath.relpath(key, posixpath.dirname(page) or ".")
             if tag == "script":
                 return f'<script{attrs} src="{relative}"></script>'
             return f'<link{attrs} rel="stylesheet" href="{relative}">'
 
         item["text"] = re.sub(r"<(script|style)\b([^>]*)>([\s\S]*?)</\1>", extract, item["text"], flags=re.I)
-    for name, group in lazy.items():
-        if not group.get("script") or not group.get("style"):
-            raise ValueError(f"{name} 缺少独立脚本或样式，停止构建")
-        group.pop("prefix")
-    return origins, lazy
+    return origins
 
 
 def write_assets(resources, origins, directory):
@@ -126,7 +135,7 @@ def write_assets(resources, origins, directory):
                     return 'url("' + emit(target).rsplit("/", 1)[-1] + '")'
                 text = re.sub(r"url\(\s*(['\"]?)([^\s)'\"]+)\1\s*\)", css_url, text)
             body = text.encode()
-        extension = {"text/html": "html", "text/javascript": "js", "text/css": "css", "font/woff2": "woff2", "image/webp": "webp"}[item["type"]]
+        extension = {"text/html": "html", "text/javascript": "js", "text/css": "css", "application/json": "json", "font/woff2": "woff2", "image/webp": "webp"}[item["type"]]
         name = hashlib.sha256(body).hexdigest()[:20] + "." + extension
         (directory / name).write_bytes(body)
         manifest[key] = {"type": item["type"], "url": "assets/" + name, "size": len(body)}
@@ -162,17 +171,36 @@ def build(output, single_file=False):
         shutil.copy2(SOURCE, target / "offline.html")
         stats = {"source_sha256": source_hash, "single_file": single_file, "source_bytes": len(raw.encode())}
         if not single_file:
-            resources, prefix = unpack(raw)
+            resources, _ = unpack(raw)
+            lazy = lazy_modules(resources)
             policy = read_policy()
-            check_boundaries(resources, LAZY, policy, resource_path)
-            origins, lazy = split_inline(resources)
+            check_boundaries(resources, lazy, policy, resource_path)
+            bundle_host_styles(resources, lazy)
+            origins = split_inline(resources)
             manifest = write_assets(resources, origins, target / "assets")
             config = {"release": source_hash[:16], "resources": manifest, "lazy": lazy}
             runtime = (PROJECT / "tools/online-runtime.js").read_text()
             runtime = "/* Generated online runtime; edit tools/online-runtime.js. */\n" + runtime.replace("/*__WEID_CONFIG__*/", compact(config))
             name = hashlib.sha256(runtime.encode()).hexdigest()[:20] + ".js"
             (target / "assets" / name).write_text(runtime)
-            entry = prefix + f'<script src="assets/{name}" defer></script></body></html>\n'
+            host = resources["index.html"]["text"]
+            def startup_url(match):
+                key = resource_path(match[3], "index.html")
+                if key not in manifest:
+                    return match[0]
+                url = manifest[key]["url"]
+                if resources[key]["type"] == "text/html":
+                    target = urlsplit(html.unescape(match[3]))
+                    url = "zhongtai.html?__weid_page=" + quote(key, safe="/")
+                    if target.query:
+                        url += "&" + target.query
+                    if target.fragment:
+                        url += "#" + target.fragment
+                    url = html.escape(url, quote=True)
+                return match[1] + '=' + match[2] + url + match[2]
+            entry = re.sub(r'\b(src|href)\s*=\s*([\"\'])([^\"\']*)\2', startup_url, host)
+            # Runtime context must exist before shell code, while all URLs are discoverable in the first HTML.
+            entry = entry.replace('<script src=', f'<script src="assets/{name}"></script><script src=', 1)
             stats["performance"] = check_sizes(resources, origins, manifest, target / "assets", entry, runtime, lazy, policy, resource_path)
             (target / "zhongtai.html").write_text(entry)
             stats.update(entry_bytes=len(entry.encode()), resources=len(manifest), runtime_bytes=len(runtime.encode()))

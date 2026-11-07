@@ -45,10 +45,11 @@ def check_boundaries(resources, lazy, policy, resource_path):
     host = resources["index.html"]["text"]
     parser = References()
     parser.feed(host)
-    extra = parser.pages - set(policy["startup"]["pages"]) - {group["page"] for group in lazy.values()}
+    extra = parser.pages - set(policy["startup"]["pages"])
     if extra:
         raise ValueError("新增页面须登记按需加载，不得直接堆入首页：" + ", ".join(sorted(extra)))
-    prefixes = {group["prefix"] for group in lazy.values()}
+    if re.search(r"<(?:iframe|form|input|select|textarea|table)\b", host, re.I):
+        raise ValueError("首页包含业务控件或内嵌页面；请移入按需模块")
     counts = {"script": 0, "style": 0}
     for tag, attrs, body in re.findall(r"<(script|style)\b([^>]*)>([\s\S]*?)</\1>", host):
         if tag == "script" and re.search(r'\btype\s*=\s*["\'](?!text/javascript|application/javascript|module)', attrs):
@@ -58,7 +59,7 @@ def check_boundaries(resources, lazy, policy, resource_path):
             key = resource_path(src[2], "index.html")
             if key not in policy["startup"]["scripts"]:
                 raise ValueError("新增首页启动脚本未登记按需加载：" + src[2])
-        elif body.strip() and not any(f'id="{prefix}-{tag}"' in attrs for prefix in prefixes):
+        elif body.strip():
             counts[tag] += 1
     for tag in counts:
         if counts[tag] > policy["startup"]["inline_" + tag + "s"]:
@@ -79,6 +80,27 @@ def check_boundaries(resources, lazy, policy, resource_path):
         seen.add(name)
     for name in lazy:
         visit(name)
+        group = lazy[name]
+        for field, kind in [("html", "text/html"), ("dialogs", "text/html"), ("scripts", "text/javascript"), ("styles", "text/css")]:
+            if not isinstance(group.get(field), list):
+                raise ValueError(f"按需模块 {name} 缺少 {field} 清单")
+            for path in group[field]:
+                if path not in resources or resources[path]["type"] != kind:
+                    raise ValueError(f"按需模块 {name} 的资源无效：{path}")
+        if not group["html"]:
+            raise ValueError(f"按需模块 {name} 缺少页面")
+        pages = References()
+        for path in group["html"]:
+            pages.feed(resources[path]["text"])
+        required_pages = {group["page"]} | {part["page"] for part in group.get("parts", [])}
+        if not required_pages <= pages.pages:
+            raise ValueError(f"按需模块 {name} 缺少登记的页面 ID")
+        if not set(group.get("contentDialogs", [])) <= set(group["dialogs"]):
+            raise ValueError(f"按需模块 {name} 的弹层挂载位置未登记")
+    registered = {path for group in lazy.values() for field in ("html", "dialogs", "scripts", "styles") for path in group[field]}
+    unregistered = {key for key in resources if key.startswith("host/pages/")} - registered
+    if unregistered:
+        raise ValueError("未登记的宿主页面：" + ", ".join(sorted(unregistered)))
 
 
 def check_sizes(resources, origins, manifest, directory, entry, runtime, lazy, policy, resource_path):
@@ -106,10 +128,12 @@ def check_sizes(resources, origins, manifest, directory, entry, runtime, lazy, p
             visit(target)
     visit("index.html")
     blobs = {url: (directory.parent / url).read_bytes() for url in startup}
+    # The host is the actual entry now, not an additional fetch after the runtime.
+    blobs.pop(manifest["index.html"]["url"], None)
     blobs["entry"] = entry.encode()
     blobs["runtime"] = runtime.encode()
     script_urls = {manifest[key]["url"] for key in visited if resources[key]["type"] == "text/javascript"}
-    code_urls = {manifest[key]["url"] for key in visited if resources[key]["type"].startswith("text/")} | {"entry", "runtime"}
+    code_urls = {manifest[key]["url"] for key in visited if key != "index.html" and resources[key]["type"].startswith("text/")} | {"entry", "runtime"}
     parser = References()
     parser.feed(resources["index.html"]["text"])
     gzip_size = lambda body: len(gzip.compress(body, mtime=0))
@@ -132,7 +156,7 @@ def check_sizes(resources, origins, manifest, directory, entry, runtime, lazy, p
     modules = {}
     def module_urls(name):
         group = lazy[name]
-        urls = {manifest[group[tag]]["url"] for tag in ("script", "style")}
+        urls = {manifest[path]["url"] for field in ("html", "dialogs", "scripts", "styles") for path in group[field]}
         for dependency in group["dependencies"]:
             urls.update(module_urls(dependency))
         return urls
