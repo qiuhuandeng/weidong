@@ -4,7 +4,7 @@
   const headers={
     inbound:['门店仓库','产品编号','规格型号','入库数量','业务单位','采购单价','供应商'],
     replenish:['门店仓库','产品编号','规格型号','申请数量','业务单位'],
-    shipping:['补货单号','产品编号','规格型号','发货仓库','实发数量','物流单号','业务单位'],
+    shipping:['补货单号','产品编号','规格型号','发货仓库','实发数量','物流单号','业务单位','申请明细ID'],
     products:['产品编号','产品名称','分类名称','计量单位','规格型号','销售原价','成本价','使用次数','产品归属','领用','启用状态','包装换算','默认采购单位','默认库存单位','默认销售单位','默认消耗单位','最小单位步长','允许小数']
   };
   S.actions.import=type=>S.open('import',{type,rows:[],operations:[],errors:[],filename:'',inboundType:'采购入库'},'导入'+({inbound:'入库单',replenish:'门店补货单',shipping:'发货单',products:'产品'})[type],1120);
@@ -21,7 +21,7 @@
   S.validateImport=l=>{
     const d=l.data,errors=[],ops=[],groups=new Map(),staged=M.copy(S.data);
     const wh=(name,row)=>{const w=staged.warehouses.find(x=>x.name===name&&x.enabled);if(!w)throw Error('第 '+row+' 行：仓库“'+name+'”不存在或未启用。');return w.id;};
-    const item=r=>{const p=staged.products.find(x=>x.code===r['产品编号']);if(!p)throw Error('第 '+r.line+' 行：产品编号不存在。');const sp=p.specs.find(x=>x.name===r['规格型号']);if(!sp)throw Error('第 '+r.line+' 行：规格型号不存在。');return {pid:p.id,sid:sp.id,key:M.key(p.id,sp.id)};};
+    const item=r=>{const p=staged.products.find(x=>x.code===r['产品编号']||x.specs.some(v=>v.code===r['产品编号']));if(!p)throw Error('第 '+r.line+' 行：产品编号不存在。');const sp=p.specs.find(x=>x.name===r['规格型号']);if(!sp)throw Error('第 '+r.line+' 行：规格型号不存在。');return {pid:p.id,sid:sp.id,key:M.key(p.id,sp.id)};};
     for(const r of d.rows)try{
       for(const [modern,old] of [['物料编号','产品编号'],['物料名称','产品名称'],['物料归属','产品归属']])if(r[modern]&&!r[old])r[old]=r[modern];
       for(const h of headers[d.type].slice(0,d.type==='products'?5:d.type==='shipping'?5:4))if(!r[h])throw Error('第 '+r.line+' 行：请填写'+h+'。');
@@ -32,9 +32,9 @@
         p.specs.push({baseUnit:p.unit,units,defaults:{purchase:r['默认采购单位']||p.unit,stock:r['默认库存单位']||p.unit,sale:r['默认销售单位']||p.unit,consume:r['默认消耗单位']||p.unit},step:Number(r['最小单位步长']||0.001),allowFraction:r['允许小数']!=='否',name:r['规格型号'],price:M.quantity(r['销售原价']||0,'销售原价'),cost:M.quantity(r['成本价']||0,'成本价'),uses:M.quantity(r['使用次数']||1,'使用次数',false)});
       }else if(d.type==='shipping'){
         const doc=staged.documents.find(x=>x.no===r['补货单号']&&x.kind==='replenish');if(!doc)throw Error('第 '+r.line+' 行：补货单号不存在。');
-        const x=item(r),wid=wh(r['发货仓库'],r.line);const line=doc.lines.find(l=>l.key===x.key);if(r['业务单位']&&line&&r['业务单位']!==line.unit)throw Error('第 '+r.line+' 行：发货单位须与原单一致（'+line.unit+'）。');if(!doc.lines.some(l=>l.key===x.key))throw Error('第 '+r.line+' 行：该物品不属于此补货单。');
+        const x=item(r),wid=wh(r['发货仓库'],r.line),candidates=doc.lines.filter(l=>{const a=M.fulfillment(l);return a&&a.pid===x.pid&&a.sid===x.sid&&(!r['申请明细ID']||l.key===r['申请明细ID']);});if(candidates.length!==1)throw Error('第 '+r.line+' 行：请先绑定物料；同规格有多条申请时须填写申请明细ID。');const line=M.fulfillment(candidates[0]);if(r['业务单位']&&r['业务单位']!==line.unit)throw Error('第 '+r.line+' 行：发货单位须与已确认单位一致（'+line.unit+'）。');
         if(!groups.has(doc.id))groups.set(doc.id,doc.shipments.filter(s=>s.status==='待发货'));
-        groups.get(doc.id).push({id:M.uid('SH'),lineKey:x.key,wid,qty:M.quantity(r['实发数量'],'实发数量',false),tracking:r['物流单号']||'',status:'待发货'});
+        groups.get(doc.id).push({id:M.uid('SH'),lineKey:candidates[0].key,wid,qty:M.quantity(r['实发数量'],'实发数量',false),tracking:r['物流单号']||'',status:'待发货'});
       }else{
         const wid=wh(r['门店仓库'],r.line),x=item(r),qty=M.quantity(r[d.type==='inbound'?'入库数量':'申请数量'],'申请数量',false);
         const unit=r['业务单位']||M.spec(staged,x.pid,x.sid).baseUnit,unitPrice=r['采购单价']===''||r['采购单价']===undefined?undefined:Number(r['采购单价']),supplier=r['供应商']?staged.suppliers.find(v=>v.name===r['供应商']&&v.enabled)?.id:'';if(r['供应商']&&!supplier)throw Error('供应商不存在或停用。');

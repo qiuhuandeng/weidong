@@ -76,6 +76,7 @@
 .uc-selected-order{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;background:var(--pc-fill-light);border-radius:4px}
 .uc-scope .uc-close-confirm{display:flex;align-items:center;gap:12px;flex-wrap:wrap;width:100%}
 .uc-footer-reply{display:flex;margin-right:auto}
+.uc-create-order-count{margin-right:auto;color:var(--pc-muted)}
 .uc-ticket-grade-header{display:flex;align-items:center;gap:var(--pc-gap)}
 .uc-grade-badge{display:flex;flex-direction:column;align-items:flex-start;gap:5px;min-width:88px;padding:9px 12px;border:1px solid var(--uc-grade-line);border-radius:8px;background:linear-gradient(135deg,var(--pc-surface),var(--uc-grade-bg));color:var(--uc-grade);box-shadow:0 2px 6px rgb(31 45 61 / 4%);line-height:1.2}
 .uc-grade-caption{font-size:11px;font-weight:400;letter-spacing:1px;color:var(--pc-text)}

@@ -207,7 +207,7 @@
   function complaintKeywordMatch(r,criteria){
     const query=(criteria.keyword||'').trim().toLowerCase();if(!query)return true;
     const key=ORDER_KEYWORDS.some(([value])=>value===criteria.keywordType)?criteria.keywordType:'phone';
-    const values=key==='id'?[...r.linked.map(order=>order.id),...(r.channel==='wechat'?[r.externalOrder,r.payOrder]:[])]:key==='name'?[r.name,...(r.channel==='wechat'?[r.wechatNickname]:[])]:key==='customerWechat'?[r.customerWechat??orders.find(order=>order.customerId===r.customerId)?.customerWechat]:[r[key]];
+    const values=key==='id'?[...r.linked.map(order=>order.id),...(r.channel==='wechat'?[r.externalOrder,r.payOrder]:[])]:key==='name'?[r.name,...(r.channel==='wechat'?[r.wechatNickname]:[])]:key==='customerWechat'?[r.customerWechat??orders.find(order=>order.customerId===r.customerId)?.customerWechat]:key==='phone'?[r.phone,r.originalContact?.phone,r.consumptionPhone]:[r[key]];
     return values.some(value=>String(value??'').toLowerCase().includes(query));
   }
   function complaintKeywordControl(){const key=filterDraft.keywordType||'phone',label=ORDER_KEYWORDS.find(([value])=>value===key)?.[1]||'客户手机';return `<div class="refund-keyword" data-pc-label="关键词"><select id="uc-keywordType" name="keywordType" class="uc-input" aria-label="关键词类型">${ORDER_KEYWORDS.map(([value,text])=>`<option value="${value}"${key===value?' selected':''}>${text}</option>`).join('')}</select>${input('keyword',filterDraft.keyword,'输入'+label,'text','aria-label="投诉关键词"')}</div>`}
@@ -326,9 +326,9 @@
     const el=document.createElement('div');el.className='uc-scope uc-layer merge-drawer-backdrop';el.dataset.overlayLayer='complaint-'+layers.length;el.dataset.uc='dismiss';el.style.zIndex=String(120+layers.length*10);
     el.innerHTML=`<section class="merge-drawer ub-drawer uc-drawer" style="--archive-drawer-width:860px" role="dialog" aria-modal="true" aria-label="${esc(title)}" tabindex="-1"><header class="merge-drawer-head uc-drawer-head"><h2>${esc(title)}</h2><button type="button" class="icon-btn" data-uc="dismiss" aria-label="关闭${esc(title)}">${iconClose}</button></header><div class="uc-layer-top"></div><div class="merge-drawer-body uc-drawer-body">${body}</div><footer class="merge-drawer-foot uc-drawer-foot">${footer}</footer></section>`;
     portal.appendChild(el);bind(el);const layer={el,trigger,title,closing:false,parentView};layers.push(layer);lockBackground();
-    requestAnimationFrame(()=>requestAnimationFrame(()=>{el.classList.add('show');el.querySelector('.uc-drawer').focus({preventScroll:true})}));return layer;
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{el.classList.add('show');if(layer.creation)PCUI.focusControl(el.querySelector('[name="consumptionPhone"]'));else el.querySelector('.uc-drawer').focus({preventScroll:true})}));return layer;
   }
-  function closeLayer(){const layer=layers.at(-1);if(!layer||layer.closing||layer.options?.saving)return;layer.closing=true;layer.el.classList.remove('show');layer.el.classList.add('is-closing');setTimeout(()=>{if(!layers.includes(layer))return;layer.el.remove();layers.pop();if(main?.editor?.layer===layer)main.editor=null;if(layers.length){const parent=layers.at(-1);parent.el.inert=false;if(layer.parentView){parent.el.querySelector('.uc-drawer-body').scrollTop=layer.parentView.scroll;if(main?.layer===parent)setDetailTab(layer.parentView.tab)}}else{unlockBackground();main=null}if(layer.trigger?.isConnected)layer.trigger.focus({preventScroll:true});else if(layers.length)layers.at(-1).el.querySelector('.uc-drawer').focus({preventScroll:true});else root.querySelector('input,button')?.focus({preventScroll:true})},matchMedia('(prefers-reduced-motion: reduce)').matches?0:290)}
+  function closeLayer(){const layer=layers.at(-1);if(!layer||layer.closing||layer.options?.saving)return;layer.closing=true;layer.el.classList.remove('show');layer.el.classList.add('is-closing');setTimeout(()=>{if(!layers.includes(layer))return;layer.el.remove();layers.pop();if(main?.editor?.layer===layer)main.editor=null;if(layers.length){const parent=layers.at(-1);parent.el.inert=false;if(layer.parentView){parent.el.querySelector('.uc-drawer-body').scrollTop=layer.parentView.scroll;if(main?.layer===parent)setDetailTab(layer.parentView.tab)}}else{unlockBackground();main=null}if(layer.trigger?.isConnected)layer.trigger.focus({preventScroll:true});else if(layers.length)layers.at(-1).el.querySelector('.uc-drawer').focus({preventScroll:true});else root.querySelector('input,button')?.focus({preventScroll:true});layer.afterClose?.()},matchMedia('(prefers-reduced-motion: reduce)').matches?0:290)}
   function dirty(layer){if(layer.options)return layer.options.saving||optionsDirty(layer.options);if(layer.creation){const form=layer.el.querySelector('[data-ticket-form]');return Boolean(form&&[...form.querySelectorAll('input,select,textarea')].some(control=>control.name&&control.value.trim()&&(control.name!=='channel'||control.value!=='hotline')))}const e=main?.editor;return Boolean(e?.layer===layer&&(e.uploading||followTools().operationDirty(e)||(e.selectingOrders&&(orderPickerDirty(e)||(e.exampleReturn&&orderPickerDirty(e.exampleReturn))))))}
   function recordById(id){return records.find(r=>r.id===id)}
   function isAssessed(r){return ASSESSMENT_FIELDS.every(([key])=>key==='level4Type'?r.level!=='4级'||Boolean(level4Type(r)):key==='responsible'&&r.type==='闭店'?true:valueText(r[key]).trim())}
@@ -378,55 +378,7 @@
     if(layers.length)return;main={record:recordById(id),tab:detailTabKey(tab),scrollPositions:{},references:{payment:false},layer:null,editor:null};
     main.layer=openLayer('投诉详情','','');renderDetail();
   }
-  function createTicketForm(){
-    return `<div id="uc-create-ticket" class="ub-form" data-ticket-form>
-      ${field('createChannel','来源渠道',`<select id="uc-createChannel" name="channel" class="uc-input" aria-label="来源渠道">${Object.entries(CHANNELS).map(([value,label])=>`<option value="${esc(value)}"${value==='hotline'?' selected':''}>${esc(label)}</option>`).join('')}</select>`,false,'',true)}
-      ${field('createName','客户姓名',input('createName','','请输入客户姓名','text','autocomplete="name"','name'),true)}
-      ${field('createPhone','手机号',input('createPhone','','请输入手机号','tel','inputmode="tel" autocomplete="tel"','phone'),true)}
-      ${dictionary.requestEntryEnabled?field('createRequestType','客户诉求类型',`<select id="uc-createRequestType" name="requestType" class="uc-input" aria-label="客户诉求类型" aria-required="true">${opt(dictionary.requestTypes(),'','请选择客户诉求类型')}</select>`,true)+field('createRequestReason','具体原因',`<select id="uc-createRequestReason" name="requestReason" class="uc-input" aria-label="具体原因" aria-required="true" disabled>${opt([],'','请先选择客户诉求类型')}</select>`,true):''}
-      ${field('createContent','补充说明',`<textarea id="uc-createContent" name="content" class="uc-input" rows="6" maxlength="2000" placeholder="请描述您的情况，以及希望我们如何帮助您"></textarea>`,false,'',true)}
-    </div>`;
-  }
-  function syncCreateRequestFields(scope,resetReason=false){
-    const type=scope.querySelector('[name="requestType"]'),reason=scope.querySelector('[name="requestReason"]');if(!type||!reason)return;
-    const types=dictionary.requestTypes(),selectedType=types.includes(type.value)?type.value:'',reasons=dictionary.requestReasons(selectedType),selectedReason=!resetReason&&reasons.includes(reason.value)?reason.value:'';
-    type.innerHTML=opt(types,selectedType,'请选择客户诉求类型');reason.innerHTML=opt(reasons,selectedReason,selectedType?'请选择具体原因':'请先选择客户诉求类型');reason.disabled=!selectedType;
-    PCUI.syncControl(type);PCUI.syncControl(reason);
-    const content=scope.querySelector('[name="content"]'),required=['其他原因','其他问题'].includes(selectedReason);
-    content.setAttribute('aria-required',String(required));content.closest('[data-field]')?.querySelector('label')?.classList.toggle('required',required);
-    for(const name of ['RequestType','RequestReason','Content']){scope.querySelector('#uc-error-create'+name).textContent='';scope.querySelector('#uc-create'+name)?.removeAttribute('aria-invalid')}
-  }
-  function newTicketErrors(values){
-    const errors=[['name','请输入客户姓名'],['phone','请输入手机号']].filter(([name])=>!values[name]);
-    if(values.phone&&!/^1\d{10}$/.test(values.phone))errors.push(['phone','请输入11位手机号']);
-    if(dictionary.requestEntryEnabled){
-      if(!dictionary.requestTypes().includes(values.requestType))errors.push(['requestType','请选择客户诉求类型']);
-      if(!dictionary.requestReasons(values.requestType).includes(values.requestReason))errors.push(['requestReason','请选择该诉求类型对应的具体原因']);
-      if(['其他原因','其他问题'].includes(values.requestReason)&&!values.content)errors.push(['content','请补充具体情况及希望如何处理']);
-    }
-    return errors;
-  }
-  function openCreateTicket(){
-    if(layers.length)return;
-    const layer=openLayer('新增工单',createTicketForm(),`${btn('取消','dismiss')}${btn('提交工单','save-new-ticket','',true)}`);
-    layer.creation=true;
-  }
-  function saveNewTicket(){
-    const layer=layers.at(-1),scope=layer?.el,form=scope?.querySelector('[data-ticket-form]');
-    if(!layer?.creation||!form)return;
-    const values=Object.fromEntries([...form.querySelectorAll('input,select,textarea')].filter(control=>control.name).map(control=>[control.name,control.value.trim()]));
-    clearErrors(scope);
-    const missing=newTicketErrors(values);
-    if(missing.length){
-      missing.forEach(([name,message])=>error(scope,'create'+name[0].toUpperCase()+name.slice(1),message));
-      const control=scope.querySelector(`[name="${missing[0][0]}"]`);PCUI.focusControl(control);control?.scrollIntoView({block:'center'});return;
-    }
-    const numericIds=records.map(record=>Number(record.id)).filter(Number.isFinite),id=String((numericIds.length?Math.max(...numericIds):31000)+1),time=now();
-    const requestType=dictionary.requestEntryEnabled?values.requestType||'':'',requestReason=dictionary.requestEntryEnabled?values.requestReason||'':'';
-    const record={id,sourceId:'',customerId:'',name:values.name,phone:values.phone,member:'',customerWechat:'',store:'',channel:values.channel||'hotline',content:values.content,requestType,requestReason,created:time,submitter:ACTOR,status:'待处理',handlingPlan:'',level:'',level4Type:'',department:'',type:'',firstContact:'',contactTime:'',complaintStore:'',customerDemand:'',customerStatement:values.content,responsible:'',reason:'',linked:[],files:[],follows:[],logs:[{time,actor:ACTOR,action:'新增工单',text:'手工创建工单，来源：'+(CHANNELS[values.channel]||CHANNELS.hotline)+(requestType?'；客户诉求：'+requestType+'；具体原因：'+requestReason:'')}],messages:[]};
-    if(!persist([...records,record]))return;
-    closeLayer(true);page=1;renderList();toast('工单已提交，等待客服接单');
-  }
+  const {createTicketForm,syncCreateRequestFields,newTicketErrors,openCreateTicket,saveNewTicket,syncCreateInput,createTicketAction,lookupCreateCustomer,createOrderPickerView,setCreateOrder,createTicketState,createCustomerMatches,createCustomerOrders,setCreateCustomer,createTicketAssociation,createOrderTable}=window.PCModules['complaint-intake'].create({CHANNELS,ACTOR,dictionary,field,input,opt,select,section,btn,link,esc,clone,orders,customerDirectory:(...args)=>customerDirectory(...args),phoneView:(...args)=>phoneView(...args),orderProjects,paymentMoney,tag,listValue,empty,pagination,openLayer,closeLayer,toast,clearErrors,error,now,getLayers:()=>layers,getRecords:()=>records,persist,onCreated(record,layer){layer.afterClose=()=>openComplaint(record.id);closeLayer(true);page=1;renderList();toast('工单已创建，等待客服接单')}});
   function detailReference(key,label,text,content,closedLabel='',actions=''){
     const expandable=key==='payment'&&Boolean(content),open=expandable?main.references[key]:true,id='uc-detail-reference-'+key;
     return `<div class="uc-reference-group${open?' is-open':''}"><div class="uc-reference-row"><span class="uc-reference-label">${label}</span><span class="uc-reference-summary${key==='complaint'?' uc-reference-text':''}" title="${esc(text)}">${esc(text)}</span><div class="uc-actions uc-reference-actions">${expandable?link(open?'收起':closedLabel,'detail-reference',`data-reference="${key}" data-closed-label="${closedLabel}" aria-expanded="${open}" aria-controls="${id}"`):''}${actions}</div></div><div class="uc-reference-content" id="${id}" ${open&&content?'':'hidden'}>${content}</div></div>`;
@@ -434,7 +386,7 @@
   function detailCommon(r){return informationView(r)}
   function togglePhone(button){
     if(!main)return;
-    const visible=!main.phoneVisible,phone=phoneView(main.record,visible);
+    const visible=!main.phoneVisible,r=main.record,phone=phoneView(Object.hasOwn(r,'consumptionPhone')&&r.originalContact?r.originalContact:r,visible);
     if(!phone.canReveal){toast('该工单仅保存了脱敏号码，暂无完整号码');return;}
     main.phoneVisible=visible;
     for(const layer of [main.layer,main.editor?.layer].filter(Boolean)){
@@ -607,7 +559,7 @@
     }catch(error){toast(error.message)}
   }
   function editFollowRecord(id){const f=main.record.follows.find(f=>f.id===id);if(followTools().editable(f))openEditor('follow',followTools().draft(main.record,f),id)}
-  function syncDraft(el){if(syncOptionDraft(el)||syncSolution(el))return;const e=main?.editor;if(e?.kind==='orders'&&el.closest('#uc-customer-search')){readCustomerSearch();e.layer.el.querySelector('#uc-customer-search-error').textContent='';return}if(!e||!el.closest('[data-draft]')||!Object.hasOwn(e.draft,el.name)||el.type==='radio'&&!el.checked)return;e.draft[el.name]=el.type==='checkbox'?[...e.layer.el.querySelectorAll('input[type="checkbox"][name="'+el.name+'"]:checked')].map(input=>input.value):el.multiple?[...el.selectedOptions].map(option=>option.value):el.value;el.removeAttribute('aria-invalid');e.layer.el.querySelector('#uc-'+el.name)?.removeAttribute('aria-invalid');const err=e.layer.el.querySelector('#uc-error-'+el.name);if(err)err.textContent='';if(e.kind==='assessment'){
+  function syncDraft(el){if(syncCreateInput(el))return;if(syncOptionDraft(el)||syncSolution(el))return;const e=main?.editor;if(e?.kind==='orders'&&el.closest('#uc-customer-search')){readCustomerSearch();e.layer.el.querySelector('#uc-customer-search-error').textContent='';return}if(!e||!el.closest('[data-draft]')||!Object.hasOwn(e.draft,el.name)||el.type==='radio'&&!el.checked)return;e.draft[el.name]=el.type==='checkbox'?[...e.layer.el.querySelectorAll('input[type="checkbox"][name="'+el.name+'"]:checked')].map(input=>input.value):el.multiple?[...el.selectedOptions].map(option=>option.value):el.value;el.removeAttribute('aria-invalid');e.layer.el.querySelector('#uc-'+el.name)?.removeAttribute('aria-invalid');const err=e.layer.el.querySelector('#uc-error-'+el.name);if(err)err.textContent='';if(e.kind==='assessment'){
     if(el.name==='handlingPlan'){e.layer.el.querySelectorAll('[name=handlingPlan]').forEach(input=>input.removeAttribute('aria-invalid'));renderEditorFooter()}
     if(el.name==='department'){const type=e.layer.el.querySelector('[name=type]'),hasDepartment=multiValues(e.draft.department).length>0;type.disabled=!hasDepartment;if(!hasDepartment){e.draft.type='';type.value=''}type.options[0].textContent=hasDepartment?'请选择售后类型':'请先选择责任部门';PCUI.syncControl(type)}
     if(['department','type'].includes(el.name)){const responsible=e.layer.el.querySelector('[name=responsible]'),closed=e.draft.type==='闭店';responsible.disabled=!multiValues(e.draft.department).length||!e.draft.type||closed;responsible.required=!responsible.disabled;responsible.setAttribute('aria-required',String(responsible.required));responsible.closest('[data-field]').hidden=closed;e.layer.el.querySelector('#uc-error-responsible').textContent='';PCUI.syncControl(responsible)}
@@ -671,7 +623,7 @@
   function readCustomerSearch(){const e=main.editor,form=e.layer.el.querySelector('#uc-customer-search');if(form)e.customerSearch=Object.fromEntries(new FormData(form));return e.customerSearch}
   function confirmOrders(){
     const e=main.editor;if(e?.kind!=='orders')return;
-    if(e.selection.length!==1||!e.orderCustomerId){toast('请先确认客户并选择一笔关联订单');return}
+    if((!e.multipleOrders&&e.selection.length!==1)||!e.orderCustomerId){toast('请先确认客户并选择关联订单');return}
     if(!orderPickerDirty(e)){if(e.exampleRecord)returnFromOrderExample();else closeLayer(true);return}
     if(e.exampleRecord){const example=clone(e.exampleRecord);if(!recordOrderAssociation(example,e,now()))return;returnFromOrderExample();toast('示例关联已完成，当前工单未变更');return}
     const next=clone(records),r=next.find(r=>r.id===main.record.id),entry=recordOrderAssociation(r,e,now());
@@ -695,6 +647,7 @@
     else if(action==='detail')openComplaint(b.dataset.id);
     else if(action==='new-ticket')openCreateTicket();
     else if(action==='save-new-ticket')saveNewTicket();
+    else if(action.startsWith('create-'))createTicketAction(action,b,layer);
     else if(action==='order-detail')openOrderSnapshot(b.dataset.order);
     else if(action==='customer-detail')openCustomerSnapshot(b.dataset.customer);
     else if(action==='toggle-phone')togglePhone(b);
@@ -737,15 +690,26 @@
     else if(action==='page'){const target=Number(b.dataset.page);if(b.dataset.pagination==='orders'){const e=main.editor;e.orderPage=Math.max(1,Math.min(target,Math.ceil(orderPickerOrders(e).length/e.orderPageSize)||1));renderEditor()}else{page=Math.max(1,Math.min(target,Math.ceil(filtered().length/pageSize)||1));renderList()}}
     else if(action==='export')exportRows();
   }
-  function handleChange(event){event.stopPropagation();const el=event.target;if(layers.at(-1)?.creation&&['requestType','requestReason'].includes(el.name)){syncCreateRequestFields(layers.at(-1).el,el.name==='requestType');return;}if(el.name==='operation'&&el.checked){const e=main.editor,kind=el.value;followTools().resetOperation(e);if(kind!==e.kind)chooseOperation(kind);return}if(el.dataset.orderChoice&&el.checked){if(selectPickerOrder(main.editor,el.dataset.orderChoice))renderEditorFooter();return}syncDraft(el);if(el.id==='uc-customerKeywordType'){const e=main.editor;e.customerSearch.keyword='';const input=e.layer.el.querySelector('#uc-customerKeyword');input.value='';input.placeholder='输入'+(CUSTOMER_KEYWORDS.find(([key])=>key===el.value)?.[1]||'客户手机');PCUI.syncControl(input);PCUI.focusControl(input)}if(el.id==='uc-filter-keywordType'){const input=root.querySelector('#uc-filter-keyword');input.value='';input.placeholder='输入'+(ORDER_KEYWORDS.find(([key])=>key===el.value)?.[1]||'客户手机');input.focus()}if(el.dataset.pageSize==='list'){pageSize=Number(el.value);page=1;renderList()}if(el.dataset.pageSize==='orders'){const e=main.editor;e.orderPageSize=Number(el.value);e.orderPage=1;renderEditor()}if(el.dataset.upload)uploadFiles(el)}
-  function handleSubmit(event){event.preventDefault();event.stopPropagation();const layer=layers.at(-1);if(layer?.options){if(!layer.options.saving&&layer.options.entries[layer.options.tab])optionAction('options-apply',event.target,layer);return}if(layer?.creation){saveNewTicket();return}if(event.target.id==='uc-search'){const values=readListSearch(event.target);filterDraft={...filterDraft,...values};if(filterDraft.start&&filterDraft.end&&filterDraft.start>filterDraft.end){root.querySelector('#uc-query-error').textContent='投诉结束日期不能早于开始日期';return}filters={...filterDraft,status:filters.status||''};page=1;renderList()}if(event.target.id==='uc-customer-search'){const e=main.editor,q=readCustomerSearch();if(!q.keyword?.trim()){e.layer.el.querySelector('#uc-customer-search-error').textContent='请输入客户手机号、姓名或会员号';return}e.customerFilters=clone(q);e.customerPage=1;renderEditor()}}
+  function handleChange(event){event.stopPropagation();const el=event.target;
+    const layer=layers.at(-1);
+    if(layer?.creationOrders&&el.dataset.createPickerChoice){setCreateOrder(layer.creationOrders.state,el.dataset.createPickerChoice,el.checked);layer.el.querySelector('#uc-create-order-count').textContent='已选 '+layer.creationOrders.state.linked.length+' 笔';return}
+    if(layer?.creation&&el.dataset.createOrderChoice){setCreateOrder(layer.creation,el.dataset.createOrderChoice,el.checked);renderCreateOrders(layer);PCUI.focusControl(layer.el.querySelector('[data-uc="create-remove-order"][data-order="'+el.dataset.createOrderChoice+'"]'));return}
+    if(layers.at(-1)?.creation&&['requestType','requestReason'].includes(el.name)){syncCreateRequestFields(layers.at(-1).el,el.name==='requestType');return;}if(el.name==='operation'&&el.checked){const e=main.editor,kind=el.value;followTools().resetOperation(e);if(kind!==e.kind)chooseOperation(kind);return}if(el.dataset.orderChoice&&(el.checked||main?.editor?.multipleOrders)){if(selectPickerOrder(main.editor,el.dataset.orderChoice))renderEditorFooter();return}syncDraft(el);if(el.id==='uc-customerKeywordType'){const e=main.editor;e.customerSearch.keyword='';const input=e.layer.el.querySelector('#uc-customerKeyword');input.value='';input.placeholder='输入'+(CUSTOMER_KEYWORDS.find(([key])=>key===el.value)?.[1]||'客户手机');PCUI.syncControl(input);PCUI.focusControl(input)}if(el.id==='uc-filter-keywordType'){const input=root.querySelector('#uc-filter-keyword');input.value='';input.placeholder='输入'+(ORDER_KEYWORDS.find(([key])=>key===el.value)?.[1]||'客户手机');input.focus()}if(el.dataset.pageSize==='list'){pageSize=Number(el.value);page=1;renderList()}if(el.dataset.pageSize==='orders'){const e=main.editor;e.orderPageSize=Number(el.value);e.orderPage=1;renderEditor()}if(el.dataset.upload)uploadFiles(el)}
+  function handleSubmit(event){event.preventDefault();event.stopPropagation();const layer=layers.at(-1);if(layer?.options){if(!layer.options.saving&&layer.options.entries[layer.options.tab])optionAction('options-apply',event.target,layer);return}if(layer?.creationOrders){
+      if(event.target.id!=='uc-create-order-search')return;
+      const values=Object.fromEntries(new FormData(event.target));
+      if(values.start&&values.end&&values.start>values.end){layer.el.querySelector('#uc-create-orders-error').textContent='下单结束日期不能早于开始日期';return}
+      layer.el.querySelector('#uc-create-orders-error').textContent='';layer.creationOrders.filters={keyword:values.keyword,store:values.createOrderStore,start:values.start,end:values.end};layer.creationOrders.page=1;createOrderPickerView(layer);return;
+    }
+    if(layer?.creation){if(event.target.id==='uc-create-customer-search')lookupCreateCustomer(layer);return}
+    if(event.target.id==='uc-search'){const values=readListSearch(event.target);filterDraft={...filterDraft,...values};if(filterDraft.start&&filterDraft.end&&filterDraft.start>filterDraft.end){root.querySelector('#uc-query-error').textContent='投诉结束日期不能早于开始日期';return}filters={...filterDraft,status:filters.status||''};page=1;renderList()}if(event.target.id==='uc-customer-search'){const e=main.editor,q=readCustomerSearch();if(!q.keyword?.trim()){e.layer.el.querySelector('#uc-customer-search-error').textContent='请输入客户手机号、姓名或会员号';return}e.customerFilters=clone(q);e.customerPage=1;renderEditor()}}
   function keyboard(event){if(!root?.isConnected||document.querySelector('#modal .pc-company-dialog'))return;if(event.target.closest('.pc-tabs')&&['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;if(PCUI.isPopupOpen())return;if(!layers.length){if(event.target.matches('.uc-list-tab')&&['ArrowLeft','ArrowRight'].includes(event.key)){event.preventDefault();const tabs=[...root.querySelectorAll('.uc-list-tab')],i=tabs.indexOf(event.target);tabs[(i+(event.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length].click()}return;}const layer=layers.at(-1);if(event.key==='Escape'){event.preventDefault();event.stopImmediatePropagation();closeLayer();return}if(event.target.matches('.uc-tab')&&['ArrowLeft','ArrowRight'].includes(event.key)){event.preventDefault();const tabs=[...layer.el.querySelectorAll('.uc-tab')],i=tabs.indexOf(event.target);tabs[(i+(event.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length].click();return}if(event.key==='Tab'){const all=[...layer.el.querySelectorAll('button:not(:disabled),input:not(:disabled),select:not(:disabled),textarea:not(:disabled),summary,[tabindex="0"]')].filter(e=>e.getClientRects().length&&e.tabIndex>=0);if(!all.length){event.preventDefault();return}if(event.shiftKey&&(document.activeElement===all[0]||document.activeElement===layer.el.querySelector('.uc-drawer'))){event.preventDefault();all.at(-1).focus()}else if(!event.shiftKey&&(document.activeElement===all.at(-1)||!layer.el.contains(document.activeElement))){event.preventDefault();all[0].focus()}}}
   function openOrderSnapshot(id){const order=orders.find(item=>item.id===id);if(!order){toast('该订单暂无更多资料');return}openLayer('订单详情',section('订单 '+esc(id),orderCards([{id}])) ,btn('关闭','dismiss'),2);}
   function openCustomerSnapshot(id){const record=records.find(item=>item.customerId===id);if(!record){toast('该客户暂无更多资料');return}openLayer('客户资料',section('基本信息',`<div class="uc-details">${detail('客户姓名',record.name)}${detail('会员号',record.member)}${detail('客户手机',record.phone)}${detail('所属门店',record.store)}${detail('客户微信',record.customerWechat||orders.find(o=>o.customerId===id)?.customerWechat)}</div>`),btn('关闭','dismiss'),2);}
   function bind(el){el.addEventListener('click',handleClick);el.addEventListener('change',handleChange);el.addEventListener('input',event=>{event.stopPropagation();syncDraft(event.target)});el.addEventListener('submit',handleSubmit,true);}
   function mount(content){if(!content)return;root=content;root.classList.add('uc-scope');portal=document.getElementById('mergeDrawers');bind(root);renderList();clearInterval(listClock);listClock=setInterval(refreshListTimings,60000);document.addEventListener('visibilitychange',refreshListTimings);if(readFailure)toast('本地记录读取失败，已恢复初始列表');if(dictionary.error)toast('下拉配置读取失败：'+dictionary.error+'；请在配置入口重试');}
   function leave(){clearInterval(listClock);document.removeEventListener('visibilitychange',refreshListTimings);for(const layer of layers)layer.el.remove();layers=[];main=null;unlockBackground();}
-  PCUI.registerPager('complaints',(value,config)=>{if(config.scope==='orders'||config.scope==='order-customers'){const e=main?.editor;if(!e)return;if(config.scope==='orders'){e.orderPage=value.currentPage;e.orderPageSize=value.pageSize}else{e.customerPage=value.currentPage;e.customerPageSize=value.pageSize}renderEditor();}else{filterDraft={...filterDraft,...readListSearch()};page=value.currentPage;pageSize=value.pageSize;renderList();}});
+  PCUI.registerPager('complaints',(value,config)=>{if(config.scope==='create-orders'){const layer=layers.at(-1);if(!layer?.creationOrders)return;layer.creationOrders.page=value.currentPage;layer.creationOrders.size=value.pageSize;createOrderPickerView(layer);return}if(config.scope==='orders'||config.scope==='order-customers'){const e=main?.editor;if(!e)return;if(config.scope==='orders'){e.orderPage=value.currentPage;e.orderPageSize=value.pageSize}else{e.customerPage=value.currentPage;e.customerPageSize=value.pageSize}renderEditor();}else{filterDraft={...filterDraft,...readListSearch()};page=value.currentPage;pageSize=value.pageSize;renderList();}});
   document.addEventListener('keydown',keyboard,true);
   window.addEventListener('beforeunload',event=>{if(layers.some(dirty)){event.preventDefault();event.returnValue=''}});
   window.PCComplaints={mount,leave};

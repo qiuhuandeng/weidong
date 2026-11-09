@@ -53,8 +53,8 @@
     const b=n*c.factor;assert(Math.abs(b-round(b))<1e-7,'换算结果不能超过三位小数。');
     assert(!c.step||Math.abs(b/c.step-Math.round(b/c.step))<1e-6,'数量须符合最小单位步长 '+c.step+' '+c.baseUnit+'。');return round(b);
   }
-  const lineBase=(l,n)=>convert(n,l.conversion||{name:l.unit,factor:1,baseUnit:l.unit,allowFraction:true,step:0.001});
-  function referenced(s,pid,sid){return s.ledger.some(x=>x.pid===pid&&x.sid===sid)||s.documents.some(d=>d.lines.some(x=>x.pid===pid&&x.sid===sid))||s.tasks.some(t=>t.products.includes(pid))||(s.salesProducts?.basics||[]).some(b=>b.materials.some(x=>x.pid===pid&&x.sid===sid));}
+  const lineBase=(l,n)=>{assert(l&&l.sourceType!=='custom','自填物料须先绑定实际库存物料。');return convert(n,l.conversion||{name:l.unit,factor:1,baseUnit:l.unit,allowFraction:true,step:0.001});};
+  function referenced(s,pid,sid){return s.ledger.some(x=>x.pid===pid&&x.sid===sid)||s.documents.some(d=>d.lines.some(x=>(x.pid===pid&&x.sid===sid)||(x.binding?.pid===pid&&x.binding?.sid===sid)))||s.tasks.some(t=>t.products.includes(pid))||(s.salesProducts?.basics||[]).some(b=>b.materials.some(x=>x.pid===pid&&x.sid===sid));}
   function migrate(s){
     if(s.materialVersion===1){assert(Array.isArray(s.brands)&&Array.isArray(s.suppliers),'物料主档格式不兼容，原数据已保留。');return s;}
     s.brands=s.brands||[];s.suppliers=s.suppliers||[];
@@ -98,6 +98,10 @@
     assert(Array.isArray(lines)&&(!strict||lines.length),'请至少添加一项物品。');
     const seen=new Set();
     return lines.map(l=>{
+      if(l.sourceType==='custom'){
+        assert(kind==='replenish','只有补货单支持自填物料。');const row=customLine(l),k=row.key;
+        assert(!seen.has(k),'申请明细重复，请重新添加。');seen.add(k);return row;
+      }
       const p=product(s,l.pid),v=spec(s,l.pid,l.sid);
       assert(p&&v,'所选产品或规格已不存在。');
       if(strict){assert(p.enabled,'产品“'+p.name+'”已停用。');if(kind==='issue')assert(p.useEnabled,'产品“'+p.name+'”未启用领用。');}
@@ -106,8 +110,47 @@
       const unit=l.unit||defaultUnit(s,p.id,v.id,kind),c=conversion(s,p.id,v.id,unit),qty=quantity(l.qty,p.name+'数量',!strict),baseQty=convert(qty,c,!strict);
       const offer=(v.offers||[]).find(o=>o.supplier===l.supplier&&o.unit===unit);
       if(l.supplier)assert(s.suppliers?.some(x=>x.id===l.supplier&&x.enabled!==false),'供应商已停用或不存在。');
-      return {...copy(l),key:k,qty,baseQty,conversion:c,unit,cost:Number(v.cost)*c.factor,priceEstimated:l.priceEstimated??(l.unitPrice===undefined||!!l.conversion?.legacy&&l.purchasePrice===undefined),unitPrice:quantity(l.unitPrice??offer?.price??Number(v.cost)*c.factor,'单价'),name:p.name,code:p.code,spec:v.name};
+      return {...copy(l),key:k,...(kind==='replenish'?{lineId:l.lineId||uid('RL'),sourceType:'stock'}:{}),qty,baseQty,conversion:c,unit,cost:Number(v.cost)*c.factor,priceEstimated:l.priceEstimated??(l.unitPrice===undefined||!!l.conversion?.legacy&&l.purchasePrice===undefined),unitPrice:quantity(l.unitPrice??offer?.price??Number(v.cost)*c.factor,'单价'),name:p.name,code:p.code,spec:v.name};
     });
+  }
+  function customLine(l){
+    const clean=(value,label,max,required=true)=>{const text=String(value??'').trim();assert(!required||text,label+'不能为空。');assert(text.length<=max,label+'不能超过 '+max+' 字。');return text;};
+    const name=clean(l.name,'物料名称',80),description=clean(l.spec,'规格描述',120,false),unit=clean(l.unit,'申请单位',12,false),qty=quantity(l.qty,'申请数量',false),note=String(l.note||'').trim();
+    assert(Math.abs(Number(l.qty)-qty)<1e-7,'申请数量最多三位小数。');assert(note.length<=500,'备注不能超过 500 字。');
+    const images=l.images||[];assert(Array.isArray(images)&&images.length<=6,'最多添加 6 张图片。');
+    images.forEach(f=>assert(/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(f.src||'')&&f.src.length<=2800000,'请选择不超过 2 MB 的 PNG、JPEG 或 WebP 图片。'));
+    const lineId=l.lineId||uid('CUSTOM');assert(/^CUSTOM-[a-z0-9-]+$/i.test(lineId),'自填物料行标识无效，请重新添加。');
+    return {sourceType:'custom',lineId,key:lineId,name,spec:description,unit,qty,note,images:images.map(f=>({name:String(f.name||'物料图片').slice(0,120),src:f.src}))};
+  }
+  const fulfillment=l=>!l?null:l.sourceType==='custom'?(l.binding?{...l.binding,key:l.key,lineId:l.lineId}:null):l;
+  const shipmentLine=(d,x)=>x.material||fulfillment(d.lines.find(l=>l.key===x.lineKey));
+  const aliasText=value=>String(value||'').normalize('NFKC').trim().replace(/\s+/g,'').toLowerCase();
+  function bindingMatches(s,wid,l){
+    const latest=new Map();for(const h of s.bindingHistory||[])latest.set(h.docId+':'+h.lineKey,h);
+    const rows=[...latest.values()].filter(h=>h.to&&aliasText(h.request.name)===aliasText(l.name)).map(h=>{
+      const p=product(s,h.to.pid),v=spec(s,h.to.pid,h.to.sid),sameStore=h.wid===wid,exact=!!(aliasText(l.spec)&&aliasText(l.unit))&&aliasText(h.request.spec)===aliasText(l.spec)&&aliasText(h.request.unit)===aliasText(l.unit);
+      let valid=!!(p?.enabled&&v&&v.enabled!==false);try{conversion(s,h.to.pid,h.to.sid,h.to.unit);}catch{valid=false;}
+      return {...h,valid,exact,sameStore,score:(sameStore?8:0)+(exact?4:0)+(h.usedAt?2:0)};
+    }).sort((a,b)=>b.score-a.score||b.at.localeCompare(a.at));
+    const seen=new Set();return rows.filter(h=>{const k=key(h.to.pid,h.to.sid)+':'+h.to.unit;if(seen.has(k))return false;seen.add(k);return true;}).slice(0,6);
+  }
+  function reviewReplenishment(s,d,rows,strict){
+    assert(Array.isArray(rows)&&(!strict||rows.length),'请至少保留一项补货物料。');const keys=rows.map(x=>x.key||key(x.pid,x.sid));assert(new Set(keys).size===keys.length,'同一申请明细不能重复审核。');
+    for(const old of d.lines.filter(l=>l.sourceType==='custom'))assert(rows.some(l=>l.key===old.key),'自填申请不能删除，请填写不予补货原因。');
+    return rows.map(l=>{
+      const old=d.lines.find(x=>x.key===l.key),base=old?.sourceType==='custom'?copy(old):normalizeLines(s,[l],strict,'replenish')[0];
+      if(base.sourceType==='custom'){
+        assert(old,'审核环节不能添加自填申请。');const reject=l.reviewDecision==='reject';
+        base.reviewDecision=reject?'reject':'approve';base.reviewReason=String(l.reviewReason||'').trim();
+        if(reject){assert(!strict||base.reviewReason,'请填写“'+base.name+'”不予补货的原因。');base.approved=0;}
+        else{base.approved=quantity(l.approved??base.qty,'审核数量',!strict);assert(Math.abs(Number(l.approved??base.qty)-base.approved)<1e-7,'审核数量最多三位小数。');}
+      }else{base.approved=quantity(l.approved??l.qty,'审核数量');lineBase(base,base.approved);}
+      return base;
+    });
+  }
+  function receiverInfo(s,wid,value,strict=true){
+    const w=warehouse(s,wid)||{},v=value||{},info={name:String(v.name??v.receiver??w.receiver??'').trim(),phone:String(v.phone??w.phone??'').trim(),address:String(v.address??w.address??'').trim()};
+    if(strict){assert(info.name,'请填写收件人。');assert(info.phone,'请填写收件电话。');assert(info.address,'请填写收货地址。');}return info;
   }
   const docStatus={
     transfer:['待提交','待审核','待发货','待收货','已撤销','已完成','已拒绝'],
@@ -129,7 +172,7 @@
     const lines=normalizeLines(s,p.lines,strict,kind),prefix={transfer:'DB',inbound:'RK',purchase:'CG',replenish:'BH',issue:'LY',sale:'XS',consume:'XH',returnIn:'TH',returnOut:'CT'}[kind];
     assert(lines.length||p.wid,'请先填写申请内容。');
     const result=d||{id:uid(prefix),no:prefix+now().replace(/\D/g,'')+String(++s.sequence).padStart(3,'0'),kind,createdAt:now(),createdBy:p.actor||'当前用户',comments:[],shipments:[],logs:[]};
-    Object.assign(result,{wid:p.wid||'',to:p.to||'',type:p.type||'',lines,status:strict?(kind==='issue'?'已出库':'待审核'):'待提交'});
+    Object.assign(result,{wid:p.wid||'',to:p.to||'',type:p.type||'',lines,status:strict?(kind==='issue'?'已出库':'待审核'):'待提交',...(kind==='replenish'?{receiverInfo:receiverInfo(s,p.wid,p.receiverInfo,strict)}:{})});
     if(!d)s.documents.unshift(result);
     if(['issue','sale','consume'].includes(kind)&&strict){
       if(kind!=='issue'){assert(p.source?.trim(),'请填写销售订单号或服务记录号。');assert(!s.documents.some(x=>x.id!==result.id&&x.kind===kind&&x.source===p.source.trim()),'该业务记录已扣库，请勿重复登记。');result.source=p.source.trim();}
@@ -140,10 +183,11 @@
   }
   function requireStatus(d,status){assert(d&&status.includes(d.status),'单据状态已变化，请刷新后重新操作。');}
   function updateReplenishment(d){
-    const expected=sum(d.lines,'expected'),sent=sum(d.shipments.filter(x=>x.status!=='待发货'),'qty');
+    const sent=sum(d.shipments.filter(x=>x.status!=='待发货'),'qty');
     const received=d.shipments.filter(x=>x.status==='已收货');
     d.sentQty=sent;d.receivedQty=sum(received,'actual');
-    if(sent>=expected&&d.shipments.every(x=>x.status==='已收货')&&sent>0){d.status='已完成';d.completedAt=now();}
+    const fulfilled=d.lines.every(l=>l.reviewDecision==='reject'||l.expected===0||!!fulfillment(l)&&sum(d.shipments.filter(x=>x.lineKey===l.key&&x.status!=='待发货'),'qty')>=fulfillment(l).expected);
+    if(fulfilled&&d.shipments.every(x=>x.status==='已收货')&&sent>0){d.status='已完成';d.completedAt=now();}
     else if(received.length)d.status='部分收货';
     else if(sent)d.status='在途';
     else d.status='待发货';
@@ -155,15 +199,14 @@
       case 'approve':{
         requireStatus(d,['待审核']);
         if(d.kind==='replenish'){
-          const lines=normalizeLines(s,p.lines||d.lines,true);
-          d.lines=lines.map(l=>({...l,approved:(lineBase(l,l.approved??l.qty),quantity(l.approved??l.qty,'审核数量'))}));
-          d.status='待核数';
+          d.lines=reviewReplenishment(s,d,p.lines||d.lines,true);
+          d.status=d.lines.some(l=>l.approved>0)?'待核数':'已拒绝';if(d.status==='已拒绝')d.reason='全部物料不予补货';
         }else d.status=({transfer:'待发货',inbound:'待入库',purchase:'待采购'})[d.kind];
         assert(d.status,'此单据不支持审核。');d.reviewAt=at;d.reviewer=actor;break;
       }
       case 'reviewDraft':
         requireStatus(d,['待审核']);assert(d.kind==='replenish','当前单据不能保存审核草稿。');
-        d.lines=normalizeLines(s,p.lines,false).map(l=>({...l,approved:(lineBase(l,l.approved??l.qty),quantity(l.approved??l.qty,'审核数量'))}));break;
+        d.lines=reviewReplenishment(s,d,p.lines||d.lines,false);break;
       case 'reject':
         requireStatus(d,['待审核']);d.status='已拒绝';d.reviewAt=at;d.reviewer=actor;d.reason=p.reason||'';break;
       case 'revoke':
@@ -188,28 +231,45 @@
         d.status='已完成';d.receivedAt=at;d.completedAt=at;d.receiver=actor;break;
       case 'verify':
         requireStatus(d,['待核数']);assert(d.kind==='replenish','当前单据不能核数。');
-        d.lines.forEach(l=>{l.expected=quantity(p.quantities?.[l.key]??l.approved,'应发数量');lineBase(l,l.expected);});
+        d.lines.forEach(l=>{l.expected=l.reviewDecision==='reject'?0:quantity(p.quantities?.[l.key]??l.approved,'应发数量');if(l.sourceType!=='custom')lineBase(l,l.expected);});
         assert(sum(d.lines,'expected')>0,'应发总数必须大于 0。');d.status='待发货';d.verifiedAt=at;d.verifier=actor;break;
+      case 'bindMaterial':{
+        requireStatus(d,['待发货','在途','部分收货']);assert(d.kind==='replenish','只有补货单可绑定物料。');
+        const l=d.lines.find(x=>x.key===p.lineKey);assert(l?.sourceType==='custom'&&l.expected>0&&l.reviewDecision!=='reject','请选择已通过审核的自填物料。');
+        assert(!d.shipments.some(x=>x.lineKey===l.key&&x.status!=='待发货'),'已发货物料不能更换绑定。');
+        assert(!d.shipments.some(x=>x.lineKey===l.key),'请先移除该行的待发货计划，再更换绑定。');
+        let target=null;
+        if(!p.unbind){
+          const productRow=product(s,p.pid),sku=spec(s,p.pid,p.sid);assert(productRow?.enabled&&sku&&sku.enabled!==false,'请选择启用的物料和规格。');
+          const c=conversion(s,p.pid,p.sid,p.unit),expected=quantity(p.expected,'实际应发数量',false);convert(p.expected,c,false);
+          target={pid:p.pid,sid:p.sid,code:skuDefaults(productRow,sku).code,name:productRow.name,spec:sku.name,unit:c.name,conversion:c,expected,requestExpected:l.expected,requestUnit:l.unit};
+          assert(p.confirmed===true,'请核对本次申请数量、实际应发数量和单位换算。');
+        }else assert(l.binding,'该行尚未绑定。');
+        const record={id:uid('BIND'),docId:d.id,no:d.no,lineKey:l.key,wid:d.wid,request:{name:l.name,spec:l.spec,qty:l.qty,unit:l.unit},from:l.binding?copy(l.binding):null,to:target?copy(target):null,actor,at,action:target?(l.binding?'更换绑定':'绑定物料'):'解除绑定'};
+        (s.bindingHistory??=[]).push(record);l.binding=target?{...target,historyId:record.id}:null;
+        log(d,record.action,l.name+' / '+l.spec+' → '+(target?target.code+' '+target.name+' / '+target.spec+'；'+l.expected+' '+l.unit+' 对应 '+target.expected+' '+target.unit:'未绑定'),actor);return d.id;
+      }
       case 'saveShipments':{
         requireStatus(d,['待发货','在途','部分收货']);assert(d.kind==='replenish','当前单据不能分批发货。');
         const sent=d.shipments.filter(x=>x.status!=='待发货'),drafts=(p.shipments||[]).map(x=>{
-          assert(d.lines.some(l=>l.key===x.lineKey),'发货物品不存在。');assert(warehouse(s,x.wid)?.enabled,'请选择启用的发货仓库。');
-          return {id:x.id||uid('SH'),lineKey:x.lineKey,wid:x.wid,qty:(lineBase(d.lines.find(l=>l.key===x.lineKey),x.qty),quantity(x.qty,'实发数量',false)),tracking:String(x.tracking||'').trim(),status:'待发货'};
+          const request=d.lines.find(l=>l.key===x.lineKey),line=fulfillment(request);assert(request,'发货物品不存在。');assert(line&&request.reviewDecision!=='reject'&&request.expected>0,'请先绑定实际物料，且应发数量须大于 0。');assert(warehouse(s,x.wid)?.enabled,'请选择启用的发货仓库。');
+          return {id:x.id||uid('SH'),lineKey:x.lineKey,wid:x.wid,qty:(lineBase(line,x.qty),quantity(x.qty,'实发数量',false)),tracking:String(x.tracking||'').trim(),status:'待发货'};
         });
-        for(const l of d.lines)assert(sum(sent.concat(drafts).filter(x=>x.lineKey===l.key),'qty')<=l.expected,'“'+l.name+'”的发货总数超过应发数量。');
+        assert(new Set(sent.concat(drafts).map(x=>x.id)).size===sent.length+drafts.length,'发货记录重复，请重新添加。');
+        for(const l of d.lines)assert(sum(sent.concat(drafts).filter(x=>x.lineKey===l.key),'qty')<=(fulfillment(l)?.expected||0),'“'+l.name+'”的发货总数超过应发数量。');
         d.shipments=sent.concat(drafts);break;
       }
       case 'shipReplenishment':{
         requireStatus(d,['待发货','在途','部分收货']);const selected=d.shipments.filter(x=>x.status==='待发货'&&(p.ids||[]).includes(x.id));
         assert(selected.length,'请选择待发货的记录。');
-        for(const x of selected){const l=d.lines.find(l=>l.key===x.lineKey);const cost=entry(s,x.wid,l,-lineBase(l,x.qty),'补货出库',d.id,x.id);x.stockCost=cost.unitCost;x.costEstimated=cost.costEstimated;x.status='在途';x.shippedAt=at;}
+        for(const x of selected){const l=fulfillment(d.lines.find(l=>l.key===x.lineKey));assert(l,'请先绑定实际库存物料。');assert(product(s,l.pid)?.enabled&&spec(s,l.pid,l.sid)?.enabled!==false&&warehouse(s,x.wid)?.enabled,'发货物料、规格或仓库已停用，请重新核对。');const cost=entry(s,x.wid,l,-lineBase(l,x.qty),'补货出库',d.id,x.id);x.material=copy(l);x.stockCost=cost.unitCost;x.costEstimated=cost.costEstimated;x.status='在途';x.shippedAt=at;const h=s.bindingHistory?.find(h=>h.id===l.historyId);if(h)h.usedAt=at;}
         d.shippedAt=at;updateReplenishment(d);break;
       }
       case 'receiveReplenishment':{
         requireStatus(d,['在途','部分收货']);let count=0;
         for(const x of d.shipments.filter(x=>x.status==='在途'&&Object.hasOwn(p.quantities||{},x.id))){
           const actual=quantity(p.quantities[x.id],'实收数量');assert(actual<=x.qty,'实收数量不能超过本批发货数量。');
-          const l=d.lines.find(l=>l.key===x.lineKey);x.actual=actual;x.status='已收货';x.receivedAt=at;x.difference=round(x.qty-actual);x.note=p.note||'';
+          const l=shipmentLine(d,x);lineBase(l,p.quantities[x.id]);x.actual=actual;x.status='已收货';x.receivedAt=at;x.difference=round(x.qty-actual);x.note=p.note||'';
           entry(s,d.wid,{...l,stockCost:x.stockCost,costEstimated:x.costEstimated},lineBase(l,actual),'补货入库',d.id,x.id);count++;
         }
         assert(count,'请选择在途记录并填写实收数量。');updateReplenishment(d);break;
@@ -439,6 +499,6 @@
     saveTask(s,{name:'常规用品专项盘点',warehouses:['w1','w2','w3'],products:['p4','p5','p6'],mode:'stock'});
     return migrate(s);
   }
-  root.WeidStockModel={copy,now,uid,quantity,sum,key,warehouse,product,spec,balance,catalog,validate,apply,seed,docStatus,skuDefaults,unitTable,defaultUnit,conversion,convert,lineBase,referenced,averageCost,quantityText};
+  root.WeidStockModel={copy,now,uid,quantity,sum,key,warehouse,product,spec,balance,catalog,validate,apply,seed,docStatus,skuDefaults,unitTable,defaultUnit,conversion,convert,lineBase,referenced,averageCost,quantityText,customLine,fulfillment,shipmentLine,bindingMatches};
   if(typeof module==='object'&&module.exports)module.exports=root.WeidStockModel;
 })(typeof window==='undefined'?globalThis:window);

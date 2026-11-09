@@ -19,7 +19,7 @@ window.PCModules['complaint-order-linking']={render(){},create({getRecords,getEd
   function orderPickerState(record,linked=record.linked||[]){
     const orderCustomerId=customerIdOf(record),phone=[record.fullPhone,record.phone].map(value=>String(value||'').trim()).find(value=>/^1\d{10}$/.test(value))||'';
     const customerSearch={keywordType:'phone',keyword:orderCustomerId?'':phone};
-    return {orderCustomerId,initialCustomerId:orderCustomerId,orderBindingRequired:!orderCustomerId,selectedCustomer:null,customerPage:1,customerPageSize:10,customerSearch,customerFilters:clone(customerSearch),orderPage:1,orderPageSize:10,selection:orderCustomerId?clone(linked):[],selectionBaseline:JSON.stringify(linked)};
+    return {multipleOrders:record.orderSelectionMode==='multiple',orderCustomerId,initialCustomerId:orderCustomerId,orderBindingRequired:!orderCustomerId,selectedCustomer:null,customerPage:1,customerPageSize:10,customerSearch,customerFilters:clone(customerSearch),orderPage:1,orderPageSize:10,selection:orderCustomerId?clone(linked):[],selectionBaseline:JSON.stringify(linked)};
   }
   function orderPickerDirty(e){return e.orderCustomerId!==e.initialCustomerId||JSON.stringify(e.selection)!==e.selectionBaseline}
   function orderPickerCustomers(e){return matchingCustomers(e.customerFilters)}
@@ -33,7 +33,7 @@ window.PCModules['complaint-order-linking']={render(){},create({getRecords,getEd
   function selectPickerOrder(e,id){
     const order=orderPickerOrders(e).find(o=>o.id===id);if(!order)return false;
     const existing=e.selection.find(item=>item.id===id)||e.draft?.linked.find(item=>item.id===id);
-    e.selection=[existing?clone(existing):{id:order.id,wechatId:order.bookingWechatId||''}];return true;
+    if(e.multipleOrders){if(e.selection.some(item=>item.id===id))e.selection=e.selection.filter(item=>item.id!==id);else e.selection.push(existing?clone(existing):{id:order.id,wechatId:order.bookingWechatId||''})}else e.selection=[existing?clone(existing):{id:order.id,wechatId:order.bookingWechatId||''}];return true;
   }
   function customerSearchView(e){
     const q=e.customerSearch,matches=orderPickerCustomers(e),label=CUSTOMER_KEYWORDS.find(([key])=>key===q.keywordType)?.[1]||'客户手机';
@@ -49,13 +49,13 @@ window.PCModules['complaint-order-linking']={render(){},create({getRecords,getEd
     const customer=e.selectedCustomer,selected=customer?section('已选客户',`<div class="uc-actions"><strong>${esc(customer.name)}</strong><span>${esc(phoneView(customer).value)}</span><span class="uc-muted">会员号 ${esc(customer.member||'—')}</span><span class="uc-muted">${esc(customer.stores.join('、'))}</span></div>`,link('更换客户','change-order-customer')):'';
     const columns=[['选择',48],['订单 / 项目',0],['门店',140],['状态',90]];
     return selected+`<div class="uc-order-picker-results"><div class="uc-section-head"><h4>选择关联订单</h4></div><div class="table-wrap uc-table-wrap"><table class="uc-table uc-picker-table" data-pc-align="left" data-pc-min-height="0" data-pc-scroll="parent"><colgroup>${columns.map(([,width])=>`<col${width?' style="width:'+width+'px"':''}>`).join('')}</colgroup><thead><tr>${columns.map(([label,width])=>`<th data-pc-min-width="${width||220}">${label}</th>`).join('')}</tr></thead><tbody>${matches.length?matches.slice(offset,offset+e.orderPageSize).map(o=>{
-      const checked=e.selection.length===1&&e.selection[0].id===o.id;
-      return `<tr><td><input type="radio" name="uc-order-selection" value="${esc(o.id)}" data-order-choice="${esc(o.id)}" aria-label="选择订单 ${esc(o.id)}" ${checked?'checked':''}></td><td>${listValue(o.id)}<span class="pc-block uc-block uc-muted">${esc(orderProjects(o).map(project=>project.name).filter(Boolean).join('、'))}</span></td><td>${listValue(o.store)}</td><td>${o.state?tag(o.state,o.state==='已到店'?'green':'gray'):listValue('')}</td></tr>`;
+      const checked=e.selection.some(item=>item.id===o.id);
+      return `<tr><td><input type="${e.multipleOrders?'checkbox':'radio'}" name="uc-order-selection" value="${esc(o.id)}" data-order-choice="${esc(o.id)}" aria-label="选择订单 ${esc(o.id)}" ${checked?'checked':''}></td><td>${listValue(o.id)}<span class="pc-block uc-block uc-muted">${esc(orderProjects(o).map(project=>project.name).filter(Boolean).join('、'))}</span></td><td>${listValue(o.store)}</td><td>${o.state?tag(o.state,o.state==='已到店'?'green':'gray'):listValue('')}</td></tr>`;
     }).join(''):`<tr><td colspan="${columns.length}">${empty('该客户暂无订单，可稍后再关联')}</td></tr>`}</tbody></table></div>${pagination(matches.length,e.orderPage,e.orderPageSize,'orders')}</div>`+example;
   }
   function recordOrderAssociation(r,e,time){
-    if(r.status==='已结案'||e.selection.length!==1||!e.orderCustomerId)return null;
-    const order=orderPickerOrders(e).find(item=>item.id===e.selection[0].id);if(!order||customerIdOf(r)!==e.initialCustomerId)return null;
+    if(r.status==='已结案'||(!e.multipleOrders&&e.selection.length!==1)||!e.orderCustomerId)return null;
+    const own=orderPickerOrders(e),order=own.find(item=>item.id===e.selection[0]?.id);if(e.selection.some(item=>!own.some(order=>order.id===item.id))||customerIdOf(r)!==e.initialCustomerId)return null;if(!e.multipleOrders&&!order)return null;
     const customer=e.orderBindingRequired?customerDirectory().find(item=>item.customerId===e.selectedCustomer?.customerId&&item.customerId===e.orderCustomerId):null;
     if(e.orderBindingRequired&&!customer)return null;
     if(!orderPickerDirty(e))return null;
@@ -65,7 +65,7 @@ window.PCModules['complaint-order-linking']={render(){},create({getRecords,getEd
       Object.assign(r,{customerId:customer.customerId,name:customer.name,phone:customer.phone,fullPhone:customer.fullPhone,member:customer.member,customerWechat:customer.customerWechat,customerAssociation:{customerId:customer.customerId,member:customer.member,time,actor:ACTOR}});
     }
     r.linked=clone(e.selection);
-    const entry={id:r.id+'-association-'+Date.now()+'-'+r.follows.length,kind:'association',action:customer?'关联客户及订单':before.linked.length?'调整关联订单':'关联订单',actor:ACTOR,time,before,customer:{name:r.name,phone:r.phone,member:r.member,customerId:r.customerId},originalContact:clone(r.originalContact||null),orderId:order.id,files:[]};
+    const entry={id:r.id+'-association-'+Date.now()+'-'+r.follows.length,kind:'association',action:customer?'关联客户及订单':before.linked.length?'调整关联订单':'关联订单',actor:ACTOR,time,before,customer:{name:r.name,phone:r.phone,member:r.member,customerId:r.customerId},originalContact:clone(r.originalContact||null),orderId:order?.id||'',orderIds:e.selection.map(item=>item.id),files:[]};
     r.follows.unshift(entry);return entry;
   }
   return {orderPickerTitle,customerDirectory,matchingCustomers,orderPickerState,orderPickerDirty,orderPickerCustomers,orderPickerOrders,selectPickerCustomer,changePickerCustomer,selectPickerOrder,orderPickerView,recordOrderAssociation};

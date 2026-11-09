@@ -33,11 +33,17 @@
       ['规格名称',x=>E(x.name),200],['销售单位',x=>E(x.defaults.sale),120],
       ['销售原价',x=>E(x.price)+' 元',160],['成本价',x=>E(x.cost)+' 元 / '+E(x.baseUnit),160],
       ['启用状态',(x,i)=>'<label class="switch"><input type="checkbox" aria-label="启用规格 '+E(x.name)+'" '+(x.enabled?'checked':'')+' data-stock-bind="value.specs.'+i+'.enabled"><span></span></label>',110],
-      ['操作',(x,i)=>'<div class="actions">'+L('编辑','materialSpec',String(i))+L('移除','materialRemoveSpec',String(i))+'</div>',120]],v.specs),B('新增规格','materialSpec'));
+      ['操作',(x,i)=>'<div class="actions">'+L('编辑','materialSpec',String(i))+L('移除','materialRemoveSpec',String(i))+B('上移','materialMoveSpec',String(i),'up','text',i===0)+B('下移','materialMoveSpec',String(i),'down','text',i===v.specs.length-1)+'</div>',220]],v.specs),B('新增规格','materialSpec'));
     return {body,footer:B('取消','close')+B('保存物料','saveMaterial','','','primary')};
   };
   S.actions.saveMaterial=()=>{const v=M.copy(S.top.data.value);['enabled','useEnabled','saleEnabled'].forEach(k=>v[k]=v[k]===true||v[k]==='true');return S.run('catalog.save',{type:'products',value:v},()=>S.close());};
   S.actions.materialRemoveSpec=id=>{const v=S.top.data.value,x=v.specs[Number(id)];if(v.id&&M.referenced(S.data,v.id,x.id))throw Error('规格已被引用，请在 SKU 规格列表中停用。');v.specs.splice(Number(id),1);S.actions.drawRefresh();};
+  S.actions.materialMoveSpec=(id,direction)=>{
+    if(S.top?.type!=='material'||!['up','down'].includes(direction))return;
+    const specs=S.top.data.value.specs,index=Number(id),next=index+(direction==='up'?-1:1);
+    if(!Number.isInteger(index)||index<0||index>=specs.length||next<0||next>=specs.length)return;
+    [specs[index],specs[next]]=[specs[next],specs[index]];S.actions.drawRefresh();
+  };
   const roleLabels={purchase:'默认采购单位',stock:'默认库存单位',sale:'默认销售单位',consume:'默认消耗单位'};
   const commonUnits=['个','片','支','瓶','盒','包','袋','箱','件','套','台','卷','双','对','板','次','ml','L','g','kg','毫升','升','克','千克'];
   // Reuse names only. Every specification owns its hierarchy and ratios.

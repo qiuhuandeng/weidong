@@ -21,3 +21,7 @@
 .stock-drawer .stock-inline{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .stock-module input[type=file]{max-width:100%}
 @media(max-width:600px){.stock-drawer .stock-summary,.stock-drawer .stock-pickers{grid-template-columns:1fr}}
+
+.stock-binding-match{margin-block:var(--pc-gap);padding:var(--pc-gap);background:var(--pc-primary-light);border-left:2px solid var(--pc-primary);line-height:1.7}
+.stock-binding-match p{margin:0;color:var(--pc-muted)}
+.stock-request-image{display:block;max-width:100%;max-height:65vh;object-fit:contain;margin:auto}
