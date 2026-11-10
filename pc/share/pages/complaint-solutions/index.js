@@ -1,5 +1,6 @@
 /* Complaint solution refund editor, drafts and validation, loaded when the editor opens. */
-window.PCModules['complaint-solutions']={create({clone,solutionOrders,savedRefundOrders,refundEntries,refundKey,centsText,getRecord,SOLUTION_METHODS,toCents,refundAvailable,SOLUTION_PRODUCTS,PAYOUT_METHODS,validHandlingFile,getRecords,selectedRefundEntries,esc,centsMoney,input,link,field,empty,solutionTotals,renderSolutionFields}){
+window.PCModules['complaint-solutions']={create({clone,solutionOrders,savedRefundOrders,refundEntries,refundKey,centsText,getRecord,SOLUTION_METHODS,toCents,refundAvailable,PAYOUT_METHODS,validHandlingFile,getRecords,selectedRefundEntries,esc,centsMoney,input,link,field,empty,solutionTotals,renderSolutionFields}){
+  const hasRefund=p=>(p.methods||p.handlingMethods||[]).some(key=>['refund','compensation'].includes(key));
   const knownQuantity=value=>Number.isSafeInteger(value)&&value>=0;
   function parseQuantity(value){const text=String(value??'').trim(),number=Number(text);return /^\d+$/.test(text)&&knownQuantity(number)?number:null}
   function refundQuantityState(order,item){
@@ -46,11 +47,11 @@ window.PCModules['complaint-solutions']={create({clone,solutionOrders,savedRefun
   function solutionDraft(saved){
     const p=saved||{},available=solutionOrders(),groups=savedRefundOrders(p),keys=new Set(refundEntries().map(row=>row.key));
     const refundOrderIds=available.map(order=>order.id);
-    return {methods:(p.handlingMethods||[]).filter(key=>Object.hasOwn(SOLUTION_METHODS,key)),refundOrderIds:[...new Set(refundOrderIds)],refundAmounts:Object.fromEntries(groups.flatMap(order=>(order.refundItems||[]).map(item=>[refundKey(order.orderId,item.itemId),centsText(item.amount)])).filter(([key])=>keys.has(key))),refundQuantities:Object.fromEntries(groups.flatMap(order=>(order.refundItems||[]).filter(item=>Number.isSafeInteger(item.refundQuantity)).map(item=>[refundKey(order.orderId,item.itemId),String(item.refundQuantity)])).filter(([key])=>keys.has(key))),exchangeItems:(p.exchangeItems||[]).map(i=>({productId:i.productId,quantity:String(i.quantity)})),delivery:{name:p.delivery?.name||'',phone:p.delivery?.phone||'',address:p.delivery?.address||''},payout:{method:p.payout?.method||'bank',name:p.payout?.name||'',account:p.payout?.account||'',bank:p.payout?.bank||''},attachments:clone(p.attachments||[])};
+    return {methods:(p.handlingMethods||[]).filter(key=>Object.hasOwn(SOLUTION_METHODS,key)),refundOrderIds:[...new Set(refundOrderIds)],refundAmounts:Object.fromEntries(groups.flatMap(order=>(order.refundItems||[]).map(item=>[refundKey(order.orderId,item.itemId),centsText(item.amount)])).filter(([key])=>keys.has(key))),refundQuantities:Object.fromEntries(groups.flatMap(order=>(order.refundItems||[]).filter(item=>Number.isSafeInteger(item.refundQuantity)).map(item=>[refundKey(order.orderId,item.itemId),String(item.refundQuantity)])).filter(([key])=>keys.has(key))),compensationAmount:p.compensation?centsText(p.compensation):'',exchangeDescription:p.exchangeDescription||(p.exchangeItems||[]).map(i=>i.name+' × '+i.quantity).join('；'),otherDescription:p.otherDescription||'',payout:{method:p.payout?.method||'bank',name:p.payout?.name||'',account:p.payout?.account||'',bank:p.payout?.bank||''},attachments:clone(p.attachments||[])};
   }
-  function validateCustomerSolution(p){const errors=[],add=(key,message)=>errors.push(['solution-'+key,message]),has=key=>p.methods.includes(key),funded=has('refund');const value={detailsVersion:5,handlingMethods:p.methods.filter(key=>Object.hasOwn(SOLUTION_METHODS,key)),refund:0,exchangeItems:[],attachments:clone(p.attachments||[])};
+  function validateCustomerSolution(p){const errors=[],add=(key,message)=>errors.push(['solution-'+key,message]),has=key=>p.methods.includes(key),funded=hasRefund(p);const value={detailsVersion:6,handlingMethods:p.methods.filter(key=>Object.hasOwn(SOLUTION_METHODS,key)),refund:0,attachments:clone(p.attachments||[])};
     if(!p.methods.length||p.methods.some(key=>!Object.hasOwn(SOLUTION_METHODS,key)))errors.push(['solutionMethods','请选择有效的处理方式']);
-    if(has('refund')){
+    if(funded){
       const linked=solutionOrders(),entries=refundEntries(),groups=new Map(),selected=new Set(p.refundOrderIds);
       if(!selected.size)add('refundOrders','请选择退款订单');
       if(p.refundOrderIds.some(id=>!linked.some(order=>order.id===id)))add('refundOrders','退款订单不属于当前客户');
@@ -70,10 +71,11 @@ window.PCModules['complaint-solutions']={create({clone,solutionOrders,savedRefun
       value.refundOrders=[...groups.values()];value.refund=value.refundOrders.reduce((sum,group)=>sum+group.refund,0);
       for(const group of value.refundOrders){const order=linked.find(o=>o.id===group.orderId);if(group.refund>refundAvailable(order))add('refundItems','订单 '+order.id+' 的退款合计超过可退金额')}
     }
-    if(has('exchange')){if(!p.exchangeItems.length||p.exchangeItems.length>20)add('exchangeItems','请选择 1 至 20 项置换商品');value.exchangeItems=p.exchangeItems.map(row=>{const product=SOLUTION_PRODUCTS.find(i=>i.id===row.productId),quantity=Number(row.quantity);if(!product||!Number.isInteger(quantity)||quantity<1||quantity>9999)add('exchangeItems','请选择商品，数量须为 1 至 9999 的整数');return {...product,productId:row.productId,quantity}});const delivery=Object.fromEntries(Object.entries(p.delivery).map(([key,v])=>[key,v.trim()]));if(!delivery.name||delivery.name.length>50)add('delivery-name','请填写收货姓名（最多 50 字）');if(!/^[+\d][\d\s()-]{5,29}$/.test(delivery.phone))add('delivery-phone','请填写有效的收货电话');if(!delivery.address||delivery.address.length>300)add('delivery-address','请填写完整收货地址（最多 300 字）');value.delivery=delivery}
+    if(has('compensation')){const amount=toCents(p.compensationAmount);if(amount===null||amount<=0)add('compensationAmount','额外赔偿金额须大于 0，最多两位小数');else value.compensation=amount;}
+    for(const [method,key,label]of [['exchange','exchangeDescription','置换商品说明'],['other','otherDescription','其他方案说明']])if(has(method)){const text=String(p[key]||'').trim();if(!text||text.length>2000)add(key,'请填写'+label+'（最多 2000 字）');value[key]=text;}
     if(funded){const payout=Object.fromEntries(Object.entries(p.payout).map(([key,v])=>[key,v.trim()]));if(!Object.hasOwn(PAYOUT_METHODS,payout.method))add('payout-account','请选择有效的收款方式');if(!payout.name||payout.name.length>50)add('payout-name',payout.method==='bank'?'请填写开户姓名':'请填写收款人姓名');if(payout.method==='bank'){if(!/^\d{12,30}$/.test(payout.account))add('payout-account','请填写 12 至 30 位银行卡号');if(!payout.bank||payout.bank.length>100)add('payout-bank','请填写开户银行及支行')}else{payout.bank='';if(payout.account.length<3||payout.account.length>100)add('payout-account','请填写有效的收款账号')}value.payout=payout}
     if(value.attachments.length>4||value.attachments.some(file=>!validHandlingFile(file)||file.size>5*1024*1024))add('attachments','方案附件最多 4 个，每个不超过 5MB，请使用支持的格式');
-    if(!Number.isSafeInteger(value.refund))add('refundItems','申请金额超出有效范围');return {errors,value};
+    if(!Number.isSafeInteger(value.refund+(value.compensation||0)))add('refundItems','申请金额超出有效范围');return {errors,value};
   }
   function refundEditor(p){
     const available=solutionOrders(),entries=selectedRefundEntries(p),count=entries.filter(row=>Object.hasOwn(p.refundAmounts,row.key)).length;
@@ -90,5 +92,5 @@ window.PCModules['complaint-solutions']={create({clone,solutionOrders,savedRefun
     return `<div class="uc-solution-projects" data-field="solution-refundItems">${groups||empty('暂无可退款的客户订单')}${summary}<div class="uc-error" id="uc-error-solution-refundItems"></div><div class="uc-error" id="uc-error-solution-refundOrders"></div></div>`;
 
   }
-  return {solutionDraft,validateCustomerSolution,refundEditor,refundQuantityState,selectFullRefund,syncRefund,updateRefundQuantities};
+  return {hasRefund,solutionDraft,validateCustomerSolution,refundEditor,refundQuantityState,selectFullRefund,syncRefund,updateRefundQuantities};
 }};

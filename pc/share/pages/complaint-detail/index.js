@@ -126,7 +126,7 @@ window.PCModules['complaint-detail']={render(){},create({btn,replyAction,canFoll
       const done=i<completed||closed&&key==='closed',terminated=closedFrom>=0&&!done,recorded=workflowRecord(key);
       const resultFields={
         intake:[['客诉等级',r.level||'2级']],
-        sales:done||exampleIndex===2?[['本次操作','已确认解决方案'],['处理方式','退款、商品置换'],['退款金额',amount],['置换商品',products,true],['方案说明','客户已确认退款金额及置换商品，待按方案办理退款和发货。',true]]:[['本次操作','方案未达成一致'],['未达成原因',reason,true],['沟通内容',communication,true]],
+        sales:done||exampleIndex===2?[['本次操作','已确认解决方案'],['处理方式','退款、商品置换'],['退款金额',amount],['置换商品',products,true],['方案说明','客户已确认退款金额及置换商品，待按方案办理退款和发货。',true]]:[['本次操作','方案未达成一致'],['客户主要诉求卡点',reason,true],['沟通内容',communication,true]],
         financeApproval:[['审批结果',done?'已通过':'审批中'],['审批意见',done?'退款金额及收款资料核对通过。':'等待财务审核退款方案。',true]],
         purchaseApproval:[['审批结果',done?'已通过':'审批中'],['审批意见',done?'置换商品及数量审核通过。':'等待采购审核商品及数量。',true]],
         payment:[['付款结果',done?'成功':'待执行'],[done?'实际金额':'待付金额',amount]],
@@ -234,7 +234,7 @@ window.PCModules['complaint-detail']={render(){},create({btn,replyAction,canFoll
     const fieldsView=fields=>`<dl class="uc-process-result-facts">${fields.filter(([,value])=>present(value)).map(([label,value,full])=>`<div class="${[full?'uc-full':'',primaryFields.has(label)?'is-primary':''].filter(Boolean).join(' ')}"><dt>${esc(label)}</dt><dd>${esc(valueText(value))}</dd></div>`).join('')}</dl>`;
     const cards=[];
     const add=(title,fields,record={})=>{
-      if(node.key==='close'){fields=fields.filter(([label,value])=>label==='客户反馈'&&present(value)).map(([label,value])=>[label,value,true]);if(!fields.length)return;}
+      if(node.key==='close'){fields=fields.filter(([label,value])=>['客户反馈','复核类型','复核说明','结案原因','结案说明'].includes(label)&&present(value)).map(([label,value])=>[label,value,true]);if(!fields.length)return;}
       const body=fieldsView(fields),time=record.time??record.at;
       cards.push({title,time:timestamp(time),html:`<article class="uc-process-result" aria-label="${esc(title)}结果摘要">${body}</article>`});
     };
@@ -246,10 +246,11 @@ window.PCModules['complaint-detail']={render(){},create({btn,replyAction,canFoll
     const methods=p=>p.handlingMethods||p.methods||[];
     const solutionFields=p=>[
       ['本次操作','已确认解决方案'],
-      ['处理方式',methods(p).map(key=>({refund:'退款',exchange:'商品置换',compensation:'赔偿',service:'继续服务'})[key]||key).join('、')||p.type],
+      ['处理方式',methods(p).filter(key=>key!=='refund'||!methods(p).includes('compensation')).map(key=>({refund:'退款',exchange:'置换商品',compensation:'退款+赔偿',other:'其他',service:'继续服务'})[key]||key).join('、')||p.type],
       ['退款金额',methods(p).includes('refund')||p.refund?amount(p.refund):''],
       ['赔偿金额',p.compensation?amount(p.compensation):''],
-      ['置换商品',(p.exchangeItems||[]).map(item=>`${item.name||item.productId} × ${item.quantity}`).join('；'),true],
+      ['置换商品',p.exchangeDescription||(p.exchangeItems||[]).map(item=>`${item.name||item.productId} × ${item.quantity}`).join('；'),true],
+      ['其他方案说明',p.otherDescription,true],
       ['处理说明',p.content,true]
     ];
     const entryStage=entry=>entry.nodeId&&r.execution?.steps?.some(step=>step.id===entry.nodeId)?stageKind(r.execution.steps.find(step=>step.id===entry.nodeId)):entry.kind==='accept'?'intake':['handling','assessment','compensation','start'].includes(entry.kind)?'sales':entry.kind==='closure'?'close':entry.kind==='workflow'?({'财务付款':'payment','采购发货':'procurement','客服复核':'close','财务审批':'financeApproval','采购审批':'purchaseApproval'})[entry.action]:['follow','grading'].includes(entry.kind)||!entry.kind?(entry.beforeStatus||entry.status?stageForStatus(entry.beforeStatus||entry.status):'sales')||'sales':null;
@@ -259,11 +260,11 @@ window.PCModules['complaint-detail']={render(){},create({btn,replyAction,canFoll
       else if(f.kind==='grading')add('调整客诉等级',[['调整前',f.before?.level],['调整后',f.level],['风险类型',level4Type(f)]],f);
       else if(['handling','assessment'].includes(f.kind))add('责任认定',[['责任认定',[valueText(f.department),valueText(f.responsible)].filter(Boolean).join(' · ')],['认定原因',f.reason,true],['处理结果',f.handlingPlan?planText(f.handlingPlan):'']],f);
       else if(f.kind==='compensation'&&f.customerSolution)add('已确认解决方案',solutionFields(f.customerSolution),f);
-      else if(f.kind==='closure')add('客服复核结果',[['复核结果','已处理并结案'],['结案说明',f.note,true]],f);
+      else if(f.kind==='closure')add('客服复核结果',[['复核结果','已处理并结案'],['结案原因',f.closeReason,true],['结案说明',f.note,true]],f);
       else if(f.kind==='workflow')add(f.action||'办理记录',(f.fields||[]).slice(0,3),f);
       else if(f.kind!=='start'){
         const c=f.communication,reason=c?.reasonSource==='demands'?c.reason:({unreachable:'联系不上客户',amount:'客户不认可方案金额',method:'客户不接受处理方式',considering:'客户需要考虑，等待回复',internal:'等待内部核实或确认',other:'其他'})[c?.reason]||c?.reason;
-        add(node.key==='close'?'客服复核跟进':'沟通跟进',[['本次操作',({ongoing:'方案未达成一致',agreed:'客户已同意解决方案'})[c?.result]],['未达成原因',reason,true],['沟通内容',f.note,true]],f);
+        add(node.key==='close'?'客服复核跟进':'沟通跟进',[['本次操作',({ongoing:'正在沟通解决方案',agreed:'客户已确认解决方案'})[c?.result]],['客户主要诉求卡点',reason,true],['沟通内容',f.note,true]],f);
       }
     }
     if(node.key==='intake'&&!node.source?.demo&&!entries.some(({entry})=>entry.kind==='accept')&&r.acceptedAt)add('客服接单',[['接单结果','客服已接单'],['客诉等级','接单时等级未记录']],{time:r.acceptedAt,actor:r.acceptedBy});

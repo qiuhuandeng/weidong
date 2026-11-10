@@ -5,7 +5,7 @@ window.PCModules['complaint-workflow']={render(){},create({normalizeStatus,hasAs
     ['财务审批中','财务'],['采购审批中','采购'],['待财务付款','财务'],
     ['待采购发货','采购'],['客服复核中','售后客服'],['已结案','']
   ];
-  const labels=Object.fromEntries(statuses),known=new Set(Object.keys(labels)),handlingOperations={follow:['方案未达成一致'],compensation:['已确认退赔方案'],closure:['无赔付直接结案']};
+  const labels=Object.fromEntries(statuses),known=new Set(Object.keys(labels)),handlingOperations={follow:['仍需继续跟进'],compensation:['客户已确认解决方案'],closure:['直接结案']};
   const state=record=>normalizeStatus(record.status,record);
   const active=record=>!record.suspension&&!record.legacySuspended;
   const directClosureStatuses=['采购审批中','待财务付款','待采购发货','客服复核中'];
@@ -51,6 +51,13 @@ window.PCModules['complaint-workflow']={render(){},create({normalizeStatus,hasAs
     (r.financeApprovals??=[]).push(approval);
     Object.assign(r,{status:'财务审批中',currentDepartment:'财务',currentHandler:'',currentTask:'待财务审批反馈'});delete r.statusDetail;delete r.taskDeadline;
     return approval;
+  }
+  function submitReview(r,time,actor){
+    const execution=ensureExecution(r,time,actor),sales=execution.steps[execution.index];
+    if(sales?.kind==='sales'){sales.done=true;sales.completedAt=time;sales.completedBy=actor;}
+    const index=execution.index+1;
+    execution.steps.splice(index,0,{id:r.id+'-review-'+time.replace(/\D/g,''),kind:'close',type:'handling',title:'客服复核',status:'客服复核中',startedAt:time,people:[actor]});execution.index=index;
+    Object.assign(r,{status:'客服复核中',currentDepartment:'售后客服',currentHandler:actor,currentTask:'待客服复核解决方案'});delete r.statusDetail;delete r.taskDeadline;
   }
   // This receives a confirmed result. It never invents a DingTalk response.
   function returnFinance(r,{approvalId,result,reason='',actor='',time}){
@@ -107,5 +114,5 @@ window.PCModules['complaint-workflow']={render(){},create({normalizeStatus,hasAs
     if(canClose&&can(record,'close')&&state(record)!=='客服处理中')actions.push('closure');
     return actions;
   }
-  return {statuses,tabs:[['','全部'],...statuses.map(([status])=>[status,status])],handlingOperations,state,department:record=>labels[state(record)]||'—',can,detailActions,approvalProgress,approvalLabels,financeApproval,financeReturn,financeHint,submitFinance,returnFinance,reconcileFinance};
+  return {statuses,tabs:[['','全部'],...statuses.map(([status])=>[status,status])],handlingOperations,state,department:record=>labels[state(record)]||'—',can,detailActions,approvalProgress,approvalLabels,financeApproval,financeReturn,financeHint,submitFinance,submitReview,returnFinance,reconcileFinance};
 }};

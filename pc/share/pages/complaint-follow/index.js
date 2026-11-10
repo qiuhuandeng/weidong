@@ -1,12 +1,15 @@
 /* Customer communication records. Workflow stages and confirmed solutions stay separate. */
 window.PCModules['complaint-follow']={render(){},create({ACTOR,canAssess,canFollow,canGrade,handlingOperations,LEVELS,LEVEL4_TYPES,error,clearErrors,markProcessing,recognitionSnapshot,clone,esc,fmt,field,input,select,detail,section,tag,link,btn,empty,events,filesView,draftFiles,solutionRead,level4Type,valueText,planText,valuesFrom,RECOGNITION_FIELDS,solutionDraft,assessmentChoices,dictionary}){
-  const RESULTS={agreed:'客户已同意解决方案',ongoing:'未达成一致'};
+  const RESULTS={agreed:'客户已确认解决方案',ongoing:'正在沟通解决方案'};
   const LEGACY_REASONS={unreachable:'联系不上客户',amount:'客户不认可方案金额',method:'客户不接受处理方式',considering:'客户需要考虑，等待回复',internal:'等待内部核实或确认',other:'其他'};
   const OPERATIONS=handlingOperations;
+  const CLOSED_REASONS=['无需赔付，已解决','客户主动撤回','无法达成方案','联系无果，终止跟进','重复或误建工单','其他'];
+  const waitingPayment=value=>/已和客户达成退款金额[，,、]?待付款/.test(value);
+  const availableReasons=(value,old)=>dictionary.options('demands',value).filter(([key])=>!waitingPayment(key)||old?.communication?.reason===key);
   const isCommunication=f=>f?.kind==='follow'&&['ongoing','agreed'].includes(f.communication?.result);
   const editable=f=>f&&(!f.kind||f.kind==='follow')&&f.actor===ACTOR;
   function draft(r,f){return {note:f?.note||'',files:clone(f?.files||[]),unresolvedReason:f?.communication?.reason||'',reasonSource:f?f.communication?.reasonSource||'':'demands',...(f?{followResult:f.communication?.result||'note',nextFollowAt:f.communication?.nextFollowAt||''}:!canAssess(r)?{followResult:'note'}:{operation:'unresolved'})}}
-  function operationDraft(kind,r){return kind==='follow'?draft(r):kind==='closure'?{note:'',files:[]}:kind==='assessment'?{...valuesFrom(r,RECOGNITION_FIELDS),handlingPlan:r.handlingPlan||'',handlingFiles:clone(r.handlingFiles||[])}:{customerSolution:solutionDraft(r.customerSolution)}}
+  function operationDraft(kind,r){return kind==='follow'?draft(r):kind==='closure'?{closeReason:'',note:'',files:[]}:kind==='assessment'?{...valuesFrom(r,RECOGNITION_FIELDS),handlingPlan:r.handlingPlan||'',handlingFiles:clone(r.handlingFiles||[])}:{customerSolution:solutionDraft(r.customerSolution)}}
   function switchOperation(e,kind,r){
     e.operations??={};e.operations[e.kind]={draft:e.draft,baseline:e.baseline};
     const next=e.operations[kind]||{draft:operationDraft(kind,r)};
@@ -51,8 +54,8 @@ window.PCModules['complaint-follow']={render(){},create({ACTOR,canAssess,canFoll
     else if(result!=='note'&&!canAssess(r))errors.push(['unresolvedReason','当前环节仅可补充跟进记录']);
     if(result==='ongoing'){
       const retained=old?.communication?.result==='ongoing'&&d.unresolvedReason===old.communication.reason;
-      if(!d.unresolvedReason||!retained&&!dictionary.current.demands.includes(d.unresolvedReason))errors.push(['unresolvedReason','请选择配置中的未达成原因']);
-      if(!retained&&d.unresolvedReason==='其他'&&!note)errors.push(['note','请说明未达成方案的具体原因']);
+      if(!d.unresolvedReason||!retained&&(!dictionary.current.demands.includes(d.unresolvedReason)||waitingPayment(d.unresolvedReason)))errors.push(['unresolvedReason','请选择配置中的当前处理卡点']);
+      if(d.unresolvedReason==='其他'&&!note)errors.push(['note','请在沟通内容中填写当前处理卡点的具体说明']);
       if(d.nextFollowAt){const time=new Date(d.nextFollowAt+':00Z');if(!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(d.nextFollowAt)||!Number.isFinite(time.getTime())||time.toISOString().slice(0,16)!==d.nextFollowAt)errors.push(['nextFollowAt','请选择有效的下次跟进时间']);}
     }
     if(result==='note'&&!note&&!d.files?.length)errors.push(['note','请填写跟进内容或添加图片']);
@@ -108,11 +111,11 @@ window.PCModules['complaint-follow']={render(){},create({ACTOR,canAssess,canFoll
     return null;
   }
   function progressText(r){const follow=current(r);if(!follow)return '';return follow.communication.result==='ongoing'?reasonText(follow.communication):'客户已同意解决方案，待确认具体方案';}
-  function metadata(f,r){const c=f.communication;if(!c)return '';return `<div class="uc-recognition-summary"><span>沟通结果：${esc(RESULTS[c.result]||c.result)}</span>${c.reason?`<span>未达成原因：${esc(reasonText(c))}</span>`:''}${c.nextFollowAt?`<span>下次跟进：${esc(fmt(c.nextFollowAt))}</span>`:''}${periodFields(r,f).map(([label,value])=>`<span>${esc(label)}：${esc(value)}</span>`).join('')}</div>`}
-  function overview(r){const f=current(r);if(!f)return '';const c=f.communication;return section('沟通进展',`<div class="uc-details">${detail('当前进展',RESULTS[c.result])}${detail('最近沟通',fmt(f.time))}${c.reason?detail('未达成原因',reasonText(c),true):''}${c.nextFollowAt?detail('下次跟进',fmt(c.nextFollowAt)):''}${detail('跟进人',f.actor)}${periodFields(r,f).map(([label,value])=>detail(label,value)).join('')}</div>`,c.result==='agreed'&&canAssess(r)?link('填写解决方案','begin-compensation'):'')}
-  function form(r,d,f){const controls=f?f.communication?.result==='ongoing':canAssess(r),reasons=controls?dictionary.options('demands',d.unresolvedReason).map(([value,label])=>[value,f?.communication?.reasonSource!=='demands'&&LEGACY_REASONS[value]&&value===f?.communication?.reason?reasonText(f.communication):label]):[];return `<div id="uc-follow-form" class="ub-form" data-draft="follow" novalidate>${controls?field('unresolvedReason','未达成原因',select('unresolvedReason',reasons,d.unresolvedReason,'请选择主要原因','required aria-required="true" aria-label="未达成原因"'),true):f?.communication?metadata(f,r):''}${field('note','沟通内容',`<textarea id="uc-note" name="note" class="uc-input uc-follow-note" rows="6" maxlength="2000" show-word-limit placeholder="记录客户反馈、本次沟通和下一步安排">${esc(d.note)}</textarea>`,false,'',true)}${field('followImages','图片',`<div><div class="uc-upload-row">${btn('添加图片','upload-follow','id="uc-followImages"')}<input type="file" id="uc-upload" accept="image/png,image/jpeg" multiple hidden data-upload="follow"><span class="uc-muted">最多 4 张，每张 5MB 以内</span></div><div id="uc-upload-list">${draftFiles(d.files)}</div></div>`)}</div>`}
-  function closureForm(d){return `<div id="uc-closure-form" class="ub-form" data-draft="closure" novalidate>${field('note','结案说明',`<textarea id="uc-note" name="note" class="uc-input" rows="5" maxlength="1000" placeholder="填写本次处理结果（选填）">${esc(d.note)}</textarea>`,false,'',true)}</div>`}
-  function operationChoice(active){return `<div class="uc-operation-choice"><div class="ub-form">${field('operation','本次操作',assessmentChoices('operation','本次操作（单选）',Object.entries(OPERATIONS).map(([key,[label]])=>[key,label]),active),false,'',true)}</div></div>`}
+  function metadata(f,r){const c=f.communication;if(!c)return '';return `<div class="uc-recognition-summary"><span>沟通结果：${esc(RESULTS[c.result]||c.result)}</span>${c.reason?`<span>客户主要诉求卡点：${esc(reasonText(c))}</span>`:''}${c.nextFollowAt?`<span>下次跟进：${esc(fmt(c.nextFollowAt))}</span>`:''}${periodFields(r,f).map(([label,value])=>`<span>${esc(label)}：${esc(value)}</span>`).join('')}</div>`}
+  function overview(r){const f=current(r);if(!f)return '';const c=f.communication;return section('沟通进展',`<div class="uc-details">${detail('当前进展',RESULTS[c.result])}${detail('最近沟通',fmt(f.time))}${c.reason?detail('客户主要诉求卡点',reasonText(c),true):''}${c.nextFollowAt?detail('下次跟进',fmt(c.nextFollowAt)):''}${detail('跟进人',f.actor)}${periodFields(r,f).map(([label,value])=>detail(label,value)).join('')}</div>`,c.result==='agreed'&&canAssess(r)?link('填写解决方案','begin-compensation'):'')}
+  function form(r,d,f){const controls=f?f.communication?.result==='ongoing':canAssess(r),reasons=controls?availableReasons(d.unresolvedReason,f).map(([value,label])=>[value,f?.communication?.reasonSource!=='demands'&&LEGACY_REASONS[value]&&value===f?.communication?.reason?reasonText(f.communication):label]):[];return `<div id="uc-follow-form" class="ub-form" data-draft="follow" novalidate>${controls?field('unresolvedReason','当前处理卡点',select('unresolvedReason',reasons,d.unresolvedReason,'请选择当前处理卡点','required aria-required="true" aria-label="当前处理卡点"'),true):f?.communication?metadata(f,r):''}${field('note','沟通内容',`<textarea id="uc-note" name="note" class="uc-input uc-follow-note" rows="6" maxlength="2000" show-word-limit placeholder="记录本次联系情况、客户反馈及下一步安排">${esc(d.note)}</textarea>`,false,'',true)}${field('followImages','图片',`<div><div class="uc-upload-row">${btn('添加图片','upload-follow','id="uc-followImages"')}<input type="file" id="uc-upload" accept="image/png,image/jpeg" multiple hidden data-upload="follow"><span class="uc-muted">最多 4 张，每张 5MB 以内</span></div><div id="uc-upload-list">${draftFiles(d.files)}</div></div>`)}</div>`}
+  function closureForm(d){return `<div id="uc-closure-form" class="ub-form" data-draft="closure" novalidate>${field('closeReason','结案原因',select('closeReason',CLOSED_REASONS,d.closeReason,'请选择结案原因','required aria-required="true" aria-label="结案原因"'),true,'',true)}${field('note','结案说明',`<textarea id="uc-note" name="note" class="uc-input" rows="5" maxlength="1000" placeholder="填写本次处理结果（选填）">${esc(d.note)}</textarea>`,false,'',true)}</div>`}
+  function operationChoice(active){return `<div class="uc-operation-choice"><div class="ub-form">${field('operation','本次跟进结果',assessmentChoices('operation','本次跟进结果（单选）',Object.entries(OPERATIONS).map(([key,[label]])=>[key,label]),active),false,'',true)}</div></div>`}
   function resetOperation(e){for(const input of e.layer.el.querySelectorAll('[name=operation]')){input.checked=input.value===e.kind;PCUI.syncControl(input)}}
   function editorFooter(e,totals=''){
     const cancel=btn('取消','dismiss'),busy=e.uploading?'disabled':'';
@@ -138,7 +141,7 @@ window.PCModules['complaint-follow']={render(){},create({ACTOR,canAssess,canFoll
         if(!String(f.action||'').includes('责任认定')&&f.customerSolution&&JSON.stringify(f.customerSolution)!==JSON.stringify(f.before?.customerSolution)&&!follows.some(item=>item.kind==='compensation'&&time(item.time)===time(f.time)&&JSON.stringify(item.customerSolution)===JSON.stringify(f.customerSolution)))append(f,'solution',index);
         if(f.handlingPlan==='resolved'&&closed(f.status)&&!closed(f.beforeStatus)&&!follows.some(item=>item.kind==='closure')&&!records.some(item=>item.historyKind==='closure'))append(f,'closure',index,{note:f.closeNote||(time(f.time)===time(r.closedAt)?r.closeNote:'')||'',fileKind:'handling-history',files:f.handlingFiles||[]});
       }else if(f.kind==='workflow'){
-        if(f.action==='客服复核'&&(fieldValue(f,'客户反馈')||fieldValue(f,'复核结果')&&!/^(待|正在)/.test(fieldValue(f,'复核结果'))))append(f,'review',index);
+        if(f.action==='客服复核'&&(f.reviewInfo||fieldValue(f,'客户反馈')||fieldValue(f,'复核结果')&&!/^(待|正在)/.test(fieldValue(f,'复核结果'))))append(f,'review',index);
         else if(f.action==='财务付款'&&fieldValue(f,'付款结果')&&!/^(待|等待|处理中|付款中)/.test(fieldValue(f,'付款结果')))append(f,'payment',index);
         else if(f.action==='采购发货'&&(fieldValue(f,'物流单号')||fieldValue(f,'交付单据号')))append(f,'shipment',index);
       }
@@ -161,23 +164,56 @@ window.PCModules['complaint-follow']={render(){},create({ACTOR,canAssess,canFoll
     return records.sort((a,b)=>time(b.time).localeCompare(time(a.time)));
   }
   function history(r,executionResults=[]){
-    const records=historyRecords(r,executionResults),labels={communication:'沟通跟进',reply:'回复客户',solution:'已确认退赔方案',payment:'财务付款',shipment:'采购发货',review:'客服复核',closure:'结案'};
+    const records=historyRecords(r,executionResults),labels={communication:'沟通跟进',reply:'回复客户',solution:'客户已确认解决方案',payment:'财务付款',shipment:'采购发货',review:'客服复核',closure:'结案'};
     const body=(fields,attachments='')=>`<div class="uc-follow-body">${fields.length?`<div class="uc-details">${fields.map(([label,value,full])=>detail(label,value,full)).join('')}</div>`:''}${attachments}</div>`;
     return records.length?events(records,f=>{
       const index=f.historyIndex,result=f.communication?.result;
-      const title=f.historyKind==='communication'?(result==='ongoing'?'方案未达成一致':result==='agreed'?'客户已同意解决方案':'沟通跟进'):f.historyKind==='closure'&&f.closureType==='no-payout'?'无赔付直接结案':labels[f.historyKind];
+      const title=f.historyKind==='communication'?(result==='ongoing'?'正在沟通解决方案':result==='agreed'?'客户已确认解决方案':'沟通跟进'):f.historyKind==='closure'&&f.closureType==='no-payout'?'直接结案':labels[f.historyKind];
       const edit=f.historyKind==='communication'&&f.kind!=='execution-result'&&editable(f)?link('编辑','edit-follow-record',`data-follow="${esc(f.id)}" aria-label="编辑跟进 ${esc(fmt(f.time))}"`):'';
       const heading=`<div class="uc-event-title"><strong>${esc(f.actor||'未记录')}</strong>${tag(title,['reply','closure'].includes(f.historyKind)?'green':'blue')}${edit?`<span class="uc-event-actions">${edit}</span>`:''}</div>`;
       if(f.kind==='execution-result')return heading+body(f.fields,filesView(f.files||[],f.fileKind,f.fileIndex));
       if(f.historyKind==='solution')return heading+`<div class="uc-follow-body">${solutionRead(f.customerSolution,index,f.kind==='compensation'&&f.note?[['方案说明',f.note,true]]:[])}</div>`;
-      if(f.historyKind==='closure')return heading+body([['结案说明',f.note||'未填写结案说明',true]],filesView(f.files||[],f.fileKind||'follow',index));
+      if(f.historyKind==='closure')return heading+body([...(f.closeReason?[['结案原因',f.closeReason,true]]:[]),['结案说明',f.note||'未填写结案说明',true]],filesView(f.files||[],f.fileKind||'follow',index));
       if(f.historyKind==='reply')return heading+body(f.note?[['回复内容',f.note,true]]:[],filesView(f.files||[],'follow',index));
       if(['review','payment','shipment'].includes(f.historyKind))return heading+body([...(f.fields||[]),...(f.note?[[{review:'复核说明',payment:'付款说明',shipment:'发货说明'}[f.historyKind],f.note,true]]:[])],filesView(f.files||[],'follow',index));
-      const c=f.communication,fields=c?[['沟通结果',RESULTS[c.result]||c.result],...(c.reason?[['未达成原因',reasonText(c),true]]:[]),...(c.nextFollowAt?[['下次跟进',fmt(c.nextFollowAt)]]:[]),...periodFields(r,f)]:[];
+      const c=f.communication,fields=c?[['沟通结果',RESULTS[c.result]||c.result],...(c.reason?[['客户主要诉求卡点',reasonText(c),true]]:[]),...(c.nextFollowAt?[['下次跟进',fmt(c.nextFollowAt)]]:[]),...periodFields(r,f)]:[];
       fields.push(['沟通内容',f.note||'未填写沟通内容',true]);
       if(f.updatedAt)fields.push(['修改时间',fmt(f.updatedAt)]);
       return heading+body(fields,filesView(f.files||[],'follow',index));
     }):empty('暂无跟进记录');
   }
-  return {RESULTS,OPERATIONS,draft,operationDraft,switchOperation,operationDirty,gradeValue,gradeErrors,recordGrade,gradeDialog,validate,record,edit,current,progressText,activePeriod,stopPeriod,startAcceptedPeriod,overview,form,closureForm,operationChoice,resetOperation,editorFooter,historyRecords,history,editable};
+  return {RESULTS,OPERATIONS,CLOSED_REASONS,availableReasons,draft,operationDraft,switchOperation,operationDirty,gradeValue,gradeErrors,recordGrade,gradeDialog,validate,record,edit,current,progressText,activePeriod,stopPeriod,startAcceptedPeriod,overview,form,closureForm,operationChoice,resetOperation,editorFooter,historyRecords,history,editable};
+},createReview({ACTOR,getRecords,getRoot,getMain,clone,esc,opt,btn,fmt,now,persist,renderList,renderDetail,toast}){
+  const REVIEW_TYPES=['置换商品','超额赔偿','其他'],reviewDrafts=new Map();
+  const needsReviewInfo=r=>r.status==='客服复核中'&&r.customerSolution?.handlingMethods?.includes('other');
+  function reviewForm(r,context='list'){
+    if(!needsReviewInfo(r))return '';
+    const d=reviewDrafts.get(r.id)||r.reviewInfo||{},prefix='uc-review-'+context+'-'+r.id;
+    return `<div class="uc-review-form pc-form pc-form-single" data-review-id="${esc(r.id)}">
+      <div class="pc-form-item"><label class="pc-form-label" for="${prefix}-type">复核类型：</label><div class="pc-field-content"><select id="${prefix}-type" name="reviewType" aria-label="复核类型" data-review-field="type">${opt(REVIEW_TYPES,d.type,'请选择')}</select></div></div>
+      <div class="pc-form-item"><label class="pc-form-label" for="${prefix}-note">复核说明：</label><div class="pc-field-content"><input id="${prefix}-note" name="reviewNote" value="${esc(d.note||'')}" maxlength="1000" placeholder="填写复核说明（选填）" aria-label="复核说明" data-review-field="note"></div></div>
+      <div class="uc-actions">${btn('保存复核','save-review',`data-id="${esc(r.id)}"`)}</div>
+      ${r.reviewInfo?`<div class="uc-muted uc-review-saved">${esc(r.reviewInfo.actor)} · ${esc(fmt(r.reviewInfo.time))}</div>`:''}
+    </div>`;
+  }
+  function syncReview(el){
+    const scope=el.closest('[data-review-id]');if(!scope||!el.dataset.reviewField)return false;
+    const r=getRecords().find(r=>r.id===scope.dataset.reviewId);if(!r||!needsReviewInfo(r))return true;
+    const d=reviewDrafts.get(r.id)||{type:r.reviewInfo?.type||'',note:r.reviewInfo?.note||''};d[el.dataset.reviewField]=el.value;reviewDrafts.set(r.id,d);
+    for(const surface of [getRoot(),getMain()?.layer?.el].filter(Boolean))for(const control of surface.querySelectorAll('[data-review-id="'+r.id+'"] [data-review-field="'+el.dataset.reviewField+'"]'))if(control!==el){control.value=el.value;PCUI.syncControl(control)}
+    return true;
+  }
+  function saveReview(id){
+    const existing=getRecords().find(r=>r.id===id);if(!existing||!needsReviewInfo(existing))return;
+    const d=reviewDrafts.get(id)||existing.reviewInfo||{};
+    if(!REVIEW_TYPES.includes(d.type)){toast('请选择复核类型');return}
+    const next=clone(getRecords()),r=next.find(item=>item.id===id),time=now();
+    r.reviewInfo={type:d.type,note:String(d.note||'').trim(),actor:ACTOR,time};
+    const node=r.execution?.steps?.[r.execution.index];
+    r.follows.unshift({id:id+'-review-info-'+Date.now(),kind:'workflow',action:'客服复核',reviewInfo:true,time,actor:ACTOR,beforeStatus:r.status,status:r.status,...(node?.kind==='close'?{nodeId:node.id}:{}),fields:[['复核类型',r.reviewInfo.type],['复核说明',r.reviewInfo.note||'未填写']],files:[]});
+    r.logs.unshift({time,actor:ACTOR,action:'保存复核信息',text:JSON.stringify(r.reviewInfo)});
+    if(!persist(next))return;
+    reviewDrafts.delete(id);renderList();if(getMain()?.record.id===id){getMain().record=r;renderDetail()}toast('复核信息已保存，工单保持客服复核中');
+  }
+  return {reviewForm,syncReview,saveReview,needsReviewInfo};
 }};
