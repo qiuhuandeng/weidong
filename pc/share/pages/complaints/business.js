@@ -370,8 +370,8 @@
   function followTools(){return window.PCModules['complaint-follow'].create({ACTOR,canAssess,canFollow,canGrade,handlingOperations:workflow.handlingOperations,LEVELS,LEVEL4_TYPES,error,clearErrors,markProcessing,recognitionSnapshot,clone,esc,fmt,field,input,select,detail,section,tag,link,btn,empty,events,filesView,draftFiles,solutionRead,level4Type,valueText,planText,valuesFrom,RECOGNITION_FIELDS,solutionDraft,assessmentChoices,dictionary})}
   function recordFollow(r,d,time){return followTools().record(r,d,time)}
   function hasHandlingScheme(r){return validPlan(r.handlingPlan)&&Boolean(r.assessedAt||(r.follows||[]).some(f=>['handling','assessment'].includes(f.kind)))}
-  function canClose(r){if(canAssess(r))return true;if(r.status==='财务审批中')return false;return workflow.can(r,'close')&&(workflow.can(r,'closeDirectly')||closureReady(r))}
-  function recordClosure(r,time,note='',closureType='',closeReason=''){if(!canClose(r)||closureType==='no-payout'&&!closeReason||closeReason&&!followTools().CLOSED_REASONS.includes(closeReason))return null;const beforeStatus=r.status;r.status='已结案';delete r.statusDetail;delete r.currentTask;r.handlingPlan='resolved';r.closedAt=time;r.closedBy=ACTOR;r.closedFromStatus=beforeStatus;followTools().stopPeriod(r,time,'已处理并结案');const entry={id:r.id+'-close-'+Date.now(),kind:'closure',time,actor:ACTOR,note:closeReason?String(note||'').trim():String(note||'').trim()||'已确认客诉处理完成，予以结案。',status:r.status,beforeStatus,...(closureType==='no-payout'?{closureType}:{}),...(closeReason?{closeReason}:{}),...recognitionSnapshot(r),files:[]};r.closeNote=entry.note;if(closeReason)r.closeReason=closeReason;r.follows.unshift(entry);return entry}
+  function canClose(r){if(canAssess(r))return true;return workflow.can(r,'close')&&(workflow.can(r,'closeDirectly')||closureReady(r))}
+  function recordClosure(r,time,note='',closureType='',closeReason=''){const early=workflow.can(r,'closeEarly');if(!canClose(r)||(early||closureType==='no-payout')&&!closeReason||closeReason&&!followTools().CLOSED_REASONS.includes(closeReason))return null;if(early)closureType='early';const beforeStatus=r.status;r.status='已结案';delete r.statusDetail;delete r.currentTask;r.handlingPlan='resolved';r.closedAt=time;r.closedBy=ACTOR;r.closedFromStatus=beforeStatus;followTools().stopPeriod(r,time,'已处理并结案');const entry={id:r.id+'-close-'+Date.now(),kind:'closure',time,actor:ACTOR,note:closeReason?String(note||'').trim():String(note||'').trim()||'已确认客诉处理完成，予以结案。',status:r.status,beforeStatus,...(['no-payout','early'].includes(closureType)?{closureType}:{}),...(closeReason?{closeReason}:{}),...recognitionSnapshot(r),files:[]};r.closeNote=entry.note;if(closeReason)r.closeReason=closeReason;r.follows.unshift(entry);return entry}
   function replyAction(){return `<div class="uc-footer-reply">${btn('回复客户','reply-customer')}</div>`}
 
   function followPanel(r){return followTools().history(r,executionResultRecords(r))+(r.channel==='wechat'?wechatView(r):'')}
@@ -451,12 +451,13 @@
   function editorContext(r=main.record){return `<div class="uc-editor-context"><div><strong>${esc(r.name)}</strong><span>${esc(phoneView(r).value)}</span><span>${esc(r.store)}</span></div><div class="uc-muted">投诉 ${r.id} · ${CHANNELS[r.channel]} · ${fmt(r.created)}${statusTag(r.status)}</div></div>`}
   function renderEditor(resetScroll=false){
     const e=main.editor;if(!e)return;
+    const operations=workflow.handlingOptions(main.record);
     const body=e.layer.el.querySelector('.uc-drawer-body'),scroll=resetScroll?0:body.scrollTop,small=e.kind==='reply',drawer=e.layer.el.querySelector('.uc-drawer');
     drawer.dataset.size=small?'small':'medium';drawer.style.setProperty('--archive-drawer-width',small?'560px':'860px');
     if(e.kind==='orders'){const title=orderPickerTitle(e);e.layer.el.querySelector('h2').textContent=title;drawer.setAttribute('aria-label',title);e.layer.el.querySelector('.uc-drawer-head button').setAttribute('aria-label','关闭'+title);}
     e.layer.el.querySelector('.uc-layer-top').innerHTML=e.handling?'':editorContext(e.exampleRecord||main.record);body.classList.add('uc-editor-body');body.classList.toggle('uc-handling-body',Boolean(e.handling));
     let content=e.kind==='orders'?orderPickerView():e.kind==='assessment'?assessmentForm():e.kind==='compensation'?`<div id="uc-compensation-form" data-draft="compensation" novalidate>${solutionForm()}</div>`:e.kind==='closure'?followTools().closureForm(e.draft):e.kind==='reply'?replyForm():followForm();
-    if(e.handling)content=`<div class="uc-handling-content"><section class="uc-detail-common" aria-label="工单概况">${summary(main.record,main.phoneVisible,true)}</section>`+(!e.followId&&canAssess(main.record)?followTools().operationChoice(e.kind):'')+`<section id="uc-operation-panel" aria-label="${followTools().OPERATIONS[e.kind][0]}">${content}</section></div>`;
+    if(e.handling)content=`<div class="uc-handling-content"><section class="uc-detail-common" aria-label="工单概况">${summary(main.record,main.phoneVisible,true)}</section>`+(!e.followId&&Object.keys(operations).length>1?followTools().operationChoice(e.kind,operations):'')+`<section id="uc-operation-panel" aria-label="${(operations[e.kind]||followTools().OPERATIONS[e.kind])[0]}">${content}</section></div>`;
     body.innerHTML=content;body.scrollTop=scroll;renderEditorFooter();
   }
   function renderEditorFooter(){const e=main.editor;if(!e)return;e.submitLabel=e.draft.customerSolution?.methods.some(key=>['refund','compensation'].includes(key))?'提交财务审批':'提交客服复核';const foot=e.layer.el.querySelector('.uc-drawer-foot');foot.innerHTML=followTools().editorFooter(e,e.kind==='compensation'?solutionFoot():'')}
@@ -482,7 +483,7 @@
   function refundAvailable(order,item){const reserved=records.filter(r=>r.id!==main.record.id).flatMap(r=>savedRefundOrders(r.customerSolution)).filter(group=>group.orderId===order.id).reduce((sum,group)=>sum+(item?(group.refundItems||[]).filter(i=>i.itemId===item.id).reduce((n,i)=>n+(i.amount||0),0):group.refund||0),0);return Math.max(0,(item?item.paid-(item.refunded||0):refundItems(order).reduce((n,i)=>n+i.paid-i.refunded,0))-reserved)}
   function solutionTotals(p){return {refund:solutionTools().hasRefund(p)?selectedRefundEntries(p).reduce((n,row)=>n+(toCents(p.refundAmounts[row.key])||0),0):0,compensation:p.methods.includes('compensation')?(toCents(p.compensationAmount)||0):0}}
   function solutionControl(name,label,value,placeholder='',options={}){const {type='text',required=true,full=false,max=100,items}=options;const attr=`data-solution="${name}" maxlength="${max}"${required?' required aria-required="true"':''}`;const control=items?select('solution-'+name,items,value,placeholder,attr):type==='textarea'?`<textarea id="uc-solution-${name}" class="uc-input" name="solution-${name}" rows="3" placeholder="${esc(placeholder)}" ${attr}>${esc(value)}</textarea>`:input('solution-'+name,value,placeholder,type,attr+(type==='number'?' min="0.01" step="0.01" inputmode="decimal"':''));return field('solution-'+name,label,control,required,'',full)}
-  function solutionForm(){const p=main.editor.draft.customerSolution,methods=multiSelect('solutionMethods','处理方式',Object.entries(SOLUTION_METHODS),p.methods,'data-solution-method required aria-required="true"');return `<div class="uc-solution-method ub-form" data-pc-columns="2">${field('solutionMethods','处理方式',methods,true,'',true)}</div><div id="uc-solution-fields">${solutionFields()}</div>`}
+  function solutionForm(){const p=main.editor.draft.customerSolution,methods=multiSelect('solutionMethods','处理方式',Object.entries(SOLUTION_METHODS),p.methods,'data-solution-method required aria-required="true"');return `<div class="uc-solution-method ub-form" data-pc-columns="2">${solutionControl('customerContext','客户消费情况与诉求',p.customerContext,'填写客户消费情况及本次诉求',{type:'textarea',full:true,max:2000})}${field('solutionMethods','处理方式',methods,true,'',true)}</div><div id="uc-solution-fields">${solutionFields()}</div>`}
   function solutionFields(){const p=main.editor.draft.customerSolution,has=key=>p.methods.includes(key),refund=solutionTools().hasRefund(p);return [
     refund?section(has('compensation')?SOLUTION_METHODS.compensation:'订单退款',refundEditor()+(has('compensation')?`<div class="ub-form">${solutionControl('compensationAmount','额外赔偿金额',p.compensationAmount,'填写额外赔偿金额',{type:'number',full:true})}</div>`:'')):'',
     has('exchange')?section('置换商品',`<div class="ub-form">${solutionControl('exchangeDescription','置换商品说明',p.exchangeDescription,'填写置换商品及数量',{type:'textarea',full:true,max:2000})}</div>`):'',
@@ -506,6 +507,7 @@
   function solutionRead(p,historyIndex='',extraFields=[]){
     if(!p)return '<span class="uc-muted">暂未填写解决方案</span>';
     const methods=p.handlingMethods||[],has=key=>methods.includes(key),refund=has('refund')||has('compensation')&&savedRefundOrders(p).length>0,labels=methods.filter(key=>key!=='refund'||!has('compensation')).map(key=>SOLUTION_METHODS[key]).filter(Boolean),details=[];
+    if(p.customerContext)details.push(detail('客户消费情况与诉求',p.customerContext,true));
     if(labels.length)details.push(detail('处理方式',labels.join('、'),true));
     if(refund){details.push(detail('退款金额',centsMoney(p.refund),true));for(const order of savedRefundOrders(p))details.push(detail('退款订单',order.orderId,true),detail('退款项目',(order.refundItems||[]).map(i=>i.name+' · '+centsMoney(i.amount)+(Number.isSafeInteger(i.refundQuantity)?' · 本次退款数量 '+i.refundQuantity+' · 退款前剩余 '+i.remainingBefore+' → 退款后剩余 '+i.remainingAfter:' · 退款数量未记录')).join('；'),true),...(order.refundStore?[detail('退款所属门店',order.refundStore),detail('业绩归属人员',order.performanceId),detail('退款原因备注',order.refundReason,true)]:[]))}
     if(has('compensation'))details.push(detail('额外赔偿金额',centsMoney(p.compensation)),...(p.compensationReason?[detail('赔偿原因备注',p.compensationReason,true)]:[]));
@@ -551,10 +553,10 @@
   async function beginCompensation(){if(!main||main.editor||!canAssess(main.record))return;const detail=main;try{await loadSolutionTools();if(main!==detail||main.editor||main.layer.closing||!canAssess(main.record))return;openEditor('compensation',followTools().operationDraft('compensation',main.record))}catch(error){if(main===detail)toast(error.message)}}
   function beginHandling(){if(!main||main.editor||!canFollow(main.record))return;openEditor('follow',followTools().draft(main.record))}
   async function chooseOperation(kind){
-    const e=main?.editor;if(!e||!canAssess(main.record)||!Object.hasOwn(followTools().OPERATIONS,kind))return;
+    const e=main?.editor;if(!e||e.followId||!Object.hasOwn(workflow.handlingOptions(main.record),kind))return;
     if(e.uploading){toast('附件正在读取，请稍后切换');return}const previous=e.kind;
     if(kind===e.kind)return;
-    try{if(kind==='compensation')await loadSolutionTools();if(main?.editor!==e||e.kind!==previous||e.layer.closing||!canAssess(main.record))return;
+    try{if(kind==='compensation')await loadSolutionTools();if(main?.editor!==e||e.kind!==previous||e.layer.closing||!Object.hasOwn(workflow.handlingOptions(main.record),kind))return;
       followTools().switchOperation(e,kind,main.record);renderEditor(true);
     }catch(error){toast(error.message)}
   }
@@ -605,7 +607,7 @@
     clearErrors(e.layer.el);if(!followTools().CLOSED_REASONS.includes(e.draft.closeReason)){error(e.layer.el,'closeReason','请选择结案原因');PCUI.focusControl(e.layer.el.querySelector('#uc-closeReason'));return}
     const next=clone(records),r=next.find(r=>r.id===main.record.id),entry=recordClosure(r,now(),e.draft.note,canAssess(r)?'no-payout':'',e.draft.closeReason);
     if(!entry){toast('当前工单暂不可结案');return}
-    if(!commitRecord(next,'结案',entry.note))return;
+    if(!commitRecord(next,entry.closureType==='early'?'提前结案':'结案',entry.note))return;
     finishEditor('follows');toast('工单已结案');
   }
   function askClosure(){if(!main||main.editor||!canClose(main.record))return;openEditor('closure',followTools().operationDraft('closure',main.record))}

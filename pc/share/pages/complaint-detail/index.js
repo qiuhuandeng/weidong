@@ -246,6 +246,7 @@ window.PCModules['complaint-detail']={render(){},create({btn,replyAction,canFoll
     const methods=p=>p.handlingMethods||p.methods||[];
     const solutionFields=p=>[
       ['本次操作','已确认解决方案'],
+      ['客户消费情况与诉求',p.customerContext,true],
       ['处理方式',methods(p).filter(key=>key!=='refund'||!methods(p).includes('compensation')).map(key=>({refund:'退款',exchange:'置换商品',compensation:'退款+赔偿',other:'其他',service:'继续服务'})[key]||key).join('、')||p.type],
       ['退款金额',methods(p).includes('refund')||p.refund?amount(p.refund):''],
       ['赔偿金额',p.compensation?amount(p.compensation):''],

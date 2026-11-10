@@ -156,7 +156,7 @@
 
 /* All follow-up operations share one content boundary and keep their width on switch. */
 .uc-handling-body{scrollbar-gutter:stable}
-.uc-handling-content{--pc-form-label-width:132px}
+.uc-handling-content{--pc-form-label-width:160px}
 .uc-handling-content .uc-solution-method{margin-bottom:0}
 .uc-handling-content #uc-solution-fields>.uc-section{margin-bottom:0}
 .uc-handling-content #uc-solution-fields>.uc-section>.uc-section-content{display:grid;gap:14px;min-width:0}

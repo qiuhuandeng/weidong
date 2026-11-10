@@ -8,7 +8,8 @@ window.PCModules['complaint-workflow']={render(){},create({normalizeStatus,hasAs
   const labels=Object.fromEntries(statuses),known=new Set(Object.keys(labels)),handlingOperations={follow:['仍需继续跟进'],compensation:['客户已确认解决方案'],closure:['直接结案']};
   const state=record=>normalizeStatus(record.status,record);
   const active=record=>!record.suspension&&!record.legacySuspended;
-  const directClosureStatuses=['采购审批中','待财务付款','待采购发货','客服复核中'];
+  const earlyClosureStatuses=['财务审批中','采购审批中','待财务付款','待采购发货'];
+  const directClosureStatuses=[...earlyClosureStatuses,'客服复核中'];
   const approvalLabels={pending:'处理中',rejected:'财务驳回',withdrawn:'审批已撤销'};
   const clone=value=>JSON.parse(JSON.stringify(value));
   function financeApproval(r){
@@ -102,9 +103,16 @@ window.PCModules['complaint-workflow']={render(){},create({normalizeStatus,hasAs
     if(action==='assess')return ['客服已接单','客服处理中'].includes(value);
     if(action==='follow')return known.has(value)&&value!=='待处理';
     if(action==='grade')return known.has(value)&&!['待处理','已结案'].includes(value);
+    if(action==='closeEarly')return earlyClosureStatuses.includes(value);
     if(action==='closeDirectly')return directClosureStatuses.includes(value);
     if(action==='close')return value==='客服处理中'||directClosureStatuses.includes(value);
     return false;
+  }
+  function handlingOptions(record){
+    if(!can(record,'follow'))return {};
+    if(can(record,'assess'))return handlingOperations;
+    if(can(record,'closeEarly'))return {follow:['继续跟进'],closure:['提前结案']};
+    return {follow:['沟通跟进']};
   }
   function detailActions(record,{canClose=false}={}){
     const actions=['reply'];
@@ -114,5 +122,5 @@ window.PCModules['complaint-workflow']={render(){},create({normalizeStatus,hasAs
     if(canClose&&can(record,'close')&&state(record)!=='客服处理中')actions.push('closure');
     return actions;
   }
-  return {statuses,tabs:[['','全部'],...statuses.map(([status])=>[status,status])],handlingOperations,state,department:record=>labels[state(record)]||'—',can,detailActions,approvalProgress,approvalLabels,financeApproval,financeReturn,financeHint,submitFinance,submitReview,returnFinance,reconcileFinance};
+  return {statuses,tabs:[['','全部'],...statuses.map(([status])=>[status,status])],handlingOperations,handlingOptions,state,department:record=>labels[state(record)]||'—',can,detailActions,approvalProgress,approvalLabels,financeApproval,financeReturn,financeHint,submitFinance,submitReview,returnFinance,reconcileFinance};
 }};
