@@ -117,10 +117,11 @@
       const price=current.projects.length===1?Math.round(current.amount*100):index===0?Math.round(current.amount*100)-30000:30000,quantity=i===0&&index===0?5:1;
       Object.assign(project,{type:index===0&&(i<2||i%2===0)?'消费':'维护',quantity,consumedQuantity:i===0&&index===0?2:0,refundedQuantity:0,unitPrice:price/quantity,totalAmount:price,paid:price,refunded:0,consultant:current.consultant,collaborator:['李婷','陈琳','许悦'][(i+index)%3],biller:current.receptionSales});
     });
-    if(i>=4)return [current];
-    const previous={...makeOrder(2),intention:'舒缓修护',project:'舒缓修护护理',amount:299,state:'已完成',created:'2026-09-18 09:20',appointment:'2026-09-20 10:00',arrived:'2026-09-20 10:08'};
+    const previous={...makeOrder(2),demoAdditional:i>=4,intention:'舒缓修护',project:'舒缓修护护理',amount:299,state:'已完成',created:'2026-09-18 09:20',appointment:'2026-09-20 10:00',arrived:'2026-09-20 10:08'};
     previous.projects=[{id:previous.id+'-1',name:previous.project,type:i%2?'消费':'维护',quantity:1,consumedQuantity:0,refundedQuantity:0,unitPrice:29900,totalAmount:29900,paid:29900,refunded:0,consultant:previous.consultant,collaborator:['许悦','李婷','陈琳'][i%3],biller:previous.receptionSales,reception:previous.reception,operator:previous.operator}];
-    return [current,previous];
+    const additional={...makeOrder(3),demoAdditional:true,intention:'补水养护',project:'水润补水护理',amount:680,state:'已到店',created:'2026-10-02 14:20',appointment:'2026-10-05 11:00',arrived:'2026-10-05 11:06'};
+    additional.projects=[{id:additional.id+'-1',name:additional.project,type:'消费',quantity:2,consumedQuantity:0,refundedQuantity:0,unitPrice:34000,totalAmount:68000,paid:68000,refunded:0,consultant:additional.consultant,collaborator:['李婷','陈琳','许悦'][i%3],biller:additional.receptionSales,reception:additional.reception,operator:additional.operator}];
+    return [current,previous,additional];
   });
   // Local prototype fixtures. Existing manually saved values are retained during migration.
   const DEMO_DETAILS_VERSION = 'workflow-stage-records-20261103';
@@ -136,7 +137,7 @@
   function completeDemoDetails(items){
     let changed=false;
     for(const r of items){
-      const i=Number(r.id)-31001,scenario=demoScenarios[i],own=orders.filter(o=>o.customerId===r.customerId);
+      const i=Number(r.id)-31001,scenario=demoScenarios[i],own=orders.filter(o=>o.customerId===r.customerId&&!o.demoAdditional);
       if(!scenario||!own.length||r.demoDetailsVersion===DEMO_DETAILS_VERSION)continue;
       const [department,type,role,level,statement,reason,progress,resolution]=scenario;
       const untouched=r.logs.every(log=>log.action==='收到投诉');
@@ -484,7 +485,7 @@
   function solutionControl(name,label,value,placeholder='',options={}){const {type='text',required=true,full=false,max=100,items}=options;const attr=`data-solution="${name}" maxlength="${max}"${required?' required aria-required="true"':''}`;const control=items?select('solution-'+name,items,value,placeholder,attr):type==='textarea'?`<textarea id="uc-solution-${name}" class="uc-input" name="solution-${name}" rows="3" placeholder="${esc(placeholder)}" ${attr}>${esc(value)}</textarea>`:input('solution-'+name,value,placeholder,type,attr+(type==='number'?' min="0.01" step="0.01" inputmode="decimal"':''));return field('solution-'+name,label,control,required,'',full)}
   function solutionForm(){const p=main.editor.draft.customerSolution,methods=multiSelect('solutionMethods','处理方式',Object.entries(SOLUTION_METHODS),p.methods,'data-solution-method required aria-required="true"');return `<div class="uc-solution-method ub-form pc-form-single">${solutionControl('customerContext','消费与诉求',p.customerContext,'填写客户消费情况及本次诉求',{type:'textarea',full:true,max:2000})}${field('solutionMethods','处理方式',methods,true,'',true)}</div><div id="uc-solution-fields">${solutionFields()}</div>`}
   function solutionFields(){const p=main.editor.draft.customerSolution,has=key=>p.methods.includes(key),refund=solutionTools().hasRefund(p);return [
-    refund?section(`<span class="uc-actions">${has('compensation')?SOLUTION_METHODS.compensation:'订单退款'}${link('添加订单','solution-add-orders','id="uc-add-refund-orders"')}</span>`,refundEditor()+(has('compensation')?`<div class="ub-form">${solutionControl('compensationAmount','额外赔偿',p.compensationAmount,'填写额外赔偿金额',{type:'number',full:true})}</div>`:'')):'',
+    refund?section(has('compensation')?SOLUTION_METHODS.compensation:'订单退款',refundEditor()+(has('compensation')?`<div class="ub-form">${solutionControl('compensationAmount','额外赔偿',p.compensationAmount,'填写额外赔偿金额',{type:'number',full:true})}</div>`:''),link('添加订单','solution-add-orders','id="uc-add-refund-orders"')):'',
     has('exchange')?section('置换商品',`<div class="ub-form">${solutionControl('exchangeDescription','置换说明',p.exchangeDescription,'填写置换商品及数量',{type:'textarea',full:true,max:2000})}</div>`):'',
     has('other')?section('其他方案',`<div class="ub-form">${solutionControl('otherDescription','方案说明',p.otherDescription,'填写其他方案说明',{type:'textarea',full:true,max:2000})}</div>`):'',
     refund?section('收款信息',`<div class="ub-form pc-form-single">${field('solution-payout-method','收款方式',`<div class="uc-solution-radios" role="radiogroup" aria-label="收款方式">${Object.entries(PAYOUT_METHODS).map(([key,label],index)=>`<label><input type="radio" id="uc-solution-payout-method${index?'-'+key:''}" name="solutionPayout" data-solution="payout-method" value="${key}"${p.payout.method===key?' checked':''}>${label}</label>`).join('')}</div>`,true,'',true)}${solutionControl('payout-name',p.payout.method==='bank'?'开户姓名':'收款人姓名',p.payout.name,p.payout.method==='bank'?'填写与银行卡一致的开户姓名':'填写收款人姓名',{max:50,full:true})}${solutionControl('payout-account','收款账号',p.payout.account,'填写对应的收款账号',{full:true})}${p.payout.method==='bank'?solutionControl('payout-bank','开户银行',p.payout.bank,'银行名称及支行',{full:true}):''}</div>`):'',

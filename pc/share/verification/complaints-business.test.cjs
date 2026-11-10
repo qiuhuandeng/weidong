@@ -132,7 +132,7 @@ test('refund drafts start with linked orders and retain saved additional refund 
  const r=a.select('31001'),before=copy(r),own=a.solutionOrders();
  try{
   r.linked=[{id:own[0].id}];const draft=a.solutionDraft(null);assert.deepEqual(copy(draft.refundOrderIds),[own[0].id]);
-  const tool=a.solutionTools(),extra=own[1];assert.deepEqual(copy(tool.refundOrderCandidates(draft)).map(order=>order.id),[extra.id]);
+  const tool=a.solutionTools(),extra=own[1];assert.deepEqual(copy(tool.refundOrderCandidates(draft)).map(order=>order.id),copy(own.slice(1).map(order=>order.id)));
   tool.addRefundOrders(draft,[extra.id]);draft.methods=['refund'];draft.customerContext='客户要求退还未消费项目';draft.payout={method:'wechat',name:r.name,account:'demo-refund-account',bank:''};
   const row=a.refundEntries().find(row=>row.order.id===extra.id);tool.selectFullRefund(draft,row);
   const saved=a.validateCustomerSolution(draft);assert.deepEqual(copy(saved.errors),[]);assert.equal(saved.value.refundOrders[0].orderId,extra.id);
@@ -145,7 +145,7 @@ test('adding refund orders preserves the solution and rejects foreign or exhaust
  assert.ok(tool.addRefundOrders(draft,[own[1].id,foreign.id]).error);assert.deepEqual(copy(draft),original);
  const projects=copy(own[1].projects);try{own[1].projects.forEach(item=>item.refunded=item.paid);assert.ok(tool.addRefundOrders(draft,[own[1].id]).error);assert.deepEqual(copy(draft),original)}finally{own[1].projects=projects}
  assert.deepEqual(copy(tool.addRefundOrders(draft,[own[1].id,own[1].id,own[0].id]).added),[own[1].id]);assert.equal(draft.refundOrderIds.length,2);
- const {refundOrderIds,...rest}=copy(draft),{refundOrderIds:old,...expected}=original;assert.deepEqual(rest,expected);assert.deepEqual(copy(r),before);assert.equal(tool.refundOrderCandidates(draft).length,0);
+ const {refundOrderIds,...rest}=copy(draft),{refundOrderIds:old,...expected}=original;assert.deepEqual(rest,expected);assert.deepEqual(copy(r),before);assert.deepEqual(copy(tool.refundOrderCandidates(draft)).map(order=>order.id),copy(own.slice(2).map(order=>order.id)));
  const forged={...draft,methods:['refund'],refundOrderIds:[...draft.refundOrderIds,foreign.id]};assert.ok(a.validateCustomerSolution(forged).errors.some(([key])=>key==='solution-refundOrders'));
 });
 test('refund order popup keeps pending selections private until confirm and ignores a stale parent',()=>{
@@ -158,11 +158,14 @@ test('refund order popup keeps pending selections private until confirm and igno
   const open=()=>tool.openRefundOrderPicker(draft,{isCurrent:()=>current,onAdded:()=>added++}),choose=()=>{box.checked=true;events.change({target:box})};
   open();const html=nodes.get('#uc-refund-order-results').innerHTML;assert.ok(!dialog.content.includes('query-module'));for(const order of own)assert.ok(html.includes(order.id));assert.ok(html.includes('已添加'));choose();assert.deepEqual(copy(draft),before);dialog.buttons[0].action();assert.deepEqual(copy(draft),before);
   open();choose();current=false;dialog.buttons[1].action();assert.deepEqual(copy(draft),before);assert.equal(added,0);
-  current=true;open();choose();dialog.buttons[1].action();assert.deepEqual(copy(draft.refundOrderIds),copy(own.map(order=>order.id)));assert.equal(added,1);assert.equal(closed,3);assert.deepEqual(copy(r),recordBefore);
-  draft.refundOrderIds=[];open();events.change({target:{checked:true,hasAttribute:key=>key==='data-refund-pick-all'}});assert.equal(nodes.get('#uc-refund-order-count').textContent,'本次已选 2 笔订单');dialog.buttons[1].action();assert.deepEqual(copy(draft.refundOrderIds),copy(own.map(order=>order.id)));assert.equal(added,2);
+  current=true;open();choose();dialog.buttons[1].action();assert.deepEqual(copy(draft.refundOrderIds),copy(own.slice(0,2).map(order=>order.id)));assert.equal(added,1);assert.equal(closed,3);assert.deepEqual(copy(r),recordBefore);
+  draft.refundOrderIds=[];open();events.change({target:{checked:true,hasAttribute:key=>key==='data-refund-pick-all'}});assert.equal(nodes.get('#uc-refund-order-count').textContent,'本次已选 '+own.length+' 笔订单');dialog.buttons[1].action();assert.deepEqual(copy(draft.refundOrderIds),copy(own.map(order=>order.id)));assert.equal(added,2);
  }finally{context.document.getElementById=oldGet;context.PCUI.dialog=oldDialog;context.PCUI.closeDialog=oldClose}
 });
-test('seed contains all three channels and 39 complaints / 43 orders',()=>{assert.equal(a.records.length,39);assert.equal(a.orders.length,43);assert.deepEqual([...new Set(a.records.map(r=>r.channel))].sort(),['mini','staff','wechat'])});
+test('seed contains all three channels and at least three complete orders per customer',()=>{
+ assert.equal(a.records.length,39);assert.equal(a.orders.length,117);assert.equal(new Set(a.orders.map(order=>order.id)).size,a.orders.length);assert.deepEqual([...new Set(a.records.map(r=>r.channel))].sort(),['mini','staff','wechat']);
+ for(const record of a.records){a.select(record.id);const own=a.solutionOrders();assert.ok(own.length>=3,record.id);for(const order of own){assert.ok(order.created&&order.store&&order.projects.length);assert.equal(order.projects.reduce((sum,item)=>sum+item.paid,0),Math.round(order.amount*100));for(const item of order.projects)assert.ok(Number.isInteger(item.quantity)&&Number.isInteger(item.consumedQuantity)&&Number.isInteger(item.refundedQuantity))}assert.ok(own.some(order=>order.demoAdditional&&!record.linked.some(link=>link.id===order.id)));}
+});
 test('new ticket inputs expose one business name and validate entered values',()=>{
  const html=a.createTicketForm();
  assert.ok(!html.includes('>搜索</button>'));assert.ok(!html.includes('>重置</button>'));
