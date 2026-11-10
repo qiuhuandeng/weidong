@@ -111,16 +111,17 @@ window.PCModules['complaint-workflow']={render(){},create({normalizeStatus,hasAs
   function handlingOptions(record){
     if(!can(record,'follow'))return {};
     if(can(record,'assess'))return handlingOperations;
+    if(state(record)==='客服复核中')return {closure:['结案']};
     if(can(record,'closeEarly'))return {follow:['继续跟进'],closure:['提前结案']};
     return {follow:['沟通跟进']};
   }
   function detailActions(record,{canClose=false}={}){
     const actions=['reply'];
     if(can(record,'accept'))return [...actions,'accept'];
-    if(can(record,'follow'))actions.push('handling');
+    if(Object.hasOwn(handlingOptions(record),'follow'))actions.push('handling');
     if(can(record,'assess')&&!hasAssessment(record))actions.push('assessment');
     if(canClose&&can(record,'close')&&state(record)!=='客服处理中')actions.push('closure');
     return actions;
   }
-  return {statuses,tabs:[['','全部'],...statuses.map(([status])=>[status,status])],handlingOperations,handlingOptions,state,department:record=>labels[state(record)]||'—',can,detailActions,approvalProgress,approvalLabels,financeApproval,financeReturn,financeHint,submitFinance,submitReview,returnFinance,reconcileFinance};
+  return {statuses,tabs:[['','全部'],...statuses.map(([status])=>[status,status])],handlingOperations,handlingOptions,closureReasonRequired:record=>state(record)!=='客服复核中',state,department:record=>labels[state(record)]||'—',can,detailActions,approvalProgress,approvalLabels,financeApproval,financeReturn,financeHint,submitFinance,submitReview,returnFinance,reconcileFinance};
 }};

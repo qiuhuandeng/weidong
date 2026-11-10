@@ -13,8 +13,8 @@ window.PCModules['complaint-detail']={render(){},create({btn,replyAction,canFoll
   }
   function detailActions(r){
     const actions=workflowActions(r,{canClose:canClose(r)}),labels={accept:['客服接单','accept-case'],handling:['跟进处理','begin-handling'],assessment:['责任认定','begin-assessment'],closure:['结案','close-case']};
-    const primary=actions.includes('accept')?labels.accept:actions.includes('handling')?labels.handling:null;
-    return (actions.includes('reply')?replyAction():'')+actions.filter(key=>['assessment','closure'].includes(key)).map(key=>btn(...labels[key])).join('')+(primary?btn(primary[0],primary[1],'',true):'');
+    const primaryKey=['accept','handling','closure'].find(key=>actions.includes(key)),primary=labels[primaryKey];
+    return (actions.includes('reply')?replyAction():'')+actions.filter(key=>key!==primaryKey&&['assessment','closure'].includes(key)).map(key=>btn(...labels[key])).join('')+(primary?btn(primary[0],primary[1],'',true):'');
   }
   function deadlineText(value){
     if(!value)return '—';

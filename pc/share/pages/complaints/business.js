@@ -371,7 +371,7 @@
   function recordFollow(r,d,time){return followTools().record(r,d,time)}
   function hasHandlingScheme(r){return validPlan(r.handlingPlan)&&Boolean(r.assessedAt||(r.follows||[]).some(f=>['handling','assessment'].includes(f.kind)))}
   function canClose(r){if(canAssess(r))return true;return workflow.can(r,'close')&&(workflow.can(r,'closeDirectly')||closureReady(r))}
-  function recordClosure(r,time,note='',closureType='',closeReason=''){const early=workflow.can(r,'closeEarly');if(!canClose(r)||(early||closureType==='no-payout')&&!closeReason||closeReason&&!followTools().CLOSED_REASONS.includes(closeReason))return null;if(early)closureType='early';const beforeStatus=r.status;r.status='已结案';delete r.statusDetail;delete r.currentTask;r.handlingPlan='resolved';r.closedAt=time;r.closedBy=ACTOR;r.closedFromStatus=beforeStatus;followTools().stopPeriod(r,time,'已处理并结案');const entry={id:r.id+'-close-'+Date.now(),kind:'closure',time,actor:ACTOR,note:closeReason?String(note||'').trim():String(note||'').trim()||'已确认客诉处理完成，予以结案。',status:r.status,beforeStatus,...(['no-payout','early'].includes(closureType)?{closureType}:{}),...(closeReason?{closeReason}:{}),...recognitionSnapshot(r),files:[]};r.closeNote=entry.note;if(closeReason)r.closeReason=closeReason;r.follows.unshift(entry);return entry}
+  function recordClosure(r,time,note='',closureType='',closeReason=''){const early=workflow.can(r,'closeEarly'),requireReason=workflow.closureReasonRequired(r);if(!requireReason)closeReason='';if(!canClose(r)||requireReason&&(early||closureType==='no-payout')&&!closeReason||closeReason&&!followTools().CLOSED_REASONS.includes(closeReason))return null;if(early)closureType='early';const beforeStatus=r.status;r.status='已结案';delete r.statusDetail;delete r.currentTask;r.handlingPlan='resolved';r.closedAt=time;r.closedBy=ACTOR;r.closedFromStatus=beforeStatus;followTools().stopPeriod(r,time,'已处理并结案');const entry={id:r.id+'-close-'+Date.now(),kind:'closure',time,actor:ACTOR,note:!requireReason||closeReason?String(note||'').trim():String(note||'').trim()||'已确认客诉处理完成，予以结案。',status:r.status,beforeStatus,...(['no-payout','early'].includes(closureType)?{closureType}:{}),...(closeReason?{closeReason}:{}),...recognitionSnapshot(r),files:[]};r.closeNote=entry.note;if(closeReason)r.closeReason=closeReason;else if(!requireReason)delete r.closeReason;r.follows.unshift(entry);return entry}
   function replyAction(){return `<div class="uc-footer-reply">${btn('回复客户','reply-customer')}</div>`}
 
   function followPanel(r){return followTools().history(r,executionResultRecords(r))+(r.channel==='wechat'?wechatView(r):'')}
@@ -419,7 +419,7 @@
     ];
     return section('责任认定',`<div class="uc-details">${fields.map(args=>detail(...args)).join('')}</div>`,canEditAssessment(r)?btn(hasAssessment(r)?'编辑':'填写责任认定','begin-assessment','aria-label="填写或编辑责任认定"'):'');
   }
-  function detailPanels(r){return panel('info',detailCommon(r)+(r.customerSolution?section('已确认解决方案',solutionRead(r.customerSolution)):'')+(needsReviewInfo(r)?section('客服复核',reviewForm(r,'detail')):'')+(r.status==='已结案'?section('结案信息',`<div class="uc-details">${detail('结案原因',r.closeReason||'未记录',true)}${detail('结案说明',r.closeNote||'未填写',true)}${detail('操作人',r.closedBy||'未记录')}${detail('结案时间',fmt(r.closedAt))}</div>`):'')+processView(r))+panel('follows',followPanel(r))+panel('attribution',attributionPanel(r))}
+  function detailPanels(r){return panel('info',detailCommon(r)+(r.customerSolution?section('已确认解决方案',solutionRead(r.customerSolution)):'')+(needsReviewInfo(r)?section('客服复核',reviewForm(r,'detail')):'')+(r.status==='已结案'?section('结案信息',`<div class="uc-details">${r.closedFromStatus==='客服复核中'&&!r.closeReason?'':detail('结案原因',r.closeReason||'未记录',true)}${detail('结案说明',r.closeNote||'未填写',true)}${detail('操作人',r.closedBy||'未记录')}${detail('结案时间',fmt(r.closedAt))}</div>`):'')+processView(r))+panel('follows',followPanel(r))+panel('attribution',attributionPanel(r))}
   function renderDetail(){if(!main.layer)return;const r=main.record,layer=main.layer,body=layer.el.querySelector('.uc-drawer-body');if(body.children.length)main.scrollPositions[main.tab]=body.scrollTop;layer.el.querySelector('.uc-drawer').classList.add('uc-detail-drawer','uc-workspace');layer.el.querySelector('.uc-layer-top').innerHTML='';body.classList.add('uc-detail-body');body.innerHTML=`<section class="uc-detail-common" aria-label="工单概况">${summary(r,main.phoneVisible)}</section>${detailTabs()}<div class="uc-detail-panels">${detailPanels(r)}</div>`;body.scrollTop=main.scrollPositions[main.tab]||0;layer.el.querySelector('.uc-drawer-foot').innerHTML=detailActions(r)}
   const {customerPageView,financeApprovalView,summary,phoneView,informationView,orderCards,processingDepartment,processRecords,processView,executionResultRecords,detailActions,closureReady}=window.PCModules['complaint-detail'].create({btn,replyAction,canFollow,canAssess,canGrade,canClose,workflowActions:workflow.detailActions,workflowDepartment:workflow.department,financeApproval:workflow.financeApproval,financeReturn:workflow.financeReturn,hasHandlingScheme,handlingMissing,icon,workOrderStatus,valueText,planText,detail,statusTag,currentHandler,currentTask,events,esc,empty,section,fmt,levelTag,level4Type,CHANNELS,interval,filesView,solutionRead,approvalLabels:workflow.approvalLabels,link,tag,resolveLink,orderProjects,money,iconFile,paymentView,paymentMoney,detailReference,customerIdOf,isDemoRecord:r=>r.demoDetailsVersion===DEMO_DETAILS_VERSION&&customers[Number(r.id)-31001]?.[0]===r.name&&r.customerId==='C'+(Number(r.id)-31001)});
   function openFinanceApproval(id){
@@ -441,7 +441,7 @@
     if(main.editor)return;
     const handling=Object.hasOwn(followTools().OPERATIONS,kind),e={kind,draft,baseline:JSON.stringify(draft),followId,handling,assessmentOnly:kind==='assessment'&&!canAssess(main.record),selectingOrders:kind==='orders',uploading:false};
     if(kind==='orders')Object.assign(e,orderPickerState(main.record,draft.linked));main.editor=e;
-    e.layer=openLayer(handling?'跟进处理':kind==='orders'?orderPickerTitle(e):kind==='assessment'?'责任认定':'回复客户','','',2);e.layer.editor=true;e.layer.el.querySelector('.uc-drawer').classList.add('uc-operation-drawer','uc-'+kind+'-editor');
+    e.layer=openLayer(kind==='closure'&&workflow.state(main.record)==='客服复核中'?'结案':handling?'跟进处理':kind==='orders'?orderPickerTitle(e):kind==='assessment'?'责任认定':'回复客户','','',2);e.layer.editor=true;e.layer.el.querySelector('.uc-drawer').classList.add('uc-operation-drawer','uc-'+kind+'-editor');
     renderEditor(true);
   }
   function finishEditor(target){
@@ -456,7 +456,7 @@
     drawer.dataset.size=small?'small':'medium';drawer.style.setProperty('--archive-drawer-width',small?'560px':'860px');
     if(e.kind==='orders'){const title=orderPickerTitle(e);e.layer.el.querySelector('h2').textContent=title;drawer.setAttribute('aria-label',title);e.layer.el.querySelector('.uc-drawer-head button').setAttribute('aria-label','关闭'+title);}
     e.layer.el.querySelector('.uc-layer-top').innerHTML=e.handling?'':editorContext(e.exampleRecord||main.record);body.classList.add('uc-editor-body');body.classList.toggle('uc-handling-body',Boolean(e.handling));
-    let content=e.kind==='orders'?orderPickerView():e.kind==='assessment'?assessmentForm():e.kind==='compensation'?`<div id="uc-compensation-form" data-draft="compensation" novalidate>${solutionForm()}</div>`:e.kind==='closure'?followTools().closureForm(e.draft):e.kind==='reply'?replyForm():followForm();
+    let content=e.kind==='orders'?orderPickerView():e.kind==='assessment'?assessmentForm():e.kind==='compensation'?`<div id="uc-compensation-form" data-draft="compensation" novalidate>${solutionForm()}</div>`:e.kind==='closure'?followTools().closureForm(e.draft,workflow.closureReasonRequired(main.record)):e.kind==='reply'?replyForm():followForm();
     if(e.handling)content=`<div class="uc-handling-content"><section class="uc-detail-common" aria-label="工单概况">${summary(main.record,main.phoneVisible,true)}</section>`+(!e.followId&&Object.keys(operations).length>1?followTools().operationChoice(e.kind,operations):'')+`<section id="uc-operation-panel" aria-label="${(operations[e.kind]||followTools().OPERATIONS[e.kind])[0]}">${content}</section></div>`;
     body.innerHTML=content;body.scrollTop=scroll;renderEditorFooter();
   }
@@ -551,7 +551,7 @@
 
   function beginAssessment(){if(!canEditAssessment(main.record)){toast(main.record.status==='已结案'?'该客诉已结案':main.record.status==='待处理'?'请先接单':'当前状态不可修改责任认定');return}openEditor('assessment',followTools().operationDraft('assessment',main.record))}
   async function beginCompensation(){if(!main||main.editor||!canAssess(main.record))return;const detail=main;try{await loadSolutionTools();if(main!==detail||main.editor||main.layer.closing||!canAssess(main.record))return;openEditor('compensation',followTools().operationDraft('compensation',main.record))}catch(error){if(main===detail)toast(error.message)}}
-  function beginHandling(){if(!main||main.editor||!canFollow(main.record))return;openEditor('follow',followTools().draft(main.record))}
+  function beginHandling(){if(!main||main.editor||!Object.hasOwn(workflow.handlingOptions(main.record),'follow'))return;openEditor('follow',followTools().draft(main.record))}
   async function chooseOperation(kind){
     const e=main?.editor;if(!e||e.followId||!Object.hasOwn(workflow.handlingOptions(main.record),kind))return;
     if(e.uploading){toast('附件正在读取，请稍后切换');return}const previous=e.kind;
@@ -604,8 +604,8 @@
   function saveClosure(){
     const e=main?.editor;if(e?.kind!=='closure')return;
     if(!canClose(main.record)){toast('请先完成责任认定及后续待办流程后再结案');return}
-    clearErrors(e.layer.el);if(!followTools().CLOSED_REASONS.includes(e.draft.closeReason)){error(e.layer.el,'closeReason','请选择结案原因');PCUI.focusControl(e.layer.el.querySelector('#uc-closeReason'));return}
-    const next=clone(records),r=next.find(r=>r.id===main.record.id),entry=recordClosure(r,now(),e.draft.note,canAssess(r)?'no-payout':'',e.draft.closeReason);
+    clearErrors(e.layer.el);const requireReason=workflow.closureReasonRequired(main.record);if(requireReason&&!followTools().CLOSED_REASONS.includes(e.draft.closeReason)){error(e.layer.el,'closeReason','请选择结案原因');PCUI.focusControl(e.layer.el.querySelector('#uc-closeReason'));return}
+    const next=clone(records),r=next.find(r=>r.id===main.record.id),entry=recordClosure(r,now(),e.draft.note,canAssess(r)?'no-payout':'',requireReason?e.draft.closeReason:'');
     if(!entry){toast('当前工单暂不可结案');return}
     if(!commitRecord(next,entry.closureType==='early'?'提前结案':'结案',entry.note))return;
     finishEditor('follows');toast('工单已结案');
