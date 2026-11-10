@@ -3,7 +3,8 @@ window.PCModules.complaints = {
   render() {
     document.body.classList.remove('approval-h5');
     document.querySelector('#main').innerHTML = '<div class="ub-workspace"><div id="pc-complaints"></div></div><div class="app-footer">WEID微动 · 示例数据</div>';
-    PCComplaints.mount(document.querySelector('#pc-complaints'));
+    const customerId=new URLSearchParams(location.hash.split('?')[1]||'').get('customer');
+    PCComplaints.mount(document.querySelector('#pc-complaints'),{customerId});
   },
   leave() { PCComplaints.leave(); }
 };

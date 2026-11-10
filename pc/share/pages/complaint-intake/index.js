@@ -1,21 +1,21 @@
 /* Phone-first work order intake. Customer and order selections remain local drafts until creation. */
-window.PCModules['complaint-intake']={render(){},create({CHANNELS,ACTOR,dictionary,field,input,opt,select,section,btn,link,esc,clone,orders,customerDirectory,phoneView,orderProjects,paymentMoney,tag,listValue,empty,pagination,openLayer,closeLayer,toast,clearErrors,error,now,getLayers,getRecords,persist,onCreated}){
+window.PCModules['complaint-intake']={render(){},create({CHANNELS,ACTOR,dictionary,field,input,opt,select,section,btn,link,esc,clone,orders,customerDirectory,phoneView,orderProjects,paymentMoney,tag,listValue,empty,pagination,fmt,openLayer,closeLayer,toast,clearErrors,error,now,getLayers,getRecords,persist,onCreated}){
   function createTicketForm(){
-    const lookup=`<div class="query-module"><form id="uc-create-customer-search" class="filterbar">${input('createConsumptionPhone','','请输入消费时使用的手机号','tel','inputmode="tel" autocomplete="off" aria-label="消费手机号"','consumptionPhone')}<div class="query-actions">${btn('重置','create-reset-customer')}<button type="submit" form="uc-create-customer-search" class="btn primary">搜索</button>${link('暂不关联客户','create-skip-customer')}</div></form><div id="uc-create-customer-error" class="uc-error" role="alert"></div></div><div id="uc-create-customer-result" aria-live="polite"><p class="uc-help">输入消费手机号查找客户，核对后关联；未找到也可继续创建工单。</p></div>`;
-    return `<div id="uc-create-ticket" data-ticket-form>${section('关联客户',lookup)}<div id="uc-create-orders">${section('售后订单','<p class="uc-help">关联客户后可选择本次售后涉及的订单，也可稍后补充。</p>')}</div>${section('工单信息',`<div class="ub-form" data-pc-columns="2">
+    const lookup=`<div id="uc-create-customer-lookup"><form id="uc-create-customer-search" class="ub-form" novalidate>${field('createConsumptionPhone','消费手机号',`<div class="uc-actions"><div class="pc-query-field">${input('createConsumptionPhone','','输入消费手机号，自动查找客户','tel','inputmode="tel" autocomplete="off" aria-label="消费手机号" maxlength="18"','consumptionPhone')}</div><span class="uc-muted">示例 13800002901</span></div>`,false,'',true)}</form><div id="uc-create-customer-error" class="uc-error" role="alert"></div></div><div id="uc-create-customer-result"></div>`;
+    return `<div id="uc-create-ticket" class="uc-intake" data-ticket-form>${section('客户信息',lookup)}<div id="uc-create-orders" hidden></div>${section('受理信息',`<div class="ub-form" data-pc-columns="2">
       ${field('createName','客户称呼',input('createName','','可填写姓名或称呼，暂缺可留空','text','autocomplete="off"','name'))}
       ${field('createPhone','联系手机号',input('createPhone','','默认同消费手机号，可修改','tel','inputmode="tel" autocomplete="off"','phone'),true)}
-      ${field('createChannel','来源渠道',`<select id="uc-createChannel" name="channel" class="uc-input" aria-label="来源渠道">${Object.entries(CHANNELS).map(([value,label])=>`<option value="${esc(value)}"${value==='hotline'?' selected':''}>${esc(label)}</option>`).join('')}</select>`,false,'',true)}
+      ${field('createChannel','来源渠道',`<select id="uc-createChannel" name="channel" class="uc-input" aria-label="来源渠道">${Object.entries(CHANNELS).map(([value,label])=>`<option value="${esc(value)}"${value==='hotline'?' selected':''}>${esc(label)}</option>`).join('')}</select>`)}
       ${dictionary.requestEntryEnabled?field('createRequestType','客户诉求类型',`<select id="uc-createRequestType" name="requestType" class="uc-input" aria-label="客户诉求类型" aria-required="true">${opt(dictionary.requestTypes(),'','请选择客户诉求类型')}</select>`,true)+field('createRequestReason','具体原因',`<select id="uc-createRequestReason" name="requestReason" class="uc-input" aria-label="具体原因" aria-required="true" disabled>${opt([],'','请先选择客户诉求类型')}</select>`,true):''}
-      ${field('createContent','补充说明',`<textarea id="uc-createContent" name="content" class="uc-input" rows="4" maxlength="2000" placeholder="记录客户反馈、消费情况及希望如何处理"></textarea>`,false,'',true)}
+      ${field('createContent','补充说明',`<textarea id="uc-createContent" name="content" class="uc-input" rows="3" maxlength="2000" placeholder="记录客户反馈和希望如何处理"></textarea>`,false,'',true)}
     </div>`)}</div>`;
   }
   const normalizeCreatePhone=value=>String(value||'').replace(/[\s()-]/g,'').replace(/^\+86/,'');
-  function createTicketState(){return {consumptionPhone:'',searchedPhone:'',customerId:'',linked:[],skipped:false,contactEdited:false,autoName:''}}
+  function createTicketState(){return {consumptionPhone:'',searchedPhone:'',customerId:'',linked:[],contactEdited:false,autoName:'',lookupOpen:true}}
   function clearCreateCustomer(layer){
     const state=layer.creation,name=layer.el.querySelector('[name="name"]');
     if(state.autoName&&name.value===state.autoName){name.value='';PCUI.syncControl(name)}
-    state.autoName='';state.customerId='';state.linked=[];
+    state.autoName='';state.customerId='';state.linked=[];state.lookupOpen=true;
   }
   function createCustomerMatches(phone){
     if(!/^1\d{10}$/.test(phone))return [];
@@ -32,38 +32,51 @@ window.PCModules['complaint-intake']={render(){},create({CHANNELS,ACTOR,dictiona
   }
   function setCreateCustomer(state,id){
     if(!createCustomerMatches(state.searchedPhone).some(customer=>customer.customerId===id))return false;
-    state.customerId=id;state.linked=[];state.skipped=false;return true;
+    if(state.customerId===id){state.lookupOpen=false;return true}
+    state.customerId=id;state.linked=[];state.lookupOpen=false;return true;
   }
   function setCreateOrder(state,id,checked){
     const order=createCustomerOrders(state).find(order=>order.id===id);if(!order)return false;
     state.linked=state.linked.filter(item=>item.id!==id);if(checked)state.linked.push({id:order.id,wechatId:order.bookingWechatId||''});return true;
   }
   function createOrderTable(items,selection,action='create-order-choice',removable=false){
-    const headers=(removable?[]:[['选择',56]]).concat([['订单 / 项目 / 时间',230],['门店',130],['实付金额',100],['状态',80]],removable?[['操作',70]]:[]);
+    const headers=(removable?[]:[['选择',48]]).concat([['项目 / 订单',270],['门店 / 消费时间',158],['实付金额',105],['状态',80]],removable?[['操作',70]]:[]);
     const rows=items.map(order=>{
-      const choice=`<td><input type="checkbox" data-${action}="${esc(order.id)}" aria-label="选择售后订单 ${esc(order.id)}"${selection.some(item=>item.id===order.id)?' checked':''}></td>`;
+      const checked=selection.some(item=>item.id===order.id),choice=`<td><input type="checkbox" data-${action}="${esc(order.id)}" aria-label="选择售后订单 ${esc(order.id)}"${checked?' checked':''}></td>`;
       const remove=`<td>${link('移除','create-remove-order',`data-order="${esc(order.id)}" aria-label="移除订单 ${esc(order.id)}"`)}</td>`;
-      return `<tr>${removable?'':choice}<td>${listValue(order.id)}<span class="pc-block uc-block">${esc(orderProjects(order).map(project=>project.name).join('、'))}</span><span class="pc-block uc-block uc-muted">下单：${esc(fmt(order.created))}</span><span class="pc-block uc-block uc-muted">消费：${order.arrived?esc(fmt(order.arrived)):'—'}</span></td><td>${listValue(order.store)}</td><td>${paymentMoney(order.amount)}</td><td>${order.state?tag(order.state,order.state==='已到店'?'green':'gray'):'—'}</td>${removable?remove:''}</tr>`;
+      return `<tr${removable?'':` data-intake-order="${esc(order.id)}" data-intake-choice="${action}"`}>${removable?'':choice}<td><div class="uc-intake-order-title">${esc(orderProjects(order).map(project=>project.name).join('、')||'未记录项目')}</div><span class="pc-block uc-block uc-muted uc-intake-order-meta">${esc(order.id)} · 下单：${esc(String(order.created||'').slice(0,10)||'—')}</span></td><td>${listValue(order.store)}<span class="pc-block uc-block uc-muted uc-intake-order-meta">消费：${order.arrived?esc(fmt(order.arrived)):'—'}</span></td><td>${paymentMoney(order.amount)}</td><td>${order.state?tag(order.state,order.state==='已到店'?'green':'gray'):'—'}</td>${removable?remove:''}</tr>`;
     }).join('');
     return `<div class="table-wrap uc-table-wrap"><table data-pc-align="left" data-pc-min-height="0" data-pc-scroll="parent" aria-label="售后订单"><thead><tr>${headers.map(([label,width])=>`<th data-pc-min-width="${width}">${label}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div>`;
   }
+  function customerIdentity(customer,linked=false){
+    const name=linked?`<a class="btn text pc-native-button uc-link" href="#complaints?customer=${encodeURIComponent(customer.customerId)}" target="_blank" rel="noopener noreferrer" aria-label="在新标签页查看客户 ${esc(customer.name||'未留姓名')} 的详情"><strong>${esc(customer.name||'未留姓名')}</strong></a>`:`<strong>${esc(customer.name||'未留姓名')}</strong>`;
+    return `<span class="uc-info-avatar" aria-hidden="true">${esc(Array.from(customer.name||'客')[0])}</span><div class="uc-info-identity"><div class="uc-info-contact">${name}<span>${esc(phoneView(customer).value)}</span></div><div class="uc-info-context"><span>会员号 ${esc(customer.member||'—')}</span>${customer.stores.length?`<span>${esc(customer.stores.join('、'))}</span>`:''}</div></div>`;
+  }
   function renderCreateCustomer(layer){
-    const state=layer.creation,customer=createCustomer(state),result=layer.el.querySelector('#uc-create-customer-result');
-    if(customer)result.innerHTML=section('已关联客户',`<div class="uc-actions"><strong>${esc(customer.name)}</strong><span>${esc(phoneView(customer).value)}</span><span>会员号 ${esc(customer.member||'—')}</span><span class="uc-muted">${esc(customer.stores.join('、'))}</span></div>`,link('更换客户','create-change-customer'));
-    else if(state.skipped)result.innerHTML='<p class="uc-help">暂不关联客户，可填写联系方式和情况直接创建工单。</p>';
-    else if(state.searchedPhone){const matches=createCustomerMatches(state.searchedPhone);result.innerHTML=matches.length?`<p class="uc-help">请核对姓名、会员号和门店后关联。仅保存脱敏号码的档案按可见号码匹配，请进一步核实。</p><div class="table-wrap"><table data-pc-align="left" data-pc-min-height="0" data-pc-scroll="parent" aria-label="匹配客户"><thead><tr><th>客户姓名</th><th>手机号</th><th>会员号</th><th>所属门店</th><th>操作</th></tr></thead><tbody>${matches.map(item=>`<tr><td>${listValue(item.name)}</td><td>${esc(phoneView(item).value)}${![item.fullPhone,item.phone].some(value=>/^1\d{10}$/.test(normalizeCreatePhone(value)))?'<span class="pc-block uc-block uc-muted">号码部分匹配</span>':''}</td><td>${listValue(item.member)}</td><td>${listValue(item.stores.join('、'))}</td><td>${link('关联','create-select-customer',`data-customer="${esc(item.customerId)}" aria-label="关联客户 ${esc(item.name)}，会员号 ${esc(item.member)}"`)}</td></tr>`).join('')}</tbody></table></div>`:'<p class="uc-help">未找到对应客户，可修改手机号重试，或直接填写工单信息创建工单。</p>'}
-    else result.innerHTML='<p class="uc-help">输入消费手机号查找客户，核对后关联；未找到也可继续创建工单。</p>';
+    const state=layer.creation,customer=createCustomer(state),result=layer.el.querySelector('#uc-create-customer-result'),lookup=layer.el.querySelector('#uc-create-customer-lookup');
+    if(lookup)lookup.hidden=Boolean(customer&&!state.lookupOpen);
+    if(customer&&!state.lookupOpen)result.innerHTML=`<div class="uc-intake-customer-summary">${customerIdentity(customer,true)}${link('更换客户','create-change-customer')}</div>`;
+    else if(state.searchedPhone){
+      const matches=createCustomerMatches(state.searchedPhone);
+      result.innerHTML=matches.length?`<div class="uc-intake-candidates" aria-label="匹配客户">${matches.map(item=>`<div class="uc-intake-candidate" data-uc="create-select-customer" data-customer="${esc(item.customerId)}">${customerIdentity(item)}<div class="uc-intake-candidate-action">${![item.fullPhone,item.phone].some(value=>/^1\d{10}$/.test(normalizeCreatePhone(value)))?'<span class="uc-muted uc-intake-match-note">号码部分匹配，请核对</span>':''}${btn('关联客户','create-select-customer',`data-customer="${esc(item.customerId)}" aria-label="关联客户 ${esc(item.name)}，会员号 ${esc(item.member)}"`)}</div></div>`).join('')}</div>`:`<p class="uc-help" role="status">未找到客户，可直接填写下方信息创建工单。</p>`;
+    }else result.innerHTML='';
     renderCreateOrders(layer);
   }
+  function updateCreateOrderCount(layer){
+    const count=layer.el.querySelector('#uc-create-selected-count');if(count)count.textContent=layer.creation.linked.length?'已选 '+layer.creation.linked.length+' 笔':'可多选';
+  }
   function renderCreateOrders(layer){
-    const state=layer.creation,all=createCustomerOrders(state),selected=all.filter(order=>state.linked.some(item=>item.id===order.id)),recent=all.slice(0,3).filter(order=>!state.linked.some(item=>item.id===order.id));
-    const content=!state.customerId?'<p class="uc-help">关联客户后可选择本次售后涉及的订单，也可稍后补充。</p>':!all.length?'<p class="uc-help">该客户暂无订单，可先创建工单，后续核实后再关联。</p>':`${selected.length?createOrderTable(selected,state.linked,'',true):'<p class="uc-help">尚未选择售后订单，可勾选下方订单，也可稍后补充。</p>'}${recent.length?`<p class="uc-help">最近订单（可多选）</p>${createOrderTable(recent,state.linked)}`:''}`;
-    layer.el.querySelector('#uc-create-orders').innerHTML=section('售后订单',content,state.customerId?`<div class="uc-actions"><span class="uc-muted">已选 ${state.linked.length} 笔</span>${btn('选择订单 / 查看全部','create-pick-orders')}</div>`:'');
+    const state=layer.creation,container=layer.el.querySelector('#uc-create-orders');container.hidden=!state.customerId;
+    if(!state.customerId){container.innerHTML='';return}
+    const all=createCustomerOrders(state),visible=all.filter((order,index)=>index<3||state.linked.some(item=>item.id===order.id));
+    const content=all.length?createOrderTable(visible,state.linked):'<p class="uc-help">该客户暂无订单，可先创建工单，后续补充。</p>';
+    const count=state.linked.length?'已选 '+state.linked.length+' 笔':'可多选';
+    container.innerHTML=section('售后订单',content,all.length?`<div class="uc-actions"><span id="uc-create-selected-count" class="uc-muted" role="status">${count}</span>${all.length>3?link('全部订单','create-pick-orders','aria-label="查看全部 '+all.length+' 笔订单"'):''}</div>`:'');
   }
   function lookupCreateCustomer(layer){
     const state=layer.creation,control=layer.el.querySelector('[name="consumptionPhone"]'),phone=normalizeCreatePhone(control.value),err=layer.el.querySelector('#uc-create-customer-error');
     if(!/^1\d{10}$/.test(phone)){err.textContent='请输入11位消费手机号';control.setAttribute('aria-invalid','true');PCUI.focusControl(control);return}
-    control.value=phone;PCUI.syncControl(control);control.removeAttribute('aria-invalid');err.textContent='';clearCreateCustomer(layer);state.consumptionPhone=phone;state.searchedPhone=phone;state.skipped=false;
+    control.value=phone;PCUI.syncControl(control);control.removeAttribute('aria-invalid');err.textContent='';clearCreateCustomer(layer);state.consumptionPhone=phone;state.searchedPhone=phone;
     if(!state.contactEdited){const contact=layer.el.querySelector('[name="phone"]');contact.value=phone;PCUI.syncControl(contact)}renderCreateCustomer(layer);
   }
   function syncCreateInput(el){
@@ -71,8 +84,9 @@ window.PCModules['complaint-intake']={render(){},create({CHANNELS,ACTOR,dictiona
     if(el.name==='phone')state.contactEdited=Boolean(el.value.trim());
     if(el.name==='consumptionPhone'){
       const phone=normalizeCreatePhone(el.value);if(phone===state.consumptionPhone)return true;
-      clearCreateCustomer(layer);state.consumptionPhone=phone;state.searchedPhone='';state.skipped=false;layer.el.querySelector('#uc-create-customer-error').textContent='';el.removeAttribute('aria-invalid');
-      if(!state.contactEdited){const contact=layer.el.querySelector('[name="phone"]');contact.value=phone;PCUI.syncControl(contact)}renderCreateCustomer(layer);
+      clearCreateCustomer(layer);state.consumptionPhone=phone;state.searchedPhone='';layer.el.querySelector('#uc-create-customer-error').textContent='';el.removeAttribute('aria-invalid');
+      if(!state.contactEdited){const contact=layer.el.querySelector('[name="phone"]');contact.value=phone;PCUI.syncControl(contact)}
+      if(/^1\d{10}$/.test(phone))lookupCreateCustomer(layer);else renderCreateCustomer(layer);
     }
     return true;
   }
@@ -86,7 +100,7 @@ window.PCModules['complaint-intake']={render(){},create({CHANNELS,ACTOR,dictiona
     if(!customer)return;
     const search=`<div class="query-module"><form id="uc-create-order-search" class="filterbar">${input('createOrderKeyword','','输入订单号或项目名称','text','aria-label="订单 / 项目"','keyword')}${select('createOrderStore',[...new Set(all.map(order=>order.store).filter(Boolean))],'','全部门店','aria-label="订单门店" data-filterable')}<div class="mr-date" data-pc-label="下单日期">${input('createOrderStart','','开始日期','date','aria-label="下单开始日期"','start')}<span>至</span>${input('createOrderEnd','','结束日期','date','aria-label="下单结束日期"','end')}</div><div class="query-actions"><button type="submit" form="uc-create-order-search" class="btn primary">搜索</button>${btn('重置','create-orders-reset')}</div></form><div id="uc-create-orders-error" class="uc-error" role="alert"></div></div>`;
     const layer=openLayer('选择售后订单',`<div class="uc-case-context"><strong>${esc(customer.name)}</strong> · 会员号 ${esc(customer.member||'—')}</div>${search}<div id="uc-create-order-results"></div>`,`<span id="uc-create-order-count" class="uc-create-order-count" aria-live="polite"></span>${btn('取消','dismiss')}${btn('确定','create-confirm-orders','',true)}`,2);
-    layer.creationOrders={parent,state,filters:{},page:1,size:10};createOrderPickerView(layer);
+    layer.el.classList.add('uc-intake-picker');layer.creationOrders={parent,state,filters:{},page:1,size:10};createOrderPickerView(layer);
   }
   function createTicketAssociation(state,values,time){
     const customer=state.customerId?createCustomer(state):null;
@@ -99,12 +113,11 @@ window.PCModules['complaint-intake']={render(){},create({CHANNELS,ACTOR,dictiona
     if(layer?.creation){
       const state=layer.creation;
       if(action==='create-reset-customer'){
-        const phone=layer.el.querySelector('[name="consumptionPhone"]');phone.value='';PCUI.syncControl(phone);syncCreateInput(phone);clearCreateCustomer(layer);state.searchedPhone='';state.skipped=false;layer.el.querySelector('#uc-create-customer-error').textContent='';phone.removeAttribute('aria-invalid');renderCreateCustomer(layer);PCUI.focusControl(phone);
+        const phone=layer.el.querySelector('[name="consumptionPhone"]');phone.value='';PCUI.syncControl(phone);syncCreateInput(phone);clearCreateCustomer(layer);state.searchedPhone='';layer.el.querySelector('#uc-create-customer-error').textContent='';phone.removeAttribute('aria-invalid');renderCreateCustomer(layer);PCUI.focusControl(phone);
       }
-      if(action==='create-skip-customer'){clearCreateCustomer(layer);state.skipped=true;renderCreateCustomer(layer)}
-      if(action==='create-change-customer'){clearCreateCustomer(layer);state.skipped=false;renderCreateCustomer(layer)}
+      if(action==='create-change-customer'){state.lookupOpen=true;renderCreateCustomer(layer);const phone=layer.el.querySelector('[name="consumptionPhone"]');PCUI.focusControl(phone);phone.select()}
       if(action==='create-select-customer'&&setCreateCustomer(state,button.dataset.customer)){
-        const name=layer.el.querySelector('[name="name"]'),customer=createCustomer(state);if(!name.value.trim()||name.value===state.autoName){name.value=customer.name;state.autoName=customer.name;PCUI.syncControl(name)}renderCreateCustomer(layer);
+        const name=layer.el.querySelector('[name="name"]'),customer=createCustomer(state);if(!name.value.trim()||name.value===state.autoName){name.value=customer.name;state.autoName=customer.name;PCUI.syncControl(name)}renderCreateCustomer(layer);PCUI.focusControl(layer.el.querySelector('[data-create-order-choice]')||layer.el.querySelector('[name="phone"]'));
       }
       if(action==='create-pick-orders')openCreateOrderPicker(layer);
       if(action==='create-remove-order'){setCreateOrder(state,button.dataset.order,false);renderCreateOrders(layer);PCUI.focusControl(layer.el.querySelector('[data-uc="create-pick-orders"]'))}
@@ -163,5 +176,5 @@ window.PCModules['complaint-intake']={render(){},create({CHANNELS,ACTOR,dictiona
     if(!persist([...getRecords(),record]))return;
     onCreated(record,layer);
   }
-  return {createTicketForm,syncCreateRequestFields,newTicketErrors,openCreateTicket,saveNewTicket,syncCreateInput,createTicketAction,lookupCreateCustomer,createOrderPickerView,setCreateOrder,createTicketState,createCustomerMatches,createCustomerOrders,setCreateCustomer,createTicketAssociation,createOrderTable};
+  return {createTicketForm,syncCreateRequestFields,newTicketErrors,openCreateTicket,saveNewTicket,syncCreateInput,createTicketAction,lookupCreateCustomer,createOrderPickerView,setCreateOrder,createTicketState,createCustomerMatches,createCustomerOrders,setCreateCustomer,createTicketAssociation,createOrderTable,updateCreateOrderCount};
 }};

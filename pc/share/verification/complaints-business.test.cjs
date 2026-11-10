@@ -18,7 +18,7 @@ const followCode=fs.readFileSync(path.join(__dirname,'../pages/complaint-follow/
 vm.runInNewContext(followCode,context);
 const processCode=fs.readFileSync(path.join(__dirname,'../pages/complaint-detail/index.js'),'utf8');
 vm.runInNewContext(processCode,context);
-const hook = `window.testAPI={createTicketState,createCustomerMatches,createCustomerOrders,setCreateCustomer,setCreateOrder,createTicketAssociation,createOrderTable,syncCreateInput,lookupCreateCustomer,createTicketAction,handleSubmit,closeLayer,saveNewTicket,setCreateLayers(value){layers=value},setCreateRoot(value){root=value},getRecords(){return records},hasAssessment,financeApprovalView,createTicketForm,newTicketErrors,executionResultRecords,followPanel,attributionPanel,detailPanels,sections,detailTabKey,workflow,toCents,orderDateRange,filtered,matchingOrders,customerIdOf,customerDirectory,matchingCustomers,orderPickerState,orderPickerTitle,orderPickerDirty,orderPickerCustomers,orderPickerOrders,orderPickerView,selectPickerCustomer,changePickerCustomer,selectPickerOrder,recordOrderAssociation,informationView,handlingMissing,validateCustomerSolution,solutionDraft,solutionTotals,solutionOrders,refundEntries,refundAvailable,solutionTools,solutionRead,recordAccept,recordRecognition,recordCompensation,recordFollow,followTools,recordClosure,hasHandlingScheme,canClose,responsibleOptions,complaintCSV,validHandlingFile,records,orders,persist,canAssess,STATUS_TABS,WORK_ORDER_STATUSES,CHANNELS,workOrderStatus,normalizeRecordStatus,statusScope,currentHandler,currentTask,detailActions,complaintRow,complaintTiming,complaintTimingHTML,listProgressText,summary,phoneView,processingDepartment,processRecords,processView,select(id){main={record:records.find(r=>r.id===id),tab:detailTabKey()};return main.record;}};`;
+const hook = `window.testAPI={customerPage,createTicketState,createCustomerMatches,createCustomerOrders,setCreateCustomer,setCreateOrder,createTicketAssociation,createOrderTable,syncCreateInput,lookupCreateCustomer,createTicketAction,handleSubmit,handleChange,closeLayer,saveNewTicket,setCreateLayers(value){layers=value},setCreateRoot(value){root=value},getRecords(){return records},hasAssessment,financeApprovalView,createTicketForm,newTicketErrors,executionResultRecords,followPanel,attributionPanel,detailPanels,sections,detailTabKey,workflow,toCents,orderDateRange,filtered,matchingOrders,customerIdOf,customerDirectory,matchingCustomers,orderPickerState,orderPickerTitle,orderPickerDirty,orderPickerCustomers,orderPickerOrders,orderPickerView,selectPickerCustomer,changePickerCustomer,selectPickerOrder,recordOrderAssociation,informationView,handlingMissing,validateCustomerSolution,solutionDraft,solutionTotals,solutionOrders,refundEntries,refundAvailable,solutionTools,solutionRead,recordAccept,recordRecognition,recordCompensation,recordFollow,followTools,recordClosure,hasHandlingScheme,canClose,responsibleOptions,complaintCSV,validHandlingFile,records,orders,persist,canAssess,STATUS_TABS,WORK_ORDER_STATUSES,CHANNELS,workOrderStatus,normalizeRecordStatus,statusScope,currentHandler,currentTask,detailActions,complaintRow,complaintTiming,complaintTimingHTML,listProgressText,summary,phoneView,processingDepartment,processRecords,processView,select(id){main={record:records.find(r=>r.id===id),tab:detailTabKey()};return main.record;}};`;
 vm.runInNewContext(code.replace('  window.PCComplaints={mount,leave};',hook+'\n  window.PCComplaints={mount,leave};'),context);
 const a=context.window.testAPI;
 let count=0;
@@ -27,6 +27,7 @@ const copy=o=>JSON.parse(JSON.stringify(o));
 test('seed contains all three channels and 39 complaints / 43 orders',()=>{assert.equal(a.records.length,39);assert.equal(a.orders.length,43);assert.deepEqual([...new Set(a.records.map(r=>r.channel))].sort(),['mini','staff','wechat'])});
 test('new ticket inputs expose one business name and validate entered values',()=>{
  const html=a.createTicketForm();
+ assert.ok(!html.includes('>搜索</button>'));assert.ok(!html.includes('>重置</button>'));
  for(const [id,name] of [['createName','name'],['createPhone','phone']]){
    const input=html.match(new RegExp('<input[^>]*id="uc-'+id+'"[^>]*>'))?.[0];
    assert.ok(input);assert.equal((input.match(/\bname="/g)||[]).length,1);assert.ok(input.includes('name="'+name+'"'));
@@ -53,7 +54,7 @@ test('intake selects multiple orders only inside the confirmed customer and rese
   assert.equal(state.linked.length,2);assert.ok(a.setCreateOrder(state,own[0].id,true));assert.equal(state.linked.length,2);
   assert.equal(a.setCreateOrder(state,a.orders.find(order=>order.customerId!==state.customerId).id,true),false);
   assert.ok(a.setCreateOrder(state,own[0].id,false));assert.equal(state.linked.length,1);
-  assert.ok(a.setCreateCustomer(state,state.customerId));assert.equal(state.linked.length,0);
+  assert.ok(a.setCreateCustomer(state,state.customerId));assert.equal(state.linked.length,1);assert.equal(state.lookupOpen,false);
 });
 test('intake order filters compose without losing selections or including another customer',()=>{
   const state={...a.createTicketState(),customerId:a.orders[0].customerId},own=a.createCustomerOrders(state);
@@ -101,7 +102,39 @@ test('phone lookup changes discard only customer binding and automatic values, p
   try{
     assert.ok(a.syncCreateInput(phone));assert.equal(state.customerId,'');assert.equal(state.linked.length,0);assert.equal(name.value,'');assert.equal(contact.value,phone.value);assert.equal(content.value,'已记录的通话情况');
     contact.value='13700000000';a.syncCreateInput(contact);phone.value='13600000000';a.syncCreateInput(phone);assert.equal(contact.value,'13700000000');assert.equal(content.value,'已记录的通话情况');
+    phone.value='13800002901';a.syncCreateInput(phone);assert.equal(state.searchedPhone,phone.value);assert.ok(nodes['#uc-create-customer-result'].innerHTML.includes('何女士'));assert.equal(state.customerId,'');
   }finally{a.setCreateLayers([]);context.PCUI.syncControl=originalSync}
+});
+test('customer selection hides lookup and reselecting the current customer retains selected orders',()=>{
+  const oldFocus=context.PCUI.focusControl;context.PCUI.focusControl=()=>{};
+  const phone={value:'13800002901',select(){}},lookup={hidden:false},result={innerHTML:''},orderRegion={innerHTML:'',hidden:true};
+  const state={...a.createTicketState(),consumptionPhone:phone.value,searchedPhone:phone.value};assert.ok(a.setCreateCustomer(state,'C28'));a.createCustomerOrders(state).forEach(order=>a.setCreateOrder(state,order.id,true));
+  const nodes={'[name="name"]':{value:'何女士'},'[name="consumptionPhone"]':phone,'#uc-create-customer-lookup':lookup,'#uc-create-customer-result':result,'#uc-create-orders':orderRegion};
+  const layer={creation:state,el:{querySelector:selector=>nodes[selector]}};a.setCreateLayers([layer]);const before=JSON.stringify(state.linked);
+  try{
+    a.createTicketAction('create-change-customer',{},layer);assert.equal(lookup.hidden,false);assert.equal(JSON.stringify(state.linked),before);assert.ok(!result.innerHTML.includes('保留当前客户'));assert.ok(!result.innerHTML.includes('暂不关联客户'));
+    a.createTicketAction('create-select-customer',{dataset:{customer:'C28'}},layer);assert.equal(lookup.hidden,true);assert.equal(orderRegion.hidden,false);assert.equal(JSON.stringify(state.linked),before);assert.ok(result.innerHTML.includes('更换客户'));assert.ok(!result.innerHTML.includes('<form'));assert.ok(result.innerHTML.includes('href="#complaints?customer=C28"'));assert.ok(result.innerHTML.includes('target="_blank"'));assert.ok(result.innerHTML.includes('rel="noopener noreferrer"'));
+  }finally{a.setCreateLayers([]);context.PCUI.focusControl=oldFocus}
+});
+test('customer detail reads the linked customer and own orders without changing intake data',()=>{
+  const before=JSON.stringify(a.records),own=a.orders.filter(order=>order.customerId==='C28'),html=a.customerPage('C28');
+  assert.ok(html.includes('客户详情'));assert.ok(html.includes('何女士'));assert.ok(html.includes(own[0].id));assert.ok(!html.includes(a.orders[0].id));
+  assert.ok(a.customerPage('missing-customer').includes('未找到该客户资料'));assert.equal(JSON.stringify(a.records),before);
+  assert.ok(a.createTicketForm().includes('示例 13800002901'));
+});
+test('customer detail deep links reach the detail mount and ordinary complaints retain their list',()=>{
+  let selected;const location={hash:'#complaints?customer=C28'},host={innerHTML:''},content={};
+  const local={URLSearchParams,location,window:{PCModules:{}},PCComplaintOptions:{refresh(){}},PCComplaints:{mount(node,options){assert.equal(node,content);selected=options.customerId},leave(){}},document:{body:{classList:{remove(){}}},querySelector:selector=>selector==='#main'?host:content}};
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../pages/complaints/index.js'),'utf8'),local);
+  local.window.PCModules.complaints.render();assert.equal(selected,'C28');location.hash='#complaints';local.window.PCModules.complaints.render();assert.equal(selected,null);
+});
+test('intake checkbox changes retain the row and focus while updating the selection count',()=>{
+  const state={...a.createTicketState(),customerId:a.orders[0].customerId},count={textContent:''},layer={creation:state,el:{querySelector(selector){assert.equal(selector,'#uc-create-selected-count');return count}}};
+  const source={dataset:{createOrderChoice:a.orders[0].id},checked:true};a.setCreateLayers([layer]);
+  try{
+    a.handleChange({target:source,stopPropagation(){}});assert.equal(count.textContent,'已选 1 笔');assert.equal(state.linked[0].id,source.dataset.createOrderChoice);
+    source.checked=false;a.handleChange({target:source,stopPropagation(){}});assert.equal(count.textContent,'可多选');assert.equal(state.linked.length,0);
+  }finally{a.setCreateLayers([])}
 });
 test('order picker cancellation discards its selection and confirmation updates only parent order draft',()=>{
   const originalTimeout=context.setTimeout,originalMatch=context.matchMedia,callbacks=[];
