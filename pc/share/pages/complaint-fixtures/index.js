@@ -121,6 +121,21 @@
     }
     return true;
   }
+  // One-time cleanup of generated attribution on active demonstration tickets.
+  // A manually saved recognition and customer-created tickets are retained.
+  function clearProcessingAssessments(items){
+    let changed=false;
+    for(const r of items){
+      const index=Number(r.id)-31001,customer=customers[index];
+      if(r.demoAssessmentCleared||!r.demoDetailsVersion||!customer||customer[0]!==r.name||customer[1]!==r.phone||r.customerId!=='C'+index)continue;
+      r.demoAssessmentCleared=true;changed=true;
+      if(r.status!=='客服处理中'||r.follows.some(f=>['handling','assessment'].includes(f.kind)&&!f.mock))continue;
+      Object.assign(r,{department:[],type:'',responsible:[],reason:'',handlingPlan:'',handlingFiles:[]});delete r.assessedAt;delete r.assessedBy;
+      r.follows=r.follows.filter(f=>!['handling','assessment'].includes(f.kind));
+      for(const f of r.follows.filter(f=>f.mock&&f.kind==='follow'))for(const key of ['department','type','responsible','reason','handlingPlan','handlingFiles','assessedAt','assessedBy'])delete f[key];
+    }
+    return changed;
+  }
   // A read-only deadline example for existing prototype rows without a saved clock.
   // Never seed configuration or attach demonstration clocks to customer-created rows.
   function timingExample(r,configuredTiming=null){
@@ -134,5 +149,5 @@
     const endings=[r.compensatedAt,r.closedAt,...follows.filter(item=>['compensation','closure'].includes(item.kind)||item.communication?.result==='agreed').map(item=>item.time)].filter(Boolean).sort();
     return {startedAt,dueAt:start+timing.value*(timing.unit==='days'?86400000:3600000),endedAt:endings.find(value=>String(value).replace('T',' ')>=String(startedAt).replace('T',' '))||'',mock:true};
   }
-  window.PCModules['complaint-fixtures']={render(){},customers,demoScenarios,completeLifecycleExample,timingExample};
+  window.PCModules['complaint-fixtures']={render(){},customers,demoScenarios,completeLifecycleExample,timingExample,clearProcessingAssessments};
 })();

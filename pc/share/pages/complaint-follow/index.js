@@ -1,5 +1,5 @@
 /* Customer communication records. Workflow stages and confirmed solutions stay separate. */
-window.PCModules['complaint-follow']={render(){},create({ACTOR,canAssess,canFollow,canGrade,handlingOperations,LEVELS,LEVEL4_TYPES,error,clearErrors,markProcessing,recognitionSnapshot,clone,esc,fmt,field,input,select,detail,section,tag,link,btn,empty,events,filesView,draftFiles,solutionRead,level4Type,valueText,planText,valuesFrom,RECOGNITION_FIELDS,solutionDraft,assessmentChoices,dictionary}){
+window.PCModules['complaint-follow']={render(){},create({ACTOR,canAssess,canFollow,canGrade,hasAssessment,handlingMissing,recordRecognition,recordCompensation,recordClosure,handlingOperations,LEVELS,LEVEL4_TYPES,error,clearErrors,markProcessing,recognitionSnapshot,clone,esc,fmt,field,input,select,detail,section,tag,link,btn,empty,events,filesView,draftFiles,solutionRead,level4Type,valueText,planText,valuesFrom,RECOGNITION_FIELDS,solutionDraft,assessmentChoices,dictionary,assessmentOrders,responsibilityForm,assessmentAttachments,assessmentSummary}){
   const RESULTS={agreed:'客户已确认解决方案',ongoing:'正在沟通解决方案'};
   const LEGACY_REASONS={unreachable:'联系不上客户',amount:'客户不认可方案金额',method:'客户不接受处理方式',considering:'客户需要考虑，等待回复',internal:'等待内部核实或确认',other:'其他'};
   const OPERATIONS=handlingOperations;
@@ -8,6 +8,62 @@ window.PCModules['complaint-follow']={render(){},create({ACTOR,canAssess,canFoll
   const availableReasons=(value,old)=>dictionary.options('demands',value).filter(([key])=>!waitingPayment(key)||old?.communication?.reason===key);
   const isCommunication=f=>f?.kind==='follow'&&['ongoing','agreed'].includes(f.communication?.result);
   const editable=f=>f&&(!f.kind||f.kind==='follow')&&f.actor===ACTOR;
+  const hasInlineAssessment=(r,kind)=>canAssess(r)&&['compensation','closure'].includes(kind);
+  const assessmentMissing=d=>handlingMissing(d||{}).filter(([name])=>name!=='handlingPlan');
+  const assessmentChanged=e=>Boolean(e.assessmentDraft&&e.assessmentBaseline!==undefined&&JSON.stringify(e.assessmentDraft)!==e.assessmentBaseline);
+  function needsInlineAssessment(r,kind){return hasInlineAssessment(r,kind)&&(!hasAssessment(r)||assessmentMissing(r).length>0)}
+  function inlineAssessmentErrors(r,e){return hasInlineAssessment(r,e.kind)?assessmentMissing(needsInlineAssessment(r,e.kind)||assessmentChanged(e)?e.assessmentDraft||r:r):[]}
+  function assessmentState(r,e){return inlineAssessmentErrors(r,e).length?'待填写 · 必填':needsInlineAssessment(r,e.kind)||assessmentChanged(e)?'已填写 · 待提交':'已填写'}
+  function inlineAssessmentForm(r,e){
+    if(!e||!hasInlineAssessment(r,e.kind))return '';
+    if(!e.assessmentDraft){e.assessmentDraft=operationDraft('assessment',r);e.assessmentBaseline=JSON.stringify(e.assessmentDraft)}
+    const d=e.assessmentDraft,expanded=needsInlineAssessment(r,e.kind)||Boolean(e.assessmentEditing),state=assessmentState(r,e);
+    const orderLabel=e.assessmentOrdersOpen?'收起关联订单':'关联订单',orderAction=link(orderLabel+'（'+(r.linked||[]).length+' 笔）','inline-assessment-orders',`aria-expanded="${Boolean(e.assessmentOrdersOpen)}" aria-controls="uc-inline-assessment-orders"`);
+    const editAction=!needsInlineAssessment(r,e.kind)?link(expanded?'收起':'编辑',expanded?'inline-assessment-collapse':'inline-assessment-edit',`aria-expanded="${expanded}" aria-controls="uc-inline-assessment-fields"`):'';
+    const actions=`<span class="uc-inline-assessment-status" data-inline-assessment-status aria-live="polite">${state}</span><div class="uc-actions">${orderAction}${editAction}</div>`;
+    const orders=`<div id="uc-inline-assessment-orders"${e.assessmentOrdersOpen?'':' hidden'}>${assessmentOrders(r)}</div>`;
+    const content=expanded?`<div id="uc-inline-assessment-fields">${responsibilityForm(d)}<div class="ub-form">${assessmentAttachments(d,true)}</div></div>`:`<div class="uc-assessment-summary">${esc(assessmentSummary(d))}</div>`;
+    return `<div class="uc-inline-assessment uc-assessment-layout" data-inline-assessment data-draft="assessment">${section('责任认定',orders+content,actions)}</div>`;
+  }
+
+  function handlingPanel(e,content){return ['compensation','closure'].includes(e.kind)?`<div class="uc-handling-primary uc-assessment-layout">${section(e.kind==='compensation'?'解决方案':'结案信息',content)}</div>`:content}
+  function updateAssessmentState(r,e){
+    if(!hasInlineAssessment(r,e.kind))return;
+    const state=assessmentState(r,e),status=e.layer.el.querySelector('[data-inline-assessment-status]');
+    if(status)status.textContent=state;
+  }
+  function replaceAssessment(r,e){const host=e.layer.el.querySelector('[data-inline-assessment]');if(host)host.outerHTML=inlineAssessmentForm(r,e);updateAssessmentState(r,e)}
+  function showHandlingErrors(r,e,errors){
+    if(!errors.length)return false;
+    if(errors.some(([name])=>['department','type','responsible','reason'].includes(name))){e.assessmentEditing=true;replaceAssessment(r,e)}
+    errors.forEach(([name,message])=>error(e.layer.el,name,message));
+    const first=errors[0][0],control=e.layer.el.querySelector('#uc-'+first)||e.layer.el.querySelector('[name="'+first+'"]')||e.layer.el.querySelector('[data-field="'+first+'"] input');
+    PCUI.focusControl(control);(control?.closest('[data-field]')||control||e.layer.el.querySelector('#uc-error-'+first))?.scrollIntoView({block:'center'});return true;
+  }
+  function inlineAssessmentAction(action,r,e){
+    if(!e||!hasInlineAssessment(r,e.kind))return;
+    if(action==='inline-assessment-orders'){
+      e.assessmentOrdersOpen=!e.assessmentOrdersOpen;const button=e.layer.el.querySelector('[data-uc=inline-assessment-orders]');button.setAttribute('aria-expanded',String(e.assessmentOrdersOpen));button.textContent=(e.assessmentOrdersOpen?'收起关联订单':'关联订单')+'（'+(r.linked||[]).length+' 笔）';e.layer.el.querySelector('#uc-inline-assessment-orders').hidden=!e.assessmentOrdersOpen;return;
+    }
+    if(action==='inline-assessment-edit'){e.assessmentEditing=true;replaceAssessment(r,e)}
+    if(action==='inline-assessment-collapse'){
+      const errors=inlineAssessmentErrors(r,e);if(showHandlingErrors(r,e,errors))return;
+      e.assessmentEditing=false;replaceAssessment(r,e);
+    }
+    const host=e.layer.el.querySelector('[data-inline-assessment]');host?.scrollIntoView({block:'start'});
+    if(action==='inline-assessment-edit')PCUI.focusControl(host?.querySelector('[name="type"]'));
+  }
+  function recordHandlingOutcome(r,e,time,solution){
+    if(!['compensation','closure'].includes(e.kind)||inlineAssessmentErrors(r,e).length)return null;
+    const next=clone(r);
+    if(hasInlineAssessment(next,e.kind)&&(needsInlineAssessment(next,e.kind)||assessmentChanged(e))){
+      recordRecognition(next,e.assessmentDraft,time,{assessmentOnly:true,handlingPlan:next.handlingPlan||'unresolved'});
+      if(!hasAssessment(next)||assessmentMissing(next).length)return null;
+    }
+    const entry=e.kind==='compensation'?recordCompensation(next,solution,time):recordClosure(next,time,e.draft.note,canAssess(next)?'no-payout':'',e.draft.closeReason);
+    if(!entry)return null;
+    Object.keys(r).forEach(key=>{if(!Object.hasOwn(next,key))delete r[key]});Object.assign(r,next);return entry;
+  }
   function draft(r,f){return {note:f?.note||'',files:clone(f?.files||[]),unresolvedReason:f?.communication?.reason||'',reasonSource:f?f.communication?.reasonSource||'':'demands',...(f?{followResult:f.communication?.result||'note',nextFollowAt:f.communication?.nextFollowAt||''}:!canAssess(r)?{followResult:'note'}:{operation:'unresolved'})}}
   function operationDraft(kind,r){return kind==='follow'?draft(r):kind==='closure'?{closeReason:'',note:'',files:[]}:kind==='assessment'?{...valuesFrom(r,RECOGNITION_FIELDS),handlingPlan:r.handlingPlan||'',handlingFiles:clone(r.handlingFiles||[])}:{customerSolution:solutionDraft(r.customerSolution)}}
   function switchOperation(e,kind,r){
@@ -15,7 +71,7 @@ window.PCModules['complaint-follow']={render(){},create({ACTOR,canAssess,canFoll
     const next=e.operations[kind]||{draft:operationDraft(kind,r)};
     e.kind=kind;e.followId=null;e.draft=next.draft;e.baseline=next.baseline??JSON.stringify(next.draft);
   }
-  function operationDirty(e){return JSON.stringify(e.draft)!==e.baseline||Object.entries(e.operations||{}).some(([kind,saved])=>kind!==e.kind&&JSON.stringify(saved.draft)!==saved.baseline)}
+  function operationDirty(e){return Boolean(e.assessmentDraft&&JSON.stringify(e.assessmentDraft)!==e.assessmentBaseline)||JSON.stringify(e.draft)!==e.baseline||Object.entries(e.operations||{}).some(([kind,saved])=>kind!==e.kind&&JSON.stringify(saved.draft)!==saved.baseline)}
   function gradeValue(d){return {level:d?.level||'',level4Type:level4Type(d||{})}}
   function gradeErrors(d){return !LEVELS.includes(d?.level)?[['level','请选择客诉等级']]:d.level==='4级'&&!level4Type(d)?[['level4Type','请选择风险类型']]:[]}
   function recordGrade(r,d,time){
@@ -113,17 +169,18 @@ window.PCModules['complaint-follow']={render(){},create({ACTOR,canAssess,canFoll
   function progressText(r){const follow=current(r);if(!follow)return '';return follow.communication.result==='ongoing'?reasonText(follow.communication):'客户已同意解决方案，待确认具体方案';}
   function metadata(f,r){const c=f.communication;if(!c)return '';return `<div class="uc-recognition-summary"><span>沟通结果：${esc(RESULTS[c.result]||c.result)}</span>${c.reason?`<span>客户主要诉求卡点：${esc(reasonText(c))}</span>`:''}${c.nextFollowAt?`<span>下次跟进：${esc(fmt(c.nextFollowAt))}</span>`:''}${periodFields(r,f).map(([label,value])=>`<span>${esc(label)}：${esc(value)}</span>`).join('')}</div>`}
   function overview(r){const f=current(r);if(!f)return '';const c=f.communication;return section('沟通进展',`<div class="uc-details">${detail('当前进展',RESULTS[c.result])}${detail('最近沟通',fmt(f.time))}${c.reason?detail('客户主要诉求卡点',reasonText(c),true):''}${c.nextFollowAt?detail('下次跟进',fmt(c.nextFollowAt)):''}${detail('跟进人',f.actor)}${periodFields(r,f).map(([label,value])=>detail(label,value)).join('')}</div>`,c.result==='agreed'&&canAssess(r)?link('填写解决方案','begin-compensation'):'')}
-  function form(r,d,f){const controls=f?f.communication?.result==='ongoing':canAssess(r),reasons=controls?availableReasons(d.unresolvedReason,f).map(([value,label])=>[value,f?.communication?.reasonSource!=='demands'&&LEGACY_REASONS[value]&&value===f?.communication?.reason?reasonText(f.communication):label]):[];return `<div id="uc-follow-form" class="ub-form" data-draft="follow" novalidate>${controls?field('unresolvedReason','当前处理卡点',select('unresolvedReason',reasons,d.unresolvedReason,'请选择当前处理卡点','required aria-required="true" aria-label="当前处理卡点"'),true):f?.communication?metadata(f,r):''}${field('note','沟通内容',`<textarea id="uc-note" name="note" class="uc-input uc-follow-note" rows="6" maxlength="2000" show-word-limit placeholder="记录本次联系情况、客户反馈及下一步安排">${esc(d.note)}</textarea>`,false,'',true)}${field('followImages','图片',`<div><div class="uc-upload-row">${btn('添加图片','upload-follow','id="uc-followImages"')}<input type="file" id="uc-upload" accept="image/png,image/jpeg" multiple hidden data-upload="follow"><span class="uc-muted">最多 4 张，每张 5MB 以内</span></div><div id="uc-upload-list">${draftFiles(d.files)}</div></div>`)}</div>`}
-  function closureForm(d,requireReason=true){return `<div id="uc-closure-form" class="ub-form" data-draft="closure" novalidate>${requireReason?field('closeReason','结案原因',select('closeReason',CLOSED_REASONS,d.closeReason,'请选择结案原因','required aria-required="true" aria-label="结案原因"'),true,'',true):''}${field('note','结案说明',`<textarea id="uc-note" name="note" class="uc-input" rows="5" maxlength="1000" placeholder="填写本次处理结果（选填）">${esc(d.note)}</textarea>`,false,'',true)}</div>`}
+  function form(r,d,f){const controls=f?f.communication?.result==='ongoing':canAssess(r),reasons=controls?availableReasons(d.unresolvedReason,f).map(([value,label])=>[value,f?.communication?.reasonSource!=='demands'&&LEGACY_REASONS[value]&&value===f?.communication?.reason?reasonText(f.communication):label]):[];return `<div id="uc-follow-form" class="ub-form pc-form-single" data-draft="follow" novalidate>${controls?field('unresolvedReason','处理卡点',select('unresolvedReason',reasons,d.unresolvedReason,'请选择当前处理卡点','required aria-required="true" aria-label="当前处理卡点"'),true):f?.communication?metadata(f,r):''}${field('note','沟通内容',`<textarea id="uc-note" name="note" class="uc-input uc-follow-note" rows="6" maxlength="2000" show-word-limit placeholder="记录本次联系情况、客户反馈及下一步安排">${esc(d.note)}</textarea>`,false,'',true)}${field('followImages','图片',`<div><div class="uc-upload-row">${btn('添加图片','upload-follow','id="uc-followImages"')}<input type="file" id="uc-upload" accept="image/png,image/jpeg" multiple hidden data-upload="follow"><span class="uc-muted">最多 4 张，每张 5MB 以内</span></div><div id="uc-upload-list">${draftFiles(d.files)}</div></div>`)}</div>`}
+  function closureForm(d,requireReason=true){return `<div id="uc-closure-form" class="ub-form pc-form-single" data-draft="closure" novalidate>${requireReason?field('closeReason','结案原因',select('closeReason',CLOSED_REASONS,d.closeReason,'请选择结案原因','required aria-required="true" aria-label="结案原因"'),true,'',true):''}${field('note','结案说明',`<textarea id="uc-note" name="note" class="uc-input" rows="5" maxlength="1000" placeholder="填写本次处理结果（选填）">${esc(d.note)}</textarea>`,false,'',true)}</div>`}
   function operationChoice(active,operations=OPERATIONS){return `<div class="uc-operation-choice"><div class="ub-form">${field('operation','本次跟进结果',assessmentChoices('operation','本次跟进结果（单选）',Object.entries(operations).map(([key,[label]])=>[key,label]),active),false,'',true)}</div></div>`}
   function resetOperation(e){for(const input of e.layer.el.querySelectorAll('[name=operation]')){input.checked=input.value===e.kind;PCUI.syncControl(input)}}
-  function editorFooter(e,totals=''){
+  function editorFooter(e,totals='',r){
     const cancel=btn('取消','dismiss'),busy=e.uploading?'disabled':'';
     if(e.kind==='orders')return (e.exampleRecord?btn('返回当前工单','return-order-example'):cancel)+btn('确定','confirm-orders',e.orderCustomerId&&e.selection.length===1?'':'disabled',true);
     if(e.kind==='reply')return cancel+btn('保存回复','save-reply',busy,true);
-    if(e.kind==='assessment')return cancel+btn(!e.assessmentOnly&&e.draft.handlingPlan==='resolved'?'保存并结案':'保存责任认定','save-assessment',busy,true);
-    if(e.kind==='compensation')return totals+cancel+btn(e.submitLabel||'确认方案并提交','save-compensation',busy,true);
-    if(e.kind==='closure')return cancel+btn('确认结案','save-closure',busy,true);
+    if(e.kind==='assessment')return cancel+btn('保存责任认定','save-assessment',busy,true);
+    if(['compensation','closure'].includes(e.kind)){
+      return (totals?`<div class="uc-handling-footer-context">${totals}</div>`:'')+cancel+btn(e.kind==='closure'?'确认结案':e.submitLabel||'确认方案并提交',e.kind==='closure'?'save-closure':'save-compensation',busy,true);
+    }
     return cancel+btn(e.followId?'保存修改':'保存跟进','save-follow',busy,true);
   }
   // Project business outcomes without deleting the original operation history.
@@ -182,7 +239,7 @@ window.PCModules['complaint-follow']={render(){},create({ACTOR,canAssess,canFoll
       return heading+body(fields,filesView(f.files||[],'follow',index));
     }):empty('暂无跟进记录');
   }
-  return {RESULTS,OPERATIONS,CLOSED_REASONS,availableReasons,draft,operationDraft,switchOperation,operationDirty,gradeValue,gradeErrors,recordGrade,gradeDialog,validate,record,edit,current,progressText,activePeriod,stopPeriod,startAcceptedPeriod,overview,form,closureForm,operationChoice,resetOperation,editorFooter,historyRecords,history,editable};
+  return {RESULTS,OPERATIONS,CLOSED_REASONS,needsInlineAssessment,inlineAssessmentForm,inlineAssessmentErrors,handlingPanel,updateAssessmentState,inlineAssessmentAction,showHandlingErrors,recordHandlingOutcome,availableReasons,draft,operationDraft,switchOperation,operationDirty,gradeValue,gradeErrors,recordGrade,gradeDialog,validate,record,edit,current,progressText,activePeriod,stopPeriod,startAcceptedPeriod,overview,form,closureForm,operationChoice,resetOperation,editorFooter,historyRecords,history,editable};
 },createReview({ACTOR,getRecords,getRoot,getMain,clone,esc,opt,btn,fmt,now,persist,renderList,renderDetail,toast}){
   const REVIEW_TYPES=['置换商品','超额赔偿','其他'],reviewDrafts=new Map();
   const needsReviewInfo=r=>r.status==='客服复核中'&&r.customerSolution?.handlingMethods?.includes('other');

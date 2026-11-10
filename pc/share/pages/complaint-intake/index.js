@@ -1,8 +1,10 @@
-/* Phone-first work order intake. Customer and order selections remain local drafts until creation. */
+/* Phone/member work order intake. Customer and order selections remain local drafts until creation. */
 window.PCModules['complaint-intake']={render(){},create({CHANNELS,ACTOR,dictionary,field,input,opt,select,section,btn,link,esc,clone,orders,customerDirectory,phoneView,orderProjects,paymentMoney,tag,listValue,empty,pagination,fmt,openLayer,closeLayer,toast,clearErrors,error,now,getLayers,getRecords,persist,onCreated}){
   function createTicketForm(){
-    const lookup=`<div id="uc-create-customer-lookup"><form id="uc-create-customer-search" class="ub-form" novalidate>${field('createConsumptionPhone','消费手机号',`<div class="uc-actions"><div class="pc-query-field">${input('createConsumptionPhone','','输入消费手机号，自动查找客户','tel','inputmode="tel" autocomplete="off" aria-label="消费手机号" maxlength="18"','consumptionPhone')}</div><span class="uc-muted">示例 13800002901</span></div>`,false,'',true)}</form><div id="uc-create-customer-error" class="uc-error" role="alert"></div></div><div id="uc-create-customer-result"></div>`;
-    return `<div id="uc-create-ticket" class="uc-intake" data-ticket-form>${section('客户信息',lookup)}<div id="uc-create-orders" hidden></div>${section('受理信息',`<div class="ub-form" data-pc-columns="2">
+    const modes=`<div class="pc-segmented" role="radiogroup" aria-label="客户匹配方式"><label><input type="radio" name="lookupType" value="phone" checked><span>手机号</span></label><label><input type="radio" name="lookupType" value="member"><span>会员号</span></label></div>`;
+    const lookup=`<div id="uc-create-customer-lookup"><form id="uc-create-customer-search" class="pc-form pc-form-single" novalidate><div class="pc-form-item"><label id="uc-create-lookup-label" class="pc-form-label" for="uc-createConsumptionPhone">消费手机号：</label><div class="pc-field-content"><div class="uc-actions"><div class="pc-query-field" data-create-lookup-value="phone">${input('createConsumptionPhone','','输入消费手机号，自动查找客户','tel','inputmode="tel" autocomplete="off" aria-label="消费手机号" maxlength="18"','consumptionPhone')}</div><div class="pc-query-field" data-create-lookup-value="member" hidden>${input('createConsumptionMember','','输入完整会员号，自动查找客户','text','autocomplete="off" aria-label="会员号" maxlength="50"','consumptionMember')}</div><span id="uc-create-lookup-hint" class="uc-muted">示例 13800002901</span></div></div></div></form><div id="uc-create-customer-error" class="uc-error" role="alert"></div></div><div id="uc-create-customer-result"></div>`;
+    const customerSection=`<section class="uc-section"><div class="uc-section-head pc-form pc-form-single"><div class="pc-form-item uc-intake-lookup-heading"><h4>客户信息</h4>${modes}</div></div><div class="uc-section-content">${lookup}</div></section>`;
+    return `<div id="uc-create-ticket" class="uc-intake" data-ticket-form>${customerSection}<div id="uc-create-orders" hidden></div>${section('受理信息',`<div class="ub-form" data-pc-columns="2">
       ${field('createName','客户称呼',input('createName','','可填写姓名或称呼，暂缺可留空','text','autocomplete="off"','name'))}
       ${field('createPhone','联系手机号',input('createPhone','','默认同消费手机号，可修改','tel','inputmode="tel" autocomplete="off"','phone'),true)}
       ${field('createChannel','来源渠道',`<select id="uc-createChannel" name="channel" class="uc-input" aria-label="来源渠道">${Object.entries(CHANNELS).map(([value,label])=>`<option value="${esc(value)}"${value==='hotline'?' selected':''}>${esc(label)}</option>`).join('')}</select>`)}
@@ -11,13 +13,20 @@ window.PCModules['complaint-intake']={render(){},create({CHANNELS,ACTOR,dictiona
     </div>`)}</div>`;
   }
   const normalizeCreatePhone=value=>String(value||'').replace(/[\s()-]/g,'').replace(/^\+86/,'');
-  function createTicketState(){return {consumptionPhone:'',searchedPhone:'',customerId:'',linked:[],contactEdited:false,autoName:'',lookupOpen:true}}
+  const lookupType=state=>state.lookupType==='member'?'member':'phone';
+  const lookupField=type=>type==='member'?'consumptionMember':'consumptionPhone';
+  const searchedField=type=>type==='member'?'searchedMember':'searchedPhone';
+  const normalizeLookup=(value,type)=>type==='member'?String(value||'').trim():normalizeCreatePhone(value);
+  const validLookup=(value,type)=>type==='member'?Boolean(value&&value.length<=50):/^1\d{10}$/.test(value);
+  const customerPhone=customer=>[customer?.fullPhone,customer?.phone].map(normalizeCreatePhone).find(value=>/^1\d{10}$/.test(value))||'';
+  function createTicketState(){return {lookupType:'phone',consumptionPhone:'',searchedPhone:'',consumptionMember:'',searchedMember:'',customerId:'',linked:[],contactEdited:false,autoName:'',lookupOpen:true}}
   function clearCreateCustomer(layer){
     const state=layer.creation,name=layer.el.querySelector('[name="name"]');
     if(state.autoName&&name.value===state.autoName){name.value='';PCUI.syncControl(name)}
     state.autoName='';state.customerId='';state.linked=[];state.lookupOpen=true;
   }
-  function createCustomerMatches(phone){
+  function createCustomerMatches(phone,type='phone'){
+    if(type==='member'){const member=normalizeLookup(phone,type);return validLookup(member,type)?customerDirectory().filter(customer=>String(customer.member||'').trim()===member):[];}
     if(!/^1\d{10}$/.test(phone))return [];
     return customerDirectory().filter(customer=>{
       const known=[customer.fullPhone,customer.phone].map(normalizeCreatePhone).filter(value=>/^1\d{10}$/.test(value));
@@ -31,7 +40,8 @@ window.PCModules['complaint-intake']={render(){},create({CHANNELS,ACTOR,dictiona
     return orders.filter(order=>state.customerId&&order.customerId===state.customerId&&(!keyword||[order.id,...orderProjects(order).map(project=>project.name)].some(value=>String(value||'').toLowerCase().includes(keyword)))&&(!filters.store||order.store===filters.store)&&(!filters.start||String(order.created||'').slice(0,10)>=filters.start)&&(!filters.end||Boolean(order.created)&&String(order.created).slice(0,10)<=filters.end)).sort((a,b)=>String(b.created||'').localeCompare(String(a.created||'')));
   }
   function setCreateCustomer(state,id){
-    if(!createCustomerMatches(state.searchedPhone).some(customer=>customer.customerId===id))return false;
+    const type=lookupType(state);
+    if(!createCustomerMatches(state[searchedField(type)],type).some(customer=>customer.customerId===id))return false;
     if(state.customerId===id){state.lookupOpen=false;return true}
     state.customerId=id;state.linked=[];state.lookupOpen=false;return true;
   }
@@ -56,9 +66,9 @@ window.PCModules['complaint-intake']={render(){},create({CHANNELS,ACTOR,dictiona
     const state=layer.creation,customer=createCustomer(state),result=layer.el.querySelector('#uc-create-customer-result'),lookup=layer.el.querySelector('#uc-create-customer-lookup');
     if(lookup)lookup.hidden=Boolean(customer&&!state.lookupOpen);
     if(customer&&!state.lookupOpen)result.innerHTML=`<div class="uc-intake-customer-summary">${customerIdentity(customer,true)}${link('更换客户','create-change-customer')}</div>`;
-    else if(state.searchedPhone){
-      const matches=createCustomerMatches(state.searchedPhone);
-      result.innerHTML=matches.length?`<div class="uc-intake-candidates" aria-label="匹配客户">${matches.map(item=>`<div class="uc-intake-candidate" data-uc="create-select-customer" data-customer="${esc(item.customerId)}">${customerIdentity(item)}<div class="uc-intake-candidate-action">${![item.fullPhone,item.phone].some(value=>/^1\d{10}$/.test(normalizeCreatePhone(value)))?'<span class="uc-muted uc-intake-match-note">号码部分匹配，请核对</span>':''}${btn('关联客户','create-select-customer',`data-customer="${esc(item.customerId)}" aria-label="关联客户 ${esc(item.name)}，会员号 ${esc(item.member)}"`)}</div></div>`).join('')}</div>`:`<p class="uc-help" role="status">未找到客户，可直接填写下方信息创建工单。</p>`;
+    else if(state[searchedField(lookupType(state))]){
+      const type=lookupType(state),matches=createCustomerMatches(state[searchedField(type)],type);
+      result.innerHTML=matches.length?`<div class="uc-intake-candidates" aria-label="匹配客户">${matches.map(item=>`<div class="uc-intake-candidate" data-uc="create-select-customer" data-customer="${esc(item.customerId)}">${customerIdentity(item)}<div class="uc-intake-candidate-action">${type==='phone'&&!customerPhone(item)?'<span class="uc-muted uc-intake-match-note">号码部分匹配，请核对</span>':''}${btn('关联客户','create-select-customer',`data-customer="${esc(item.customerId)}" aria-label="关联客户 ${esc(item.name)}，会员号 ${esc(item.member)}"`)}</div></div>`).join('')}</div>`:`<p class="uc-help" role="status">未找到客户，可直接填写下方信息创建工单。</p>`;
     }else result.innerHTML='';
     renderCreateOrders(layer);
   }
@@ -74,19 +84,32 @@ window.PCModules['complaint-intake']={render(){},create({CHANNELS,ACTOR,dictiona
     container.innerHTML=section('售后订单',content,all.length?`<div class="uc-actions"><span id="uc-create-selected-count" class="uc-muted" role="status">${count}</span>${all.length>3?link('全部订单','create-pick-orders','aria-label="查看全部 '+all.length+' 笔订单"'):''}</div>`:'');
   }
   function lookupCreateCustomer(layer){
-    const state=layer.creation,control=layer.el.querySelector('[name="consumptionPhone"]'),phone=normalizeCreatePhone(control.value),err=layer.el.querySelector('#uc-create-customer-error');
-    if(!/^1\d{10}$/.test(phone)){err.textContent='请输入11位消费手机号';control.setAttribute('aria-invalid','true');PCUI.focusControl(control);return}
-    control.value=phone;PCUI.syncControl(control);control.removeAttribute('aria-invalid');err.textContent='';clearCreateCustomer(layer);state.consumptionPhone=phone;state.searchedPhone=phone;
-    if(!state.contactEdited){const contact=layer.el.querySelector('[name="phone"]');contact.value=phone;PCUI.syncControl(contact)}renderCreateCustomer(layer);
+    const state=layer.creation,type=lookupType(state),name=lookupField(type),control=layer.el.querySelector('[name="'+name+'"]'),value=normalizeLookup(control.value,type),err=layer.el.querySelector('#uc-create-customer-error');
+    if(!validLookup(value,type)){err.textContent=type==='member'?'请输入完整会员号（最多50字）':'请输入11位消费手机号';control.setAttribute('aria-invalid','true');PCUI.focusControl(control);return}
+    control.value=value;PCUI.syncControl(control);control.removeAttribute('aria-invalid');err.textContent='';clearCreateCustomer(layer);state[name]=value;state[searchedField(type)]=value;
+    if(!state.contactEdited){const contact=layer.el.querySelector('[name="phone"]');contact.value=type==='phone'?value:'';PCUI.syncControl(contact)}renderCreateCustomer(layer);
   }
   function syncCreateInput(el){
     const layer=getLayers().at(-1);if(!layer?.creation)return false;const state=layer.creation;
     if(el.name==='phone')state.contactEdited=Boolean(el.value.trim());
-    if(el.name==='consumptionPhone'){
-      const phone=normalizeCreatePhone(el.value);if(phone===state.consumptionPhone)return true;
-      clearCreateCustomer(layer);state.consumptionPhone=phone;state.searchedPhone='';layer.el.querySelector('#uc-create-customer-error').textContent='';el.removeAttribute('aria-invalid');
-      if(!state.contactEdited){const contact=layer.el.querySelector('[name="phone"]');contact.value=phone;PCUI.syncControl(contact)}
-      if(/^1\d{10}$/.test(phone))lookupCreateCustomer(layer);else renderCreateCustomer(layer);
+    if(el.name==='lookupType'){
+      if(!el.checked||!['phone','member'].includes(el.value)||el.value===lookupType(state))return true;
+      clearCreateCustomer(layer);state.lookupType=el.value;const type=lookupType(state),name=lookupField(type),control=layer.el.querySelector('[name="'+name+'"]');
+      for(const region of layer.el.querySelectorAll('[data-create-lookup-value]'))region.hidden=region.dataset.createLookupValue!==type;
+      const label=layer.el.querySelector('#uc-create-lookup-label');if(label){label.textContent=type==='phone'?'消费手机号：':'会员号：';label.htmlFor=control.id;}
+      const hint=layer.el.querySelector('#uc-create-lookup-hint'),member=customerDirectory().find(customer=>customer.member)?.member;
+      if(hint)hint.textContent=type==='phone'?'示例 13800002901':member?'示例 '+member:'输入完整会员号';
+      const contact=layer.el.querySelector('[name="phone"]');contact.placeholder=type==='phone'?'默认同消费手机号，可修改':'填写联系手机号';
+      state[searchedField(type)]='';state[name]=normalizeLookup(control.value,type);control.removeAttribute('aria-invalid');layer.el.querySelector('#uc-create-customer-error').textContent='';
+      if(!state.contactEdited){contact.value=type==='phone'?state[name]:'';PCUI.syncControl(contact)}
+      if(validLookup(state[name],type))lookupCreateCustomer(layer);else renderCreateCustomer(layer);
+      return true;
+    }
+    if(el.name===lookupField(lookupType(state))){
+      const type=lookupType(state),name=lookupField(type),value=normalizeLookup(el.value,type);if(value===state[name])return true;
+      clearCreateCustomer(layer);state[name]=value;state[searchedField(type)]='';layer.el.querySelector('#uc-create-customer-error').textContent='';el.removeAttribute('aria-invalid');
+      if(!state.contactEdited){const contact=layer.el.querySelector('[name="phone"]');contact.value=type==='phone'?value:'';PCUI.syncControl(contact)}
+      if(validLookup(value,type))lookupCreateCustomer(layer);else renderCreateCustomer(layer);
     }
     return true;
   }
@@ -103,21 +126,21 @@ window.PCModules['complaint-intake']={render(){},create({CHANNELS,ACTOR,dictiona
     layer.el.classList.add('uc-intake-picker');layer.creationOrders={parent,state,filters:{},page:1,size:10};createOrderPickerView(layer);
   }
   function createTicketAssociation(state,values,time){
-    const customer=state.customerId?createCustomer(state):null;
-    if(state.customerId&&(!customer||state.consumptionPhone!==normalizeCreatePhone(values.consumptionPhone)||!createCustomerMatches(state.consumptionPhone).some(item=>item.customerId===state.customerId)))throw Error('客户信息已变更，请重新查找并关联');
+    const customer=state.customerId?createCustomer(state):null,type=lookupType(state),name=lookupField(type),value=normalizeLookup(values[name],type);
+    if(state.customerId&&(!customer||(values.lookupType||type)!==type||state[name]!==value||!createCustomerMatches(value,type).some(item=>item.customerId===state.customerId)))throw Error('客户信息已变更，请重新查找并关联');
     const own=createCustomerOrders(state);if(state.linked.some(item=>!own.some(order=>order.id===item.id)))throw Error('订单不属于当前客户，请重新选择');
     const stores=[...new Set(own.filter(order=>state.linked.some(item=>item.id===order.id)).map(order=>order.store).filter(Boolean))];
-    return {orderSelectionMode:'multiple',consumptionPhone:normalizeCreatePhone(values.consumptionPhone),customerId:customer?.customerId||'',name:customer?.name||values.name||'未留姓名',phone:customer?.phone||values.phone,fullPhone:customer?.fullPhone||(!customer?values.phone:''),member:customer?.member||'',customerWechat:customer?.customerWechat||'',store:stores.length===1?stores[0]:'',linked:clone(state.linked),...(customer?{originalContact:{name:values.name||customer.name,phone:values.phone,fullPhone:values.phone},customerAssociation:{customerId:customer.customerId,member:customer.member,time,actor:ACTOR}}:{})};
+    return {orderSelectionMode:'multiple',consumptionPhone:type==='phone'?normalizeCreatePhone(values.consumptionPhone):customerPhone(customer),...(type==='member'?{consumptionMember:value}:{}),customerId:customer?.customerId||'',name:customer?.name||values.name||'未留姓名',phone:customer?.phone||values.phone,fullPhone:customer?.fullPhone||(!customer?values.phone:''),member:customer?.member||'',customerWechat:customer?.customerWechat||'',store:stores.length===1?stores[0]:'',linked:clone(state.linked),...(customer?{originalContact:{name:values.name||customer.name,phone:values.phone,fullPhone:values.phone},customerAssociation:{customerId:customer.customerId,member:customer.member,lookupType:type,lookupValue:value,time,actor:ACTOR}}:{})};
   }
   function createTicketAction(action,button,layer){
     if(layer?.creation){
       const state=layer.creation;
       if(action==='create-reset-customer'){
-        const phone=layer.el.querySelector('[name="consumptionPhone"]');phone.value='';PCUI.syncControl(phone);syncCreateInput(phone);clearCreateCustomer(layer);state.searchedPhone='';layer.el.querySelector('#uc-create-customer-error').textContent='';phone.removeAttribute('aria-invalid');renderCreateCustomer(layer);PCUI.focusControl(phone);
+        const type=lookupType(state),control=layer.el.querySelector('[name="'+lookupField(type)+'"]');control.value='';PCUI.syncControl(control);syncCreateInput(control);clearCreateCustomer(layer);state[searchedField(type)]='';layer.el.querySelector('#uc-create-customer-error').textContent='';control.removeAttribute('aria-invalid');renderCreateCustomer(layer);PCUI.focusControl(control);
       }
-      if(action==='create-change-customer'){state.lookupOpen=true;renderCreateCustomer(layer);const phone=layer.el.querySelector('[name="consumptionPhone"]');PCUI.focusControl(phone);phone.select()}
+      if(action==='create-change-customer'){state.lookupOpen=true;renderCreateCustomer(layer);const control=layer.el.querySelector('[name="'+lookupField(lookupType(state))+'"]');PCUI.focusControl(control);control.select()}
       if(action==='create-select-customer'&&setCreateCustomer(state,button.dataset.customer)){
-        const name=layer.el.querySelector('[name="name"]'),customer=createCustomer(state);if(!name.value.trim()||name.value===state.autoName){name.value=customer.name;state.autoName=customer.name;PCUI.syncControl(name)}renderCreateCustomer(layer);PCUI.focusControl(layer.el.querySelector('[data-create-order-choice]')||layer.el.querySelector('[name="phone"]'));
+        const name=layer.el.querySelector('[name="name"]'),customer=createCustomer(state);if(!name.value.trim()||name.value===state.autoName){name.value=customer.name;state.autoName=customer.name;PCUI.syncControl(name)}if(lookupType(state)==='member'&&!state.contactEdited){const contact=layer.el.querySelector('[name="phone"]');contact.value=customerPhone(customer);PCUI.syncControl(contact)}renderCreateCustomer(layer);PCUI.focusControl(layer.el.querySelector('[data-create-order-choice]')||layer.el.querySelector('[name="phone"]'));
       }
       if(action==='create-pick-orders')openCreateOrderPicker(layer);
       if(action==='create-remove-order'){setCreateOrder(state,button.dataset.order,false);renderCreateOrders(layer);PCUI.focusControl(layer.el.querySelector('[data-uc="create-pick-orders"]'))}
@@ -142,8 +165,11 @@ window.PCModules['complaint-intake']={render(){},create({CHANNELS,ACTOR,dictiona
   }
   function newTicketErrors(values){
     const errors=values.phone?[]:[['phone','请输入联系手机号']];
+    const type=values.lookupType||'phone';
+    if(!['phone','member'].includes(type))errors.push(['lookupType','请选择手机号或会员号查询']);
     if(values.phone&&!/^1\d{10}$/.test(values.phone))errors.push(['phone','请输入11位联系手机号']);
-    if(values.consumptionPhone&&!/^1\d{10}$/.test(values.consumptionPhone))errors.push(['consumptionPhone','请输入11位消费手机号']);
+    if(type==='phone'&&values.consumptionPhone&&!/^1\d{10}$/.test(values.consumptionPhone))errors.push(['consumptionPhone','请输入11位消费手机号']);
+    if(type==='member'&&String(values.consumptionMember||'').length>50)errors.push(['consumptionMember','会员号不能超过50字']);
     if(dictionary.requestEntryEnabled){
       if(!dictionary.requestTypes().includes(values.requestType))errors.push(['requestType','请选择客户诉求类型']);
       if(!dictionary.requestReasons(values.requestType).includes(values.requestReason))errors.push(['requestReason','请选择该诉求类型对应的具体原因']);
@@ -159,13 +185,13 @@ window.PCModules['complaint-intake']={render(){},create({CHANNELS,ACTOR,dictiona
   function saveNewTicket(){
     const layer=getLayers().at(-1),scope=layer?.el,form=scope?.querySelector('[data-ticket-form]');
     if(!layer?.creation||!form)return;
-    const values=Object.fromEntries([...form.querySelectorAll('input,select,textarea')].filter(control=>control.name).map(control=>[control.name,control.value.trim()]));
-    values.phone=normalizeCreatePhone(values.phone);values.consumptionPhone=normalizeCreatePhone(values.consumptionPhone);
+    const values=Object.fromEntries([...form.querySelectorAll('input,select,textarea')].filter(control=>control.name&&(control.type!=='radio'||control.checked)).map(control=>[control.name,control.value.trim()]));
+    values.phone=normalizeCreatePhone(values.phone);values.consumptionPhone=normalizeCreatePhone(values.consumptionPhone);values.consumptionMember=normalizeLookup(values.consumptionMember,'member');
     clearErrors(scope);
     const missing=newTicketErrors(values);
     if(missing.length){
       missing.forEach(([name,message])=>error(scope,'create'+name[0].toUpperCase()+name.slice(1),message));
-      if(missing.some(([name])=>name==='consumptionPhone'))scope.querySelector('#uc-create-customer-error').textContent='请输入11位消费手机号';
+      const lookupError=missing.find(([name])=>['lookupType','consumptionPhone','consumptionMember'].includes(name));if(lookupError)scope.querySelector('#uc-create-customer-error').textContent=lookupError[1];
       const control=scope.querySelector(`[name="${missing[0][0]}"]`);PCUI.focusControl(control);control?.scrollIntoView({block:'center'});return;
     }
     const numericIds=getRecords().map(record=>Number(record.id)).filter(Number.isFinite),id=String((numericIds.length?Math.max(...numericIds):31000)+1),time=now();

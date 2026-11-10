@@ -4,31 +4,31 @@
     "pc.html": 13492,
     "inventory.html": 9108
   },
-  "sharedGzipBytes": 66743,
+  "sharedGzipBytes": 66944,
   "firstRouteGzipBytes": {
-    "customer": 250004,
-    "management": 127337,
-    "complaints": 166978,
-    "home": 52778,
-    "complaint-intake": 59264,
-    "complaint-order-linking": 55875,
-    "complaint-detail": 67047,
-    "complaint-fixtures": 60598,
-    "complaint-workflow": 55851,
-    "complaint-follow": 60742,
-    "complaint-options": 62912,
-    "complaint-solutions": 76444,
-    "supply-chain": 163339,
-    "inventory-core": 116868,
-    "inventory-clinical": 180827,
-    "group-approval": 140930,
-    "group-approval-designer": 160925,
-    "group-approval-data": 90537,
-    "refund-risk": 82792,
-    "stock-management": 124597,
-    "sales-recipes": 151831,
-    "product-center": 148304,
-    "stock-overview": 130469
+    "customer": 250209,
+    "management": 127542,
+    "complaints": 170844,
+    "home": 52983,
+    "complaint-intake": 60459,
+    "complaint-order-linking": 56080,
+    "complaint-detail": 67433,
+    "complaint-fixtures": 61117,
+    "complaint-workflow": 56056,
+    "complaint-follow": 62300,
+    "complaint-options": 64136,
+    "complaint-solutions": 76660,
+    "supply-chain": 163544,
+    "inventory-core": 117073,
+    "inventory-clinical": 181032,
+    "group-approval": 141135,
+    "group-approval-designer": 161130,
+    "group-approval-data": 90742,
+    "refund-risk": 82997,
+    "stock-management": 124802,
+    "sales-recipes": 152036,
+    "product-center": 148509,
+    "stock-overview": 130674
   },
   "files": {
     "js/components.ddba8681c45a8839.js": {
@@ -41,10 +41,10 @@
       "gzipBytes": 31453,
       "sha256": "7d50a32ca66727889effd3dcff7de98ff733fc2c01bf336079297e5577392335"
     },
-    "css/theme.a7bab7e273429a01.css": {
-      "bytes": 32000,
-      "gzipBytes": 7470,
-      "sha256": "a7bab7e273429a011b092d73f5fb78ee43a96ae626e7f49cb63564c6148149e6"
+    "css/theme.18e8e3377908f1b2.css": {
+      "bytes": 33163,
+      "gzipBytes": 7671,
+      "sha256": "18e8e3377908f1b2a8d10810483c65c150b81753d460cee92499a3d6ec46ee58"
     },
     "js/app.9d937e171bfaa7aa.js": {
       "bytes": 23223,
@@ -61,65 +61,65 @@
       "gzipBytes": 55524,
       "sha256": "3aac76571935c4f7667f444f43d646b529275fc685896a67e6a605c1cdbdf8c1"
     },
-    "js/complaints.f7f02d5bb08e36aa.js": {
-      "bytes": 115384,
-      "gzipBytes": 35715,
-      "sha256": "f7f02d5bb08e36aa5e2fc09326b8b8c251297e2309c09f4fd7aa4f284d4bb72a"
+    "js/complaints.14dbac63c22e83e7.js": {
+      "bytes": 113927,
+      "gzipBytes": 35424,
+      "sha256": "14dbac63c22e83e7c9b90472709cf6eb51abc9f5c5d235684cd616f128914daa"
     },
-    "css/complaints.848c165e1be8e1a0.css": {
-      "bytes": 17334,
-      "gzipBytes": 3884,
-      "sha256": "848c165e1be8e1a00a33429d67d6976ac829626bd10252a2e0ff84a0b08e37a6"
+    "css/complaints.22a6c38f70a553e5.css": {
+      "bytes": 17961,
+      "gzipBytes": 3979,
+      "sha256": "22a6c38f70a553e54e7cf12519eab79ceaba152b5a18a7d25b9b6fb09eb7a4c2"
     },
     "js/home.8970e33cacf3c9db.js": {
       "bytes": 531,
       "gzipBytes": 389,
       "sha256": "8970e33cacf3c9db9f2a3883ba97cede24e01923a7c3d698cd85b0a94c718e11"
     },
-    "js/complaint-intake.1922e33ab44fb322.js": {
-      "bytes": 22599,
-      "gzipBytes": 6875,
-      "sha256": "1922e33ab44fb3222aeb7d3faf03fda853d632b8c0625e8610a27474eb1761c1"
+    "js/complaint-intake.b6f402010559d40b.js": {
+      "bytes": 26977,
+      "gzipBytes": 7865,
+      "sha256": "b6f402010559d40ba4e0b639c70530c479e7bc6ad7759c35e8763fe53c301a3c"
     },
     "js/complaint-order-linking.4c4fc2901e5c3bef.js": {
       "bytes": 10114,
       "gzipBytes": 3486,
       "sha256": "4c4fc2901e5c3befb488343fa1aeeb9d2ec2d448e9ef3045e27d953b0ff6dc55"
     },
-    "js/complaint-detail.2a7a44ac2f2462e9.js": {
-      "bytes": 41795,
-      "gzipBytes": 13493,
-      "sha256": "2a7a44ac2f2462e9e1bd600e1205b5983cbc392a500ec3e278cc32e2db614e66"
+    "js/complaint-detail.9c89d56ae0b2e6ab.js": {
+      "bytes": 42383,
+      "gzipBytes": 13674,
+      "sha256": "9c89d56ae0b2e6ab87758c1c47821bcd797c7a19655fca359d492c88dcb5f4af"
     },
     "css/complaint-detail.d61ccd0257bf9a51.css": {
       "bytes": 3872,
       "gzipBytes": 1165,
       "sha256": "d61ccd0257bf9a51dc0d3b06eb47913caa19dd6484cbd549f3935bf1b14cc4e1"
     },
-    "js/complaint-fixtures.b50fd77ef4ed94b4.js": {
-      "bytes": 24238,
-      "gzipBytes": 8209,
-      "sha256": "b50fd77ef4ed94b476878303f8bd05f83ffb17d4f16670daceff1faf0a68789c"
+    "js/complaint-fixtures.e8e6e7222d6c69e7.js": {
+      "bytes": 25359,
+      "gzipBytes": 8523,
+      "sha256": "e8e6e7222d6c69e735ed96f2514da10df42d9db4fa96614fa23d864229257506"
     },
     "js/complaint-workflow.b5d3431ca82649c2.js": {
       "bytes": 11646,
       "gzipBytes": 3462,
       "sha256": "b5d3431ca82649c20ffbd693decf170d51334079411bb463a73d7348749e1f60"
     },
-    "js/complaint-follow.dde9eb63d832bd20.js": {
-      "bytes": 25147,
-      "gzipBytes": 8353,
-      "sha256": "dde9eb63d832bd20e621019cb5fa09617d958396174c3d3ca9208c78c270fb11"
+    "js/complaint-follow.d917e6ed2e42e27d.js": {
+      "bytes": 31129,
+      "gzipBytes": 9706,
+      "sha256": "d917e6ed2e42e27d287f471d8c55157dda03e51da1039786c56f4723d8826327"
     },
-    "js/complaint-options.52f2077548fc936a.js": {
-      "bytes": 33651,
-      "gzipBytes": 10523,
-      "sha256": "52f2077548fc936aacbc644ebbf8a1097cc54c823f8b988b33a3a710c340ef14"
+    "js/complaint-options.ebf64bff07382dac.js": {
+      "bytes": 37315,
+      "gzipBytes": 11542,
+      "sha256": "ebf64bff07382dac4ccc6d2062ebef231d4a11cc53e49e15aac79aa9b55dcb9f"
     },
-    "js/complaint-solutions.ce1a9e9db5df0dd8.js": {
-      "bytes": 14602,
-      "gzipBytes": 4631,
-      "sha256": "ce1a9e9db5df0dd83a65ce2f13c60f69082cdb30045718721b08e253c3f91d46"
+    "js/complaint-solutions.a61c0ed568ec6a37.js": {
+      "bytes": 14626,
+      "gzipBytes": 4642,
+      "sha256": "a61c0ed568ec6a3781c8a9b280f863c2f226db338c5194faf940cbe208f34830"
     },
     "js/supply-chain.4a9a7f7c6f5cc684.js": {
       "bytes": 149715,

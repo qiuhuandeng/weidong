@@ -1,0 +1,105 @@
+<div id="complaint-handling-layout" class="viz-dotted-background">
+  <div class="ch-window" aria-label="跟进处理布局建议">
+    <header class="ch-header">跟进处理 <span class="ch-muted">布局示意</span></header>
+    <div class="ch-content">
+      <div class="ch-context">陆女士 · 131****2909 <span class="ch-muted">工单 31037 · 客服处理中</span></div>
+      <fieldset class="ch-outcomes">
+        <legend>本次跟进结果</legend>
+        <label><input type="radio" name="ch-outcome" value="solution" checked> 客户已确认解决方案</label>
+        <label><input type="radio" name="ch-outcome" value="closure"> 直接结案</label>
+      </fieldset>
+      <section class="ch-section" data-solution>
+        <h3>解决方案</h3>
+        <div class="ch-fields">
+          <label class="ch-label" for="ch-context">客户消费情况与诉求 <span>*</span></label>
+          <textarea id="ch-context" rows="2">客户反馈服务体验未达预期，要求退还未消费项目费用。双方已确认退款方案。</textarea>
+          <span class="ch-label">处理方式 <span>*</span></span><div class="ch-line">退款</div>
+          <span class="ch-label">退款项目</span>
+          <div class="ch-refund"><span>S10 祛斑护理 · 未消费 1 次</span><label>退款金额 <input aria-label="退款金额" type="number" value="1200" min="0.01" step="0.01"> 元</label></div>
+          <label class="ch-label" for="ch-payout">收款方式 <span>*</span></label><select id="ch-payout"><option>微信</option><option>支付宝</option><option>银行卡</option></select>
+          <label class="ch-label" for="ch-payee">收款人 <span>*</span></label><input id="ch-payee" value="陆女士">
+          <label class="ch-label" for="ch-account">收款账号 <span>*</span></label><input id="ch-account" value="客户已确认的收款账号">
+          <label class="ch-label" for="ch-proof">方案附件</label><input id="ch-proof" type="file" multiple>
+        </div>
+      </section>
+      <section class="ch-section" data-closure hidden>
+        <h3>结案信息</h3>
+        <div class="ch-fields">
+          <label class="ch-label" for="ch-close-reason">结案原因 <span>*</span></label><select id="ch-close-reason"><option>无需赔付，已解决</option><option>客户主动撤回</option><option>重复或误建工单</option></select>
+          <label class="ch-label" for="ch-close-note">结案说明</label><textarea id="ch-close-note" rows="2" placeholder="填写本次处理结果"></textarea>
+        </div>
+      </section>
+      <section class="ch-section ch-assessment" aria-labelledby="ch-assessment-title">
+        <div class="ch-heading"><h3 id="ch-assessment-title">责任认定</h3><span class="ch-state" data-status>待填写 · 必填</span><button type="button" class="ch-link" data-edit hidden>编辑</button></div>
+        <div class="ch-saved" data-saved hidden>门店 / 门店服务 / 陈佳</div>
+        <div data-assessment-fields>
+          <div class="ch-fields">
+            <span class="ch-label">责任部门 <span>*</span></span><div class="ch-line" role="group" aria-label="责任部门，可多选"><label><input type="checkbox" name="ch-department" value="推广"> 推广</label><label><input type="checkbox" name="ch-department" value="销售"> 销售</label><label><input type="checkbox" name="ch-department" value="门店"> 门店</label></div>
+            <label class="ch-label" for="ch-type">售后类型 <span>*</span></label><select id="ch-type" disabled><option value="">请先选择责任部门</option><option>门店服务</option><option>医美效果</option><option>广告宣传</option><option>闭店</option></select>
+          </div>
+          <div class="ch-order-reference">
+            <div class="ch-order-heading"><span>关联订单 · 2610190000004573</span><span class="ch-muted">杭州上城店</span></div>
+            <div class="ch-staff"><span class="ch-muted">订单经办人员</span><span>推广：李江</span><span>接待：杨晓燕</span><span>操作：陈琳</span><span>店长：陈佳</span></div>
+            <details data-order-details><summary>展开订单详情</summary>
+              <div class="ch-order-meta"><span>客户：陆女士</span><span>会员号：15283522</span><span>订单金额：¥1,200.00</span><span>已付金额：¥1,200.00</span><span>到店时间：2026-11-03 13:08</span></div>
+              <div class="ch-table-wrap"><table><thead><tr><th>项目名称</th><th>类型</th><th>数量</th><th>总金额</th><th>操作老师</th></tr></thead><tbody><tr><td>S10 祛斑护理</td><td>购买</td><td>1</td><td>1,200.00</td><td>陈琳</td></tr></tbody></table></div>
+            </details>
+          </div>
+          <div class="ch-fields">
+            <span class="ch-label" data-person-label>责任人 <span>*</span></span><div class="ch-person" data-person role="group" aria-label="责任人，可多选"><input type="search" aria-label="搜索责任人" placeholder="搜索姓名，支持多选、离职及历史员工" disabled><div class="ch-line"><label><input type="checkbox" name="ch-responsible" value="陈佳" disabled> 陈佳</label><label><input type="checkbox" name="ch-responsible" value="陈琳" disabled> 陈琳</label><label><input type="checkbox" name="ch-responsible" value="杨晓燕" disabled> 杨晓燕</label></div></div>
+            <label class="ch-label" for="ch-reason">责任原因</label><textarea id="ch-reason" rows="2" placeholder="填写认定依据和责任原因"></textarea>
+            <label class="ch-label" for="ch-assessment-proof">认定附件</label><input id="ch-assessment-proof" type="file" multiple>
+          </div>
+        </div>
+      </section>
+    </div>
+    <footer class="ch-footer"><div class="ch-footer-meta"><span data-total>应付款 <strong>¥1,200.00</strong></span><button type="button" class="ch-link" data-jump>责任认定待填写 · 去填写</button></div><button type="button" class="ch-primary" data-submit>提交财务审批</button></footer>
+    <div class="ch-result" data-result role="status" aria-live="polite" hidden></div>
+  </div>
+</div>
+<style>
+#complaint-handling-layout{--ch-bg:light-dark(#fff,#202328);--ch-text:light-dark(#303133,#e8e9eb);--ch-muted:light-dark(#858994,#aeb4be);--ch-line:light-dark(#e4e7ed,#454b56);--ch-fill:light-dark(#f7f8fa,#292e35);--ch-blue:light-dark(#409eff,#7abaff);--ch-button:#409eff;--ch-danger:light-dark(#e35d5d,#ff9797);padding:12px;color:var(--ch-text);font:13px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+#complaint-handling-layout *{box-sizing:border-box}#complaint-handling-layout [hidden]{display:none!important}
+#complaint-handling-layout .ch-window{background:var(--ch-bg);border:1px solid var(--ch-line);border-radius:4px;max-width:860px;margin:auto}
+#complaint-handling-layout .ch-header{padding:14px 16px;border-bottom:1px solid var(--ch-line);font-size:16px;display:flex;align-items:center;gap:12px}
+#complaint-handling-layout .ch-header span{font-size:12px}#complaint-handling-layout .ch-muted{color:var(--ch-muted)}
+#complaint-handling-layout .ch-content{padding:16px}#complaint-handling-layout .ch-context{display:flex;flex-wrap:wrap;gap:4px 16px;margin-bottom:16px}
+#complaint-handling-layout .ch-outcomes{border:0;padding:0;margin:0 0 20px;display:flex;flex-wrap:wrap;gap:8px 20px}#complaint-handling-layout .ch-outcomes legend{margin-bottom:8px;color:var(--ch-muted)}
+#complaint-handling-layout .ch-section{margin:0 0 24px}#complaint-handling-layout h3{font-size:14px;font-weight:500;margin:0 0 14px;display:flex;align-items:center;gap:8px}#complaint-handling-layout h3:before{content:"";width:3px;height:14px;background:var(--ch-blue)}
+#complaint-handling-layout .ch-fields{display:grid;grid-template-columns:142px minmax(0,1fr);gap:14px 16px;align-items:start}#complaint-handling-layout .ch-label{text-align:right;padding-top:5px}#complaint-handling-layout .ch-label>span{color:var(--ch-danger)}
+#complaint-handling-layout input:not([type=radio]):not([type=checkbox]):not([type=file]),#complaint-handling-layout select,#complaint-handling-layout textarea{width:100%;min-width:0;border:1px solid var(--ch-line);border-radius:4px;background:var(--ch-bg);color:var(--ch-text);font:inherit;padding:5px 10px;min-height:32px}#complaint-handling-layout textarea{resize:vertical;min-height:64px}
+#complaint-handling-layout input[type=file]{font:inherit;max-width:100%;padding:5px 0}#complaint-handling-layout input[type=checkbox],#complaint-handling-layout input[type=radio]{accent-color:var(--ch-button);margin:0 4px 0 0}#complaint-handling-layout :disabled{opacity:.55}
+#complaint-handling-layout .ch-line{display:flex;align-items:center;flex-wrap:wrap;gap:8px 20px;min-height:32px}#complaint-handling-layout .ch-line label,#complaint-handling-layout .ch-outcomes label{display:flex;align-items:center;gap:3px}
+#complaint-handling-layout .ch-refund{display:grid;gap:8px;padding:10px 12px;background:var(--ch-fill);border-radius:4px}#complaint-handling-layout .ch-refund label{display:flex;align-items:center;gap:8px}#complaint-handling-layout .ch-refund input{max-width:140px}
+#complaint-handling-layout .ch-assessment{padding-top:20px;border-top:1px solid var(--ch-line);margin-bottom:0}#complaint-handling-layout .ch-heading{display:flex;align-items:center;gap:12px;margin-bottom:14px}#complaint-handling-layout .ch-heading h3{margin:0}#complaint-handling-layout .ch-state{color:var(--ch-muted);font-size:12px}#complaint-handling-layout .ch-heading button{margin-left:auto}
+#complaint-handling-layout .ch-order-reference{margin:14px 0 14px 158px;padding:10px 12px;background:var(--ch-fill);border-radius:4px}#complaint-handling-layout .ch-order-heading,#complaint-handling-layout .ch-staff,#complaint-handling-layout .ch-order-meta{display:flex;gap:4px 14px;flex-wrap:wrap;overflow-wrap:anywhere}#complaint-handling-layout .ch-order-heading{justify-content:space-between}#complaint-handling-layout .ch-staff{margin-top:6px}#complaint-handling-layout details{margin-top:6px}#complaint-handling-layout summary{color:var(--ch-blue)}#complaint-handling-layout .ch-order-meta{margin:10px 0}
+#complaint-handling-layout .ch-table-wrap{overflow-x:auto}#complaint-handling-layout table{width:100%;border-collapse:collapse;font:inherit;text-align:left}#complaint-handling-layout th,#complaint-handling-layout td{border:1px solid var(--ch-line);padding:7px 8px}#complaint-handling-layout th{font-weight:500}
+#complaint-handling-layout .ch-person{display:grid;gap:6px}#complaint-handling-layout button{font:inherit}#complaint-handling-layout .ch-link{border:0;background:none;padding:0;color:var(--ch-blue);text-align:left}#complaint-handling-layout .ch-primary{border:1px solid var(--ch-button);background:var(--ch-button);color:#fff;border-radius:4px;min-height:32px;padding:5px 14px;flex-shrink:0}
+#complaint-handling-layout .ch-footer{border-top:1px solid var(--ch-line);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}#complaint-handling-layout .ch-footer-meta{display:flex;align-items:center;gap:8px 16px;flex-wrap:wrap}#complaint-handling-layout .ch-result{padding:0 16px 12px;color:var(--ch-blue)}#complaint-handling-layout .ch-result.is-error{color:var(--ch-danger)}
+@media(max-width:540px){#complaint-handling-layout{padding:0}#complaint-handling-layout .ch-fields{grid-template-columns:minmax(0,1fr);gap:8px}#complaint-handling-layout .ch-label{text-align:left;padding-top:6px}#complaint-handling-layout .ch-order-reference{margin-left:0}}
+</style>
+<script>
+(()=>{
+ const root=document.getElementById('complaint-handling-layout'),q=s=>root.querySelector(s),all=s=>Array.from(root.querySelectorAll(s));
+ const preview={existingAssessment:false};let editing=false;
+ function valid(){return preview.existingAssessment&&!editing||all('[name="ch-department"]:checked').length>0&&q('#ch-type').value&&(q('#ch-type').value==='闭店'||all('[name="ch-responsible"]:checked').length>0)}
+ function render(){
+   const closing=q('[name="ch-outcome"]:checked').value==='closure',saved=preview.existingAssessment&&!editing,departments=all('[name="ch-department"]:checked').length,closed=q('#ch-type').value==='闭店';
+   q('[data-solution]').hidden=closing;q('[data-closure]').hidden=!closing;q('[data-total]').hidden=closing;
+   q('[data-submit]').textContent=closing?'确认结案':'提交财务审批';
+   q('[data-saved]').hidden=!saved;q('[data-assessment-fields]').hidden=saved;q('[data-edit]').hidden=!saved;
+   q('[data-status]').textContent=saved?'已填写':valid()?'已填写 · 待提交':'待填写 · 必填';
+   q('[data-jump]').textContent=saved?'责任认定已填写 · 查看':valid()?'责任认定已填写':'责任认定待填写 · 去填写';
+   q('#ch-type').disabled=!departments;q('#ch-type').options[0].textContent=departments?'请选择售后类型':'请先选择责任部门';
+   q('[data-person]').hidden=closed;q('[data-person-label]').hidden=closed;
+   all('[data-person] input').forEach(input=>input.disabled=!departments||!q('#ch-type').value);
+ }
+ root.addEventListener('change',event=>{if(event.target.name==='ch-department'&&!all('[name="ch-department"]:checked').length){q('#ch-type').value='';all('[name="ch-responsible"]').forEach(input=>input.checked=false)}if(event.target.id==='ch-type'&&event.target.value==='闭店')all('[name="ch-responsible"]').forEach(input=>input.checked=false);q('[data-result]').hidden=true;render()});
+ q('[data-edit]').addEventListener('click',()=>{editing=true;all('[name="ch-department"]').forEach(input=>input.checked=input.value==='门店');q('#ch-type').value='门店服务';all('[name="ch-responsible"]').forEach(input=>input.checked=input.value==='陈佳');render()});
+ q('[data-jump]').addEventListener('click',()=>q('.ch-assessment').scrollIntoView({block:'start',behavior:'smooth'}));
+ q('[data-submit]').addEventListener('click',()=>{const result=q('[data-result]'),ok=valid();result.hidden=false;result.classList.toggle('is-error',!ok);result.textContent=ok?'示意：本次处理结果与责任认定将一次提交。':'请完成责任认定：责任部门、售后类型、责任人。';if(!ok){q('.ch-assessment').scrollIntoView({block:'start',behavior:'smooth'});const target=!all('[name="ch-department"]:checked').length?q('[name="ch-department"]'):!q('#ch-type').value?q('#ch-type'):q('[name="ch-responsible"]');target.focus()}});
+ q('[data-person] input[type=search]').addEventListener('input',event=>all('[name="ch-responsible"]').forEach(input=>input.parentElement.hidden=!input.value.includes(event.target.value.trim())));
+ render();
+ if(globalThis.Tweak){const tweak=new Tweak({container:root,onChange:()=>{editing=false;render()}});tweak.addToggle(preview,'existingAssessment',{label:'工单已有责任认定'})}
+})();
+</script>

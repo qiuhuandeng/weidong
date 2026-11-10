@@ -1,5 +1,5 @@
 /* Complaint option editing reuses the existing layered drawer and company adapters. */
-window.PCModules['complaint-options']={render(){},create({dictionary,getLayers,getEditor,getRecords,responsibleOptions,assessmentChoices,multiValues,multiSelect,responsibilityRule,select,openLayer,closeLayer,refreshOptionConsumers,btn,link,esc,section,field,input,toast}){
+window.PCModules['complaint-options']={render(){},create({dictionary,getLayers,getEditor,getRecords,getLinkedOrders=()=>[],orderProjects=()=>[],customerResponsibility,responsibleOptions,assessmentChoices,multiValues,multiSelect,responsibilityRule,select,openLayer,closeLayer,refreshOptionConsumers,btn,link,esc,section,field,input,toast,draftFiles,HANDLING_FILE_TYPES,validPlan}){
   const blankEntry=()=>({index:null,name:''});
   const labels={...dictionary.LABELS,requests:'客户诉求类型',reasons:'具体原因'};
   const itemName=item=>typeof item==='string'?item:item?.name||'';
@@ -183,7 +183,54 @@ window.PCModules['complaint-options']={render(){},create({dictionary,getLayers,g
     }
     if(el.name!==(c.parent?'reasonOptionName':'optionName')||!c.entries[c.tab])return false;c.entries[c.tab].name=el.value;return true;
   }
-  function contactForm(){const d=getEditor().draft,contacts=responsibleOptions([d.firstContact,...getRecords().map(r=>r.firstContact)].filter(Boolean));return `<div class="uc-grid ub-form" data-pc-columns="2">${field('firstContact','第一联系人',select('firstContact',contacts,d.firstContact,'请选择员工，支持姓名搜索','data-filterable'),false)}${field('contactTime','投诉时间',input('contactTime',d.contactTime,'客户陈述的投诉时间','datetime-local'),false)}${field('customerDemand','未达成原因',select('customerDemand',dictionary.options('demands',d.customerDemand),d.customerDemand,'请选择未达成原因','data-filterable'),false,'',true)}${field('customerStatement','客户陈述',`<textarea id="uc-customerStatement" name="customerStatement" class="uc-input" rows="3" maxlength="500" show-word-limit placeholder="补充客户原话（选填）">${esc(d.customerStatement)}</textarea>`,false,'',true)}</div>`}
-  function responsibilityForm(){const d=getEditor().draft,hasDepartment=multiValues(d.department).length>0,closed=d.type==='闭店';return `<div class="ub-form">${field('department','责任部门',assessmentChoices('department','责任部门',['推广','销售','门店'],d.department,true),true,'',true)}${field('type','售后类型',select('type',dictionary.options('types',d.type),d.type,hasDepartment?'请选择售后类型':'请先选择责任部门',`required aria-required="true" ${hasDepartment?'':'disabled'}`),true,'',true)}<div class="uc-full uc-rule" ${responsibilityRule(d.type)?'':'hidden'}><span>归因参考：</span><span id="uc-rule-text">${responsibilityRule(d.type)}</span></div>${field('responsible','责任人',multiSelect('responsible','责任人',responsibleOptions(d.responsible),d.responsible,hasDepartment&&d.type&&!closed?'required aria-required="true"':'disabled'),true,'',true).replace('data-field="responsible"','data-field="responsible"'+(closed?' hidden':''))}${field('reason','责任原因',`<textarea id="uc-reason" name="reason" class="uc-input" rows="3" maxlength="1000" show-word-limit placeholder="填写责任原因">${esc(d.reason)}</textarea>`,false,'',true)}</div>`}
-  return {optionsDirty,optionAction,syncOptionDraft,contactForm,responsibilityForm};
+  const departments=d=>multiValues(d.department);
+  function assessmentValues(d){return {department:customerResponsibility(d)?['客户自身']:departments(d),responsible:customerResponsibility(d)?[]:multiValues(d.responsible),reason:String(d.reason||'').trim()}}
+  function assessmentSummary(d){return [departments(d).join('、'),d.type,customerResponsibility(d)?'':multiValues(d.responsible).join('、')].filter(Boolean).join(' / ')}
+  function assessmentFields(d){return [['售后类型',d.type||'未填写',true],['责任归属',departments(d).join('、')||'未填写',true],...(customerResponsibility(d)?[]:[['责任人',multiValues(d.responsible).join('、')||'未填写',true]]),['责任原因',d.reason||'未填写',true]]}
+  function handlingMissing(d){
+    const own=customerResponsibility(d),selected=departments(d),reason=String(d.reason||'').trim(),errors=[];
+    if(!String(d.type||'').trim())errors.push(['type','请选择售后类型']);
+    if(!selected.length)errors.push(['department','请选择责任归属']);
+    if(own&&selected.length>1)errors.push(['department','客户自身不能与内部责任部门同时选择']);
+    if(!own&&!multiValues(d.responsible).length)errors.push(['responsible','请选择责任人']);
+    if(!reason||reason.length>2000)errors.push(['reason',reason.length>2000?'责任原因不能超过 2000 字':'请填写责任原因']);
+    if(!validPlan(d.handlingPlan))errors.push(['handlingPlan','请选择处理结果']);
+    return errors;
+  }
+  function assessmentPeopleOptions(d){
+    const names=new Set(),selected=departments(d),add=value=>multiValues(value).forEach(name=>names.add(name));
+    for(const {order:o,wx}of getLinkedOrders()){
+      if(!o)continue;
+      if(selected.includes('推广'))add(wx?.promoter);
+      if(selected.includes('销售'))add(o.consultant);
+      if(selected.includes('门店')){
+        for(const key of ['receptionSales','reception','manager','operator'])add(o[key]);
+        for(const project of orderProjects(o))for(const key of ['consultant','collaborator','biller','operator','reception'])add(project[key]);
+      }
+    }
+    const all=responsibleOptions(d.responsible);return [...all.filter(([name])=>names.has(name)).map(([name,label])=>[name,label+'（关联订单）']),...all.filter(([name])=>!names.has(name))];
+  }
+  function syncResponsibility(el,d){
+    const form=el.closest('.uc-responsibility-form');if(!form||!['department','type'].includes(el.name))return false;
+    if(el.name==='department'){
+      if(el.checked)d.department=el.value==='客户自身'?['客户自身']:departments(d).filter(name=>name!=='客户自身');
+      form.querySelectorAll('input[name="department"]').forEach(control=>{control.checked=departments(d).includes(control.value);PCUI.syncControl(control)});
+      const own=customerResponsibility(d),responsible=form.querySelector('[name="responsible"]');
+      responsible.closest('[data-field]').hidden=own;responsible.disabled=own||!departments(d).length;responsible.required=!responsible.disabled;responsible.setAttribute('aria-required',String(responsible.required));
+      responsible.innerHTML=assessmentPeopleOptions(d).map(([value,label])=>`<option value="${esc(value)}"${multiValues(d.responsible).includes(value)?' selected':''}>${esc(label)}</option>`).join('');PCUI.syncControl(responsible);
+      for(const name of ['department','responsible']){const message=form.querySelector('#uc-error-'+name);if(message)message.textContent=''}
+    }
+    const rule=form.querySelector('#uc-rule-text');if(rule){rule.textContent=responsibilityRule(d.type);rule.parentElement.hidden=!rule.textContent||customerResponsibility(d)}
+    return true;
+  }
+  function assessmentAttachments(d,inline=false){return field('handlingFiles','附件',`<div><div class="uc-upload-row">${btn('上传附件','upload-handling','id="uc-handlingFiles"')}<input type="file" id="uc-handling-upload" accept="${Object.keys(HANDLING_FILE_TYPES).map(ext=>'.'+ext).join(',')}" multiple hidden data-upload="${inline?'inline-assessment':'handling'}"><span class="uc-muted">最多 4 个，每个不超过 5MB</span></div><div id="${inline?'uc-assessment-upload-list':'uc-upload-list'}" aria-live="polite">${draftFiles(d.handlingFiles,false,inline?'assessment':'')}</div></div>`,false,'',true)}
+  function responsibilityForm(d=getEditor().draft){
+    const own=customerResponsibility(d),rule=responsibilityRule(d.type),enabled=!own&&departments(d).length>0;
+    const department=field('department','责任归属',assessmentChoices('department','责任归属',['推广','销售','门店','客户自身'],d.department,true),true,'',true);
+    const type=field('type','售后类型',select('type',dictionary.options('types',d.type),d.type,'请选择售后类型','required aria-required="true" aria-label="售后类型"')+`<div class="uc-help" ${rule&&!own?'':'hidden'}><span>归因参考：</span><span id="uc-rule-text">${esc(rule)}</span></div>`,true,'',true);
+    const responsible=field('responsible','责任人',multiSelect('responsible','责任人',assessmentPeopleOptions(d),d.responsible,enabled?'required aria-required="true"':'disabled'),true,'',true).replace('data-field="responsible"','data-field="responsible"'+(own?' hidden':''));
+    const reason=field('reason','责任原因',`<textarea id="uc-reason" name="reason" class="uc-input" rows="3" maxlength="2000" show-word-limit required aria-required="true" placeholder="填写责任原因">${esc(d.reason)}</textarea>`,true,'',true);
+    return `<div class="ub-form pc-form-single uc-responsibility-form">${type}${department}${responsible}${reason}</div>`;
+  }
+  return {optionsDirty,optionAction,syncOptionDraft,responsibilityForm,assessmentAttachments,handlingMissing,assessmentValues,assessmentSummary,assessmentFields,syncResponsibility};
 }};

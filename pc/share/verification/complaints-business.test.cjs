@@ -18,12 +18,116 @@ const followCode=fs.readFileSync(path.join(__dirname,'../pages/complaint-follow/
 vm.runInNewContext(followCode,context);
 const processCode=fs.readFileSync(path.join(__dirname,'../pages/complaint-detail/index.js'),'utf8');
 vm.runInNewContext(processCode,context);
-const hook = `window.testAPI={customerPage,createTicketState,createCustomerMatches,createCustomerOrders,setCreateCustomer,setCreateOrder,createTicketAssociation,createOrderTable,syncCreateInput,lookupCreateCustomer,createTicketAction,handleSubmit,handleChange,closeLayer,saveNewTicket,setCreateLayers(value){layers=value},setCreateRoot(value){root=value},getRecords(){return records},hasAssessment,financeApprovalView,createTicketForm,newTicketErrors,executionResultRecords,followPanel,attributionPanel,detailPanels,sections,detailTabKey,workflow,toCents,orderDateRange,filtered,matchingOrders,customerIdOf,customerDirectory,matchingCustomers,orderPickerState,orderPickerTitle,orderPickerDirty,orderPickerCustomers,orderPickerOrders,orderPickerView,selectPickerCustomer,changePickerCustomer,selectPickerOrder,recordOrderAssociation,informationView,handlingMissing,validateCustomerSolution,solutionDraft,solutionTotals,solutionOrders,refundEntries,refundAvailable,solutionTools,solutionRead,recordAccept,recordRecognition,recordCompensation,recordFollow,followTools,recordClosure,hasHandlingScheme,canClose,responsibleOptions,complaintCSV,validHandlingFile,records,orders,persist,canAssess,STATUS_TABS,WORK_ORDER_STATUSES,CHANNELS,workOrderStatus,normalizeRecordStatus,statusScope,currentHandler,currentTask,detailActions,complaintRow,complaintTiming,complaintTimingHTML,listProgressText,summary,phoneView,processingDepartment,processRecords,processView,select(id){main={record:records.find(r=>r.id===id),tab:detailTabKey()};return main.record;}};`;
+const hook = `window.testAPI={assessmentForm,responsibilityForm,assessmentValues,assessmentFields,syncResponsibility,inlineAssessmentForm,setEditor(value){main.editor=value},customerPage,createTicketState,createCustomerMatches,createCustomerOrders,setCreateCustomer,setCreateOrder,createTicketAssociation,createOrderTable,syncCreateInput,lookupCreateCustomer,createTicketAction,handleSubmit,handleChange,closeLayer,saveNewTicket,setCreateLayers(value){layers=value},setCreateRoot(value){root=value},getRecords(){return records},hasAssessment,financeApprovalView,createTicketForm,newTicketErrors,executionResultRecords,followPanel,attributionPanel,detailPanels,sections,detailTabKey,workflow,toCents,orderDateRange,filtered,matchingOrders,customerIdOf,customerDirectory,matchingCustomers,orderPickerState,orderPickerTitle,orderPickerDirty,orderPickerCustomers,orderPickerOrders,orderPickerView,selectPickerCustomer,changePickerCustomer,selectPickerOrder,recordOrderAssociation,informationView,handlingMissing,validateCustomerSolution,solutionDraft,solutionTotals,solutionOrders,refundEntries,refundAvailable,solutionTools,solutionRead,recordAccept,recordRecognition,recordCompensation,recordFollow,followTools,recordClosure,hasHandlingScheme,canClose,responsibleOptions,complaintCSV,validHandlingFile,records,orders,persist,canAssess,STATUS_TABS,WORK_ORDER_STATUSES,CHANNELS,workOrderStatus,normalizeRecordStatus,statusScope,currentHandler,currentTask,detailActions,complaintRow,complaintTiming,complaintTimingHTML,listProgressText,summary,phoneView,processingDepartment,processRecords,processView,select(id){main={record:records.find(r=>r.id===id),tab:detailTabKey()};return main.record;}};`;
 vm.runInNewContext(code.replace('  window.PCComplaints={mount,leave};',hook+'\n  window.PCComplaints={mount,leave};'),context);
 const a=context.window.testAPI;
 let count=0;
 const test=(name,run)=>{run();count++;console.log('PASS '+name)};
 const copy=o=>JSON.parse(JSON.stringify(o));
+function inlineTicket(){const r=copy(a.records[0]);Object.assign(r,{status:'客服处理中',department:[],type:'',responsible:[],reason:'',handlingPlan:'',handlingFiles:[],follows:[]});for(const key of ['assessedAt','assessedBy','closedAt','closedBy','customerSolution','execution','financeApprovals','reviewInfo'])delete r[key];return r}
+function inlineEditor(kind){return {kind,draft:kind==='closure'?{closeReason:'无需赔付，已解决',note:'客户确认处理完成'}:{},assessmentDraft:{department:['门店'],type:'门店服务',responsible:['陈佳'],reason:'已核实服务问题',handlingFiles:[{name:'认定凭证.pdf',type:'application/pdf',size:1,data:'data:application/pdf;base64,eA=='}]}}}
+test('inline assessment is required only for unassessed customer-service outcomes',()=>{
+ const f=a.followTools(),r=inlineTicket();assert.equal(f.needsInlineAssessment(r,'compensation'),true);assert.equal(f.needsInlineAssessment(r,'closure'),true);assert.equal(f.needsInlineAssessment(r,'follow'),false);
+ assert.equal(f.needsInlineAssessment({...r,assessedAt:'2026-11-10 09:00'},'compensation'),true);assert.equal(f.needsInlineAssessment({...r,...inlineEditor('closure').assessmentDraft,assessedAt:'2026-11-10 09:00'},'compensation'),false);assert.equal(f.needsInlineAssessment({...r,status:'财务审批中'},'closure'),false);
+ assert.deepEqual(copy(f.inlineAssessmentErrors(r,{kind:'closure'})).map(([key])=>key),['type','department','responsible','reason']);
+});
+test('inline responsibility expands with original fields and retains one draft across operation switches',()=>{
+ const r=a.select(a.records[0].id),original=copy(r),e={kind:'compensation',draft:{customerSolution:a.solutionDraft(null)}};Object.assign(r,inlineTicket());delete r.assessedAt;e.baseline=JSON.stringify(e.draft);a.setEditor(e);
+ try{
+  const html=a.inlineAssessmentForm();for(const label of ['责任归属','售后类型','客户自身','责任原因','附件'])assert.ok(html.includes(label),label);
+  assert.ok(!html.includes('name="handlingPlan"'));assert.ok(html.includes('id="uc-assessment-upload-list"'));e.assessmentDraft.reason='切换时保留认定草稿';
+  a.followTools().switchOperation(e,'follow',r);assert.equal(a.inlineAssessmentForm(),'');assert.equal(a.followTools().operationDirty(e),true);
+  a.followTools().switchOperation(e,'closure',r);assert.ok(a.inlineAssessmentForm().includes('切换时保留认定草稿'));assert.equal(r.assessedAt,undefined);
+  r.assessedAt='2026-11-10 09:00';e.assessmentDraft.department=['门店'];assert.ok(a.inlineAssessmentForm().includes('name="responsible"'));
+ }finally{Object.keys(r).forEach(key=>delete r[key]);Object.assign(r,original);a.setEditor(null)}
+});
+test('missing inline responsibility and invalid closure do not partially save attribution',()=>{
+ const f=a.followTools(),r=inlineTicket(),before=copy(r),e=inlineEditor('closure');e.assessmentDraft.responsible=[];
+ assert.equal(f.recordHandlingOutcome(r,e,'2026-11-10 10:00'),null);assert.deepEqual(r,before);
+ e.assessmentDraft.responsible=['陈佳'];e.draft.closeReason='';assert.equal(f.recordHandlingOutcome(r,e,'2026-11-10 10:00'),null);assert.deepEqual(r,before);
+});
+test('inline responsibility and confirmed solution save together before finance submission',()=>{
+ const r=inlineTicket(),e=inlineEditor('compensation'),solution={handlingMethods:['refund'],refund:120000,customerContext:'客户要求退还未消费金额',attachments:[]};
+ assert.ok(a.followTools().recordHandlingOutcome(r,e,'2026-11-10 10:00',solution));assert.equal(r.status,'财务审批中');assert.equal(r.assessedAt,'2026-11-10 10:00');assert.equal(r.handlingPlan,'unresolved');assert.equal(r.financeApprovals.length,1);
+ assert.equal(r.follows.filter(f=>f.kind==='handling').length,1);assert.equal(r.follows.filter(f=>f.kind==='compensation').length,1);assert.equal(r.handlingFiles[0].name,'认定凭证.pdf');assert.equal(r.customerSolution.attachments.length,0);
+ assert.ok(!a.followTools().historyRecords(r,[]).some(f=>f.kind==='handling'));assert.equal(a.hasHandlingScheme(r),true);
+});
+test('inline responsibility and direct closure save together, including customer attribution',()=>{
+ const r=inlineTicket(),e=inlineEditor('closure');e.assessmentDraft.department=['客户自身'];e.assessmentDraft.responsible=['应清除的责任人'];
+ assert.ok(a.followTools().recordHandlingOutcome(r,e,'2026-11-10 10:00'));assert.equal(r.status,'已结案');assert.equal(r.closedAt,r.assessedAt);assert.equal(r.handlingPlan,'resolved');assert.deepEqual(copy(r.responsible),[]);assert.equal(r.follows[0].closureType,'no-payout');assert.equal(r.follows.filter(f=>f.kind==='closure').length,1);
+});
+test('existing attribution is not overwritten and failed persistence leaves the original record intact',()=>{
+ const r=inlineTicket();r.assessedAt='2026-11-09 10:00';r.department=['销售'];r.type='门店服务';r.responsible=['原责任人'];r.reason='原认定';const e=inlineEditor('closure');assert.ok(a.followTools().recordHandlingOutcome(r,e,'2026-11-10 10:00'));assert.deepEqual(copy(r.department),['销售']);assert.equal(r.reason,'原认定');assert.equal(r.assessedAt,'2026-11-09 10:00');assert.ok(!r.follows.some(f=>f.kind==='handling'));
+ const before=copy(a.getRecords()),next=copy(before);next[0]=inlineTicket();assert.ok(a.followTools().recordHandlingOutcome(next[0],inlineEditor('closure'),'2026-11-10 10:00'));
+ const set=context.localStorage.setItem;try{context.localStorage.setItem=()=>{throw Error('quota test')};assert.equal(a.persist(next),false);assert.deepEqual(copy(a.getRecords()),before)}finally{context.localStorage.setItem=set}
+});
+test('saved attribution has an editable summary and modified recognition commits atomically',()=>{
+ const f=a.followTools(),r=inlineTicket();Object.assign(r,inlineEditor('closure').assessmentDraft,{assessedAt:'2026-11-09 09:00',handlingPlan:'unresolved'});
+ const e={kind:'closure',draft:{closeReason:'无需赔付，已解决',note:'客户已确认'}};
+ let html=f.inlineAssessmentForm(r,e);assert.ok(html.includes('门店 / 门店服务 / 陈佳'));assert.ok(html.includes('inline-assessment-edit'));assert.ok(!html.includes('name="department"'));
+ e.assessmentEditing=true;html=f.inlineAssessmentForm(r,e);assert.ok(html.includes('name="department"'));assert.ok(html.includes('data-uc="inline-assessment-orders"'));assert.ok(html.indexOf('id="uc-inline-assessment-orders"')<html.indexOf('data-field="department"'));assert.ok(!html.includes('uc-assessment-order-reference'));
+ e.assessmentDraft.responsible=[];const before=copy(r);assert.equal(f.recordHandlingOutcome(r,e,'2026-11-10 10:00'),null);assert.deepEqual(r,before);
+ e.assessmentDraft.responsible=['陈琳'];e.assessmentDraft.reason='核对操作记录后调整责任人';assert.ok(f.recordHandlingOutcome(r,e,'2026-11-10 10:00'));assert.equal(r.status,'已结案');assert.deepEqual(copy(r.responsible),['陈琳']);assert.equal(r.assessedAt,r.closedAt);assert.equal(r.follows.filter(item=>item.kind==='handling').length,1);
+});
+test('active demonstration tickets have no attribution and cleanup preserves other records and later edits',()=>{
+ const cleanup=context.window.PCModules['complaint-fixtures'].clearProcessingAssessments,active=a.records.filter(r=>r.status==='客服处理中');assert.ok(active.length>0);
+ for(const r of active){assert.equal(a.hasAssessment(r),false,r.id);assert.equal(r.type,'');assert.equal(r.department.length,0);assert.equal(r.responsible.length,0)}
+ const saved=copy(active[0]);Object.assign(saved,inlineEditor('closure').assessmentDraft,{assessedAt:'2026-11-10 11:00'});assert.equal(cleanup([saved]),false);assert.equal(saved.responsible[0],'陈佳');
+ const manual={...copy(saved),id:'manual',customerId:'manual',demoAssessmentCleared:false},before=copy(manual);assert.equal(cleanup([manual]),false);assert.deepEqual(manual,before);
+ const original={...copy(saved),demoAssessmentCleared:false,follows:[{kind:'assessment',mock:false}]};cleanup([original]);assert.equal(original.assessedAt,'2026-11-10 11:00');
+ const approval=copy(a.records.find(r=>r.status==='财务审批中')),snapshot=copy(approval);cleanup([approval]);assert.deepEqual(approval,snapshot);
+ const old={...copy(saved),demoAssessmentCleared:false,follows:[{kind:'assessment',mock:true},{kind:'follow',mock:true,communication:{reason:'继续协商'},department:['门店']}]};assert.equal(cleanup([old]),true);assert.equal(a.hasAssessment(old),false);assert.equal(old.follows[0].communication.reason,'继续协商');assert.ok(!Object.hasOwn(old.follows[0],'department'));
+});
+test('multiple internal departments share one people picker after the type and attribution fields',()=>{
+ const d={...inlineEditor('closure').assessmentDraft,department:['推广','门店'],responsible:['陈敏','陈佳'],handlingPlan:'unresolved'},html=a.responsibilityForm(d);
+ assert.deepEqual(copy(a.handlingMissing(d)),[]);assert.equal((html.match(/name="responsible"/g)||[]).length,1);assert.ok(!html.includes('推广责任人'));assert.ok(!html.includes('门店责任人'));
+ assert.ok(html.indexOf('data-field="type"')<html.indexOf('data-field="department"'));assert.ok(html.indexOf('data-field="department"')<html.indexOf('data-field="responsible"'));
+ assert.ok(html.includes('value="陈敏" selected'));assert.ok(html.includes('value="陈佳" selected'));
+ const r=inlineTicket();assert.ok(a.recordRecognition(r,d,'2026-11-10 12:00'));assert.deepEqual(copy(r.department),['推广','门店']);assert.deepEqual(copy(r.responsible),['陈敏','陈佳']);
+ assert.ok(a.handlingMissing({...d,department:['客户自身','门店']}).some(([key])=>key==='department'));
+ const own={...d,department:['客户自身'],type:'门店服务'},before=copy(own),ownHtml=a.responsibilityForm(own);
+ assert.deepEqual(copy(a.handlingMissing(own)),[]);assert.ok(ownHtml.includes('data-field="responsible" hidden'));assert.deepEqual(own,before);
+ assert.deepEqual(copy(a.assessmentValues(own)),{department:['客户自身'],responsible:[],reason:own.reason});assert.ok(!a.assessmentFields(own).some(([label])=>label==='责任人'));
+ assert.ok(a.handlingMissing({...own,reason:''}).some(([key])=>key==='reason'));assert.ok(!ownHtml.includes('data-field="reason" hidden'));assert.ok(ownHtml.includes('name="reason"'));assert.ok(a.assessmentFields(own).some(([label])=>label==='责任原因'));assert.ok(a.handlingMissing({...own,department:['门店'],reason:''}).some(([key])=>key==='reason'));
+ assert.ok(a.handlingMissing({...own,department:['门店'],responsible:[],type:'顾客自身'}).some(([key])=>key==='responsible'));
+});
+test('customer attribution can submit a confirmed solution and failed persistence keeps saved attribution',()=>{
+ const r=inlineTicket(),e=inlineEditor('compensation');e.assessmentDraft.department=['客户自身'];e.assessmentDraft.reason='';
+ const solution={handlingMethods:['refund'],refund:120000,customerContext:'客户搬家，无法继续消费',attachments:[]};
+ assert.equal(a.followTools().recordHandlingOutcome(r,e,'2026-11-10 12:00',solution),null);e.assessmentDraft.reason='客户搬离本市，无法继续到店';assert.ok(a.followTools().recordHandlingOutcome(r,e,'2026-11-10 12:00',solution));assert.equal(r.reason,e.assessmentDraft.reason);assert.equal(r.status,'财务审批中');assert.equal(a.hasAssessment(r),true);assert.deepEqual(copy(r.responsible),[]);
+ const before=copy(a.getRecords()),next=copy(before);next[0]=r;const set=context.localStorage.setItem;
+ try{context.localStorage.setItem=()=>{throw Error('QuotaExceededError')};assert.equal(a.persist(next),false);assert.deepEqual(copy(a.getRecords()),before)}finally{context.localStorage.setItem=set}
+});
+test('customer and internal attribution toggle exclusively without discarding unsaved people',()=>{
+ const d={...inlineEditor('closure').assessmentDraft,department:['推广','门店','客户自身'],responsible:['陈敏','陈佳']};
+ const controls=['推广','销售','门店','客户自身'].map(value=>({value,checked:d.department.includes(value)})),reasonRow={hidden:false},reason={required:true,setAttribute(){},closest:()=>reasonRow},row={hidden:false},responsible={innerHTML:'',setAttribute(){},closest:()=>row},rule={textContent:'',parentElement:{hidden:false}},message={textContent:'old'};
+ const form={querySelectorAll:()=>controls,querySelector:selector=>selector==='[name="responsible"]'?responsible:selector==='[name="reason"]'?reason:selector==='#uc-rule-text'?rule:message};
+ const event=(name,value,checked)=>({name,value,checked,dataset:{},closest:()=>form});
+ const oldSync=context.PCUI.syncControl;context.PCUI.syncControl=()=>{};
+ try{
+  assert.equal(a.syncResponsibility(event('department','客户自身',true),d),true);assert.deepEqual(copy(d.department),['客户自身']);assert.equal(row.hidden,true);assert.equal(reasonRow.hidden,false);assert.equal(reason.required,true);assert.equal(responsible.required,false);assert.deepEqual(controls.map(c=>c.checked),[false,false,false,true]);assert.deepEqual(copy(d.responsible),['陈敏','陈佳']);
+  d.department=['推广','客户自身'];a.syncResponsibility(event('department','推广',true),d);assert.deepEqual(copy(d.department),['推广']);assert.equal(row.hidden,false);assert.equal(reasonRow.hidden,false);assert.equal(reason.required,true);assert.equal(responsible.required,true);assert.ok(responsible.innerHTML.includes('value="陈敏" selected'));assert.ok(responsible.innerHTML.includes('value="陈佳" selected'));
+  d.type='顾客自身';a.syncResponsibility(event('type','顾客自身',false),d);assert.deepEqual(copy(d.department),['推广']);assert.equal(row.hidden,false);
+ }finally{context.PCUI.syncControl=oldSync}
+});
+test('saved attribution survives reload and rejects a concurrent overwrite',()=>{
+ const before=copy(a.getRecords()),next=copy(before),record=inlineTicket(),draft={...inlineEditor('closure').assessmentDraft,department:['推广','门店'],responsible:['陈敏','陈佳'],handlingPlan:'unresolved'};
+ assert.ok(a.recordRecognition(record,draft,'2026-11-10 12:00'));next[0]=record;assert.equal(a.persist(next),true);
+ const key='weid.pc.complaints.v1',saved=context.localStorage.getItem(key),fresh={...context,window:{PCComplaintOptions:context.window.PCComplaintOptions,PCModules:{...context.window.PCModules},addEventListener(){}}};
+ vm.runInNewContext(code.replace('  window.PCComplaints={mount,leave};',hook+'\n  window.PCComplaints={mount,leave};'),fresh);
+ assert.deepEqual(copy(fresh.window.testAPI.records[0].responsible),['陈敏','陈佳']);assert.deepEqual(copy(fresh.window.testAPI.records[0].department),['推广','门店']);
+ const oldSet=context.localStorage.setItem;oldSet(key,saved+' ');assert.equal(a.persist(before),false);assert.equal(context.localStorage.getItem(key),saved+' ');oldSet(key,saved);assert.equal(a.persist(before),true);
+});
+test('standalone attribution omits outcome controls and saving cannot close or advance the case',()=>{
+ const r=a.select(a.records[0].id),original=copy(r),draft={...inlineEditor('closure').assessmentDraft,handlingPlan:'resolved'};
+ try{
+  Object.assign(r,inlineTicket(),{status:'客服已接单'});a.setEditor({kind:'assessment',draft});
+  const form=a.assessmentForm(),footer=a.followTools().editorFooter({kind:'assessment',draft});
+  assert.ok(!form.includes('name="handlingPlan"'));assert.ok(!form.includes('处理结果'));assert.ok(form.includes('uc-handling-upload'));assert.ok(footer.includes('保存责任认定'));assert.ok(!footer.includes('保存并结案'));
+  const entry=a.recordRecognition(r,draft,'2026-11-10 12:00',{assessmentOnly:true,handlingPlan:r.handlingPlan||'unresolved'});
+  assert.ok(entry);assert.equal(r.status,'客服已接单');assert.equal(r.handlingPlan,'unresolved');assert.equal(r.closedAt,undefined);assert.equal(r.startedAt,undefined);assert.equal(entry.beforeStatus,entry.status);assert.ok(!a.attributionPanel(r).includes('处理结果'));
+ }finally{Object.keys(r).forEach(key=>delete r[key]);Object.assign(r,original);a.setEditor(null)}
+});
 test('seed contains all three channels and 39 complaints / 43 orders',()=>{assert.equal(a.records.length,39);assert.equal(a.orders.length,43);assert.deepEqual([...new Set(a.records.map(r=>r.channel))].sort(),['mini','staff','wechat'])});
 test('new ticket inputs expose one business name and validate entered values',()=>{
  const html=a.createTicketForm();
@@ -439,7 +543,7 @@ test('editing own refund does not reserve money or quantity twice',()=>{assert.e
 test('other complaints reserve order and project refund amounts',()=>{const another=a.records.find(r=>r.id!=='31001');const previous=another.customerSolution;another.customerSolution=copy(valid.value);assert.equal(a.refundAvailable(a.refundEntries()[0].order,a.refundEntries()[0].item),0);assert.ok(a.validateCustomerSolution(p).errors.length);another.customerSolution=previous});
 test('legacy single-order refund records still load',()=>{const group=valid.value.refundOrders[0];const old={handlingMethods:['refund'],refundOrderId:group.orderId,refund:group.refund,refundItems:group.refundItems};assert.equal(Object.keys(a.solutionDraft(old).refundAmounts).length,2)});
 test('follow and closure preserve status boundaries',()=>{assert.ok(a.recordFollow(record,{note:'  回访  ',files:[]},'2026-10-22 14:31'));assert.equal(record.follows[0].note,'回访');assert.ok(a.recordClosure(record,'2026-10-22 14:32'));assert.equal(record.status,'已结案');const solution=JSON.stringify(record.customerSolution),closedAt=record.closedAt;assert.ok(a.recordFollow(record,{note:'结案后回访',files:[]},'2026-10-22 14:33'));assert.equal(record.status,'已结案');assert.equal(record.closedAt,closedAt);assert.equal(JSON.stringify(record.customerSolution),solution);assert.equal(record.follows[0].beforeStatus,'已结案');assert.equal(record.follows[0].status,'已结案');assert.equal(a.recordRecognition(record,draft,'2026-10-22 14:33'),null)});
-test('closed-store type skips responsibility and clears stale assignments only on saving',()=>{const d={...draft,type:'闭店',responsible:[]};assert.equal(a.handlingMissing(d).length,0);assert.ok(a.handlingMissing({...d,type:'门店服务'}).some(e=>e[0]==='responsible'));const r={...copy(record),status:'客服处理中'};assert.ok(a.recordRecognition(r,{...d,responsible:['旧责任人']},'2026-10-22 15:00'));assert.deepEqual(copy(r.responsible),[])});
+test('customer attribution skips people independently of after-sales type and clears old assignments only when saved',()=>{const d={...draft,department:['客户自身'],type:'门店服务',responsible:[]};assert.equal(a.handlingMissing(d).length,0);assert.ok(a.handlingMissing({...d,department:['门店'],type:'闭店'}).some(e=>e[0]==='responsible'));const r={...copy(record),status:'客服处理中'};assert.ok(a.recordRecognition(r,{...d,responsible:['旧责任人'],responsibleByDepartment:{门店:['旧责任人']}},'2026-10-22 15:00'));assert.deepEqual(copy(r.department),['客户自身']);assert.deepEqual(copy(r.responsible),[]);assert.equal(r.reason,d.reason);assert.equal(Object.hasOwn(r,'responsibleByDepartment'),false)});
 test('responsibility options include departed staff, historical snapshots and selected missing names',()=>{const options=a.responsibleOptions(['当前显示但不在册'],[{name:'离职责任人',employmentStatus:'离职'}],[{responsible:['历史责任人'],follows:[{responsible:['跟进责任人'],before:{responsible:['调整前责任人']}}]}],[{consultant:'订单顾问',projects:[{operator:'操作老师'}]}]);const map=new Map(options);for(const n of ['当前显示但不在册','历史责任人','跟进责任人','调整前责任人','订单顾问','操作老师'])assert.equal(map.get(n),n);assert.equal(map.get('离职责任人'),'离职责任人（离职）');assert.equal(a.responsibleOptions().find(([name])=>name==='张宁')[1],'张宁（离职）')});
 test('handling attachment formats retain MIME verification',()=>{for(const f of [{name:'x.png',type:'image/png'},{name:'x.pdf',type:'application/pdf'},{name:'x.amr',type:''},{name:'x.m4a',type:'audio/x-m4a'}])assert.ok(a.validHandlingFile(f));for(const f of [{name:'x.exe',type:''},{name:'x.png',type:'application/pdf'},{name:'x.html',type:'text/html'}])assert.equal(a.validHandlingFile(f),false)});
 test('CSV preserves filtered rows, Chinese BOM, quotes and formula protection',()=>{const csv=a.complaintCSV([{...copy(record),name:'=1+1',content:'包含,逗号和\"引号\"'}]);assert.equal(csv[0],'\uFEFF');assert.equal(csv.split('\r\n').length,2);assert.ok(csv.includes("\"'=1+1\""));assert.ok(csv.includes('\"包含,逗号和\"\"引号\"\"\"'));assert.ok(csv.includes('\"已结案\"'))});
@@ -880,15 +984,15 @@ test('attribution has complete current fields and attachments in its independent
   const entry=a.recordRecognition(r,{...r,firstContact:'首次联系员工',contactTime:'2026-11-06T09:30',customerDemand:'正和客户协商退款金额',customerStatement:'客户表示希望退款，并说明沟通过程。',reason:'核实后的责任原因',handlingFiles:[proof]},'2026-11-06 15:00');assert.ok(entry);assert.equal(entry.action,'修改责任认定');
   assert.deepEqual(copy(r.follows.find(f=>f.id===previous.id)),previous);
   const before=JSON.stringify(r),html=a.attributionPanel(r);
-  for(const value of ['2026-11-06 15:00','第一联系人','首次联系员工','投诉时间','2026-11-06 09:30','未达成原因','正和客户协商退款金额','客户陈述','客户表示希望退款，并说明沟通过程。','核实后的责任原因','责任部门','售后类型','责任人','处理结果','附件','认定人','认定时间','data-uc="begin-assessment"','data-kind="handling"'])assert.ok(html.includes(value),value);
+  for(const value of ['2026-11-06 15:00','核实后的责任原因','责任归属','售后类型','责任人','附件','认定人','认定时间','data-uc="begin-assessment"','data-kind="handling"'])assert.ok(html.includes(value),value);
   assert.equal(a.followTools().history(r),beforeHistory);assert.ok(!a.followTools().historyRecords(r).some(f=>f.historyKind==='attribution'));
   assert.equal(JSON.stringify(r),before);
   for(const status of a.WORK_ORDER_STATUSES)assert.equal(a.attributionPanel({...r,status}).includes('data-uc="begin-assessment"'),status!=='已结案',status);
   assert.equal(a.attributionPanel({...r,follows:[]}),html);
-  const later={...r,firstContact:'后续员工'};assert.ok(a.attributionPanel(later).includes('后续员工'));assert.ok(!a.attributionPanel(later).includes('首次联系员工'));
+  const later={...r,firstContact:'后续员工'};assert.equal(a.attributionPanel(later),html);
   const blank={...r,assessedAt:'',department:[],type:'',responsible:[],reason:'',handlingFiles:[],follows:[]};
   for(const status of a.WORK_ORDER_STATUSES)assert.equal(a.attributionPanel({...blank,status}).includes('>填写责任认定</button>'),status!=='已结案',status);
-  assert.ok(a.attributionPanel({...r,type:'闭店'}).includes('无需填写'));
+  assert.ok(!a.attributionPanel({...r,department:['客户自身']}).includes('责任人'));assert.ok(!html.includes('处理结果'));
 });
 test('editing existing attribution stays available before closure without changing downstream progress',()=>{
   for(const status of ['待处理','财务审批中','采购审批中','待财务付款','待采购发货','客服复核中']){
