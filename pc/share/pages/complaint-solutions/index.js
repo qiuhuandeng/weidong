@@ -46,8 +46,49 @@ window.PCModules['complaint-solutions']={create({clone,solutionOrders,savedRefun
   }
   function solutionDraft(saved){
     const p=saved||{},available=solutionOrders(),groups=savedRefundOrders(p),keys=new Set(refundEntries().map(row=>row.key));
-    const refundOrderIds=available.map(order=>order.id);
+    const ids=new Set([...(getRecord().linked||[]).map(order=>order.id),...groups.map(order=>order.orderId)]),refundOrderIds=available.filter(order=>ids.has(order.id)).map(order=>order.id);
     return {customerContext:p.customerContext||'',methods:(p.handlingMethods||[]).filter(key=>Object.hasOwn(SOLUTION_METHODS,key)),refundOrderIds:[...new Set(refundOrderIds)],refundAmounts:Object.fromEntries(groups.flatMap(order=>(order.refundItems||[]).map(item=>[refundKey(order.orderId,item.itemId),centsText(item.amount)])).filter(([key])=>keys.has(key))),refundQuantities:Object.fromEntries(groups.flatMap(order=>(order.refundItems||[]).filter(item=>Number.isSafeInteger(item.refundQuantity)).map(item=>[refundKey(order.orderId,item.itemId),String(item.refundQuantity)])).filter(([key])=>keys.has(key))),compensationAmount:p.compensation?centsText(p.compensation):'',exchangeDescription:p.exchangeDescription||(p.exchangeItems||[]).map(i=>i.name+' × '+i.quantity).join('；'),otherDescription:p.otherDescription||'',payout:{method:p.payout?.method||'bank',name:p.payout?.name||'',account:p.payout?.account||'',bank:p.payout?.bank||''},attachments:clone(p.attachments||[])};
+  }
+  function refundOrderCandidates(p){return solutionOrders().filter(order=>!p.refundOrderIds.includes(order.id)&&refundAvailable(order)>0)}
+  function addRefundOrders(p,ids){
+    const selected=[...new Set(ids)],available=solutionOrders();
+    if(!selected.length)return {error:'请选择需要添加的订单'};
+    if(selected.some(id=>!available.some(order=>order.id===id)))return {error:'退款订单不属于当前客户，请重新选择'};
+    const added=selected.filter(id=>!p.refundOrderIds.includes(id));
+    if(added.some(id=>refundAvailable(available.find(order=>order.id===id))<=0))return {error:'所选订单已无可退金额，请重新选择'};
+    p.refundOrderIds=[...new Set([...p.refundOrderIds,...added])];
+    return {added};
+  }
+  function openRefundOrderPicker(p,{isCurrent,onAdded}){
+    const selected=new Set(),record=getRecord();
+    PCUI.dialog({title:'添加退款订单',wide:true,content:`<div id="uc-refund-order-picker" class="uc-scope"><div class="uc-case-context"><strong>${esc(record.name)}</strong> · 会员号 ${esc(record.member||'—')}</div><div id="uc-refund-order-results"></div><div class="uc-solution-subtotal"><span id="uc-refund-order-count" aria-live="polite"></span></div><div id="uc-refund-order-error" class="uc-error" role="alert"></div></div>`,buttons:[{text:'取消',action:()=>PCUI.closeDialog()},{text:'确认添加',primary:true,action:()=>{
+      if(!isCurrent()){PCUI.closeDialog();return}
+      const result=addRefundOrders(p,[...selected]);
+      if(result.error){root.querySelector('#uc-refund-order-error').textContent=result.error;return}
+      PCUI.closeDialog();onAdded();
+    }}]});
+    const root=document.getElementById('uc-refund-order-picker');
+    const render=()=>{
+      const rows=solutionOrders(),available=refundOrderCandidates(p);
+      root.querySelector('#uc-refund-order-results').innerHTML=`<div class="table-wrap uc-table-wrap"><table data-pc-align="left" data-pc-min-height="0" data-pc-scroll="parent" aria-label="客户全部订单"><colgroup><col style="width:48px"><col style="width:180px"><col style="width:140px"><col style="width:130px"><col><col style="width:110px"><col style="width:110px"></colgroup><thead><tr><th><input type="checkbox" data-refund-pick-all aria-label="全选可添加的退款订单" ${available.length?'':'disabled'}></th><th>订单号</th><th>下单时间</th><th>门店</th><th>项目名称</th><th>实付金额</th><th>可退金额</th></tr></thead><tbody>${rows.map(order=>{
+        const added=p.refundOrderIds.includes(order.id),balance=refundAvailable(order),disabled=added||balance<=0;
+        return `<tr><td><input type="checkbox" data-refund-pick="${esc(order.id)}" aria-label="${added?'已添加':balance>0?'选择退款':'无可退金额的'}订单 ${esc(order.id)}" ${added||selected.has(order.id)?'checked':''} ${disabled?'disabled':''}></td><td>${esc(order.id)}${added?'<span class="pc-block uc-block uc-muted">已添加</span>':''}</td><td>${esc(order.created||'—')}</td><td>${esc(order.store)}</td><td>${esc((order.projects||[]).map(item=>item.name).join('、')||order.project||'—')}</td><td>${centsMoney((order.projects||[]).reduce((sum,item)=>sum+(item.paid||0),0))}</td><td>${centsMoney(balance)}${balance<=0?'<span class="pc-block uc-block uc-muted">无可退金额</span>':''}</td></tr>`;
+      }).join('')||`<tr><td colspan="7">${empty('该客户暂无订单')}</td></tr>`}</tbody></table></div>`;
+      syncSelection();
+    };
+    const syncSelection=()=>{
+      const boxes=[...root.querySelectorAll('[data-refund-pick]:not(:disabled)')],all=root.querySelector('[data-refund-pick-all]');
+      boxes.forEach(box=>box.checked=selected.has(box.dataset.refundPick));all.checked=!!boxes.length&&boxes.every(box=>box.checked);all.indeterminate=boxes.some(box=>box.checked)&&!all.checked;
+      root.querySelector('#uc-refund-order-count').textContent='本次已选 '+selected.size+' 笔订单';root.querySelector('#uc-refund-order-error').textContent='';
+    };
+    root.addEventListener('change',event=>{
+      const control=event.target;if(control.disabled)return;
+      if(control.hasAttribute('data-refund-pick')){if(control.checked)selected.add(control.dataset.refundPick);else selected.delete(control.dataset.refundPick)}
+      else if(control.hasAttribute('data-refund-pick-all'))for(const order of refundOrderCandidates(p)){if(control.checked)selected.add(order.id);else selected.delete(order.id)}
+      else return;
+      syncSelection();
+    });
+    render();
   }
   function validateCustomerSolution(p){const errors=[],add=(key,message)=>errors.push(['solution-'+key,message]),has=key=>p.methods.includes(key),funded=hasRefund(p);const value={detailsVersion:6,customerContext:String(p.customerContext||'').trim(),handlingMethods:p.methods.filter(key=>Object.hasOwn(SOLUTION_METHODS,key)),refund:0,attachments:clone(p.attachments||[])};
     if(!value.customerContext||value.customerContext.length>2000)add('customerContext','请填写客户消费情况与诉求（最多 2000 字）');
@@ -93,5 +134,5 @@ window.PCModules['complaint-solutions']={create({clone,solutionOrders,savedRefun
     return `<div class="uc-solution-projects" data-field="solution-refundItems">${groups||empty('暂无可退款的客户订单')}${summary}<div class="uc-error" id="uc-error-solution-refundItems"></div><div class="uc-error" id="uc-error-solution-refundOrders"></div></div>`;
 
   }
-  return {hasRefund,solutionDraft,validateCustomerSolution,refundEditor,refundQuantityState,selectFullRefund,syncRefund,updateRefundQuantities};
+  return {hasRefund,solutionDraft,validateCustomerSolution,refundEditor,refundQuantityState,selectFullRefund,syncRefund,updateRefundQuantities,refundOrderCandidates,addRefundOrders,openRefundOrderPicker};
 }};

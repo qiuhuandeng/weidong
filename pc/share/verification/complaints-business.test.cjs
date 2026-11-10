@@ -128,6 +128,40 @@ test('standalone attribution omits outcome controls and saving cannot close or a
   assert.ok(entry);assert.equal(r.status,'客服已接单');assert.equal(r.handlingPlan,'unresolved');assert.equal(r.closedAt,undefined);assert.equal(r.startedAt,undefined);assert.equal(entry.beforeStatus,entry.status);assert.ok(!a.attributionPanel(r).includes('处理结果'));
  }finally{Object.keys(r).forEach(key=>delete r[key]);Object.assign(r,original);a.setEditor(null)}
 });
+test('refund drafts start with linked orders and retain saved additional refund orders',()=>{
+ const r=a.select('31001'),before=copy(r),own=a.solutionOrders();
+ try{
+  r.linked=[{id:own[0].id}];const draft=a.solutionDraft(null);assert.deepEqual(copy(draft.refundOrderIds),[own[0].id]);
+  const tool=a.solutionTools(),extra=own[1];assert.deepEqual(copy(tool.refundOrderCandidates(draft)).map(order=>order.id),[extra.id]);
+  tool.addRefundOrders(draft,[extra.id]);draft.methods=['refund'];draft.customerContext='客户要求退还未消费项目';draft.payout={method:'wechat',name:r.name,account:'demo-refund-account',bank:''};
+  const row=a.refundEntries().find(row=>row.order.id===extra.id);tool.selectFullRefund(draft,row);
+  const saved=a.validateCustomerSolution(draft);assert.deepEqual(copy(saved.errors),[]);assert.equal(saved.value.refundOrders[0].orderId,extra.id);
+  const reopened=a.solutionDraft(saved.value);assert.deepEqual(copy(reopened.refundOrderIds),[own[0].id,extra.id]);assert.equal(reopened.refundAmounts[row.key],draft.refundAmounts[row.key]);assert.equal(reopened.refundQuantities[row.key],draft.refundQuantities[row.key]);
+ }finally{Object.keys(r).forEach(key=>delete r[key]);Object.assign(r,before)}
+});
+test('adding refund orders preserves the solution and rejects foreign or exhausted orders atomically',()=>{
+ const r=a.select('31001'),before=copy(r),own=a.solutionOrders(),draft=a.solutionDraft(null),tool=a.solutionTools();draft.refundOrderIds=[own[0].id];draft.customerContext='保留消费诉求';draft.exchangeDescription='保留置换方案';
+ tool.selectFullRefund(draft,a.refundEntries()[0]);const original=copy(draft),foreign=a.orders.find(order=>order.customerId!==r.customerId);
+ assert.ok(tool.addRefundOrders(draft,[own[1].id,foreign.id]).error);assert.deepEqual(copy(draft),original);
+ const projects=copy(own[1].projects);try{own[1].projects.forEach(item=>item.refunded=item.paid);assert.ok(tool.addRefundOrders(draft,[own[1].id]).error);assert.deepEqual(copy(draft),original)}finally{own[1].projects=projects}
+ assert.deepEqual(copy(tool.addRefundOrders(draft,[own[1].id,own[1].id,own[0].id]).added),[own[1].id]);assert.equal(draft.refundOrderIds.length,2);
+ const {refundOrderIds,...rest}=copy(draft),{refundOrderIds:old,...expected}=original;assert.deepEqual(rest,expected);assert.deepEqual(copy(r),before);assert.equal(tool.refundOrderCandidates(draft).length,0);
+ const forged={...draft,methods:['refund'],refundOrderIds:[...draft.refundOrderIds,foreign.id]};assert.ok(a.validateCustomerSolution(forged).errors.some(([key])=>key==='solution-refundOrders'));
+});
+test('refund order popup keeps pending selections private until confirm and ignores a stale parent',()=>{
+ const r=a.select('31001'),draft=a.solutionDraft(null),tool=a.solutionTools(),own=a.solutionOrders();draft.refundOrderIds=[own[0].id];const before=copy(draft),recordBefore=copy(r),events={},nodes=new Map();let dialog,closed=0,added=0,current=true;
+ const box={dataset:{refundPick:own[1].id},checked:false,hasAttribute:key=>key==='data-refund-pick'},all={checked:false};
+ const form={addEventListener:(name,fn)=>events[name]=fn},root={querySelector(selector){if(selector==='form')return form;if(selector==='[data-refund-pick-all]')return all;if(!nodes.has(selector))nodes.set(selector,{textContent:'',innerHTML:'',addEventListener(){}});return nodes.get(selector)},querySelectorAll:()=>[box],addEventListener:(name,fn)=>events[name]=fn};
+ const oldGet=context.document.getElementById,oldDialog=context.PCUI.dialog,oldClose=context.PCUI.closeDialog;
+ try{
+  context.document.getElementById=()=>root;context.PCUI.dialog=options=>dialog=options;context.PCUI.closeDialog=()=>closed++;
+  const open=()=>tool.openRefundOrderPicker(draft,{isCurrent:()=>current,onAdded:()=>added++}),choose=()=>{box.checked=true;events.change({target:box})};
+  open();const html=nodes.get('#uc-refund-order-results').innerHTML;assert.ok(!dialog.content.includes('query-module'));for(const order of own)assert.ok(html.includes(order.id));assert.ok(html.includes('已添加'));choose();assert.deepEqual(copy(draft),before);dialog.buttons[0].action();assert.deepEqual(copy(draft),before);
+  open();choose();current=false;dialog.buttons[1].action();assert.deepEqual(copy(draft),before);assert.equal(added,0);
+  current=true;open();choose();dialog.buttons[1].action();assert.deepEqual(copy(draft.refundOrderIds),copy(own.map(order=>order.id)));assert.equal(added,1);assert.equal(closed,3);assert.deepEqual(copy(r),recordBefore);
+  draft.refundOrderIds=[];open();events.change({target:{checked:true,hasAttribute:key=>key==='data-refund-pick-all'}});assert.equal(nodes.get('#uc-refund-order-count').textContent,'本次已选 2 笔订单');dialog.buttons[1].action();assert.deepEqual(copy(draft.refundOrderIds),copy(own.map(order=>order.id)));assert.equal(added,2);
+ }finally{context.document.getElementById=oldGet;context.PCUI.dialog=oldDialog;context.PCUI.closeDialog=oldClose}
+});
 test('seed contains all three channels and 39 complaints / 43 orders',()=>{assert.equal(a.records.length,39);assert.equal(a.orders.length,43);assert.deepEqual([...new Set(a.records.map(r=>r.channel))].sort(),['mini','staff','wechat'])});
 test('new ticket inputs expose one business name and validate entered values',()=>{
  const html=a.createTicketForm();
