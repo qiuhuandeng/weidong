@@ -46,7 +46,7 @@ window.PCModules['complaint-solutions']={create({clone,solutionOrders,savedRefun
   }
   function solutionDraft(saved){
     const p=saved||{},available=solutionOrders(),groups=savedRefundOrders(p),keys=new Set(refundEntries().map(row=>row.key));
-    const ids=new Set([...(getRecord().linked||[]).map(order=>order.id),...groups.map(order=>order.orderId)]),refundOrderIds=available.filter(order=>ids.has(order.id)).map(order=>order.id);
+    const ids=new Set(Array.isArray(p.refundOrderIds)?p.refundOrderIds:[...(getRecord().linked||[]).map(order=>order.id),...groups.map(order=>order.orderId)]),refundOrderIds=available.filter(order=>ids.has(order.id)).map(order=>order.id);
     return {customerContext:p.customerContext||'',methods:(p.handlingMethods||[]).filter(key=>Object.hasOwn(SOLUTION_METHODS,key)),refundOrderIds:[...new Set(refundOrderIds)],refundAmounts:Object.fromEntries(groups.flatMap(order=>(order.refundItems||[]).map(item=>[refundKey(order.orderId,item.itemId),centsText(item.amount)])).filter(([key])=>keys.has(key))),refundQuantities:Object.fromEntries(groups.flatMap(order=>(order.refundItems||[]).filter(item=>Number.isSafeInteger(item.refundQuantity)).map(item=>[refundKey(order.orderId,item.itemId),String(item.refundQuantity)])).filter(([key])=>keys.has(key))),compensationAmount:p.compensation?centsText(p.compensation):'',exchangeDescription:p.exchangeDescription||(p.exchangeItems||[]).map(i=>i.name+' × '+i.quantity).join('；'),otherDescription:p.otherDescription||'',payout:{method:p.payout?.method||'bank',name:p.payout?.name||'',account:p.payout?.account||'',bank:p.payout?.bank||''},attachments:clone(p.attachments||[])};
   }
   function refundOrderCandidates(p){return solutionOrders().filter(order=>!p.refundOrderIds.includes(order.id)&&refundAvailable(order)>0)}
@@ -58,6 +58,12 @@ window.PCModules['complaint-solutions']={create({clone,solutionOrders,savedRefun
     if(added.some(id=>refundAvailable(available.find(order=>order.id===id))<=0))return {error:'所选订单已无可退金额，请重新选择'};
     p.refundOrderIds=[...new Set([...p.refundOrderIds,...added])];
     return {added};
+  }
+  function removeRefundOrder(p,id){
+    if(!p.refundOrderIds.includes(id))return false;
+    p.refundOrderIds=p.refundOrderIds.filter(orderId=>orderId!==id);
+    for(const values of [p.refundAmounts,p.refundQuantities])for(const key of Object.keys(values))if(key.startsWith(id+':'))delete values[key];
+    return true;
   }
   function openRefundOrderPicker(p,{isCurrent,onAdded}){
     const selected=new Set(),record=getRecord();
@@ -97,6 +103,7 @@ window.PCModules['complaint-solutions']={create({clone,solutionOrders,savedRefun
       const linked=solutionOrders(),entries=refundEntries(),groups=new Map(),selected=new Set(p.refundOrderIds);
       if(!selected.size)add('refundOrders','请选择退款订单');
       if(p.refundOrderIds.some(id=>!linked.some(order=>order.id===id)))add('refundOrders','退款订单不属于当前客户');
+      value.refundOrderIds=[...selected];
       for(const [key,text]of Object.entries(p.refundAmounts)){
         const row=entries.find(row=>row.key===key),amount=toCents(text);
         if(!row){add('refundItems','退款项目不属于当前客户订单');continue}
@@ -128,11 +135,11 @@ window.PCModules['complaint-solutions']={create({clone,solutionOrders,savedRefun
     const groups=available.filter(order=>p.refundOrderIds.includes(order.id)).map(order=>{
       const rows=entries.filter(row=>row.order.id===order.id),availableRows=rows.filter(row=>refundAvailable(row.order,row.item)>0),selectedCount=availableRows.filter(row=>Object.hasOwn(p.refundAmounts,row.key)).length;
       const selectAll=`<input type="checkbox" data-refund-all="${esc(order.id)}" aria-label="全选订单 ${esc(order.id)} 的退款项目" data-pc-indeterminate="${selectedCount>0&&selectedCount<availableRows.length}" ${availableRows.length&&selectedCount===availableRows.length?'checked':''} ${availableRows.length?'':'disabled'}>`;
-      return `<div class="uc-refund-order-group"><div class="uc-refund-order-label uc-actions"><strong>订单 ${esc(order.id)}</strong><span class="uc-muted">${esc(order.store)} · ${esc(order.name)}</span></div><div class="table-wrap uc-table-wrap"><table data-pc-align="left" data-pc-min-height="0" data-pc-scroll="parent" aria-label="订单 ${esc(order.id)} 退款项目"><colgroup><col style="width:48px"><col><col style="width:90px"><col style="width:90px"><col style="width:160px"><col style="width:96px"><col style="width:90px"></colgroup><thead><tr><th>${selectAll}</th><th data-pc-min-width="180">项目名称</th><th>实付金额</th><th>可退金额</th><th>本次退款（元）</th><th>退款数量</th><th>退款后剩余</th></tr></thead><tbody>${rows.length?rows.map(projectRow).join(''):`<tr><td colspan="7">${empty('该订单暂无可退款项目')}</td></tr>`}</tbody></table></div></div>`;
+      return `<div class="uc-refund-order-group"><div class="uc-refund-order-label uc-actions"><strong>订单 ${esc(order.id)}</strong><span class="uc-muted">${esc(order.store)} · ${esc(order.name)}</span><span class="uc-refund-order-action">${link('<svg class="icon uc-muted" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18 M9 6V3h6v3 M5 6l1 15h12l1-15 M10 10v7 M14 10v7"/></svg>','solution-remove-order',`data-order="${esc(order.id)}" aria-label="移除退款订单 ${esc(order.id)}" title="移除订单"`)}</span></div><div class="table-wrap uc-table-wrap"><table data-pc-align="left" data-pc-min-height="0" data-pc-scroll="parent" aria-label="订单 ${esc(order.id)} 退款项目"><colgroup><col style="width:48px"><col><col style="width:90px"><col style="width:90px"><col style="width:160px"><col style="width:96px"><col style="width:90px"></colgroup><thead><tr><th>${selectAll}</th><th data-pc-min-width="180">项目名称</th><th>实付金额</th><th>可退金额</th><th>本次退款（元）</th><th>退款数量</th><th>退款后剩余</th></tr></thead><tbody>${rows.length?rows.map(projectRow).join(''):`<tr><td colspan="7">${empty('该订单暂无可退款项目')}</td></tr>`}</tbody></table></div></div>`;
     }).join('');
     const summary=`<div class="uc-solution-subtotal"><span>已选 ${count} 个项目</span><span>退款合计 <strong data-solution-total="refund">${centsMoney(solutionTotals(p).refund)}</strong></span></div>`;
-    return `<div class="uc-solution-projects" data-field="solution-refundItems">${groups||empty('暂无可退款的客户订单')}${summary}<div class="uc-error" id="uc-error-solution-refundItems"></div><div class="uc-error" id="uc-error-solution-refundOrders"></div></div>`;
+    return `<div class="uc-solution-projects" data-field="solution-refundItems">${groups||empty('尚未添加退款订单，请点击“添加订单”')}${summary}<div class="uc-error" id="uc-error-solution-refundItems"></div><div class="uc-error" id="uc-error-solution-refundOrders"></div></div>`;
 
   }
-  return {hasRefund,solutionDraft,validateCustomerSolution,refundEditor,refundQuantityState,selectFullRefund,syncRefund,updateRefundQuantities,refundOrderCandidates,addRefundOrders,openRefundOrderPicker};
+  return {hasRefund,solutionDraft,validateCustomerSolution,refundEditor,refundQuantityState,selectFullRefund,syncRefund,updateRefundQuantities,refundOrderCandidates,addRefundOrders,removeRefundOrder,openRefundOrderPicker};
 }};

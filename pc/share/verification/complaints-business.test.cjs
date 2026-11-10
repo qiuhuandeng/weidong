@@ -162,6 +162,25 @@ test('refund order popup keeps pending selections private until confirm and igno
   draft.refundOrderIds=[];open();events.change({target:{checked:true,hasAttribute:key=>key==='data-refund-pick-all'}});assert.equal(nodes.get('#uc-refund-order-count').textContent,'本次已选 '+own.length+' 笔订单');dialog.buttons[1].action();assert.deepEqual(copy(draft.refundOrderIds),copy(own.map(order=>order.id)));assert.equal(added,2);
  }finally{context.document.getElementById=oldGet;context.PCUI.dialog=oldDialog;context.PCUI.closeDialog=oldClose}
 });
+test('removing refund orders clears only their draft amounts and quantities and updates totals',()=>{
+ const r=a.select('31001'),recordBefore=copy(r),tool=a.solutionTools(),own=a.solutionOrders(),draft=a.solutionDraft(null);tool.addRefundOrders(draft,own.map(order=>order.id));
+ Object.assign(draft,{methods:['refund'],customerContext:'核对未消费项目后申请退款',payout:{method:'wechat',name:r.name,account:'demo-refund-account',bank:''}});for(const row of a.refundEntries())tool.selectFullRefund(draft,row);
+ const before=copy(draft),removed=own[2],removedTotal=a.refundEntries().filter(row=>row.order.id===removed.id).reduce((sum,row)=>sum+a.toCents(draft.refundAmounts[row.key]),0),total=a.solutionTotals(draft).refund;
+ assert.ok(tool.removeRefundOrder(draft,removed.id));assert.equal(a.solutionTotals(draft).refund,total-removedTotal);assert.ok(!draft.refundOrderIds.includes(removed.id));
+ for(const key of Object.keys(before.refundAmounts)){if(key.startsWith(removed.id+':')){assert.ok(!Object.hasOwn(draft.refundAmounts,key));assert.ok(!Object.hasOwn(draft.refundQuantities,key))}else{assert.equal(draft.refundAmounts[key],before.refundAmounts[key]);assert.equal(draft.refundQuantities[key],before.refundQuantities[key])}}
+ assert.deepEqual(copy(r),recordBefore);assert.equal(draft.customerContext,before.customerContext);assert.deepEqual(copy(draft.payout),before.payout);assert.ok(tool.refundOrderCandidates(draft).some(order=>order.id===removed.id));
+ tool.addRefundOrders(draft,[removed.id]);assert.equal(a.solutionTotals(draft).refund,total-removedTotal);assert.ok(!a.refundEntries().filter(row=>row.order.id===removed.id).some(row=>Object.hasOwn(draft.refundAmounts,row.key)));
+ const snapshot=copy(draft);assert.equal(tool.removeRefundOrder(draft,'missing-order'),false);assert.deepEqual(copy(draft),snapshot);
+ for(const order of own)tool.removeRefundOrder(draft,order.id);assert.equal(a.solutionTotals(draft).refund,0);assert.ok(a.validateCustomerSolution(draft).errors.some(([key])=>key==='solution-refundOrders'));
+});
+test('saved refund selection retains removed linked orders on reload without changing complaint links',()=>{
+ const r=a.select('31001'),recordBefore=copy(r),tool=a.solutionTools(),own=a.solutionOrders(),draft=a.solutionDraft(null);tool.addRefundOrders(draft,own.map(order=>order.id));
+ Object.assign(draft,{methods:['refund'],customerContext:'仅退其中一笔订单',payout:{method:'wechat',name:r.name,account:'demo-refund-account',bank:''}});for(const row of a.refundEntries())tool.selectFullRefund(draft,row);
+ tool.removeRefundOrder(draft,own[0].id);const result=a.validateCustomerSolution(draft);assert.deepEqual(copy(result.errors),[]);assert.ok(!result.value.refundOrders.some(order=>order.orderId===own[0].id));
+ const reopened=a.solutionDraft(JSON.parse(JSON.stringify(result.value)));assert.deepEqual(copy(reopened.refundOrderIds),copy(draft.refundOrderIds));assert.ok(!reopened.refundOrderIds.includes(own[0].id));assert.deepEqual(copy(r),recordBefore);
+ const previous=copy(a.getRecords()),next=copy(previous),target=next.find(record=>record.id===r.id);target.customerSolution=result.value;
+ const set=context.localStorage.setItem;try{context.localStorage.setItem=()=>{throw Error('quota test')};assert.equal(a.persist(next),false);assert.deepEqual(copy(a.getRecords()),previous);assert.deepEqual(copy(draft.refundOrderIds),copy(reopened.refundOrderIds))}finally{context.localStorage.setItem=set}
+});
 test('seed contains all three channels and at least three complete orders per customer',()=>{
  assert.equal(a.records.length,39);assert.equal(a.orders.length,117);assert.equal(new Set(a.orders.map(order=>order.id)).size,a.orders.length);assert.deepEqual([...new Set(a.records.map(r=>r.channel))].sort(),['mini','staff','wechat']);
  for(const record of a.records){a.select(record.id);const own=a.solutionOrders();assert.ok(own.length>=3,record.id);for(const order of own){assert.ok(order.created&&order.store&&order.projects.length);assert.equal(order.projects.reduce((sum,item)=>sum+item.paid,0),Math.round(order.amount*100));for(const item of order.projects)assert.ok(Number.isInteger(item.quantity)&&Number.isInteger(item.consumedQuantity)&&Number.isInteger(item.refundedQuantity))}assert.ok(own.some(order=>order.demoAdditional&&!record.linked.some(link=>link.id===order.id)));}

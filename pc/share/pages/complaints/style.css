@@ -164,6 +164,7 @@
 .uc-handling-content #uc-solution-fields .uc-solution-subtotal{padding-bottom:0}
 .uc-handling-content .uc-refund-order-label{margin-top:0;padding:0 0 8px}
 .uc-refund-order-group+.uc-refund-order-group{margin-top:var(--pc-gap)}
+.uc-refund-order-action{display:inline-flex;flex-shrink:0;margin-left:auto}
 
 .uc-handling-content .uc-operation-choice{margin-bottom:14px}
 .uc-handling-content #uc-solution-fields{display:grid;gap:24px;margin-top:24px}

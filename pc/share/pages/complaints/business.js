@@ -503,6 +503,7 @@
   }
   function solutionAction(action,b){const e=main?.editor;if(e?.kind!=='compensation')return;if(!canAssess(main.record)){toast('当前状态不可修改解决方案');return}const p=e.draft.customerSolution;
     if(action==='solution-add-orders')solutionTools().openRefundOrderPicker(p,{isCurrent:()=>main?.editor===e&&canAssess(main.record),onAdded:()=>{renderSolutionFields();setTimeout(()=>{if(main?.editor===e)e.layer.el.querySelector('#uc-add-refund-orders')?.focus({preventScroll:true})},320)}});
+    if(action==='solution-remove-order'&&solutionTools().removeRefundOrder(p,b.dataset.order))renderSolutionFields('uc-add-refund-orders');
     if(action==='solution-full-refund'){const row=refundEntries().find(row=>row.key===b.dataset.item);if(row)solutionTools().selectFullRefund(p,row);renderSolutionFields();e.layer.el.querySelector('[data-refund-amount="'+b.dataset.item+'"]')?.focus({preventScroll:true})}
   }
   function solutionRead(p,historyIndex='',extraFields=[]){
