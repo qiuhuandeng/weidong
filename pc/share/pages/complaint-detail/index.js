@@ -4,7 +4,84 @@ window.PCModules['complaint-detail']={render(){},create({btn,replyAction,canFoll
     const index=(r.financeApprovals||[]).findIndex(item=>item.id===approval.id),snapshot=approval.customerSolution;
     const fields=[['审批编号',approval.id],['审批结果',approvalLabels[approval.status]],['提交人',approval.submittedBy||'未记录'],['提交时间',fmt(approval.submittedAt)],...(approval.status==='pending'?[]:[['处理人',approval.returnedBy||'未记录'],['处理时间',fmt(approval.returnedAt)],[approval.status==='rejected'?'驳回原因':'撤销原因',approval.reason||'未提供',true]])];
     const solution=snapshot?solutionRead({...snapshot,attachments:[]})+filesView(snapshot.attachments||[],index>=0?'approval':'solution',index):empty('未记录已提交方案');
-    return section('财务审批 · 第 '+approval.round+' 次',`<div class="uc-details">${fields.map(args=>detail(...args)).join('')}</div>`)+section('已提交方案',solution);
+    const rows=processNodes(exampleProcess(r)||r),node=rows.find(item=>item.id===approval.id||item.source?.approvalId===approval.id)||(!r.financeApprovals?.length?rows.find(item=>item.key==='financeApproval'):null)||{key:'financeApproval',state:approval.status==='pending'?'current':'returned',current:approval.status==='pending'};
+    return section('财务审批 · 第 '+approval.round+' 次',`<div class="uc-details">${fields.map(args=>detail(...args)).join('')}</div>`)+section('审批子流程',financeSubprocessView(r,node,approval))+section('已提交方案',solution);
+  }
+  const financeNodeLabels={pending:'审批中',waiting:'未开始',approved:'已通过',rejected:'已驳回',withdrawn:'已撤销',terminated:'已终止',skipped:'已跳过',transferred:'已转交',unknown:'状态待同步'};
+  const financeNodeState=value=>Object.hasOwn(financeNodeLabels,value)?value:'unknown';
+  // Display contract for the integration adapter (not the raw DingTalk API):
+  // approval.subprocess or executionStep.external.subprocess = {source, syncedAt,
+  // nodes:[{id,name,status,notExecuted,mode:'all'|'any',startedAt,completedAt,opinion,
+  // assignees:[{name,status,actedAt,opinion}]}]}. Each approval round owns its snapshot.
+  // Read only: child progress never advances the complaint or infers a final result.
+  function financeSubprocess(r,node,approval){
+    let flow=approval?.subprocess??node.source?.external?.subprocess??node.source?.subprocess;
+    // The original rejection fixture has a saved execution route rather than a
+    // projected demo route. Identify its first immutable round explicitly; later
+    // submissions and real records must never receive invented approval history.
+    const rejectedExample=isDemoRecord(r)&&r.id==='31038'&&approval?.id==='31038-finance-legacy'&&approval.round===1&&approval.status==='rejected';
+    // Never replace a supplied (even empty) synchronization snapshot.
+    if(flow===undefined&&isDemoRecord(r)&&(rejectedExample||node.source?.demo&&!['future','terminated','skipped'].includes(node.state))){
+      const start=approval?.submittedAt||r.compensatedAt||node.startedAt,at=minutes=>{
+        const value=typeof start==='number'?start:Date.parse(String(start||'').replace(' ','T')+'+08:00');
+        return Number.isFinite(value)?value+minutes*60000:'';
+      };
+      const done=node.state==='done';
+      const roster=[['财务初审','李敏'],['财务复核','张洁'],['财务经理','陆清'],['财务总监','陈明'],['财务负责人','赵磊']];
+      flow={source:'钉钉',mock:true,syncedAt:rejectedExample?approval.returnedAt:done?node.completedAt:at(2),nodes:roster.map(([name,person],index)=>{
+        const status=rejectedExample?(index<2?'approved':index===2?'rejected':'terminated'):done?'approved':index<2?'approved':index===2?'pending':'waiting';
+        const notExecuted=rejectedExample&&index>2;
+        const time=notExecuted?'':status==='rejected'?approval.returnedAt:done?node.completedAt:at(index+(rejectedExample?1:0));
+        const actor=status==='rejected'?(approval.returnedBy||person).replace(/[（(][^（）()]*[）)]/g,'').trim():person;
+        const opinion=status==='rejected'?approval.reason||node.reason:status==='approved'?(index===0?'退款资料齐全。':index===1?(rejectedExample?'收款资料已核对，提交经理复核。':'退款金额核对无误。'):'同意。'):'';
+        return {id:'demo-finance-'+index,name,status,notExecuted,startedAt:status==='waiting'||notExecuted?'':status==='rejected'?at(3):time,completedAt:['approved','rejected'].includes(status)?time:'',opinion,assignees:[{name:actor,status}]};
+      })};
+    }
+    const ended=['done','returned','terminated','skipped'].includes(node.state)||['approved','rejected','withdrawn','terminated'].includes(approval?.status);
+    let stale=false;
+    const nodes=(Array.isArray(flow?.nodes)?flow.nodes:[]).filter(item=>item&&typeof item==='object').map(item=>{
+      let status=financeNodeState(item.status);
+      const unfinished=ended&&['pending','waiting'].includes(status);
+      if(unfinished){status='unknown';stale=true;}
+      const assignees=(Array.isArray(item.assignees)?item.assignees:[]).filter(Boolean).map(person=>{
+        const data=typeof person==='string'?{name:person}:person,state=financeNodeState(data.status);
+        return {...data,status:ended&&['pending','waiting'].includes(state)?'unknown':state};
+      });
+      return {...item,name:item.name||'审批节点名称待同步',status,assignees};
+    });
+    return {nodes,ended,stale,mock:flow?.mock===true,source:flow?.source||'钉钉',syncedAt:flow?.syncedAt,current:nodes.filter(item=>item.status==='pending')};
+  }
+  function financeSubprocessView(r,node,approval){
+    const flow=financeSubprocess(r,node,approval),{nodes}=flow;
+    const timestamp=value=>typeof value==='number'?value:Date.parse(String(value||'').replace(' ','T'));
+    const updatedAt=item=>Math.max(0,...[item.completedAt,item.startedAt,...item.assignees.map(person=>person.actedAt)].map(timestamp).filter(Number.isFinite));
+    const outcome=approval?.status==='rejected'||/驳回/.test(node.source?.approvalResult||'')?'rejected':approval?.status==='withdrawn'||/撤销/.test(node.source?.approvalResult||'')?'withdrawn':'';
+    const outcomeNodes=nodes.filter(item=>item.status===outcome);
+    const candidates=flow.ended&&outcomeNodes.length?outcomeNodes:nodes.filter(item=>!item.notExecuted&&!['waiting','unknown','skipped'].includes(item.status));
+    const latest=candidates.reduce((last,item)=>!last||updatedAt(item)>=updatedAt(last)?item:last,null);
+    const shown=flow.current.length?flow.current:latest&&(!flow.stale||['rejected','withdrawn','terminated'].includes(latest.status))?[latest]:[];
+    const parentStatus=approvalLabels[approval?.status]||node.source?.approvalResult||financeNodeLabels[approval?.status]||'';
+    const fallback=flow.stale?(parentStatus||'审批已结束')+' · 子节点状态待同步':!nodes.length?[valueText(node.people),parentStatus,'子流程暂未同步'].filter(Boolean).join(' · '):'当前节点待同步';
+    const heading=`<div class="uc-finance-current">${shown.length?shown.map(item=>{
+      const people=item.assignees.filter(person=>person.status===item.status).map(person=>person.name).filter(Boolean).join('、')||'审批人待同步';
+      return `<div class="uc-finance-brief"><span>${esc(item.name+' · '+people)}</span><span class="uc-finance-person-state is-${item.status}">${financeNodeLabels[item.status]}</span></div>`;
+    }).join(''):`<span class="uc-muted">${esc(fallback)}</span>`}</div>`;
+    const opinion=(text,label)=>{
+      if(!text)return '';
+      const value=String(text);
+      return value.length>70||value.includes('\n')?`<details class="uc-inline-details uc-finance-opinion"><summary>${esc(label)} · 全文</summary><p>${esc(value)}</p></details>`:`<p class="uc-finance-opinion-text"><span class="uc-muted">${esc(label)}：</span>${esc(value)}</p>`;
+    };
+    const content=nodes.map((item,index)=>{
+      const notExecuted=item.notExecuted&&item.status==='terminated';
+      const people=item.assignees.length?item.assignees.map(person=>`<div class="uc-finance-person"><span>${esc(person.name||'审批人待同步')}</span>${item.assignees.length>1&&person.status!==item.status?`<span class="uc-finance-person-state is-${person.status}">${esc(person.status==='pending'?'待审批':financeNodeLabels[person.status])}</span>`:''}${person.actedAt?`<time>${esc(deadlineText(person.actedAt))}</time>`:''}${person.opinion?opinion(person.opinion,'审批意见'):''}</div>`).join(''):'<span class="uc-muted">审批人待同步</span>';
+      const time=item.completedAt||item.startedAt;
+      return `<li class="uc-finance-node is-${item.status}"${item.status==='pending'?' aria-current="step"':''}><span class="uc-finance-marker" aria-hidden="true">${item.status==='approved'?'✓':item.status==='rejected'?'×':index+1}</span><div class="uc-finance-node-body"><div class="uc-finance-node-head"><strong>${esc(item.name)}</strong>${item.mode==='all'||item.mode==='any'?`<span class="uc-muted">${item.mode==='all'?'会签':'或签'}</span>`:''}<span class="uc-finance-node-state">${notExecuted?'未执行':financeNodeLabels[item.status]}</span></div><div class="uc-finance-assignees">${people}</div>${time?`<div class="uc-finance-time">${item.completedAt?'处理时间':'到达时间'}：${esc(deadlineText(time))}</div>`:''}${opinion(item.opinion,item.status==='rejected'?'驳回原因':'审批意见')}</div></li>`;
+    }).join('');
+    const parentNote=node.reason||approval?.reason;
+    const repeatedReason=parentNote&&nodes.some(item=>item.opinion===parentNote||item.assignees.some(person=>person.opinion===parentNote));
+    const waiting=!flow.ended&&node.current&&nodes.length&&nodes.every(item=>['approved','skipped'].includes(item.status));
+    const records=content?`<ol class="uc-finance-nodes" aria-label="财务审批子节点">${content}</ol>`:'';
+    return `<div class="uc-finance-flow">${heading}${nodes.length||parentNote?`<details class="uc-inline-details uc-finance-disclosure"><summary><span class="uc-finance-expand">钉钉审批记录</span><span class="uc-finance-collapse">收起记录</span></summary>${records}${repeatedReason?'':opinion(parentNote,approval?.status==='withdrawn'?'撤销原因':'驳回原因')}${waiting?'<p class="uc-process-note">等待审批结果同步</p>':''}</details>`:''}</div>`;
   }
   function closureReady(r){
     if(!hasHandlingScheme(r)||handlingMissing(r).length)return false;
@@ -302,11 +379,13 @@ window.PCModules['complaint-detail']={render(){},create({btn,replyAction,canFoll
       const pending=node.key==='pending';
       const people=valueText(pending?(r.submitter||(r.logs||[]).find(item=>item.action==='收到投诉')?.actor||node.people):node.people).replace(/[（(][^（）()]*[）)]/g,'').trim()||(node.state==='future'?'到达后分派':node.state==='terminated'?'未办理':node.label==='待处理'?'待接单':node.current?'待分派':'未记录');
       const url=node.external?.url,approvalURL=typeof url==='string'&&/^https?:\/\//i.test(url)?url:'';
-      const approval=(r.financeApprovals||[]).find(item=>item.id===node.id)||(node.key==='financeApproval'&&node.current?financeApproval(r):null),returned=node.current&&node.key==='sales'?financeReturn(r):null;
-      const rejected=node.key==='financeApproval'&&(approval?.status==='rejected'||/驳回|拒绝|未通过|不通过|rejected/i.test(node.source?.approvalResult||''));
-      const approvalAction=rejected?'':approval?link('查看审批','view-finance-approval',`data-approval="${esc(approval.id)}"`):approvalURL?`<a class="uc-link" href="${esc(approvalURL)}" target="_blank" rel="noopener noreferrer">查看审批</a>`:'';
+      const approval=(r.financeApprovals||[]).find(item=>item.id===(node.source?.approvalId||node.id))||(node.key==='financeApproval'&&node.current&&!node.source?.approvalId?financeApproval(r):null),returned=node.current&&node.key==='sales'?financeReturn(r):null;
+      const approvalAction=node.key==='financeApproval'?'':approval?link('查看审批','view-finance-approval',`data-approval="${esc(approval.id)}"`):approvalURL?`<a class="uc-link" href="${esc(approvalURL)}" target="_blank" rel="noopener noreferrer">查看审批</a>`:'';
       const reworkActions=returned?`<div class="uc-actions">${returned.status==='withdrawn'?link('查看撤销记录','view-finance-approval',`data-approval="${esc(returned.id)}"`):''}${canAssess(r)?btn('调整方案并重新提交','begin-compensation'):''}</div>`:'';
-      return `<li class="uc-process-node is-${node.state}"${node.current?' aria-current="step"':''}><span class="uc-process-marker" aria-hidden="true">${node.state==='done'||node.current?`<svg viewBox="0 0 20 20">${marker(node.state)}</svg>`:index+1}</span><div class="uc-process-body"><div class="uc-process-heading"><strong class="uc-process-title">${esc(node.title)}</strong><div class="uc-process-time"><span class="uc-process-label">办理时间：</span>${processTime(node,now)}</div></div><div class="uc-process-people"><span class="uc-process-assignee"><span class="${pending?'uc-process-submitter-label':'uc-process-label'}">${pending?'提交人：':'处理人：'}</span>${esc(people)}</span><span class="uc-process-status"><span class="uc-process-label">状态：</span>${esc(label)}</span>${approvalAction}</div>${node.state==='returned'&&node.reason||node.note?`<p class="uc-process-note">${esc(node.state==='returned'?node.reason:node.note)}</p>`:''}${reworkActions}${processResultView(r,node,rows)}</div></li>`;
+      const finance=node.key==='financeApproval',subprocess=finance&&!['future','skipped'].includes(node.state)?financeSubprocessView(r,node,approval):'';
+      const title=subprocess?node.title.replace('财务审批中','财务审批'):node.title;
+      const body=subprocess||`<div class="uc-process-people"><span class="uc-process-assignee"><span class="${pending?'uc-process-submitter-label':'uc-process-label'}">${pending?'提交人：':'处理人：'}</span>${esc(people)}</span><span class="uc-process-status"><span class="uc-process-label">状态：</span>${esc(label)}</span>${approvalAction}</div>${node.state==='returned'&&node.reason||node.note?`<p class="uc-process-note">${esc(node.state==='returned'?node.reason:node.note)}</p>`:''}${reworkActions}${processResultView(r,node,rows)}`;
+      return `<li class="uc-process-node is-${node.state}"${node.current?' aria-current="step"':''}><span class="uc-process-marker" aria-hidden="true">${node.state==='done'||node.current?`<svg viewBox="0 0 20 20">${marker(node.state)}</svg>`:index+1}</span><div class="uc-process-body"><div class="uc-process-heading"><strong class="uc-process-title">${esc(title)}</strong><div class="uc-process-time"><span class="uc-process-label">办理时间：</span>${processTime(node,now)}</div></div>${body}</div></li>`;
     }).join('')}</ol>`;
     return `<div class="uc-info-primary">${section('处理流程',content,closed?'':`<span class="uc-muted">已完成 ${rows.filter(node=>node.state==='done').length} / ${rows.length}</span>`)}</div>`;
   }

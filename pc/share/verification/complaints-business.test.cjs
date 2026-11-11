@@ -811,8 +811,9 @@ test('process displays the recorded route with current approval, future nodes an
     {id:'close',type:'handling',kind:'close',title:'客服复核'}
   ]}};
   const before=JSON.stringify(r),html=a.processView(r);
-  for(const value of ['已完成 1 / 4','售后办理','财务审批','财务付款','客服复核','财务甲','客服乙','财务审批中','已超时','01.01 09:00','到达后分派','查看审批'])assert.ok(html.includes(value),value);
-  assert.equal((html.match(/aria-current="step"/g)||[]).length,1);
+  for(const value of ['已完成 1 / 4','售后办理','财务审批','财务付款','客服复核','财务甲','客服乙','子流程暂未同步','已超时','01.01 09:00','到达后分派'])assert.ok(html.includes(value),value);
+  assert.ok(!html.includes('查看审批'));
+  assert.equal((html.match(/<li class="uc-process-node[^>]*aria-current="step"/g)||[]).length,1);
   assert.equal((html.match(/uc-process-node is-future/g)||[]).length,2);
   assert.ok(!html.includes('预计完成'));
   assert.ok(!html.includes('<details'));assert.equal(JSON.stringify(r),before);
@@ -840,7 +841,7 @@ test('local example flow shows completed, active and future stages while preserv
   assert.ok(!a.summary(r).includes('uc-ticket-progress'));assert.ok(a.summary(r).includes(r.content));
   for(const status of a.WORK_ORDER_STATUSES){
     const view=a.processView({...r,status});
-    assert.equal((view.match(/aria-current="step"/g)||[]).length,status==='已结案'?0:1,status);
+    assert.equal((view.match(/<li class="uc-process-node[^>]*aria-current="step"/g)||[]).length,status==='已结案'?0:1,status);
     if(status==='已结案'){assert.ok(!view.includes('is-future'));assert.ok(!view.includes('流程已结束'));}
   }
 });
@@ -856,13 +857,13 @@ test('example routes include procurement branches without store handoff and leav
 test('each status has a complete lifecycle example with results only on reached nodes',()=>{
   const examples=a.records.filter(r=>Number(r.id)>=31029&&Number(r.id)<=31037);
   assert.equal(examples.length,9);
-  const result=(html,status)=>[...html.matchAll(/<li class="uc-process-node[\s\S]*?<\/li>/g)].map(match=>match[0]).find(node=>node.includes(`<strong class="uc-process-title">${status}</strong>`));
+  const result=(html,status)=>html.split(/(?=<li class="uc-process-node)/).slice(1).find(node=>[status,status.replace('财务审批中','财务审批')].some(title=>node.includes(`<strong class="uc-process-title">${title}</strong>`)));
   examples.forEach((record,index)=>{
     assert.equal(record.status,a.WORK_ORDER_STATUSES[index]);
     assert.ok(a.filtered({status:record.status}).some(row=>row.id===record.id));
     const before=JSON.stringify(record),html=a.processView(record);
     assert.equal((html.match(/<li class="uc-process-node/g)||[]).length,9);
-    assert.equal((html.match(/aria-current="step"/g)||[]).length,index===8?0:1);
+    assert.equal((html.match(/<li class="uc-process-node[^>]*aria-current="step"/g)||[]).length,index===8?0:1);
     for(const [stage,status]of a.WORK_ORDER_STATUSES.entries()){
       const node=result(html,status);assert.ok(node,status);
       if(stage>index)assert.ok(!node.includes('uc-process-results'),status+' future result');
@@ -885,13 +886,13 @@ test('each status has a complete lifecycle example with results only on reached 
 test('original lifecycle examples have dated results without skipped nodes, and intake shows only the submitter',()=>{
   for(const saved of a.records.filter(r=>Number(r.id)<=31037)){
     for(const record of [copy(saved),{...copy(saved),status:'已结案'}]){
-      const before=JSON.stringify(record),html=a.processView(record),nodes=[...html.matchAll(/<li class="uc-process-node[\s\S]*?<\/li>/g)].map(match=>match[0]);
+      const before=JSON.stringify(record),html=a.processView(record),nodes=html.split(/(?=<li class="uc-process-node)/).slice(1);
       assert.equal(nodes.length,9,record.id);
       for(const text of ['完成时间未记录','已跳过','无需办理','undefined'])assert.ok(!html.includes(text),record.id+': '+text);
       assert.ok(nodes[0].includes('提交人：'));assert.ok(nodes[0].includes(record.submitter));assert.ok(!nodes[0].includes('uc-process-results'));
       for(const node of nodes){
         if(node.includes('is-done')||node.includes('is-current'))assert.match(node,/\d{2}\.\d{2} \d{2}:\d{2}/,record.id);
-        if(node!==nodes[0]&&(node.includes('is-done')||node.includes('is-current')))assert.ok(node.includes('uc-process-results'),record.id);
+        if(node!==nodes[0]&&(node.includes('is-done')||node.includes('is-current')))assert.ok(node.includes(node.includes('<strong class="uc-process-title">财务审批</strong>')?'uc-finance-flow':'uc-process-results'),record.id);
         if(node.includes('is-future'))assert.ok(!node.includes('uc-process-results'),record.id);
       }
       assert.equal(JSON.stringify(record),before);
@@ -903,7 +904,7 @@ test('original lifecycle examples have dated results without skipped nodes, and 
   for(const text of ['财务审批','采购审批'])assert.ok(!history.includes(text),text);
 });
 test('customer-service examples mirror unresolved communication and confirmed solution forms without replacing saved follow-ups',()=>{
-  const sales=record=>[...a.processView(record).matchAll(/<li class="uc-process-node[\s\S]*?<\/li>/g)].map(match=>match[0]).find(node=>node.includes('<strong class="uc-process-title">客服处理中</strong>'));
+  const sales=record=>a.processView(record).split(/(?=<li class="uc-process-node)/).slice(1).find(node=>node.includes('<strong class="uc-process-title">客服处理中</strong>'));
   for(const [id,reason]of [['31004','正和客户协商退款金额'],['31005','无法联系上客户']]){
     const r=a.records.find(record=>record.id===id),before=JSON.stringify(r),html=sales(r);
     for(const value of ['本次操作','方案未达成一致','未达成原因',reason,'沟通内容'])assert.ok(html.includes(value),id+': '+value);
@@ -1460,7 +1461,7 @@ test('confirming a refund creates one immutable approval and locks the submitted
   const r=financeTicket(),solution=copy(valid.value),entry=a.recordCompensation(r,solution,'2026-11-06 10:00');
   assert.equal(r.status,'财务审批中');assert.equal(a.listProgressText(r),'处理中');assert.equal(r.financeApprovals.length,1);assert.equal(entry.approvalId,r.financeApprovals[0].id);
   assert.equal(a.canAssess(r),false);assert.equal(a.canClose(r),false);assert.ok(!a.detailActions(r).includes('close-case'));
-  assert.ok(a.workflow.can(r,'editAssessment'));assert.ok(a.processView(r).includes('view-finance-approval'));
+  assert.ok(a.workflow.can(r,'editAssessment'));assert.ok(!a.processView(r).includes('view-finance-approval'));
   const before=JSON.stringify(r);assert.equal(a.recordCompensation(r,solution,'2026-11-06 10:01'),null);assert.equal(JSON.stringify(r),before);
   solution.refund=1;assert.notEqual(r.financeApprovals[0].customerSolution.refund,1);
   assert.ok(a.recordFollow(r,{note:'已向客户说明审批进度',files:[]},'2026-11-06 10:02'));assert.equal(r.status,'财务审批中');
@@ -1478,7 +1479,7 @@ test('rejection and confirmed withdrawal return ownership, preserve the scheme a
     const history=a.followTools().historyRecords(r,a.executionResultRecords(r));assert.ok(!history.some(f=>f.kind==='workflow'&&f.action==='财务审批'));
     assert.ok(a.recordCompensation(r,copy(approval.customerSolution),'2026-11-06 10:20'));assert.equal(r.status,'财务审批中');assert.equal(r.financeApprovals.length,2);assert.equal(a.listProgressText(r),'处理中');
     assert.equal(JSON.stringify(r.financeApprovals[0].customerSolution),snapshot);assert.equal(r.financeApprovals[0].status,result);assert.equal(r.financeApprovals[1].status,'pending');
-    const process=a.processView(r),current=[...process.matchAll(/<li class="uc-process-node[\s\S]*?<\/li>/g)].map(match=>match[0]).filter(node=>node.includes('aria-current="step"'));assert.ok(process.includes('第 1 次'));assert.ok(process.includes('第 2 次'));assert.equal(current.length,1);assert.ok(current[0].includes('第 2 次'));assert.ok(!current[0].includes(label));
+    const process=a.processView(r),current=process.split(/(?=<li class="uc-process-node)/).slice(1).filter(node=>/^<li[^>]*aria-current="step"/.test(node));assert.ok(process.includes('第 1 次'));assert.ok(process.includes('第 2 次'));assert.equal(current.length,1);assert.ok(current[0].includes('第 2 次'));assert.ok(!current[0].includes(label));
     assert.equal(r.follows.filter(f=>f.kind==='compensation').length,2);
   }
 });

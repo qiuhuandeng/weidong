@@ -8,11 +8,11 @@
   "firstRouteGzipBytes": {
     "customer": 250209,
     "management": 127542,
-    "complaints": 171139,
+    "complaints": 174292,
     "home": 52983,
     "complaint-intake": 60459,
     "complaint-order-linking": 56080,
-    "complaint-detail": 67433,
+    "complaint-detail": 70586,
     "complaint-fixtures": 61117,
     "complaint-workflow": 56056,
     "complaint-follow": 62300,
@@ -86,15 +86,15 @@
       "gzipBytes": 3486,
       "sha256": "4c4fc2901e5c3befb488343fa1aeeb9d2ec2d448e9ef3045e27d953b0ff6dc55"
     },
-    "js/complaint-detail.9c89d56ae0b2e6ab.js": {
-      "bytes": 42383,
-      "gzipBytes": 13674,
-      "sha256": "9c89d56ae0b2e6ab87758c1c47821bcd797c7a19655fca359d492c88dcb5f4af"
+    "js/complaint-detail.76ccf3d43d7f09a1.js": {
+      "bytes": 51840,
+      "gzipBytes": 16360,
+      "sha256": "76ccf3d43d7f09a1aea3eeb44a5548f9762e8683e04b95ac31d12b24e8e13a88"
     },
-    "css/complaint-detail.d61ccd0257bf9a51.css": {
-      "bytes": 3872,
-      "gzipBytes": 1165,
-      "sha256": "d61ccd0257bf9a51dc0d3b06eb47913caa19dd6484cbd549f3935bf1b14cc4e1"
+    "css/complaint-detail.d749eb65e89659aa.css": {
+      "bytes": 6587,
+      "gzipBytes": 1632,
+      "sha256": "d749eb65e89659aae668d8762fdd1528f78ca45c2002e35999dc36829eaee5cf"
     },
     "js/complaint-fixtures.e8e6e7222d6c69e7.js": {
       "bytes": 25359,

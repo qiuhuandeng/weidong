@@ -25,3 +25,27 @@
 .uc-process-result-facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 16px;margin:0}.uc-process-result-facts>div{display:flex;align-items:baseline;gap:8px;min-width:0}
 .uc-process-result-facts dt{color:var(--pc-muted);font-size:12px;flex-shrink:0}.uc-process-result-facts dd{margin:0;min-width:0;white-space:pre-wrap;overflow-wrap:anywhere;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}.uc-process-result-facts .is-primary dd{color:var(--pc-title);font-weight:600;font-variant-numeric:tabular-nums}.uc-process-result-empty{margin:0}
 @media(max-width:560px){.uc-process-result-facts{grid-template-columns:minmax(0,1fr)}}
+/* Finance's nested, read-only approval route; existing disclosure and theme. */
+.uc-finance-flow{margin-top:8px;min-width:0;overflow-wrap:anywhere}
+.uc-finance-current{display:flex;flex-direction:column;gap:4px;color:var(--pc-text)}
+.uc-finance-brief{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 8px;min-width:0}
+.uc-finance-disclosure:not([open]) .uc-finance-collapse,.uc-finance-disclosure[open] .uc-finance-expand{display:none}
+.uc-finance-nodes{list-style:none;padding:0 0 0 8px;margin:0}
+.uc-finance-node{position:relative;display:grid;grid-template-columns:18px minmax(0,1fr);gap:8px;padding-bottom:var(--pc-gap);line-height:22px}
+.uc-finance-node:last-child{padding-bottom:0}
+.uc-finance-node:not(:last-child):before{content:'';position:absolute;left:8px;top:24px;bottom:2px;width:1px;background:var(--pc-line)}
+.uc-finance-marker{box-sizing:border-box;display:flex;align-items:center;justify-content:center;width:18px;height:18px;margin-top:2px;border:1px solid var(--pc-line);border-radius:50%;font-size:12px;color:var(--pc-muted);background:var(--pc-surface)}
+.uc-finance-node-head,.uc-finance-person{display:flex;align-items:baseline;gap:4px 8px;flex-wrap:wrap;min-width:0}
+.uc-finance-node-head strong{font-weight:500;color:var(--pc-title)}
+.uc-finance-node-state{margin-left:auto}
+.uc-finance-node-state,.uc-finance-node-head>.uc-muted,.uc-finance-person-state,.uc-finance-time,.uc-finance-person time{font-size:12px;color:var(--pc-muted)}
+.uc-finance-assignees{display:flex;flex-direction:column;gap:4px}
+.uc-finance-node.is-approved>.uc-finance-marker{color:var(--pc-success);border-color:var(--pc-success-line);background:var(--pc-success-light)}
+.uc-finance-node.is-pending>.uc-finance-marker{color:var(--pc-surface);border-color:var(--pc-primary);background:var(--pc-primary)}
+.uc-finance-node.is-rejected>.uc-finance-marker{color:var(--pc-danger);border-color:var(--pc-danger-line);background:var(--pc-danger-light)}
+.uc-finance-node.is-pending .uc-finance-node-state,.uc-finance-person-state.is-pending{color:var(--pc-primary)}
+.uc-finance-node.is-approved .uc-finance-node-state,.uc-finance-person-state.is-approved{color:var(--pc-success)}
+.uc-finance-node.is-rejected .uc-finance-node-state,.uc-finance-person-state.is-rejected{color:var(--pc-danger)}
+.uc-finance-node.is-waiting .uc-finance-node-head strong,.uc-finance-node.is-waiting .uc-finance-assignees,.uc-finance-node.is-terminated .uc-finance-node-head strong,.uc-finance-node.is-terminated .uc-finance-assignees{color:var(--pc-muted)}
+.uc-finance-opinion-text,.uc-finance-opinion p{margin:4px 0 0;white-space:pre-wrap}
+.uc-finance-person>.uc-finance-opinion-text,.uc-finance-person>.uc-finance-opinion{flex-basis:100%}
