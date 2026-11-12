@@ -11,6 +11,32 @@ import build_online as build
 
 
 class OnlineBuildTests(unittest.TestCase):
+    def test_site_copy_has_no_dependency_on_moved_projects(self):
+        with tempfile.TemporaryDirectory(prefix="weid-copy-test-") as folder:
+            root = Path(folder) / "weidong"
+            root.mkdir()
+            (root / "index.html").write_text("navigation")
+            for name in ("pc", "v3", "zhongtai"):
+                (root / name).mkdir()
+                (root / name / "entry.html").write_text(name)
+            # The independently deployed sibling must never enter this release.
+            sibling = Path(folder) / "wechat"
+            sibling.mkdir()
+            (sibling / "index.html").write_text("independent project")
+            for legacy_present in (False, True):
+                with self.subTest(legacy_present=legacy_present):
+                    if legacy_present:
+                        for name in ("企微", "chat", "wechat"):
+                            (root / name).mkdir()
+                            (root / name / "old.html").write_text("obsolete")
+                    stage = Path(folder) / str(legacy_present)
+                    stage.mkdir()
+                    with patch.object(build, "ROOT", root):
+                        build.copy_site(stage, Path(folder) / "release")
+                    self.assertEqual({p.name for p in stage.iterdir()}, {"index.html", "pc", "v3", "zhongtai"})
+                    for name in ("pc", "v3", "zhongtai"):
+                        self.assertEqual((stage / name / "entry.html").read_text(), name)
+
     def sources(self):
         resources, _ = build.unpack(build.SOURCE.read_text())
         return resources, build.lazy_modules(resources)

@@ -153,9 +153,6 @@ def copy_site(stage, output):
         return [name for name in names if name in {".DS_Store", "__pycache__", ".publish"} or (Path(parent) / name).resolve() in {stage, output}]
     for name in ("pc", "v3", "zhongtai"):
         shutil.copytree(ROOT / name, stage / name, ignore=ignore)
-    assistant_entry = Path("企微/聊天移动.html")
-    (stage / assistant_entry.parent).mkdir(parents=True, exist_ok=True)
-    shutil.copy2(ROOT / assistant_entry, stage / assistant_entry)
 
 
 def build(output, single_file=False):
