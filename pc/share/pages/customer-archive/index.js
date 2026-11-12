@@ -34,9 +34,79 @@ function pcArchiveSummary(c){
   const info=[['会员号',c.memberNo||c.id],['加微时间',wechat],['微信号',c.wechatNo],['所属门店',c.store],['推荐人',c.referrer],['会员生日',c.birthday]];
   const notes=[['初始意向项目',c.initialIntention],['本月到店次数',visits],['意向项目',c.intention],['创建时间',c.created],['最后到店',stats.lastVisitAt],['归属客服',c.consultant]];
   const tags=pcArchiveItems(c,'tags');
-  return `<div class="ca-identity"><div class="ca-person"><div class="ca-avatar" aria-hidden="true">${esc((c.name||'客').slice(0,1))}</div><div class="ca-person-info"><strong>${pcArchiveText(c.name)}</strong><div class="ca-phone"><span id="ca-phone">${pcArchiveText(mrTask.phoneVisible?c.phone:uiPhone(c.phone))}</span>${c.phone?btn(mrTask.phoneVisible?'隐藏手机':'获取手机','pcArchiveTogglePhone()','text'):''}</div></div>${badge(c.customerType||stats.customerType,'blue')}</div><div class="ca-metrics">${[['余额',balance],['消费',stats.totalConsumption],['冻结',frozen],['欠款',pcArchiveDebt(c)]].map(([label,value])=>`<div><span>${label}</span><strong>${pcArchiveMoney(value)}</strong></div>`).join('')}</div><dl class="ca-identity-fields">${info.map(([label,value])=>`<div><dt>${label}</dt><dd>${pcArchiveText(value)}</dd></div>`).join('')}</dl></div><div class="ca-profile-body"><div class="actions ca-shortcuts">${btn('基本信息',"pcCustomerTab('overview')",'primary','users')}${btn('业务记录',"pcCustomerTab('business')",'','file')}${btn('合并历史',"pcCustomerTab('history')",'','history')}</div><dl class="ca-notes">${notes.map(([label,value])=>`<div><dt>${label}</dt><dd>${pcArchiveText(value)}</dd></div>`).join('')}</dl><section class="ca-section"><h3>会员标签</h3><div class="ca-tags">${tags.length?tags.map(t=>badge(typeof t==='string'?t:t.name||t.label||'—','green')).join(''):'<span class="muted">暂无会员标签</span>'}</div></section><section class="ca-section"><h3>消费占比</h3>${pcArchiveConsumption(c)}</section><section class="ca-section"><h3>档案关系</h3><div class="ca-relations">${badge(pcCustomerStatus(c),pcCustomerStatus(c)==='冷静期中'?'orange':'')}${c.mergedInto?`<div>主档案 ${btn(pcArchiveText(pcCustomers().find(x=>x.id===c.mergedInto)?.name||c.mergedInto),`pcCustomerSwitch(${mrQuote(c.mergedInto)})`,'text')}</div>`:''}${c.correctionCaseId?`<div>纠错来源 ${btn(pcArchiveText(c.correctionCaseId),`pcGoCase(${mrQuote(c.correctionCaseId)})`,'text')}</div>`:''}</div></section></div>`;
+  return `<div class="ca-identity"><div class="ca-person"><div class="ca-avatar" aria-hidden="true">${esc((c.name||'客').slice(0,1))}</div><div class="ca-person-info"><div class="ca-name-line"><strong>${pcArchiveText(c.name)}</strong><span class="ca-complaint-control" id="ca-complaint-control">${pcArchiveComplaintBadge(c)}</span></div><div class="ca-phone"><span id="ca-phone">${pcArchiveText(mrTask.phoneVisible?c.phone:uiPhone(c.phone))}</span>${c.phone?btn(mrTask.phoneVisible?'隐藏手机':'获取手机','pcArchiveTogglePhone()','text'):''}</div></div>${badge(c.customerType||stats.customerType,'blue')}</div><div class="ca-metrics">${[['余额',balance],['消费',stats.totalConsumption],['冻结',frozen],['欠款',pcArchiveDebt(c)]].map(([label,value])=>`<div><span>${label}</span><strong>${pcArchiveMoney(value)}</strong></div>`).join('')}</div><dl class="ca-identity-fields">${info.map(([label,value])=>`<div><dt>${label}</dt><dd>${pcArchiveText(value)}</dd></div>`).join('')}</dl></div><div class="ca-profile-body"><div class="actions ca-shortcuts">${btn('基本信息',"pcCustomerTab('overview')",'primary','users')}${btn('业务记录',"pcCustomerTab('business')",'','file')}${btn('合并历史',"pcCustomerTab('history')",'','history')}</div><dl class="ca-notes">${notes.map(([label,value])=>`<div><dt>${label}</dt><dd>${pcArchiveText(value)}</dd></div>`).join('')}</dl><section class="ca-section"><h3>会员标签</h3><div class="ca-tags">${tags.length?tags.map(t=>badge(typeof t==='string'?t:t.name||t.label||'—','green')).join(''):'<span class="muted">暂无会员标签</span>'}</div></section><section class="ca-section"><h3>消费占比</h3>${pcArchiveConsumption(c)}</section><section class="ca-section"><h3>档案关系</h3><div class="ca-relations">${badge(pcCustomerStatus(c),pcCustomerStatus(c)==='冷静期中'?'orange':'')}${c.mergedInto?`<div>主档案 ${btn(pcArchiveText(pcCustomers().find(x=>x.id===c.mergedInto)?.name||c.mergedInto),`pcCustomerSwitch(${mrQuote(c.mergedInto)})`,'text')}</div>`:''}${c.correctionCaseId?`<div>纠错来源 ${btn(pcArchiveText(c.correctionCaseId),`pcGoCase(${mrQuote(c.correctionCaseId)})`,'text')}</div>`:''}</div></section></div>`;
 }
 function pcArchiveTogglePhone(){if(mrTask?.kind!=='customer')return;mrTask.phoneVisible=!mrTask.phoneVisible;render();document.querySelector('.ca-phone button')?.focus({preventScroll:true})}
+let pcArchiveComplaintEditor=null;
+function pcArchiveComplaintState(c){
+  const flag=PCCustomerComplaintMarks.get(c.id);
+  // A routine after-sales enquiry is not itself a complaint. Use this archive's
+  // explicit complaint count or typed records; never join customers by name.
+  const records=pcArchiveItems(c,'tickets').filter(r=>r.isComplaint===true||/投诉|客诉/.test(r.type||r.category||''));
+  const count=Math.max(Number(c.complaint)||0,records.length),manual=flag?.active===true;
+  return {flag,manual,records,count,automatic:count>0,active:manual||count>0};
+}
+function pcArchiveComplaintBadge(c){
+  const s=pcArchiveComplaintState(c),unavailable=!!PCCustomerComplaintMarks.error;
+  const label=unavailable?'客诉标记读取失败，点击重试':s.active?'客诉客户，查看客诉信息':'标记为客诉客户';
+  const svg=`<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 4.5h9A3.5 3.5 0 0 1 20 8v5.5a3.5 3.5 0 0 1-3.5 3.5h-5L7 20v-3a3.5 3.5 0 0 1-3-3.5V8a3.5 3.5 0 0 1 3.5-3.5Z"/>${s.active?'<path d="M12 8v3.5"/><circle cx="12" cy="14" r=".8" fill="currentColor" stroke="none"/>':'<path d="M12 8v6m-3-3h6"/>'}</svg>`;
+  const content=s.active?badge('客诉客户','red').replace('<span class="dot"></span>',svg):unavailable?icon('info')+'客诉状态待确认':svg;
+  return btn(content,`pcArchiveComplaintOpen(${mrQuote(c.id)})`,'text').replace('<button ',`<button id="ca-complaint-badge" title="${esc(label)}" aria-label="${esc(label)}" aria-haspopup="dialog" `);
+}
+function pcArchiveUpdateComplaintBadge(){
+  const slot=document.getElementById('ca-complaint-control'),c=mrTask?.kind==='customer'&&pcCustomers().find(c=>c.id===mrTask.id);
+  if(slot&&c){slot.innerHTML=pcArchiveComplaintBadge(c);PCUI.sweep()}
+}
+async function pcArchiveReloadComplaintMarks(){
+  try{await PCCustomerComplaintMarks.load()}catch{}pcArchiveUpdateComplaintBadge();
+}
+async function pcArchiveComplaintRetry(id){
+  await pcArchiveReloadComplaintMarks();
+  if(mrTask?.kind==='customer'&&mrTask.id===id)pcArchiveComplaintOpen(id);
+}
+function pcArchiveComplaintOpen(id,removing=false){
+  const c=pcCustomers().find(c=>c.id===id);if(!c)return toast('未找到该客户档案');
+  const s=pcArchiveComplaintState(c),q=mrQuote(c.id);
+  const identity=kv({'客户姓名':pcArchiveText(c.name),'手机号':pcArchiveText(uiPhone(c.phone)),'所属门店':pcArchiveText(c.store)});
+  if(PCCustomerComplaintMarks.error){
+    pcArchiveComplaintEditor=null;
+    modal('客诉标记',identity+`<p class="ca-complaint-error" role="alert">客诉标记读取失败：${esc(PCCustomerComplaintMarks.error)}</p>`,btn('关闭','closeModal()')+btn('重试',`pcArchiveComplaintRetry(${q})`,'primary'));return;
+  }
+  if(removing&&!s.manual)return pcArchiveComplaintOpen(id);
+  pcArchiveComplaintEditor={id,revision:s.flag?.revision||0,intent:removing?'remove':s.active?'view':'mark',saving:false};
+  let title,content,footer;
+  if(removing){
+    title='取消客诉标记';content=`<p>确认取消该客户的手动客诉标记？</p><p class="muted">${s.automatic?'该客户仍有投诉记录，姓名旁的客诉提醒会继续保留。':'取消后，姓名旁将恢复为标记图标。'}</p>`;
+    footer=btn('返回',`pcArchiveComplaintOpen(${q})`)+btn('确认取消标记','pcArchiveComplaintSave(false)','danger');
+  }else if(!s.active){
+    title='设为客诉客户';content=field('标记说明','<textarea id="ca-complaint-note" name="note" maxlength="300" rows="3" placeholder="选填，例如服务体验不满意，接待时请关注"></textarea>');
+    footer=btn('取消','closeModal()')+btn('确认标记','pcArchiveComplaintSave(true)','primary');
+  }else{
+    title='客诉客户';content=s.manual?kv({'标记来源':'手动标记','标记说明':`<span class="ca-complaint-note">${pcArchiveText(s.flag.note)}</span>`,'标记人':pcArchiveText(s.flag.actor),'标记时间':pcArchiveText(s.flag.at)}):'';
+    if(s.automatic)content+=`<p>该档案已有 ${s.count} 条投诉记录，自动显示客诉提醒。</p>${s.records.length?pcArchiveTable(['工单编号','问题摘要','状态'],s.records.map(r=>[pcArchiveText(r.id),pcArchiveText(r.name||r.summary),pcArchiveText(r.status)])):'<p class="muted">当前档案仅记录了投诉数量，暂未提供工单明细。</p>'}`;
+    footer=(s.manual?btn('取消客诉标记',`pcArchiveComplaintOpen(${q},true)`,'danger'):'')+(s.records.length?btn('查看投诉记录','pcArchiveComplaintRecords()'):'')+btn('关闭','closeModal()');
+  }
+  modal(title,identity+`<form id="ca-complaint-form" class="form-stack ca-complaint-form" onsubmit="event.preventDefault();pcArchiveComplaintSave(${!removing})">${content}<p id="ca-complaint-error" class="ca-complaint-error" role="alert" tabindex="-1" hidden></p></form>`,footer);
+}
+function pcArchiveComplaintRecords(){closeModal();pcCustomerTab('complaints')}
+async function pcArchiveComplaintSave(active){
+  const editor=pcArchiveComplaintEditor,form=document.getElementById('ca-complaint-form');
+  if(!editor||!form||editor.saving||editor.intent!==(active?'mark':'remove'))return;
+  const note=active?(form.querySelector('[name=note]')?.value||'').trim():'';
+  const fail=message=>{const error=form.querySelector('#ca-complaint-error');error.textContent=message;error.hidden=false;error.focus({preventScroll:true})};
+  if(note.length>300)return fail('标记说明最多 300 字');
+  if(!pcCustomers().some(c=>c.id===editor.id))return fail('客户档案已变化，请关闭后重新核对');
+  editor.saving=true;
+  const controls=[...form.closest('.pc-dialog').querySelectorAll('button,input,textarea')].map(el=>[el,el.disabled]);controls.forEach(([el])=>el.disabled=true);
+  try{
+    await PCCustomerComplaintMarks.save({customerId:editor.id,expectedRevision:editor.revision,active,note,actor:'张三',at:now()});
+    pcArchiveUpdateComplaintBadge();
+    if(pcArchiveComplaintEditor===editor&&form.isConnected)closeModal();
+    const c=pcCustomers().find(c=>c.id===editor.id);
+    toast(active?'已标记为客诉客户':c&&pcArchiveComplaintState(c).automatic?'已取消手动标记，投诉记录提醒仍保留':'已取消客诉标记');
+  }catch(error){if(error.code==='conflict')await pcArchiveReloadComplaintMarks();if(form.isConnected)fail('保存失败：'+error.message);else toast('客诉标记未保存：'+error.message)}
+  finally{editor.saving=false;controls.forEach(([el,disabled])=>el.disabled=disabled)}
+}
 function pcArchiveConsumption(c){
   const groups=new Map();
   for(const o of pcArchiveItems(c,'orders').filter(o=>o.status==='已完成'&&Number(o.amount)>0)){
@@ -93,3 +163,6 @@ function pcArchiveImage(cid,index){
 }
 
 window.PCModules['customer-archive']={};
+window.PCModules['customer-archive'].ready=pcArchiveReloadComplaintMarks();
+PCCustomerComplaintMarks.subscribe(pcArchiveReloadComplaintMarks);
+window.addEventListener('focus',()=>{if(mrTask?.kind==='customer')pcArchiveReloadComplaintMarks()});

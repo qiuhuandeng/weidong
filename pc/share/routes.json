@@ -38,7 +38,7 @@
       "gzipBudget": 180000
     },
     "customer-archive": {
-      "scripts": ["pages/customer-archive/index.js"],
+      "scripts": ["pages/customer-archive/storage.js", "pages/customer-archive/index.js"],
       "styles": ["pages/customer-archive/style.css"],
       "routes": []
     },
