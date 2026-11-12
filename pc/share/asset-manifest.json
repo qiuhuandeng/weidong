@@ -4,32 +4,32 @@
     "pc.html": 13653,
     "inventory.html": 9108
   },
-  "sharedGzipBytes": 66944,
+  "sharedGzipBytes": 66976,
   "firstRouteGzipBytes": {
-    "customer": 250454,
-    "customer-archive": 81963,
-    "management": 127593,
-    "complaints": 174343,
-    "home": 53034,
-    "complaint-intake": 60510,
-    "complaint-order-linking": 56131,
-    "complaint-detail": 70637,
-    "complaint-fixtures": 61168,
-    "complaint-workflow": 56107,
-    "complaint-follow": 62351,
-    "complaint-options": 64187,
-    "complaint-solutions": 78183,
-    "supply-chain": 163595,
-    "inventory-core": 117124,
-    "inventory-clinical": 181083,
-    "group-approval": 141186,
-    "group-approval-designer": 161181,
-    "group-approval-data": 90793,
-    "refund-risk": 83048,
-    "stock-management": 124853,
-    "sales-recipes": 152087,
-    "product-center": 148560,
-    "stock-overview": 130725
+    "customer": 250484,
+    "customer-archive": 82029,
+    "management": 127623,
+    "complaints": 174373,
+    "home": 53064,
+    "complaint-intake": 60540,
+    "complaint-order-linking": 56161,
+    "complaint-detail": 70667,
+    "complaint-fixtures": 61198,
+    "complaint-workflow": 56137,
+    "complaint-follow": 62381,
+    "complaint-options": 64217,
+    "complaint-solutions": 78213,
+    "supply-chain": 163625,
+    "inventory-core": 117154,
+    "inventory-clinical": 181113,
+    "group-approval": 141216,
+    "group-approval-designer": 161211,
+    "group-approval-data": 90823,
+    "refund-risk": 83078,
+    "stock-management": 124883,
+    "sales-recipes": 152117,
+    "product-center": 148590,
+    "stock-overview": 130755
   },
   "files": {
     "js/components.ddba8681c45a8839.js": {
@@ -42,10 +42,10 @@
       "gzipBytes": 31453,
       "sha256": "7d50a32ca66727889effd3dcff7de98ff733fc2c01bf336079297e5577392335"
     },
-    "css/theme.18e8e3377908f1b2.css": {
-      "bytes": 33163,
-      "gzipBytes": 7671,
-      "sha256": "18e8e3377908f1b2a8d10810483c65c150b81753d460cee92499a3d6ec46ee58"
+    "css/theme.45effb704122f4b7.css": {
+      "bytes": 33328,
+      "gzipBytes": 7703,
+      "sha256": "45effb704122f4b79e6f97648fd5235970c333ab1823a34d73babd3f7d87e0cb"
     },
     "js/app.9d937e171bfaa7aa.js": {
       "bytes": 23223,
@@ -57,10 +57,10 @@
       "gzipBytes": 178385,
       "sha256": "c77e3494e37ceb92f9ad2ef2c640aa43cbe8a6a8838d3f6b30569077aac0e9df"
     },
-    "js/customer-archive.c325c71dfc311780.js": {
-      "bytes": 24447,
-      "gzipBytes": 8668,
-      "sha256": "c325c71dfc31178088ad4653479992ef9dc2ef84214b8da754c1c700eafacd51"
+    "js/customer-archive.9c6817dcaacc6e38.js": {
+      "bytes": 24527,
+      "gzipBytes": 8704,
+      "sha256": "9c6817dcaacc6e3857617bc3f3f4ca598cced4bfdba5ccadbcb99f8c972c9905"
     },
     "css/customer-archive.18bca17a8d709533.css": {
       "bytes": 3928,

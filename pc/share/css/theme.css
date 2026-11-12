@@ -53,6 +53,8 @@ button,input,select,textarea{font-family:inherit}button{cursor:pointer}button:di
 .btn.pc-native-button.text{height:24px;min-height:24px;padding:0;color:#409eff;background:none;border:0;font-size:12px}.btn.pc-native-button.text:hover:not(:disabled){background:none}
 .btn.pc-native-button.danger{color:#f56c6c;background:#fef0f0;border-color:#fbc4c4}.btn.pc-native-button:disabled{opacity:1;color:#c0c4cc;border-color:#ebeef5;background:#fff}.btn.pc-native-button.primary:disabled{color:white;background:#a0cfff;border-color:#a0cfff}
 .btn.pc-native-button .icon{width:14px;height:14px}.actions,.ub-actions{gap:8px}.pc-menu{display:inline-flex}
+.btn.pc-native-button.pc-icon-only{width:28px;min-width:28px;flex-shrink:0;padding:0}
+.btn.pc-native-button.pc-icon-only .icon{width:18px;height:18px;flex-shrink:0}
 input:not([type=checkbox]):not([type=radio]):not([type=file]),select,textarea,.pc-select-trigger{box-sizing:border-box;height:var(--pc-control);min-height:0;padding:5px 11px;border:1px solid #dcdfe6;border-radius:4px;font-size:var(--pc-font);line-height:20px;color:#606266;background:#fff;outline:none;box-shadow:none;max-width:100%}
 input:focus,textarea:focus,select:focus,.pc-select-trigger:focus-visible{border-color:var(--pc-primary)}
 input::placeholder,textarea::placeholder{color:#a8abb2;opacity:1}input:disabled,textarea:disabled,.pc-select-trigger:disabled{background:#f5f7fa;color:#a8abb2;border-color:#e4e7ed;cursor:not-allowed}
