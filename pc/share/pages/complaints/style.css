@@ -178,3 +178,6 @@
 .uc-review-form{margin-top:14px;min-width:0}
 .uc-main-table .uc-review-form{--pc-form-label-width:70px}
 .uc-review-form>.uc-actions,.uc-review-saved{grid-column:1/-1}
+
+.uc-reply-required{display:grid;gap:8px;padding:4px 0 8px}
+.uc-reply-required p{margin:0;line-height:22px}

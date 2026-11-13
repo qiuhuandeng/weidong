@@ -9,7 +9,7 @@
     "customer": 126306,
     "customer-archive": 80717,
     "management": 94577,
-    "complaints": 173996,
+    "complaints": 174420,
     "home": 16722,
     "complaint-storage": 52474,
     "complaint-intake": 59229,
@@ -92,15 +92,15 @@
       "gzipBytes": 13153,
       "sha256": "e879555980c1ec92a6241ae867adf0efefa986526855d22d73dc1dd69324b8c4"
     },
-    "js/complaints.12adc8eabf66dee2.js": {
-      "bytes": 114566,
-      "gzipBytes": 35516,
-      "sha256": "12adc8eabf66dee2947fa9f8352cc51a6d95622dc3cb4187e2a50e470ab3532e"
+    "js/complaints.2ac5a635dd09ff94.js": {
+      "bytes": 116075,
+      "gzipBytes": 35915,
+      "sha256": "2ac5a635dd09ff94f3ab5ce345ac1c813893d0e6ab313db9931443f0c40d23f0"
     },
-    "css/complaints.8e3d54853747ee2f.css": {
-      "bytes": 18109,
-      "gzipBytes": 4006,
-      "sha256": "8e3d54853747ee2f3a6eba540f3cfedb2ab57f4cb22462c3947b260d859316c8"
+    "css/complaints.a6f51f2fe32c240f.css": {
+      "bytes": 18217,
+      "gzipBytes": 4031,
+      "sha256": "a6f51f2fe32c240fc3ef5a26fcac9bf9a5c14891d73109102249adbf1a1d4a49"
     },
     "js/home.8970e33cacf3c9db.js": {
       "bytes": 531,

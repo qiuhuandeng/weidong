@@ -331,7 +331,7 @@
     portal.appendChild(el);bind(el);const layer={el,trigger,title,closing:false,parentView};layers.push(layer);lockBackground();
     requestAnimationFrame(()=>requestAnimationFrame(()=>{el.classList.add('show');if(layer.creation)PCUI.focusControl(el.querySelector('[name="consumptionPhone"]'));else el.querySelector('.uc-drawer').focus({preventScroll:true})}));return layer;
   }
-  function closeLayer(){const layer=layers.at(-1);if(!layer||layer.closing||layer.options?.saving)return;layer.closing=true;layer.el.classList.remove('show');layer.el.classList.add('is-closing');setTimeout(()=>{if(!layers.includes(layer))return;layer.el.remove();layers.pop();if(main?.editor?.layer===layer)main.editor=null;if(layers.length){const parent=layers.at(-1);parent.el.inert=false;if(layer.parentView){parent.el.querySelector('.uc-drawer-body').scrollTop=layer.parentView.scroll;if(main?.layer===parent)setDetailTab(layer.parentView.tab)}}else{unlockBackground();main=null}if(layer.trigger?.isConnected)layer.trigger.focus({preventScroll:true});else if(layers.length)layers.at(-1).el.querySelector('.uc-drawer').focus({preventScroll:true});else root.querySelector('input,button')?.focus({preventScroll:true});layer.afterClose?.()},matchMedia('(prefers-reduced-motion: reduce)').matches?0:290)}
+  function closeLayer(){const layer=layers.at(-1);if(!layer||layer.closing||layer.options?.saving)return;layer.closing=true;layer.el.classList.remove('show');layer.el.classList.add('is-closing');setTimeout(()=>{if(!layers.includes(layer))return;layer.el.remove();layers.pop();if(main?.editor?.layer===layer){main.editor=main.editor.parentEditor||null;if(main.editor)renderEditor()}if(layers.length){const parent=layers.at(-1);parent.el.inert=false;if(layer.parentView){parent.el.querySelector('.uc-drawer-body').scrollTop=layer.parentView.scroll;if(main?.layer===parent)setDetailTab(layer.parentView.tab)}}else{unlockBackground();main=null}if(layer.trigger?.isConnected)layer.trigger.focus({preventScroll:true});else if(layers.length)layers.at(-1).el.querySelector('.uc-drawer').focus({preventScroll:true});else root.querySelector('input,button')?.focus({preventScroll:true});layer.afterClose?.()},matchMedia('(prefers-reduced-motion: reduce)').matches?0:290)}
   function dirty(layer){if(layer.options)return layer.options.saving||optionsDirty(layer.options);if(layer.creation){const form=layer.el.querySelector('[data-ticket-form]');return Boolean(form&&[...form.querySelectorAll('input,select,textarea')].some(control=>control.name&&control.name!=='lookupType'&&control.value.trim()&&(control.name!=='channel'||control.value!=='hotline')))}const e=main?.editor;return Boolean(e?.layer===layer&&(e.uploading||followTools().operationDirty(e)||(e.selectingOrders&&(orderPickerDirty(e)||(e.exampleReturn&&orderPickerDirty(e.exampleReturn))))))}
   function recordById(id){return records.find(r=>r.id===id)}
   function customerResponsibility(r){return multiValues(r.department).includes('客户自身')}
@@ -374,7 +374,8 @@
   function recordFollow(r,d,time){return followTools().record(r,d,time)}
   function hasHandlingScheme(r){return validPlan(r.handlingPlan)&&Boolean(r.assessedAt||(r.follows||[]).some(f=>['handling','assessment'].includes(f.kind)))}
   function canClose(r){if(canAssess(r))return true;return workflow.can(r,'close')&&(workflow.can(r,'closeDirectly')||closureReady(r))}
-  function recordClosure(r,time,note='',closureType='',closeReason=''){const early=workflow.can(r,'closeEarly'),requireReason=workflow.closureReasonRequired(r);if(!requireReason)closeReason='';if(!canClose(r)||requireReason&&(early||closureType==='no-payout')&&!closeReason||closeReason&&!followTools().CLOSED_REASONS.includes(closeReason))return null;if(early)closureType='early';const beforeStatus=r.status;r.status='已结案';delete r.statusDetail;delete r.currentTask;r.handlingPlan='resolved';r.closedAt=time;r.closedBy=ACTOR;r.closedFromStatus=beforeStatus;followTools().stopPeriod(r,time,'已处理并结案');const entry={id:r.id+'-close-'+Date.now(),kind:'closure',time,actor:ACTOR,note:!requireReason||closeReason?String(note||'').trim():String(note||'').trim()||'已确认客诉处理完成，予以结案。',status:r.status,beforeStatus,...(['no-payout','early'].includes(closureType)?{closureType}:{}),...(closeReason?{closeReason}:{}),...recognitionSnapshot(r),files:[]};r.closeNote=entry.note;if(closeReason)r.closeReason=closeReason;else if(!requireReason)delete r.closeReason;r.follows.unshift(entry);return entry}
+  function needsCustomerReply(r){return r.channel==='wechat'&&!(r.follows||[]).some(f=>f.kind==='reply'&&(String(f.note||'').trim()||(f.files||[]).some(file=>file.data)))}
+  function recordClosure(r,time,note='',closureType='',closeReason=''){if(needsCustomerReply(r))return null;const early=workflow.can(r,'closeEarly'),requireReason=workflow.closureReasonRequired(r);if(!requireReason)closeReason='';if(!canClose(r)||requireReason&&(early||closureType==='no-payout')&&!closeReason||closeReason&&!followTools().CLOSED_REASONS.includes(closeReason))return null;if(early)closureType='early';const beforeStatus=r.status;r.status='已结案';delete r.statusDetail;delete r.currentTask;r.handlingPlan='resolved';r.closedAt=time;r.closedBy=ACTOR;r.closedFromStatus=beforeStatus;followTools().stopPeriod(r,time,'已处理并结案');const entry={id:r.id+'-close-'+Date.now(),kind:'closure',time,actor:ACTOR,note:!requireReason||closeReason?String(note||'').trim():String(note||'').trim()||'已确认客诉处理完成，予以结案。',status:r.status,beforeStatus,...(['no-payout','early'].includes(closureType)?{closureType}:{}),...(closeReason?{closeReason}:{}),...recognitionSnapshot(r),files:[]};r.closeNote=entry.note;if(closeReason)r.closeReason=closeReason;else if(!requireReason)delete r.closeReason;r.follows.unshift(entry);return entry}
   function replyAction(){return `<div class="uc-footer-reply">${btn('回复客户','reply-customer')}</div>`}
 
   function followPanel(r){return followTools().history(r,executionResultRecords(r))+(r.channel==='wechat'?wechatView(r):'')}
@@ -436,9 +437,9 @@
   function filesView(files,kind,index=''){return files?.length?`<div class="uc-attachments uc-image-gallery">${files.map((f,i)=>String(f.data||'').startsWith('data:image/')?`<button type="button" class="uc-image-thumb" data-uc="file" data-kind="${kind}" data-index="${index}" data-file="${i}" aria-label="查看图片：${esc(f.name)}"><img src="${esc(f.data)}" alt="${esc(f.name)}" loading="lazy"><span>${esc(f.name)}</span></button>`:`<button type="button" class="uc-file uc-file-download" data-uc="file" data-kind="${kind}" data-index="${index}" data-file="${i}" aria-label="${isAudioFile(f)?'播放录音':'下载附件'}：${esc(f.name)}">${iconFile}<span>${esc(f.name)}</span><span class="uc-link">${isAudioFile(f)?'播放':'下载'}</span></button>`).join('')}</div>`:''}
   function draftFiles(files,preview=false,scope=''){return files.length?`<div class="uc-attachments">${files.map((f,i)=>`<div class="uc-file">${preview?`<img class="uc-reply-image" src="${esc(f.data)}" alt="${esc(f.name)}">`:''}<span>${esc(f.name)}</span>${link('移除','remove-file',`data-file="${i}"${scope?` data-files="${scope}"`:''}`)}</div>`).join('')}</div>`:''}
 
-  function openEditor(kind,draft,followId=null){
-    if(main.editor)return;
-    const handling=Object.hasOwn(followTools().OPERATIONS,kind),e={kind,draft,baseline:JSON.stringify(draft),followId,handling,selectingOrders:kind==='orders',uploading:false};
+  function openEditor(kind,draft,followId=null,parentEditor=null){
+    if(main.editor&&!(kind==='reply'&&main.editor===parentEditor&&parentEditor.kind==='closure'))return;
+    const handling=Object.hasOwn(followTools().OPERATIONS,kind),e={kind,draft,baseline:JSON.stringify(draft),followId,handling,selectingOrders:kind==='orders',uploading:false,parentEditor};
     if(kind==='orders')Object.assign(e,orderPickerState(main.record,draft.linked));main.editor=e;
     e.layer=openLayer(kind==='closure'&&workflow.state(main.record)==='客服复核中'?'结案':handling?'跟进处理':kind==='orders'?orderPickerTitle(e):kind==='assessment'?'责任认定':'回复客户','','',2);e.layer.editor=true;e.layer.el.querySelector('.uc-drawer').classList.add('uc-operation-drawer','uc-'+kind+'-editor');
     renderEditor(true);
@@ -458,9 +459,15 @@
     let content=e.kind==='orders'?orderPickerView():e.kind==='assessment'?assessmentForm():e.kind==='compensation'?`<div id="uc-compensation-form" data-draft="compensation" novalidate>${solutionForm()}</div>`:e.kind==='closure'?followTools().closureForm(e.draft,workflow.closureReasonRequired(main.record)):e.kind==='reply'?replyForm():followForm();
     content=followTools().handlingPanel(e,content)+inlineAssessmentForm();
     if(e.handling)content=`<div class="uc-handling-content"><section class="uc-detail-common" aria-label="工单概况">${summary(main.record,main.phoneVisible,true)}</section>`+(!e.followId&&Object.keys(operations).length>1?followTools().operationChoice(e.kind,operations):'')+`<section id="uc-operation-panel" aria-label="${(operations[e.kind]||followTools().OPERATIONS[e.kind])[0]}">${content}</section></div>`;
-    body.innerHTML=content;body.scrollTop=scroll;renderEditorFooter();
+    body.innerHTML=content;
+    if(e.kind==='closure'&&needsCustomerReply(main.record)){const panel=body.querySelector('#uc-operation-panel');panel.inert=true;panel.querySelectorAll('input,select,textarea,button').forEach(control=>control.disabled=true)}
+    body.scrollTop=scroll;renderEditorFooter();
   }
-  function renderEditorFooter(){const e=main.editor;if(!e)return;e.submitLabel=e.draft.customerSolution?.methods.some(key=>['refund','compensation'].includes(key))?'提交财务审批':'提交客服复核';const foot=e.layer.el.querySelector('.uc-drawer-foot');foot.innerHTML=followTools().editorFooter(e,e.kind==='compensation'?solutionFoot():'',main.record);followTools().updateAssessmentState(main.record,e)}
+  function renderEditorFooter(){const e=main.editor;if(!e)return;e.submitLabel=e.draft.customerSolution?.methods.some(key=>['refund','compensation'].includes(key))?'提交财务审批':'提交客服复核';const foot=e.layer.el.querySelector('.uc-drawer-foot');foot.innerHTML=e.kind==='closure'&&needsCustomerReply(main.record)?btn('取消','dismiss')+btn('去回复客户','reply-customer',e.uploading?'disabled':'',true):followTools().editorFooter(e,e.kind==='compensation'?solutionFoot():'',main.record);followTools().updateAssessmentState(main.record,e)}
+  function promptClosureReply(){
+    const e=main?.editor;if(e?.kind!=='closure'||!needsCustomerReply(main.record))return;
+    PCUI.dialog({title:'请先回复客户',content:'<div class="uc-scope uc-reply-required"><p>该微信支付投诉尚未回复客户。</p><p class="uc-muted">请先回复客户，再填写结案信息。</p></div>',buttons:[{text:'去回复客户',primary:true,action:()=>{PCUI.closeDialog();if(main?.editor===e)beginReply()}}]});
+  }
   // Adapted from complaint-prototype/workflow proposalForm and ticket-operations.
   // The unified module uses its own customers, orders and saved handling records.
   const SOLUTION_METHODS={refund:'退款',compensation:'退款+赔偿',exchange:'置换商品',other:'其他'};
@@ -539,7 +546,7 @@
   function assessmentForm(){const r=main.record,linked=r.linked;return `<div id="uc-assessment-form" class="uc-assessment-layout" data-draft="assessment" novalidate>${section('关联订单',linked.length?orderCards(linked):empty('暂未关联订单'),`<span class="uc-muted">${linked.length} 笔</span>`)}${section('处理信息',`<div class="pc-form pc-form-single">${responsibilityForm()}<div class="ub-form pc-form-single">${assessmentAttachments(main.editor.draft)}</div></div>`)}</div>`}
   function followForm(){const e=main.editor;return followTools().form(main.record,e.draft,main.record.follows.find(f=>f.id===e.followId))}
   function replyForm(){const d=main.editor.draft;return `<div id="uc-reply-form" data-draft="reply" novalidate>${field('note','回复内容',`<textarea id="uc-note" name="note" class="uc-input" rows="6" maxlength="2000" placeholder="填写回复客户的内容">${esc(d.note)}</textarea>`)}${field('replyImages','图片',`<div><div class="uc-upload-row">${btn('添加图片','upload-reply','id="uc-replyImages"')}<input type="file" id="uc-reply-upload" accept="image/png,image/jpeg" multiple hidden data-upload="reply"></div><div class="uc-help">最多 4 张，每张 5MB 以内，支持 JPG、PNG</div><div id="uc-upload-list" aria-live="polite">${draftFiles(d.files,true)}</div></div>`)}</div>`}
-  function beginReply(){if(!main||main.editor)return;openEditor('reply',{note:'',files:[]})}
+  function beginReply(){if(!main)return;const parent=main.editor;if(parent&&(parent.kind!=='closure'||parent.uploading||parent.layer.closing))return;openEditor('reply',{note:'',files:[]},null,parent)}
   function editGrade(accept=false){
     if(!main||main.editor||(accept?main.record.status!=='待处理':!canGrade(main.record)))return;
     const current=main;followTools().gradeDialog(main.record,accept,grade=>{
@@ -559,7 +566,7 @@
     if(e.uploading){toast('附件正在读取，请稍后切换');return}const previous=e.kind;
     if(kind===e.kind)return;
     try{if(kind==='compensation')await loadSolutionTools();if(main?.editor!==e||e.kind!==previous||e.layer.closing||!Object.hasOwn(workflow.handlingOptions(main.record),kind))return;
-      followTools().switchOperation(e,kind,main.record);renderEditor(true);
+      followTools().switchOperation(e,kind,main.record);renderEditor(true);promptClosureReply();
     }catch(error){toast(error.message)}
   }
   function editFollowRecord(id){const f=main.record.follows.find(f=>f.id===id);if(followTools().editable(f))openEditor('follow',followTools().draft(main.record,f),id)}
@@ -588,7 +595,7 @@
     if(!commitRecord(next,'保存解决方案',JSON.stringify(entry.before)+' → '+JSON.stringify(entry.customerSolution)))return;
     finishEditor(r.status==='财务审批中'?'info':'follows');toast(r.status==='财务审批中'?'解决方案已确认，已提交财务审批':'解决方案已确认，已提交客服复核');
   }
-  function saveReply(){const e=main?.editor;if(e?.kind!=='reply')return;if(e.uploading){toast('图片正在读取，请稍后保存');return}clearErrors(e.layer.el);const note=e.draft.note.trim();if(!note&&!e.draft.files.length){error(e.layer.el,'note','请填写回复内容或添加图片');e.layer.el.querySelector('#uc-note').focus();return}const next=clone(records),r=next.find(r=>r.id===main.record.id);r.follows.unshift({id:r.id+'-reply-'+Date.now()+'-'+r.follows.length,kind:'reply',time:now(),actor:ACTOR,note,files:clone(e.draft.files),beforeStatus:r.status,status:r.status});if(!commitRecord(next,'回复客户',note||(e.draft.files.length+' 张图片')))return;closeLayer(true);toast('回复已保存，可在跟进记录中查看')}
+  function saveReply(){const e=main?.editor;if(e?.kind!=='reply'||e.layer.closing)return;if(e.uploading){toast('图片正在读取，请稍后保存');return}clearErrors(e.layer.el);const note=e.draft.note.trim();if(!note&&!e.draft.files.length){error(e.layer.el,'note','请填写回复内容或添加图片');e.layer.el.querySelector('#uc-note').focus();return}const next=clone(records),r=next.find(r=>r.id===main.record.id);r.follows.unshift({id:r.id+'-reply-'+Date.now()+'-'+r.follows.length,kind:'reply',time:now(),actor:ACTOR,note,files:clone(e.draft.files),beforeStatus:r.status,status:r.status});if(!commitRecord(next,'回复客户',note||(e.draft.files.length+' 张图片')))return;closeLayer(true);toast(e.parentEditor?'回复已保存，请填写结案信息':'回复已保存，可在跟进记录中查看')}
   function saveFollow(){
     const e=main?.editor;if(e?.kind!=='follow')return;if(e.uploading){toast('图片正在读取，请稍后保存');return}
     clearErrors(e.layer.el);const old=main.record.follows.find(f=>f.id===e.followId),errors=followTools().validate(main.record,e.draft,old);
@@ -601,6 +608,7 @@
   }
   function saveClosure(){
     const e=main?.editor;if(e?.kind!=='closure')return;if(e.uploading){toast('附件正在读取，请稍后保存');return}
+    if(needsCustomerReply(main.record)){promptClosureReply();return}
     if(!canClose(main.record)){toast('请先完成责任认定及后续待办流程后再结案');return}
     clearErrors(e.layer.el);const missing=followTools().inlineAssessmentErrors(main.record,e);
     if(workflow.closureReasonRequired(main.record)&&!followTools().CLOSED_REASONS.includes(e.draft.closeReason))missing.unshift(['closeReason','请选择结案原因']);
@@ -610,7 +618,7 @@
     if(!commitRecord(next,entry.closureType==='early'?'提前结案':'结案',entry.note))return;
     finishEditor('follows');toast('工单已结案');
   }
-  function askClosure(){if(!main||main.editor||!canClose(main.record))return;openEditor('closure',followTools().operationDraft('closure',main.record))}
+  function askClosure(){if(!main||main.editor||!canClose(main.record))return;openEditor('closure',followTools().operationDraft('closure',main.record));promptClosureReply()}
   function confirmClosure(){saveClosure()}
   function openPicker(){if(main.record.status==='已结案')return;openEditor('orders',{linked:clone(main.record.linked)});main.editor.layer.el.querySelector('#uc-customerKeyword')?.focus()}
   function orderDateRange(preset,today=now().slice(0,10)){
