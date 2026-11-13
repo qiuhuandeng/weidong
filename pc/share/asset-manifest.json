@@ -7,7 +7,7 @@
   "sharedGzipBytes": 66976,
   "firstRouteGzipBytes": {
     "customer": 250484,
-    "customer-archive": 82029,
+    "customer-archive": 82028,
     "management": 127623,
     "complaints": 174373,
     "home": 53064,
@@ -57,10 +57,10 @@
       "gzipBytes": 178385,
       "sha256": "c77e3494e37ceb92f9ad2ef2c640aa43cbe8a6a8838d3f6b30569077aac0e9df"
     },
-    "js/customer-archive.9c6817dcaacc6e38.js": {
-      "bytes": 24527,
-      "gzipBytes": 8704,
-      "sha256": "9c6817dcaacc6e3857617bc3f3f4ca598cced4bfdba5ccadbcb99f8c972c9905"
+    "js/customer-archive.bfa0fce6765c002f.js": {
+      "bytes": 24526,
+      "gzipBytes": 8703,
+      "sha256": "bfa0fce6765c002f7d20c620ff054e04dd04af1d96acbcd951bd9fffa9574260"
     },
     "css/customer-archive.18bca17a8d709533.css": {
       "bytes": 3928,

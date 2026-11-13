@@ -51,7 +51,7 @@ function pcArchiveComplaintBadge(c){
   const label=unavailable?'客诉标记读取失败，点击重试':s.active?'客诉客户，查看客诉信息':'标记为客诉客户';
   const svg=`<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 4.5h9A3.5 3.5 0 0 1 20 8v5.5a3.5 3.5 0 0 1-3.5 3.5h-5L7 20v-3a3.5 3.5 0 0 1-3-3.5V8a3.5 3.5 0 0 1 3.5-3.5Z"/>${s.active?'<path d="M12 8v3.5"/><circle cx="12" cy="14" r=".8" fill="currentColor" stroke="none"/>':'<path d="M12 8v6m-3-3h6"/>'}</svg>`;
   const content=s.active?badge('客诉客户','red').replace('<span class="dot"></span>',svg):unavailable?icon('info')+'客诉状态待确认':svg;
-  const buttonStyle=!s.active&&!unavailable?'primary pc-icon-only':'text';
+  const buttonStyle=!s.active&&!unavailable?'danger pc-icon-only':'text';
   return btn(content,`pcArchiveComplaintOpen(${mrQuote(c.id)})`,buttonStyle).replace('<button ',`<button id="ca-complaint-badge" title="${esc(label)}" aria-label="${esc(label)}" aria-haspopup="dialog" `);
 }
 function pcArchiveUpdateComplaintBadge(){
