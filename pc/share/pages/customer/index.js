@@ -8,9 +8,12 @@ function customerCloseModal(){if(apIsMobile()&&apSheet){apDismiss();return;}pcMo
 const RULES=[['primary','主客户判定规则','layers','blue','P-RC-02'],['intercept','前置拦截规则','shield','purple','P-RC-03'],['deposit','预约金有效期','clock','orange','P-RC-04'],['arbitration','订单仲裁规则','flow','cyan','P-RC-05']];
 const defaults={primary:[{name:'有进行中订单的一方为主',field:'进行中订单数',logic:'大于0',conflict:'进入订单仲裁',enabled:true,note:'双方都有进行中订单时，进入订单仲裁'},{name:'有手机号的一方为主',field:'手机号',logic:'不为空',conflict:'看下一级',enabled:true,note:'双方都有手机号时，跳过此条'},{name:'有加微记录的一方为主',field:'加微记录数',logic:'大于0',conflict:'看下一级',enabled:true,note:'双方都有加微记录时，跳过此条'},{name:'建档时间更早的一方为主',field:'建档时间',logic:'更早',conflict:'看下一级',enabled:true,note:'兜底规则，优先保留更早创建的客户档案'}],intercept:[{name:'手机号关联客户数',field:'手机号关联客户数',condition:'≥阈值',value:3,on:true,hits:24,reason:'同一手机号关联3个及以上客户'},{name:'子客户白条余额不为零',field:'白条余额',condition:'不为零',value:0,on:true,hits:42,reason:'子客户白条余额不为零，需人工核对'},{name:'子客户有充值余额或近期充值',field:'充值记录',condition:'有余额或时间窗口内有记录',value:6,on:true,hits:31,reason:'有未消耗充值余额或近6个月充值记录'},{name:'子客户有已完成订单',field:'已完成订单数',condition:'存在即拦截',value:1,on:true,hits:28,reason:'子客户存在已完成订单'},{name:'子客户有进行中投诉',field:'进行中投诉数',condition:'存在即拦截',value:1,on:true,hits:8,reason:'子客户存在进行中投诉'},{name:'子客户有进行中售后 / 申述',field:'进行中售后/申述工单数',condition:'存在即拦截',value:1,on:true,hits:11,reason:'子客户有进行中售后或申述工单'},{name:'子客户进行中订单已到店',field:'进行中订单状态',condition:'状态=指定值',value:'已到店',on:true,hits:12,reason:'子订单已到店，关联重度业务数据'}],deposit:{active:3,left:1},arbitration:{A:['进入第二步：有效期仲裁','保留主，流退子','保留子，流退主','进入第三步：看排客人','保留子，流退主','保留主，流退子','推人工审核','推人工审核'],B:['触发前置拦截，推人工审核','两笔都保留'],C:['两笔都保留','保留主，流退子','保留子，主超时订单作为历史保留'],D:['触发前置拦截，推人工审核','两笔都保留','触发前置拦截，推人工审核','两笔都保留']},threshold:{hours:2,months:12,single:5000,total:10000,age:3,commission:true,limits:[true,true,true,true],checks:[true,true,true,true]},migrate:[true,true,true,true]};
 function initCase(i){const names=['王小明','赵大海','陈雨桐','周晓敏','刘佳','宋婉清','林悦','何嘉宁'];let status=i===0?'处理中':i===1?'待财务确认':i<7?'待审批':i<14?'处理中':i<16?'待财务确认':'已完成';let step=status==='待审批'?2:status==='待财务确认'?8:status==='已完成'?9:5;let n=String(i+1).padStart(3,'0');let amount=i===0?12500:i===1?3200:[3300,4800,8500,1200][i%4];let high=amount>=5000;return {id:'EC-202610'+String(15-i%12).padStart(2,'0')+'-'+n,merge:'MG-20260901-'+n,cus:'CUS-'+(10086+i*23),sub:'CUS-'+(20099+i*19),newId:step>2?'ECF-20261015-'+n:'',name:names[i%8],subname:['李四','刘小花','张雅','陈芳'][i%4],phone:'1380000'+String(1234+i),amount,store:['A01 · 静安店','B02 · 徐汇店','C03 · 浦东店'][i%3],author:['张三','李四','周敏'][i%3],reason:i%3===0?'合并了不同人':i%3===1?'订单仲裁错误':'数据迁移错误',description:'客户反馈档案中存在不属于本人的消费记录。核对到店信息与通话记录后，确认原子档案为另一位客户，申请分离并纠正数据归属。',evidence:['客户投诉微信截图.png','不同门店到店记录对比.jpg','客户来电通话录音.mp3'],date:'2026-10-'+String(15-i%12).padStart(2,'0')+' 09:30',high,status,step,approval:step>2?(high?3:1):0,transfer:Array.from({length:8},(_,j)=>({to:j<5||step>5?'new':'',executed:step>5})),finance:[500,2000,amount===3200?700:800,0].map((n,j)=>({amount:n,original:n,reason:'',confirmed:step>5,generated:step>5,type:['预约金收取','白条充值','消耗项目','已发放提成'][j]})),manual:[{to:step>5?'main':'',reason:step>5?'经客服核实，属于主档案客户。':'',confirmed:step>5},{to:step>5?'main':'',reason:step>5?'优惠券使用订单属于主档案。':'',confirmed:step>5}],identity:[true,true,true],cross:i===0,storeConfirm:[false,false],financeApproved:status==='已完成',logs:[{at:'2026-10-15 11:05:22',by:'张三',step:step,content:step>2?'进入数据处理，核对快照与当前档案':'提交纠错申请',before:'',after:''}],paused:false}}
-const STORAGE='weidong-correction-prototype-v1';
-let saved=null;
-try{saved=readStoredState(localStorage.getItem(STORAGE))}catch(e){}
+const STORAGE=PCCustomerStorage.key;
+// Complete legacy global declarations so a failed customer load cannot break
+// shared dialog handlers on other routes. The ready gate below blocks all
+// customer migrations, writes and rendering when this read fails.
+let saved=null,customerReadError=null;
+try{saved=PCCustomerStorage.read()}catch(error){customerReadError=error}
 let state=saved&&saved.version===1?saved:{version:1,config:clone(defaults),drafts:{},history:[{time:'2026-10-10 14:30:00',user:'张三',module:'订单仲裁规则',summary:'组合B：子订单已到店时转人工审核',before:{处理方式:'两笔都保留'},after:{处理方式:'触发前置拦截，推人工审核'}},{time:'2026-10-01 09:15:00',user:'李四',module:'前置拦截规则',summary:'新增子订单已到店拦截条件',before:{启用条件:6},after:{启用条件:7}},{time:'2026-09-15 16:00:00',user:'张三',module:'预约金有效期',summary:'确认在职3个月、离职1个月',before:{在职:3,离职:1},after:{在职:3,离职:1}}],cases:Array.from({length:42},(_,i)=>initCase(i)),role:'总部运营'};
 let activeId=state.cases[0].id,configDraft=clone(state.config),dataTab='transfer',detailTab='info',filter={status:'',risk:'',store:'',author:'',q:'',from:'',to:''},pageNo=1,historyFilter={module:'',user:'',from:'',to:''},rvFilter={q:'',customer:'',type:'',from:'',to:'',min:'',max:''},newForm={reason:'合并了不同人',description:'',expect:'',evidence:[]},fileObjects=new Map(),mobileFilter='全部',mobileCustomerTab='合并历史';
 if(!saved){state.cases.forEach(c=>{let date=c.date.slice(0,10),events=[{at:date+' 09:30:00',by:c.author,step:1,content:'发起纠错申请，上传证据材料',before:'未创建',after:'待审批'}];if(c.step>2){events.push({at:date+' 10:15:00',by:'张三',step:2,content:'申请核实通过，已核对证据与影响范围',before:'待核实',after:'待制定方案'});events.push({at:date+' 11:01:00',by:'系统',step:3,content:'创建纠错分离档案 '+c.newId,before:'未创建',after:c.newId});events.push({at:date+' 11:05:00',by:'张三',step:4,content:'完成合并前快照与当前数据对比',before:'待核对',after:'已核对'});if(c.step>=5)events.push({at:date+' 11:10:00',by:'张三',step:5,content:c.step>5?'完成三类数据处理':'进入数据处理，确认5项系统建议',before:'待处理',after:c.step>5?'已处理':'处理中'});if(c.step>=8){events.push({at:date+' 14:20:00',by:'张三',step:6,content:'完成识别维度拆回，主档案保留有效凭证',before:'识别维度合并在主档案',after:'按真实归属拆分'});events.push({at:date+' 14:25:00',by:'系统',step:7,content:'完成统计字段与客户类型重算',before:'合并状态统计',after:'分别重算'});events.push({at:date+' 14:30:00',by:'系统',step:8,content:'生成纠错调整单并推送财务',before:'未生成',after:'待财务确认'})}if(c.step===9)events.push({at:date+' 16:30:00',by:'张三',step:9,content:'确认调整单，关闭工单并标记原合并记录已纠错',before:'待财务确认',after:'已完成'})}c.logs=events.reverse()})}
@@ -19,11 +22,12 @@ function writeStoredState(value){
  function pack(v){if(!v||typeof v!=='object')return v;let signature=JSON.stringify(v),usePool=signature.length>=120;if(usePool&&seen.has(signature))return {$wdRef:seen.get(signature)};let index=pool.length;if(usePool){seen.set(signature,index);pool.push(null)}let entry=Array.isArray(v)?v.map(pack):Object.fromEntries(Object.entries(v).map(([k,x])=>[k,pack(x)]));if(!usePool)return entry;pool[index]=entry;return {$wdRef:index}}
  let root=pack(value);return JSON.stringify({storageFormat:'weidong-pool-v1',root,pool});
 }
-function readStoredState(text){
- let saved=JSON.parse(text);if(saved?.storageFormat!=='weidong-pool-v1')return saved;
- function unpack(v){if(!v||typeof v!=='object')return v;if(!Array.isArray(v)&&Object.keys(v).length===1&&Object.hasOwn(v,'$wdRef'))return unpack(saved.pool[v.$wdRef]);return Array.isArray(v)?v.map(unpack):Object.fromEntries(Object.entries(v).map(([k,x])=>[k,unpack(x)]))}return unpack(saved.root);
+function persist(){
+ if(customerReadError)throw customerReadError;
+ if(customerInitializing){customerPersistencePending=true;return}
+ try{PCCustomerStorage.save(writeStoredState(state))}
+ catch(error){toast(error.message);throw error}
 }
-function persist(){if(customerInitializing){customerPersistencePending=true;return}try{localStorage.setItem(STORAGE,writeStoredState(state))}catch(e){toast('浏览器存储不可用，本次演示进度保留至关闭页面')}}
 function current(){if(cxApplicationOpen&&clPlan)return clPlan;return state.cases.find(c=>c.id===activeId)||state.cases[0]||initCase(0)}
 function now(){return new Date().toLocaleString('sv-SE',{timeZone:'Asia/Shanghai'})}
 function log(content,before='',after=''){let c=current();c.logs.unshift({at:now(),by:'张三',step:c.step,content,before:typeof before==='string'?before:JSON.stringify(before),after:typeof after==='string'?after:JSON.stringify(after)});persist()}
@@ -1614,6 +1618,12 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&window.PCUI?.isPopu
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&window.PCUI?.isPopupOpen())return;if(!mrTask||cxWorkbenchId||cxApplicationOpen||mergeEditor)return;let nested=document.querySelector('#modal>[data-overlay-layer]:not(.is-closing) [role=dialog]'),top=nested||document.querySelector('[data-overlay-layer="merge-record"]:not(.is-closing) [role=dialog]');if(!top)return;if(e.key==='Escape'){e.preventDefault();nested?closeModal():mrClose();return}if(e.key==='Tab'){let items=[...top.querySelectorAll('button,input,select,textarea,[tabindex="0"]')].filter(x=>!x.disabled&&x.getClientRects().length),a=items[0],b=items.at(-1);if(e.shiftKey&&document.activeElement===a){e.preventDefault();b?.focus()}else if(!e.shiftKey&&document.activeElement===b){e.preventDefault();a?.focus()}}});
 $('#role').addEventListener('change',e=>{state.role=e.target.value;persist();render();toast('已切换为'+state.role)});
 $('#brandMark').innerHTML=icon('layers');
+window.PCModules.customer={
+ render:customerReadRoute,redraw:customerRender,go:customerGo,
+ leave(){apTask=null;apSheet=null;cxWorkbenchId=null;cxWorkbenchStage=null;cxApplicationOpen=false;mrTask=null;historyProfileId=null;mergeEditor=null;arbEditing=null;$('#mergeDrawers').replaceChildren();syncDrawerInteraction();}
+};
+window.PCModules.customer.ready=Promise.resolve().then(()=>{
+if(customerReadError)throw customerReadError;
 try {
 initializeArbitration();
 initializeCorrection();
@@ -1628,8 +1638,5 @@ initializeSnapshotExamples();
 apInit();
 uiObserveIds();
 } finally { customerInitializing=false; }
-if(customerPersistencePending){customerPersistencePending=false;persist();}
-window.PCModules.customer={
- render:customerReadRoute,redraw:customerRender,go:customerGo,
- leave(){apTask=null;apSheet=null;cxWorkbenchId=null;cxWorkbenchStage=null;cxApplicationOpen=false;mrTask=null;historyProfileId=null;mergeEditor=null;arbEditing=null;$('#mergeDrawers').replaceChildren();syncDrawerInteraction();}
-};
+if(customerPersistencePending){customerPersistencePending=false;PCCustomerStorage.save(writeStoredState(state));}
+});

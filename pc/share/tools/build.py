@@ -63,6 +63,17 @@ def runtime_source(filename):
     return content
 
 
+def shell_styles():
+    """Extract the welcome theme from its existing sources, in cascade order."""
+    def extract(filename):
+        content = runtime_source(filename)
+        fragments = re.findall(r'/\* pc-shell:start \*/(.*?)/\* pc-shell:end \*/', content, re.S)
+        if not fragments or content.count('/* pc-shell:start */') != len(fragments) or content.count('/* pc-shell:end */') != len(fragments):
+            raise SystemExit(filename + ': invalid or missing PC shell style boundaries')
+        return '\n'.join(fragments)
+    return runtime_source('css/tokens.css') + '\n@layer pc-business {\n' + extract('css/legacy-business.css') + '\n}\n' + extract('css/theme.css')
+
+
 def critical_styles():
     """Inline only tokens needed before the full theme arrives; keep one source."""
     css = runtime_source('css/critical.css')
@@ -174,7 +185,7 @@ def build():
         return asset(name, '\n;\n'.join(runtime_source(file) for file in files), 'js')
 
     def css(name, files, layer=False):
-        content = '\n'.join(runtime_source(file) for file in files)
+        content = '\n'.join(runtime_source(file).replace('/* pc-shell:start */', '').replace('/* pc-shell:end */', '') for file in files)
         if layer:
             content = '@layer pc-business {\n' + content + '\n}'
         return asset(name, content, 'css')
@@ -182,7 +193,8 @@ def build():
     # Native UI and system fonts: no framework, component vendor or font downloads.
     scripts = [{'src': js('components', ['js/components.js', 'js/ui-collections.js', 'js/ui-richtext.js']), 'global': 'PCUI'}]
     styles = [css('business', ['css/legacy-business.css'], True), css('theme', ['css/tokens.css', 'css/theme.css'])]
-    app = js('app', ['js/core.js', 'js/loader.js'])
+    app = js('app', ['js/shell.js', 'js/loader.js'])
+    business_script = js('core', ['js/core.js'])
     modules = {}
     for name, module in routes['modules'].items():
         if not re.fullmatch(r'[a-z][a-z0-9-]*', name):
@@ -199,13 +211,17 @@ def build():
             raise SystemExit(f'{name} exceeds compressed module budget: {size:,} > {budget:,}. Split the business module; do not raise the limit to bypass this check.')
         if 'requiresUI' in module and not isinstance(module['requiresUI'], bool):
             raise SystemExit(f'{name} requiresUI must be a boolean')
+        if 'shellOnly' in module and (not isinstance(module['shellOnly'], bool) or (module['shellOnly'] and module.get('requiresUI') is not False)):
+            raise SystemExit(f'{name} shellOnly requires requiresUI: false')
         modules[name] = {'routes': module['routes'], 'script': module_js, 'styles': module_css}
+        if module.get('shellOnly'):
+            modules[name]['shellOnly'] = True
         if module.get('requiresUI') is False:
             modules[name]['requiresUI'] = False
         if module.get('dependencies'):
             modules[name]['dependencies'] = module['dependencies']
-    shell_styles = styles.copy()
-    config = {'scripts': scripts, 'styles': styles, 'shellStyles': shell_styles}
+    entry_shell_styles = [asset('shell', shell_styles(), 'css')]
+    config = {'scripts': scripts, 'businessScript': business_script, 'styles': styles, 'shellStyles': entry_shell_styles}
     template = runtime_source('templates/entry.html').replace('<!-- pc-critical -->', '<style>\n' + critical_styles() + '\n</style>')
     bootstrap = runtime_source('js/bootstrap.js')
     pages = {}
@@ -224,7 +240,7 @@ def build():
         if len(html.encode()) > ENTRY_BUDGET:
             raise SystemExit(f'{filename} exceeds {ENTRY_BUDGET:,} bytes; move business code to its module.')
         pages[filename] = html
-    shared_size = compressed([app, *(script['src'] for script in scripts), *styles])
+    shared_size = compressed(set([app, business_script, *(script['src'] for script in scripts), *styles, *entry_shell_styles]))
     if shared_size > SHARED_GZIP_BUDGET:
         raise SystemExit(f'Shared assets exceed budget: {shared_size:,} > {SHARED_GZIP_BUDGET:,}')
     def dependency_assets(name, seen=None):
@@ -233,12 +249,14 @@ def build():
             return []
         seen.add(name)
         module = modules[name]
-        return [module['script'], *module['styles'], *(asset for dep in module.get('dependencies', []) for asset in dependency_assets(dep, seen))]
+        common = list(entry_shell_styles if module.get('shellOnly') else [business_script, *styles])
+        if module.get('requiresUI', True):
+            common.extend(script['src'] for script in scripts)
+        return [*common, module['script'], *module['styles'], *(asset for dep in module.get('dependencies', []) for asset in dependency_assets(dep, seen))]
 
     first_sizes = {}
     for name, module in modules.items():
-        common_size = shared_size if module.get('requiresUI', True) else compressed([app, *shell_styles])
-        first_sizes[name] = common_size + max(len(gzip.compress(html.encode(), mtime=0)) for html in pages.values()) + compressed(dependency_assets(name))
+        first_sizes[name] = max(len(gzip.compress(html.encode(), mtime=0)) for html in pages.values()) + compressed(set([app, *dependency_assets(name)]))
         if first_sizes[name] > FIRST_ROUTE_GZIP_BUDGET:
             raise SystemExit(f'{name} first-load budget exceeded: {first_sizes[name]:,} > {FIRST_ROUTE_GZIP_BUDGET:,}')
     for filename, data in pending.items():

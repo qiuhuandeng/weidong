@@ -3,7 +3,7 @@ window.PCModules = Object.create(null);
 window.PCApp = (() => {
   const config = window.PC_ASSETS;
   const scripts = new Map(), styles = new Map(), modules = new Map();
-  const styleOrder = [...config.styles, ...Object.values(config.modules).flatMap(module => module.styles)];
+  const styleOrder = [...new Set([...config.shellStyles.filter(url => !config.styles.includes(url)), ...config.styles, ...Object.values(config.modules).flatMap(module => module.styles)])];
   const routeModules = new Map();
   let activeModule = null, activeRoute = null, navigation = 0, shared;
   for (const [name, module] of Object.entries(config.modules)) {
@@ -53,6 +53,11 @@ window.PCApp = (() => {
     cache.set(url, promise);
     return promise;
   }
+  async function business() {
+    if (!config.businessScript) return;
+    await resource(config.businessScript, 'script');
+    if (!window.PCBusinessReady) throw new Error('业务公共资源初始化未完成');
+  }
   function common() {
     if (!shared) {
       // Preloads fetch in parallel; inserting each executable script only after
@@ -60,6 +65,7 @@ window.PCApp = (() => {
       shared = Promise.all([
         ...config.styles.map(url => resource(url, 'style')),
         (async () => {
+          await business();
           for (const {src, global} of config.scripts) {
             await resource(src, 'script');
             if (!window[global]) throw new Error('依赖初始化未完成：' + global);
@@ -78,7 +84,7 @@ window.PCApp = (() => {
     const promise = Promise.resolve().then(async () => {
       await Promise.all([
         module.requiresUI === false
-          ? Promise.all(config.shellStyles.map(url => resource(url, 'style')))
+          ? Promise.all([...(module.shellOnly ? [] : [business()]), ...window.PCBoot.styles(name).map(url => resource(url, 'style'))])
           : common(),
         ...(module.dependencies || []).map(load),
         ...module.styles.map(url => resource(url, 'style'))
@@ -178,9 +184,4 @@ function go(path, id) {
   document.querySelector('#sidebar').classList.remove('open');
   syncSidebarControls();
   window.scrollTo(0,0);
-}
-function closeModal() {
-  if (typeof customerCloseModal === 'function') { customerCloseModal(); return; }
-  window.PCUI?.closeDialog();
-  setTimeout(() => modalFocus?.isConnected && modalFocus.focus(), drawerMotionTime()+16);
 }

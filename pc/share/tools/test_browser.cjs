@@ -24,7 +24,7 @@ await S('Page.enable');await S('Emulation.setFocusEmulationEnabled',{enabled:tru
   const config=await b.E('PC_ASSETS');
   for(const route of config.navigation.flatMap(group=>group.items.map(item=>item[0]))){
    await b.E(`go(${JSON.stringify(route)})`);
-   await b.until(`window.PCApp?.ready && location.hash==='#${route}' && route==='${route}' && !document.querySelector('#main[aria-busy]')`);
+   await b.until(`window.PCApp?.ready && location.hash.split('?')[0]==='#${route}' && route==='${route}' && !document.querySelector('#main[aria-busy]')`);
    assert.ok(await b.E(route==='home' ? `document.querySelector('#main').innerText.includes('欢迎使用 WEID微动')` : `document.querySelector('#main').innerText.length > 100`));
    assert.deepEqual(await b.E('PCUI.failures'),[]);
    if(route==='refunds'){await b.delay(100);refundLayout=await b.E(layout);}
@@ -54,6 +54,10 @@ await S('Page.enable');await S('Emulation.setFocusEmulationEnabled',{enabled:tru
   await home.S('Page.navigate',{url:ENTRY+'#home'});
   await home.until(`window.PCApp?.ready && PCApp.module==='home'`);
   assert.equal(await home.E('typeof PCUI'),'undefined');
+  assert.equal(await home.E('typeof PCBusinessReady'),'undefined');
+  assert.notEqual(await home.E('typeof modal'),'function');
+  assert.ok(!home.page.events.some(e=>e.method==='Network.requestWillBeSent'&&/\/(core|theme)\.[a-f0-9]+\.(js|css)/.test(e.params.request.url)), 'Welcome page downloaded business helpers or full controls theme');
+  assert.ok(!home.page.events.some(e=>e.method==='Network.requestWillBeSent'&&/\/business\.[a-f0-9]+\.css/.test(e.params.request.url)), 'Welcome page downloaded historical business styles');
   assert.ok(!home.page.events.some(e=>e.method==='Network.requestWillBeSent'&&/\/(vue|element-plus|by-components|components|customer|management|complaints)\.[a-f0-9]+\./.test(e.params.request.url)));
   await home.E(`go('refunds')`);
   await home.until(`PCApp.ready && PCApp.module==='management' && !document.querySelector('#main[aria-busy]')`);
@@ -66,7 +70,7 @@ await S('Page.enable');await S('Emulation.setFocusEmulationEnabled',{enabled:tru
   assert.deepEqual(home.page.events.filter(e=>e.method==='Runtime.exceptionThrown'),[]);
   checks.push('Welcome page skips UI downloads; business navigation loads native PCUI');
  }finally{await home.close()}
- for(const pattern of ['*share/dist/js/app.*.js','*share/dist/js/components.*.js','*share/dist/js/management.*.js']){
+ for(const pattern of ['*share/dist/js/app.*.js','*share/dist/js/core.*.js','*share/dist/js/components.*.js','*share/dist/js/management.*.js']){
   const page=await create();
   try{
    await page.S('Network.setBlockedURLs',{urls:[pattern]});
@@ -77,6 +81,23 @@ await S('Page.enable');await S('Emulation.setFocusEmulationEnabled',{enabled:tru
    await page.until(`window.PCApp?.ready && PCApp.module==='management'`);
    assert.equal(await page.E('typeof customerRender'),'undefined');
    checks.push('Load failure and retry: '+pattern);
+  }finally{await page.close()}
+ }
+ for(const raw of ['{broken', '{"version":99}']){
+  const page=await create();
+  try{
+   const key='weidong-correction-prototype-v1';
+   await page.S('Page.addScriptToEvaluateOnNewDocument',{source:`localStorage.setItem(${JSON.stringify(key)},${JSON.stringify(raw)});`});
+   await page.S('Page.navigate',{url:ENTRY+'#merge-candidates'});
+   await page.until(`document.querySelector('#main [role=alert]')?.innerText.includes('原记录已保留')`);
+   assert.equal(await page.E(`localStorage.getItem(${JSON.stringify(key)})`),raw);
+   assert.equal(await page.E('PCApp.ready'),false);
+   await page.E(`location.hash='#shops'`);
+   await page.until(`PCApp.ready && PCApp.module==='management'`);
+   await page.E(`PCUI.dialog({title:'关闭检查',content:'其他业务仍可使用'});closeModal()`);
+   await page.until(`!document.querySelector('.pc-dialog')`);
+   assert.deepEqual(page.page.events.filter(e=>e.method==='Runtime.exceptionThrown'),[]);
+   checks.push('Invalid customer data preserved; other business dialogs still work: '+raw);
   }finally{await page.close()}
  }
  fs.writeFileSync(path.join(OUTPUT,'results.json'),JSON.stringify({entry:ENTRY,checks},null,2));

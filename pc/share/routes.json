@@ -3,6 +3,7 @@
   "modules": {
     "customer": {
       "scripts": [
+        "pages/customer/storage.js",
         "pages/customer/index.js"
       ],
       "styles": [],
@@ -75,6 +76,7 @@
     },
     "home": {
       "requiresUI": false,
+      "shellOnly": true,
       "scripts": [
         "pages/home/index.js"
       ],

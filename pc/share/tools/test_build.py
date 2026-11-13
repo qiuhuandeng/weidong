@@ -79,13 +79,37 @@ class BuildChecks(unittest.TestCase):
         html = (self.root / 'pc.html').read_text()
         config = json.loads(re.search(r'window.PC_ASSETS=(.*?);\n', html).group(1))
         self.assertFalse(config['modules']['home']['requiresUI'])
+        self.assertTrue(config['modules']['home']['shellOnly'])
+        self.assertNotIn('shellOnly', config['modules']['refund-risk'])
         self.assertTrue(config['modules']['customer'].get('requiresUI', True))
-        self.assertLess(manifest['firstRouteGzipBytes']['home'], 60000)
+        self.assertLess(manifest['firstRouteGzipBytes']['home'], 18000)
+        self.assertTrue(config['shellStyles'][0].startswith('share/dist/css/shell.'))
+        self.assertFalse(any('/business.' in url for url in config['shellStyles']))
+        self.assertEqual(len(config['shellStyles']), 1)
+        self.assertFalse(set(config['shellStyles']) & set(config['styles']))
+        self.assertTrue(config['businessScript'].startswith('share/dist/js/core.'))
+        self.assertTrue((self.root / config['businessScript']).is_file())
         self.assertEqual([script['global'] for script in config['scripts']],
                          ['PCUI'])
         self.assertTrue(all((self.root / script['src']).is_file() for script in config['scripts']))
         self.assertNotIn('PC_BOOT_TIMER', html)
         self.assertNotIn('30000', html)
+
+    def test_business_style_edit_preserves_the_home_cache(self):
+        before = self.build()
+        source = self.root / 'share/css/legacy-business.css'
+        source.write_text(source.read_text() + '\n.pc-business-probe { color: red; }\n')
+        after = self.build()
+        changed = set(before['files']) ^ set(after['files'])
+        self.assertEqual(len(changed), 2)
+        self.assertTrue(all(name.startswith('css/business.') for name in changed))
+        self.assertEqual(self.builder.shell_styles().count('pc-business-probe'), 0)
+
+    def test_invalid_shell_boundaries_stop_the_build(self):
+        source = self.root / 'share/css/legacy-business.css'
+        source.write_text(source.read_text().replace('/* pc-shell:end */', '', 1))
+        with self.assertRaisesRegex(SystemExit, 'shell style boundaries'):
+            self.build()
 
     def test_runtime_dependencies_fail_without_replacing_the_release(self):
         self.build()
@@ -268,7 +292,7 @@ const localIcon = '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0"/></svg
         self.assertTrue(all(group['items'] for group in main['navigation'] + inventory['navigation']))
         self.assertEqual(main['routeRedirects'], {route: 'inventory.html' for route in inventory_routes})
         self.assertEqual(inventory['routeRedirects'], {})
-        for field in ('scripts', 'styles', 'shellStyles'):
+        for field in ('scripts', 'businessScript', 'styles', 'shellStyles'):
             self.assertEqual(main[field], inventory[field])
         for filename, entry in [('pc.html', main), ('inventory.html', inventory)]:
             for module in entry['modules'].values():

@@ -19,12 +19,14 @@ window.PCBoot = (() => {
     hints.set(url, link);
     document.head.appendChild(link);
   }
+  const styles = name => config.modules[name].shellOnly ? config.shellStyles : config.styles;
   function prepare(name, seen = new Set()) {
     if (seen.has(name)) return;
     seen.add(name);
     const module = config.modules[name];
+    if (!module.shellOnly && config.businessScript) preload(config.businessScript, 'script');
     if (module.requiresUI !== false) config.scripts.forEach(script => preload(script.src, 'script'));
-    (module.requiresUI === false ? config.shellStyles : config.styles).forEach(url => preload(url, 'style'));
+    styles(name).forEach(url => preload(url, 'style'));
     preload(module.script, 'script');
     module.styles.forEach(url => preload(url, 'style'));
     (module.dependencies || []).forEach(dependency => prepare(dependency, seen));
@@ -35,5 +37,5 @@ window.PCBoot = (() => {
     prepare((modules.find(([, module]) => module.routes.includes(path)) ||
       modules.find(([, module]) => module.routes.includes(config.defaultRoute)))[0]);
   }
-  return {prepare, forget(url) { hints.get(url)?.remove(); hints.delete(url); }};
+  return {prepare, styles, forget(url) { hints.get(url)?.remove(); hints.delete(url); }};
 })();

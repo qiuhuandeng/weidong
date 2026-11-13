@@ -196,7 +196,7 @@ test('leaving a slow business route for home does not wait or show stale errors'
     if(node.src==='vue.js'){fail=()=>node.onerror();return}
     w.PCModules.home={render(){homeRenders++}};node.onload();
   },{probe:{routes:['probe'],styles:[],script:'probe.js',requiresUI:true},
-    home:{routes:['home'],styles:[],script:'home.js',requiresUI:false}},
+    home:{routes:['home'],styles:[],script:'home.js',requiresUI:false,shellOnly:true}},
     {scripts:[{src:'vue.js',global:'Vue'}]});
   await tick();
   h.context.location.hash='#home';h.context.dispatchEvent({type:'hashchange'});await tick();
@@ -245,17 +245,51 @@ test('a rendering exception does not leave the app falsely marked ready', async 
 });
 
 test('shell-first and direct-business loads keep the same stylesheet cascade', async () => {
-  const assets={styles:['business.css','vendor.css','theme.css'],shellStyles:['business.css','theme.css']};
+  const assets={styles:['business.css','theme.css'],shellStyles:['shell.css']};
   const definitions={probe:{routes:['probe'],styles:['probe.css'],script:'probe.js',requiresUI:true},
-    home:{routes:['home'],styles:[],script:'home.js',requiresUI:false}};
+    home:{routes:['home'],styles:[],script:'home.js',requiresUI:false,shellOnly:true}};
   const execute=(w,node)=>{w.PCModules[node.src.slice(0,-3)]={render(){}};node.onload()};
   const direct=harness(execute,definitions,assets);await tick();
   const home=harness(execute,definitions,{...assets,defaultRoute:'home'});
   await tick();
   home.context.location.hash='#probe';await home.context.PCApp.retry();
   const order=h=>h.head.filter(n=>n.dataset.pcAsset==='style').map(n=>n.href);
-  assert.deepEqual(order(direct),['business.css','vendor.css','theme.css','probe.css']);
-  assert.deepEqual(order(home),order(direct));
+  assert.deepEqual(order(direct),['business.css','theme.css','probe.css']);
+  assert.deepEqual(order(home),['shell.css',...order(direct)]);
+  direct.context.location.hash='#home';await direct.context.PCApp.retry();
+  assert.deepEqual(order(direct),order(home));
+});
+
+test('business without PCUI still loads the complete base styles', async () => {
+  const h=harness((w,node)=>{w.PCModules.probe={render(){}};node.onload()}, {},
+    {styles:['business.css','theme.css'],shellStyles:['shell.css']});
+  await tick();
+  assert.deepEqual(h.head.filter(n=>n.dataset.pcAsset==='style').map(n=>n.href),['business.css','theme.css']);
+  assert.deepEqual(h.downloads,['probe.js']);
+});
+
+test('home omits business helpers, and non-UI business waits for them', async () => {
+  const definitions={home:{routes:['home'],styles:[],script:'home.js',requiresUI:false,shellOnly:true},
+    probe:{routes:['probe'],styles:[],script:'probe.js',requiresUI:false}};
+  const h=harness((w,node)=>{
+    if(node.src==='core.js')w.PCBusinessReady=true;
+    else { if(node.src==='probe.js')assert.equal(w.PCBusinessReady,true);w.PCModules[node.src.slice(0,-3)]={render(){}}; }
+    node.onload();
+  },definitions,{defaultRoute:'home',businessScript:'core.js'});
+  await tick();assert.deepEqual(h.downloads,['home.js']);
+  h.context.location.hash='#probe';await h.context.PCApp.retry();
+  assert.deepEqual(h.downloads,['home.js','core.js','probe.js']);
+  h.context.location.hash='#home';await h.context.PCApp.retry();
+  h.context.location.hash='#probe';await h.context.PCApp.retry();
+  assert.deepEqual(h.downloads,['home.js','core.js','probe.js']);
+});
+
+test('missing business initialization stops dependent controls and modules', async () => {
+  const h=harness((w,node)=>{assert.equal(node.src,'core.js');node.onload()},
+    {probe:{routes:['probe'],styles:[],script:'probe.js',requiresUI:true}},
+    {businessScript:'core.js',scripts:[{src:'ui.js',global:'PCUI'}]});
+  await tick();assert.equal(h.failures[0].message,'业务公共资源初始化未完成');
+  assert.deepEqual(h.downloads,['core.js']);assert.equal(h.context.PCApp.ready,false);
 });
 
 test('new-page scaffold registers before a synchronous initializer throws', async () => {
