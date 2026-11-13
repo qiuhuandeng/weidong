@@ -12,6 +12,10 @@ window.PC_BOOT_FAILED = function (error) {
 };
 window.PCBoot = (() => {
   const config = window.PC_ASSETS, hints = new Map();
+  for (const module of Object.values(config.modules)) {
+    module.routes ||= [];
+    module.styles ||= [];
+  }
   function preload(url, type) {
     if (hints.has(url)) return;
     const link = document.createElement('link');

@@ -3,40 +3,15 @@
   "modules": {
     "customer": {
       "scripts": [
-        "pages/customer/storage.js",
         "pages/customer/index.js"
       ],
       "styles": [],
       "routes": [
-        "customers",
-        "rules",
-        "rule-base",
-        "rule-primary",
-        "rule-intercept",
-        "rule-deposit",
-        "rule-arbitration",
-        "merge-candidates",
-        "merge-records",
-        "reviews",
-        "tickets",
-        "new",
-        "approval",
-        "snapshot",
-        "process",
-        "identity",
-        "recalc",
-        "adjustment",
-        "ticket",
-        "reversals",
-        "reversal-detail",
-        "mobile-store",
-        "mobile-approvals",
-        "mobile-approval",
-        "mobile-adjustment",
-        "mobile-customer",
-        "mobile-new"
+        "customers"
       ],
-      "gzipBudget": 180000
+      "dependencies": [
+        "customer-engine"
+      ]
     },
     "customer-archive": {
       "scripts": ["pages/customer-archive/storage.js", "pages/customer-archive/index.js"],
@@ -49,19 +24,14 @@
       ],
       "styles": [],
       "routes": [
-        "shops",
-        "store-beds",
-        "finance",
-        "refunds",
-        "beds",
-        "bed-logs",
-        "devices",
-        "partners",
-        "scheduling"
+        "shops"
+      ],
+      "dependencies": [
+        "management-core"
       ]
     },
     "complaints": {
-      "dependencies": ["complaint-workflow", "complaint-detail", "complaint-follow", "complaint-options", "complaint-fixtures", "complaint-order-linking", "complaint-intake"],
+      "dependencies": ["complaint-workflow", "complaint-detail", "complaint-follow", "complaint-options", "complaint-fixtures", "complaint-order-linking", "complaint-intake", "complaint-storage"],
       "scripts": [
         "pages/complaints/business.js",
         "pages/complaints/index.js"
@@ -84,6 +54,12 @@
       "routes": [
         "home"
       ]
+    },
+    "complaint-storage": {
+      "requiresUI": false,
+      "scripts": ["pages/complaint-storage/index.js"],
+      "styles": [],
+      "routes": []
     },
     "complaint-intake": {
       "requiresUI": false,
@@ -351,6 +327,188 @@
       ],
       "dependencies": [
         "stock-management"
+      ]
+    },
+    "customer-state": {
+      "scripts": [
+        "pages/customer-state/storage.js",
+        "pages/customer-state/index.js"
+      ],
+      "styles": [],
+      "routes": []
+    },
+    "customer-rules": {
+      "scripts": [
+        "pages/customer-rules/index.js"
+      ],
+      "styles": [],
+      "routes": [
+        "rules",
+        "rule-base",
+        "rule-primary",
+        "rule-intercept",
+        "rule-deposit",
+        "rule-arbitration"
+      ],
+      "dependencies": [
+        "customer-state"
+      ]
+    },
+    "customer-mobile": {
+      "scripts": [
+        "pages/customer-mobile/index.js"
+      ],
+      "styles": [
+        "pages/customer-mobile/style.css"
+      ],
+      "routes": [
+        "mobile-store",
+        "mobile-approvals",
+        "mobile-approval",
+        "mobile-adjustment",
+        "mobile-customer",
+        "mobile-new"
+      ],
+      "dependencies": [
+        "customer-correction",
+        "customer-review"
+      ]
+    },
+    "customer-merge": {
+      "scripts": [
+        "pages/customer-merge/index.js"
+      ],
+      "styles": [],
+      "routes": [
+        "merge-candidates",
+        "merge-records"
+      ],
+      "dependencies": [
+        "customer-shared-ui"
+      ]
+    },
+    "customer-correction": {
+      "scripts": [
+        "pages/customer-correction/index.js"
+      ],
+      "styles": [],
+      "routes": [
+        "tickets",
+        "new",
+        "approval",
+        "snapshot",
+        "process",
+        "identity",
+        "recalc",
+        "adjustment",
+        "ticket",
+        "reversals",
+        "reversal-detail"
+      ],
+      "dependencies": [
+        "customer-shared-ui"
+      ]
+    },
+    "customer-review": {
+      "scripts": [
+        "pages/customer-review/index.js"
+      ],
+      "styles": [],
+      "routes": [
+        "reviews"
+      ],
+      "dependencies": [
+        "customer-shared-ui"
+      ]
+    },
+    "customer-detail": {
+      "scripts": [
+        "pages/customer-detail/index.js"
+      ],
+      "styles": [],
+      "routes": [],
+      "dependencies": [
+        "customer-shared-ui"
+      ]
+    },
+    "customer-engine": {
+      "scripts": [
+        "pages/customer-engine/index.js"
+      ],
+      "styles": [],
+      "routes": [],
+      "dependencies": [
+        "customer-state"
+      ]
+    },
+    "customer-shared-ui": {
+      "scripts": [
+        "pages/customer-shared-ui/index.js"
+      ],
+      "styles": [],
+      "routes": [],
+      "dependencies": [
+        "customer-engine"
+      ]
+    },
+    "management-core": {
+      "scripts": [
+        "pages/management-core/storage.js",
+        "pages/management-core/index.js"
+      ],
+      "styles": [],
+      "routes": []
+    },
+    "refunds": {
+      "scripts": [
+        "pages/refunds/index.js"
+      ],
+      "styles": [],
+      "routes": [
+        "refunds"
+      ],
+      "dependencies": [
+        "management-core"
+      ]
+    },
+    "finance": {
+      "scripts": [
+        "pages/finance/index.js"
+      ],
+      "styles": [],
+      "routes": [
+        "finance"
+      ],
+      "dependencies": [
+        "management-core"
+      ]
+    },
+    "store-beds": {
+      "scripts": [
+        "pages/store-beds/index.js"
+      ],
+      "styles": [],
+      "routes": [
+        "store-beds",
+        "beds",
+        "bed-logs"
+      ],
+      "dependencies": [
+        "management-core"
+      ]
+    },
+    "store-settings": {
+      "scripts": [
+        "pages/store-settings/index.js"
+      ],
+      "styles": [],
+      "routes": [
+        "devices",
+        "partners",
+        "scheduling"
+      ],
+      "dependencies": [
+        "management-core"
       ]
     }
   },

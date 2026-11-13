@@ -213,7 +213,13 @@ def build():
             raise SystemExit(f'{name} requiresUI must be a boolean')
         if 'shellOnly' in module and (not isinstance(module['shellOnly'], bool) or (module['shellOnly'] and module.get('requiresUI') is not False)):
             raise SystemExit(f'{name} shellOnly requires requiresUI: false')
-        modules[name] = {'routes': module['routes'], 'script': module_js, 'styles': module_css}
+        # Empty collections are restored by bootstrap before any module is used.
+        # Keep the entry registry compact as independent business modules grow.
+        modules[name] = {'script': module_js}
+        if module['routes']:
+            modules[name]['routes'] = module['routes']
+        if module_css:
+            modules[name]['styles'] = module_css
         if module.get('shellOnly'):
             modules[name]['shellOnly'] = True
         if module.get('requiresUI') is False:
@@ -227,7 +233,7 @@ def build():
     pages = {}
     for filename, entry in entries.items():
         selected_modules = {name: modules[name] for name in scopes[filename]}
-        selected_routes = {route for module in selected_modules.values() for route in module['routes']}
+        selected_routes = {route for module in selected_modules.values() for route in module.get('routes', [])}
         navigation = []
         for group in routes['navigation']:
             items = [item for item in group['items'] if item[0] in selected_routes]
@@ -252,7 +258,7 @@ def build():
         common = list(entry_shell_styles if module.get('shellOnly') else [business_script, *styles])
         if module.get('requiresUI', True):
             common.extend(script['src'] for script in scripts)
-        return [*common, module['script'], *module['styles'], *(asset for dep in module.get('dependencies', []) for asset in dependency_assets(dep, seen))]
+        return [*common, module['script'], *module.get('styles', []), *(asset for dep in module.get('dependencies', []) for asset in dependency_assets(dep, seen))]
 
     first_sizes = {}
     for name, module in modules.items():

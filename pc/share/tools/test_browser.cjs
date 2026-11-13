@@ -33,7 +33,7 @@ await S('Page.enable');await S('Emulation.setFocusEmulationEnabled',{enabled:tru
   await b.E(`go('refunds');go('customers');go('complaints');go('shops')`);
   await b.until(`PCApp.ready && PCApp.module==='management' && location.hash==='#shops' && !document.querySelector('#main[aria-busy]')`);
   checks.push('Last navigation wins');
-  for(const module of ['customer','management','complaints']){
+  for(const module of ['customer','customer-engine','customer-state','customer-shared-ui','customer-merge','customer-correction','customer-review','customer-mobile','management','management-core','refunds','finance','store-beds','store-settings','complaints']){
    const requests=b.page.events.filter(e=>e.method==='Network.requestWillBeSent'&&new RegExp('/'+module+'\\.[a-f0-9]+\\.js').test(e.params.request.url));
    assert.equal(requests.length,1,module+' downloaded more than once');
   }
@@ -60,7 +60,7 @@ await S('Page.enable');await S('Emulation.setFocusEmulationEnabled',{enabled:tru
   assert.ok(!home.page.events.some(e=>e.method==='Network.requestWillBeSent'&&/\/business\.[a-f0-9]+\.css/.test(e.params.request.url)), 'Welcome page downloaded historical business styles');
   assert.ok(!home.page.events.some(e=>e.method==='Network.requestWillBeSent'&&/\/(vue|element-plus|by-components|components|customer|management|complaints)\.[a-f0-9]+\./.test(e.params.request.url)));
   await home.E(`go('refunds')`);
-  await home.until(`PCApp.ready && PCApp.module==='management' && !document.querySelector('#main[aria-busy]')`);
+  await home.until(`PCApp.ready && PCApp.module==='refunds' && !document.querySelector('#main[aria-busy]')`);
   assert.deepEqual(await home.E('PCUI.failures'),[]);
   await home.delay(100);
   assert.deepEqual(await home.E(layout),refundLayout,'Business layout changed when UI styles loaded after the welcome page');
@@ -70,7 +70,175 @@ await S('Page.enable');await S('Emulation.setFocusEmulationEnabled',{enabled:tru
   assert.deepEqual(home.page.events.filter(e=>e.method==='Runtime.exceptionThrown'),[]);
   checks.push('Welcome page skips UI downloads; business navigation loads native PCUI');
  }finally{await home.close()}
- for(const pattern of ['*share/dist/js/app.*.js','*share/dist/js/core.*.js','*share/dist/js/components.*.js','*share/dist/js/management.*.js']){
+ const customer=await create();
+ try{
+  await customer.S('Page.addScriptToEvaluateOnNewDocument',{source:`(()=>{window.__customerWrites=0;const save=Storage.prototype.setItem;Storage.prototype.setItem=function(key,value){if(key==='weidong-correction-prototype-v1')__customerWrites++;return save.call(this,key,value)}})();`});
+  await customer.S('Page.navigate',{url:ENTRY+'#rules'});
+  await customer.until(`window.PCApp?.ready && PCApp.module==='customer-rules'`);
+  assert.equal(await customer.E('typeof customerRender'),'undefined');
+  assert.equal(await customer.E('state.businessExamplesVersion===undefined && state.approvalWorkflowVersion===undefined'),true);
+  assert.ok(!customer.page.events.some(e=>e.method==='Network.requestWillBeSent'&&/\/(customer|customer-mobile)\.[a-f0-9]+\.js/.test(e.params.request.url)));
+  await customer.E(`openMergeEditor(state.mergeProfiles[0].id);go('rule-primary')`);
+  await customer.delay(350);
+  await customer.E(`const edit=[...document.querySelectorAll('button')].find(button=>button.getAttribute('onclick')==='editPrimary(0)');edit.focus();edit.click()`);
+  await customer.delay(100);
+  await customer.E(`commitPrimary(0)`);
+  await customer.delay(400);
+  assert.equal(await customer.E('modalFocusAction'),'editPrimary(0)');
+  assert.equal(await customer.E(`!document.querySelector('.pc-dialog') && !document.querySelector('#mergeOuterPanel').closest('[inert]')`),true);
+  await customer.E(`configDraft.threshold.hours=7;saveMergeProfile()`);
+  await customer.E(`go('customers')`);
+  await customer.until(`PCApp.ready && PCApp.module==='customer'`);
+  assert.equal(await customer.E('state.config.threshold.hours'),7);
+  assert.equal(await customer.E('typeof apMobilePage'),'undefined');
+  await customer.E(`window.__originalCustomers=pcCustomers;window.__customerCalls=0;pcCustomers=function(){__customerCalls++;return __originalCustomers()};render()`);
+  assert.equal(await customer.E('__customerCalls'),1);
+  await customer.E(`pcCustomers=__originalCustomers;go('shops')`);
+  await customer.until(`PCApp.ready && PCApp.module==='management'`);
+  assert.equal(await customer.E('uiIdObserver===null'),true);
+  await customer.E(`window.__customerProbe=document.createElement('span');__customerProbe.textContent='CUS-LIFECYCLE-PROBE';document.querySelector('#main').append(__customerProbe)`);
+  await customer.delay(100);
+  assert.equal(await customer.E('__customerProbe.textContent'),'CUS-LIFECYCLE-PROBE');
+  await customer.E(`go('customers')`);
+  await customer.until(`PCApp.ready && PCApp.module==='customer'`);
+  assert.equal(await customer.E('uiIdObserver!==null'),true);
+  await customer.E(`go('mobile-approvals')`);
+  await customer.until(`PCApp.ready && PCApp.module==='customer-mobile'`);
+  assert.equal(await customer.E('typeof apMobilePage'),'function');
+  await customer.E(`go('customers')`);
+  await customer.until(`PCApp.ready && PCApp.module==='customer'`);
+  for(let i=0;i<2;i++){
+   const origin=await customer.E('performance.timeOrigin');
+   await customer.S('Page.reload');
+   await customer.until(`performance.timeOrigin!==${origin} && window.PCApp?.ready && PCApp.module==='customer'`);
+   await customer.delay(100);
+  }
+  assert.equal(await customer.E('__customerWrites'),0);
+  assert.equal(await customer.E('state.config.threshold.hours'),7);
+  assert.deepEqual(customer.page.events.filter(e=>e.method==='Runtime.exceptionThrown'),[]);
+  checks.push('Rules load without workflows; saved rules are shared with customer pages');
+  checks.push('Customer list aggregates once per render; mobile UI loads on demand');
+  checks.push('Customer DOM observation stops on leave and restarts on return');
+  checks.push('Unchanged customer refresh skips writes and retains saved configuration');
+ }finally{await customer.close()}
+ const features=await create();
+ try{
+  await features.S('Page.navigate',{url:ENTRY+'#customers'});
+  await features.until(`window.PCApp?.ready && PCApp.module==='customer'`);
+  assert.equal(await features.E(`['customer-shared-ui','customer-detail','customer-merge','customer-correction','customer-review','customer-mobile'].every(name=>!PCModules[name])`),true);
+  assert.ok(!features.page.events.some(e=>e.method==='Network.requestWillBeSent'&&/\/customer-mobile\.[a-f0-9]+\.css/.test(e.params.request.url)));
+  assert.equal(await features.E('state.mergeRecords.every(record=>!record.snapshotExamples)'),true);
+  checks.push('Customer list skips other business views, mobile styles and supplemental snapshots');
+  assert.equal(await features.E('state.acceptanceFixturesVersion===undefined && state.approvalExamplesVersion===undefined && state.acceptancePendingProfiles.length>0'),true);
+  const customerRows=await features.E('pcCustomers().map(c=>[c.id,c.name,c.phone,c.store,c.consultant,pcCustomerStatus(c),!!c.demo])');
+  await features.S('Page.reload');
+  await features.until(`window.PCApp?.ready && PCApp.module==='customer'`);
+  assert.equal(await features.E('state.acceptanceFixturesVersion===undefined && state.approvalExamplesVersion===undefined'),true);
+  assert.deepEqual(await features.E('pcCustomers().map(c=>[c.id,c.name,c.phone,c.store,c.consultant,pcCustomerStatus(c),!!c.demo])'),customerRows);
+  checks.push('Customer refresh preserves list fields without preparing detail or approval fixtures');
+  await features.S('Network.setBlockedURLs',{urls:['*share/dist/js/customer-detail.*.js']});
+  await features.E('pcOpenCustomer(pcCustomers()[0].id)');
+  await features.until(`document.body.innerText.includes('页面功能加载失败')`);
+  assert.equal(await features.E('mrTask'),null);
+  await features.S('Network.setBlockedURLs',{urls:[]});
+  await features.E('pcOpenCustomer(pcCustomers()[0].id)');
+  await features.until(`mrTask?.kind==='customer' && !!document.querySelector('#mergeDrawers [role=dialog]')`);
+  assert.equal(await features.E(`!!PCModules['customer-detail'] && !PCModules['customer-merge']`),true);
+  assert.equal(await features.E('state.acceptanceFixturesVersion===1 && state.approvalExamplesVersion===1 && !state.acceptancePendingProfiles'),true);
+  assert.deepEqual(await features.E('pcCustomers().map(c=>[c.id,c.name,c.phone,c.store,c.consultant,pcCustomerStatus(c),!!c.demo])'),customerRows);
+  assert.equal(await features.E(`(async()=>{const before=JSON.stringify(state);await Promise.all([PCModules['customer-engine'].initializeDetails(),PCModules['customer-engine'].initializeDetails()]);return JSON.stringify(state)===before})()`),true);
+  assert.equal(await features.E(`[0,Date.now(),Date.parse('2026-01-01T16:00:00Z')].every(ms=>mrDate(ms)===new Date(ms).toLocaleString('sv-SE',{timeZone:'Asia/Shanghai'})) && mrDate(NaN)==='Invalid Date'`),true);
+  checks.push('Detail initialization completes before actions, preserves list fields and runs only once');
+  checks.push('Customer detail loads on demand and retries after a download failure');
+  // Delay a cross-feature action, then close its source drawer before it finishes.
+  await features.E(`window.__loadCustomer=PCApp.loadModule;PCApp.loadModule=name=>new Promise(resolve=>{window.__resumeCustomer=()=>resolve(__loadCustomer(name))});window.__pendingCustomer=mrOpen('record',state.mergeRecords[0].id);mrClose()`);
+  await features.E('__resumeCustomer();__pendingCustomer');
+  assert.equal(await features.E('mrTask'),null);
+  await features.E('PCApp.loadModule=__loadCustomer');
+  await features.E(`mrOpen('record',state.mergeRecords[0].id);mrTab('compare')`);
+  assert.equal(await features.E('state.mergeRecords.filter(record=>record.snapshotExamples).length'),1);
+  await features.E(`(async()=>{mrClose();mrNew();mrTask.reason='lazy module draft';await mrSaveDraft();mrNew()})()`);
+  assert.equal(await features.E('mrTask.reason'),'lazy module draft');
+  checks.push('Closing a source drawer cancels a delayed action; selected record snapshots and merge drafts work');
+  // A navigation away must also invalidate an in-flight action.
+  await features.E(`mrClose();PCApp.loadModule=name=>new Promise(resolve=>{window.__resumeCustomer=()=>resolve(__loadCustomer(name))});window.__pendingCustomer=cxOpenApplication();go('home')`);
+  await features.until(`PCApp.ready && PCApp.module==='home'`);
+  await features.E('__resumeCustomer();__pendingCustomer');
+  assert.equal(await features.E('cxApplicationOpen'),false);
+  assert.equal(await features.E(`!!document.querySelector('#mergeDrawers [role=dialog]')`),false);
+  await features.E(`PCApp.loadModule=__loadCustomer;go('tickets')`);
+  await features.until(`PCApp.ready && PCApp.module==='customer-correction'`);
+  await features.E(`(async()=>{cxOpenApplication();newForm.description='correction draft after split';await clSaveDraft(true);clEditDraft(state.correctionDrafts[0].id)})()`);
+  assert.equal(await features.E('newForm.description'),'correction draft after split');
+  await features.E(`clClose();window.__reviewCase=state.cases.find(c=>c.review);pcGoCase(__reviewCase.id)`);
+  await features.until(`apTask?.id===__reviewCase.id && !!document.querySelector('#mergeDrawers [role=dialog]')`);
+  await features.E(`apReviewTabs().forEach(([tab])=>apTab(tab));apClose()`);
+  checks.push('Navigation cancels delayed drawers; correction drafts and cross-feature review tabs work');
+  assert.deepEqual(features.page.events.filter(e=>e.method==='Runtime.exceptionThrown'),[]);
+ }finally{await features.close()}
+ const stores=await create();
+ try{
+  await stores.S('Page.navigate',{url:ENTRY+'#shops'});
+  await stores.until(`window.PCApp?.ready && PCApp.module==='management'`);
+  assert.equal(await stores.E(`!PCModules.refunds && !PCModules.finance && !PCModules['store-beds'] && !PCModules['store-settings']`),true);
+  assert.equal(await stores.E(`!Object.hasOwn(UB.context.data,'refunds') && !Object.hasOwn(UB.context.data,'storeSeats')`),true);
+  await stores.E(`window.__storeId=UB.context.data.shops[0].id;window.__storeName=UB.context.data.shops[0].name;window.__storeRaw=localStorage.getItem(UB.key);UB.shopEdit(__storeId)`);
+  await stores.E(`document.querySelector('#mergeDrawers input[name=name]').value='Storage retry check';window.__storeSet=Storage.prototype.setItem;Storage.prototype.setItem=function(key,value){if(key===UB.key)throw Error('QuotaExceededError');return __storeSet.call(this,key,value)};UB.commit()`);
+  assert.equal(await stores.E('localStorage.getItem(UB.key)===__storeRaw'),true);
+  assert.equal(await stores.E('UB.context.data.shops[0].name===__storeName'),true);
+  assert.equal(await stores.E(`document.querySelector('#mergeDrawers input[name=name]').value`),'Storage retry check');
+  assert.equal(await stores.E(`document.querySelector('#mergeDrawers').innerText.includes('QuotaExceededError')`),true);
+  await stores.E('Storage.prototype.setItem=__storeSet;UB.commit()');
+  await stores.until('UB.context.stack.length===0');
+  assert.equal(await stores.E(`JSON.parse(localStorage.getItem(UB.key)).shops[0].name`),'Storage retry check');
+  checks.push('Stores load independently; quota failures preserve the original record and editable draft');
+  // Capacity's save callback retains a row reference; retry must update that same record.
+  await stores.E('UB.shopCapacity(__storeId)');
+  await stores.E(`Object.assign(UB.context.stack.at(-1).model,{newPosts:['主任'],oldPosts:['店长']});document.querySelector('#mergeDrawers input[name=newCapacity]').value='7';document.querySelector('#mergeDrawers input[name=oldCapacity]').value='3';Storage.prototype.setItem=function(key,value){if(key===UB.key)throw Error('QuotaExceededError');return __storeSet.call(this,key,value)};UB.commit()`);
+  assert.equal(await stores.E(`document.querySelector('#mergeDrawers input[name=newCapacity]').value`),'7');
+  assert.equal(await stores.E(`document.querySelector('#mergeDrawers').innerText.includes('QuotaExceededError')`),true);
+  await stores.E('Storage.prototype.setItem=__storeSet;UB.commit()');
+  await stores.until('UB.context.stack.length===0');
+  assert.equal(await stores.E(`Number(JSON.parse(localStorage.getItem(UB.key)).shops[0].capacity.newCapacity)`),7);
+  checks.push('Retry preserves captured record references and saves the retained capacity draft');
+  // Simulate a legacy/external writer while the form remains open.
+  await stores.E(`UB.shopEdit(__storeId)`);
+  await stores.E(`window.__external=JSON.parse(localStorage.getItem(UB.key));__external.shops[0].name='Another window';localStorage.setItem(UB.key,JSON.stringify(__external));document.querySelector('#mergeDrawers input[name=name]').value='Stale draft';UB.commit()`);
+  assert.equal(await stores.E(`JSON.parse(localStorage.getItem(UB.key)).shops[0].name`),'Another window');
+  assert.equal(await stores.E(`document.querySelector('#mergeDrawers input[name=name]').value`),'Stale draft');
+  assert.equal(await stores.E(`document.querySelector('#mergeDrawers').innerText.includes('其他页面已更新')`),true);
+  checks.push('Stale management edits cannot overwrite changes from another window');
+  await stores.S('Page.reload');await stores.until(`window.PCApp?.ready && PCApp.module==='management'`);
+  await stores.E(`window.__savedRaw=localStorage.getItem(UB.key);go('finance')`);
+  await stores.until(`PCApp.ready && PCApp.module==='finance'`);
+  assert.equal(await stores.E('UB.context.data.shops[0].name'),'Another window');
+  await stores.E(`go('refunds')`);await stores.until(`PCApp.ready && PCApp.module==='refunds'`);
+  await stores.E(`UB.withdrawalPay('RF-RECOVERY-ready-original')`);
+  await stores.E(`navigator.locks.request(UB.key,()=>new Promise(resolve=>window.__releaseStoreLock=resolve));void 0`);
+  await stores.until(`typeof __releaseStoreLock==='function'`);
+  await stores.E(`document.querySelector('.pc-dialog .primary').click();closeModal();__releaseStoreLock()`);
+  await stores.until(`!document.querySelector('.pc-dialog')`);
+  assert.equal(await stores.E(`UB.context.data.refunds.find(r=>r.id==='RF-RECOVERY-ready-original').recoveryStatus`),'待原路退款');
+  checks.push('Closing a confirmation cancels a payment still waiting for its storage lock');
+  await stores.E(`UB.refundTab('withdrawal');UB.withdrawalPay('RF-RECOVERY-ready-original')`);
+  await stores.until(`!!document.querySelector('.pc-dialog')`);
+  await stores.E(`document.querySelector('.pc-dialog .primary').click()`);
+  await stores.until(`UB.context.data.refunds.find(r=>r.id==='RF-RECOVERY-ready-original').recoveryStatus==='已退款'`);
+  checks.push('Split finance/refund pages preserve shared store data and complete simulated refund payments');
+  assert.deepEqual(stores.page.events.filter(e=>e.method==='Runtime.exceptionThrown'),[]);
+ }finally{await stores.close()}
+ for(const raw of ['{broken','{"version":99,"history":[]}']){
+  const page=await create();
+  try{
+   await page.S('Page.addScriptToEvaluateOnNewDocument',{source:`localStorage.setItem('weidong-unified-backend-v1',${JSON.stringify(raw)})`});
+   await page.S('Page.navigate',{url:ENTRY+'#shops'});
+   await page.until(`document.querySelector('#main [role=alert]')?.innerText.includes('原记录已保留')`);
+   assert.equal(await page.E(`localStorage.getItem('weidong-unified-backend-v1')`),raw);
+   await page.E(`go('home')`);await page.until(`PCApp.ready && PCApp.module==='home'`);
+   checks.push('Invalid management data is retained and navigation remains usable: '+raw);
+  }finally{await page.close()}
+ }
+ for(const pattern of ['*share/dist/js/app.*.js','*share/dist/js/core.*.js','*share/dist/js/components.*.js','*share/dist/js/management-core.*.js','*share/dist/js/refunds.*.js']){
   const page=await create();
   try{
    await page.S('Network.setBlockedURLs',{urls:[pattern]});
@@ -78,7 +246,7 @@ await S('Page.enable');await S('Emulation.setFocusEmulationEnabled',{enabled:tru
    await page.until(`document.querySelector('#main [role=alert]')?.innerText.includes('重新加载')`);
    await page.S('Network.setBlockedURLs',{urls:[]});
    await page.E(`document.querySelector('#main [role=alert] button').click()`);
-   await page.until(`window.PCApp?.ready && PCApp.module==='management'`);
+   await page.until(`window.PCApp?.ready && PCApp.module==='refunds'`);
    assert.equal(await page.E('typeof customerRender'),'undefined');
    checks.push('Load failure and retry: '+pattern);
   }finally{await page.close()}

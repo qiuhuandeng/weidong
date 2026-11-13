@@ -32,7 +32,7 @@ def create(name, title, group='业务管理', entry=False):
         config['navigation'].append(nav)
     nav['items'].append([name, title, 'file'])
     if entry:
-        entries[filename] = {'route':name}
+        entries[filename] = {'route':name, 'modules':[name]}
     config_file.write_text(json.dumps(config, ensure_ascii=False, indent=2) + '\n')
     entries_file.write_text(json.dumps(entries, ensure_ascii=False, indent=2) + '\n')
     print(f'已创建 share/pages/{name}/index.js；入口 pc.html#{name}' + (f'，独立入口 {filename}' if entry else ''))

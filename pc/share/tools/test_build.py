@@ -74,6 +74,61 @@ class BuildChecks(unittest.TestCase):
             self.assertNotRegex(runtime, r'Vue\.|ElementPlus\.|ByComponentsV3')
         self.assertLess(manifest['sharedGzipBytes'], 100000)
 
+    def test_customer_rules_and_mobile_have_independent_downloads_and_caches(self):
+        before = self.build()
+        html = (self.root / 'pc.html').read_text()
+        modules = json.loads(re.search(r'window.PC_ASSETS=(.*?);\n', html).group(1))['modules']
+        self.assertEqual(modules['customer-rules']['dependencies'], ['customer-state'])
+        self.assertEqual(modules['customer-mobile']['dependencies'], ['customer-correction', 'customer-review'])
+        self.assertEqual(modules['customer']['dependencies'], ['customer-engine'])
+        self.assertEqual(modules['customer-engine']['dependencies'], ['customer-state'])
+        self.assertEqual(modules['customer']['routes'], ['customers'])
+        self.assertEqual(modules['customer-review']['routes'], ['reviews'])
+        self.assertLess(before['firstRouteGzipBytes']['customer'], 140000)
+        self.assertNotIn('rules', modules['customer']['routes'])
+        self.assertFalse(any(route.startswith('mobile') for route in modules['customer']['routes']))
+        self.assertLess(before['firstRouteGzipBytes']['customer-rules'], 105000)
+        rules = self.root / 'share/pages/customer-rules/index.js'
+        rules.write_text(rules.read_text() + '\n/* rule editor cache probe */\n')
+        after = self.build()
+        changed = set(before['files']) ^ set(after['files'])
+        self.assertEqual(len(changed), 2)
+        self.assertTrue(all(name.startswith('js/customer-rules.') for name in changed))
+
+    def test_customer_view_and_mobile_style_edits_keep_other_assets_cached(self):
+        before = self.build()
+        source = self.root / 'share/pages/customer-correction/index.js'
+        source.write_text(source.read_text() + '\n/* correction view cache probe */\n')
+        after = self.build()
+        changed = set(before['files']) ^ set(after['files'])
+        self.assertEqual(len(changed), 2)
+        self.assertTrue(all(name.startswith('js/customer-correction.') for name in changed))
+        source = self.root / 'share/pages/customer-mobile/style.css'
+        source.write_text(source.read_text() + '\n.ap-mobile-shell .cache-probe { padding: 0; }\n')
+        final = self.build()
+        changed = set(after['files']) ^ set(final['files'])
+        self.assertEqual(len(changed), 2)
+        self.assertTrue(all(name.startswith('css/customer-mobile.') for name in changed))
+
+    def test_management_features_load_independently_and_keep_other_caches(self):
+        before = self.build()
+        html = (self.root / 'pc.html').read_text()
+        modules = json.loads(re.search(r'window.PC_ASSETS=(.*?);\n', html).group(1))['modules']
+        self.assertEqual(modules['management']['routes'], ['shops'])
+        for name in ['management', 'refunds', 'finance', 'store-beds', 'store-settings']:
+            self.assertEqual(modules[name]['dependencies'], ['management-core'])
+            self.assertLess(before['firstRouteGzipBytes'][name], 105000)
+        self.assertNotIn('routes', modules['management-core'])
+        self.assertNotIn('styles', modules['management-core'])
+        self.assertIn('module.routes ||= []', html)
+        self.assertIn('module.styles ||= []', html)
+        source = self.root / 'share/pages/refunds/index.js'
+        source.write_text(source.read_text() + '\n/* refund cache probe */\n')
+        after = self.build()
+        changed = set(before['files']) ^ set(after['files'])
+        self.assertEqual(len(changed), 2)
+        self.assertTrue(all(name.startswith('js/refunds.') for name in changed))
+
     def test_shell_only_module_has_no_ui_preload(self):
         manifest = self.build()
         html = (self.root / 'pc.html').read_text()
@@ -229,7 +284,11 @@ const localIcon = '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0"/></svg
     def test_multiple_entries_share_the_exact_same_assets(self):
         before = self.build()
         file = self.root / 'share/entries.json'
-        file.write_text(json.dumps({'pc.html':{'route':'rules'}, 'pc-refunds.html':{'route':'refunds'}}))
+        # Two entries with the same scope share assets and navigation. Preserve
+        # the PC/inventory boundary rather than pulling all systems into either.
+        entries = json.loads(file.read_text())
+        scope = entries['pc.html']
+        file.write_text(json.dumps({**entries, 'pc.html':{**scope, 'route':'rules'}, 'pc-refunds.html':{**scope, 'route':'refunds'}}))
         after = self.build()
         self.assertEqual(before['files'], after['files'])
         def config(filename):
@@ -260,6 +319,10 @@ const localIcon = '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0"/></svg
         self.assertNotRegex(scaffold, r'ByForm|ByTable|ByCommonInput|ElementPlus|Vue\.')
         self.build()
         self.assertTrue((self.root / 'pc-inventory-probe.html').is_file())
+        html = (self.root / 'pc-inventory-probe.html').read_text()
+        config = json.loads(re.search(r'window.PC_ASSETS=(.*?);\n', html).group(1))
+        self.assertEqual(list(config['modules']), ['inventory-probe'])
+        self.assertEqual(config['navigation'], [{'group':'业务管理', 'items':[['inventory-probe','库存','file']]}])
         with self.assertRaisesRegex(SystemExit, '已存在'):
             module.create('inventory-probe','库存')
         file = self.root / 'share/routes.json'
@@ -284,7 +347,7 @@ const localIcon = '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0"/></svg
         self.assertEqual(inventory['modules']['supply-chain']['dependencies'], ['inventory-core'])
         self.assertEqual(inventory['modules']['inventory-clinical']['dependencies'], ['supply-chain'])
         self.assertEqual(inventory['defaultRoute'], 'sc-services')
-        inventory_routes = {route for module in inventory['modules'].values() for route in module['routes']}
+        inventory_routes = {route for module in inventory['modules'].values() for route in module.get('routes', [])}
         main_items = {item[0] for group in main['navigation'] for item in group['items']}
         inventory_items = {item[0] for group in inventory['navigation'] for item in group['items']}
         self.assertFalse(main_items & inventory_routes)

@@ -44,10 +44,10 @@ window.PCModules['supply-chain'] = (() => {
     d.partnerOrders=[{id:'OUT001',name:'Y10 外协体验',customer:'陈女士 / HY1003',channel:'渠道外协',store:'XM',amount:1980,ratio:30,received:0,status:'待回款'}];
     return d;
   }
-  let data;try {data=JSON.parse(localStorage.getItem(KEY));}catch{} if(!data||data.version!==1)data=seed();
-  const persistence=window.PCInventoryStorage;let initializing=true,initializationChanged=false,pendingSave=null,persistedRevision=Number(data.revision||0);
+  let data,readComplete=false;
+  const persistence=window.PCInventoryStorage;let initializing=true,initializationChanged=false,pendingSave=null,persistedRevision=0;
   S.storageError='';
-  S.ready=persistence.read().then(saved=>{if(saved)data=saved;persistedRevision=Number(data.revision||0)});
+  S.ready=persistence.read().then(saved=>{data=saved===null?seed():saved;readComplete=true;persistedRevision=Number(data.revision||0)});
   const get=(type,id,d=data)=>d[type]?.find(r=>r.id===id);
   function persist(next,previous,keepOnFailure=false){
     let operation;
@@ -60,7 +60,7 @@ window.PCModules['supply-chain'] = (() => {
     pendingSave=saving;saving.catch(()=>{});
   }
   function transaction(label,fn){
-    must(!pendingSave,'正在保存，请稍候');must(initializing||!S.storageError,S.storageError);
+    must(readComplete,'账本尚未成功读取，已停止记账');must(!pendingSave,'正在保存，请稍候');must(initializing||!S.storageError,S.storageError);
     const previous=data,next=copy(data);if(!initializing)S.authorizeTransaction?.(label,next);const gate=S.approvalIntercept?.(next);const result=gate?.skip?gate.result:fn(next);S.reconcileLedger?.(next);next.revision=Number(previous.revision||0)+1;
     for(const b of next.batches)must(Number.isFinite(b.quantity)&&Number.isFinite(b.reserved)&&b.quantity>=0&&b.reserved>=0&&b.reserved<=b.quantity,'库存数量或预占数量异常');
     next.history.unshift({id:uid('H'),name:label,time:stamp(),operator:S.actor?.(next)?.name||'系统初始化',actor:S.actor?.(next)?.id||'',target:result?.id||'',detail:result?.detail||label});
@@ -71,7 +71,7 @@ window.PCModules['supply-chain'] = (() => {
     initializing=false;if(!initializationChanged)return;
     try{persist(data,data,true);await flush()}catch{/* The screen and original records stay accessible even if both stores reject writes. */}
   }
-  function retryPersist(){must(!pendingSave,'正在保存，请稍候');persist(data,data,true);return flush()}
+  function retryPersist(){must(readComplete,'账本尚未成功读取，已阻止保存');must(!pendingSave,'正在保存，请稍候');persist(data,data,true);return flush()}
   Object.assign(S,{flush,finishInitialization,retryPersist});
   Object.defineProperty(S,'saving',{get:()=>!!pendingSave});
 

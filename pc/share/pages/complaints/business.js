@@ -3,8 +3,6 @@
 (function () {
   'use strict';
   // Independent PC records; import the source prototype once when available.
-  const KEY = 'weid.pc.complaints.v1';
-  const SOURCE_KEY = 'weidong.unified-complaints.v1';
   const dictionary = window.PCComplaintOptions;
   const {customers,demoScenarios,completeLifecycleExample,timingExample,clearProcessingAssessments}=window.PCModules['complaint-fixtures'];
   const LEVELS = ['1级','2级','3级','4级','5级'];
@@ -190,20 +188,22 @@
     return {id:String(31001+i),sourceId:c[3]==='wechat'?'200000020261019140532'+String(473535+i):String(22135-i),customerId:'C'+i,name:c[0],phone:c[1],member:String(15275350+i*227),customerWechat:own[0].customerWechat,store:c[2],channel:c[3],content:c[4],created:c[5],submitter:c[6],status:c[7],handlingPlan:'',level:'',level4Type:'',department:'',type:'',firstContact:'',contactTime:'',customerStatement:'',responsible:'',reason:'',linked:[],files:[],follows:[],logs:[{time:c[5],actor:c[6],action:'收到投诉',text:'通过'+CHANNELS[c[3]]+'提交投诉，进入统一客诉列表。'}],channelStatus:c[3]==='wechat'?(c[7]==='已完成'?'已完成':'处理中'):c[7],merchant:i%2?'厦门尚妃美容有限公司':'厦门宜颜佳科技有限公司',merchantId:i%2?'173092199':'844905329',payOrder:'420005788820241102764073'+String(6622+i),externalOrder:own[0].id,refund:i%4===0?own[0].amount:0,...payment,messages:[{time:c[5],actor:'客户',text:c[4],type:'用户提交投诉'}]};
   })}
   function completeWechatDetails(items){const fixtures=seed();let changed=false;for(const r of items){if(r.channel!=='wechat')continue;const fixture=fixtures.find(f=>f.id===r.id&&f.channel==='wechat'&&f.externalOrder===r.externalOrder);if(!fixture)continue;for(const key of ['wechatNickname','paymentAmount','problemType','problemDescription','complaintCount','riskStatus'])if(!Object.hasOwn(r,key)){r[key]=fixture[key];changed=true}}return changed}
-  let records,readFailure=false;
-  try{const saved=JSON.parse(localStorage.getItem(KEY)||localStorage.getItem(SOURCE_KEY));records=Array.isArray(saved)&&saved.length&&saved.every(r=>r.id&&Array.isArray(r.logs)&&Array.isArray(r.follows)&&Array.isArray(r.linked))?saved:seed()}catch(e){records=seed();readFailure=true}
-  // Add new pending fixtures once; never reset previously handled complaints.
-  records.push(...seed().filter(r=>Number(r.id)>=31016&&!records.some(existing=>existing.id===r.id)));
-  records.forEach(r=>{r.files=(r.files||[]).filter(f=>!f.sample&&f.data);r.follows.forEach((f,i)=>{f.id??=r.id+'-history-'+i;f.files=(f.files||[]).filter(file=>!file.sample&&file.data)});r.messages=(r.messages||[]).filter(m=>!String(m.type||'').includes('示例')).map(m=>({...m,files:(m.files||[]).filter(f=>!f.sample&&f.data)}))});
-  const demoChanged=completeDemoDetails(records),wechatChanged=completeWechatDetails(records);
-  // Normalize in memory; changing status labels alone must not trigger another storage write.
-  records.forEach(r=>{normalizeRecordStatus(r);const i=Number(r.id)-31001;if(!r.level&&customers[i]?.[0]===r.name)r.level=demoScenarios[i]?.[3]||'';});
-  const financeChanged=records.reduce((changed,r)=>workflow.reconcileFinance(r)||changed,false);
-  const assessmentExamplesChanged=clearProcessingAssessments(records);
-  try{if(demoChanged||wechatChanged||financeChanged||assessmentExamplesChanged||!localStorage.getItem(KEY))localStorage.setItem(KEY,JSON.stringify(records))}catch(e){readFailure=true}
+  let records,initialized=false;
+  function initialize(){
+    const saved=PCComplaintStorage.read(),examples=seed();records=saved===null?examples:saved;
+    // Only the known demo list receives new examples; an empty saved list stays empty.
+    const additions=records.some(r=>examples.some(f=>f.id===r.id&&f.name===r.name))?examples.filter(r=>Number(r.id)>=31016&&!records.some(existing=>existing.id===r.id)):[];
+    records.push(...additions);
+    records.forEach(r=>{r.files=(r.files||[]).filter(f=>!f.sample&&f.data);r.follows.forEach((f,i)=>{f.id??=r.id+'-history-'+i;f.files=(f.files||[]).filter(file=>!file.sample&&file.data)});r.messages=(r.messages||[]).filter(m=>!String(m.type||'').includes('示例')).map(m=>({...m,files:(m.files||[]).filter(f=>!f.sample&&f.data)}))});
+    const demoChanged=completeDemoDetails(records),wechatChanged=completeWechatDetails(records);
+    // Status display normalization alone does not rewrite existing records.
+    records.forEach(r=>{normalizeRecordStatus(r);const i=Number(r.id)-31001;if(!r.level&&customers[i]?.[0]===r.name)r.level=demoScenarios[i]?.[3]||'';});
+    const financeChanged=records.reduce((changed,r)=>workflow.reconcileFinance(r)||changed,false),assessmentChanged=clearProcessingAssessments(records);
+    if(PCComplaintStorage.needsMigration||additions.length||demoChanged||wechatChanged||financeChanged||assessmentChanged)PCComplaintStorage.save(records);
+    initialized=true;
+  }
   let root,portal,filters={},filterDraft={},page=1,pageSize=10,more=false,layers=[],main=null,listClock;
-  let storageVersion;try{storageVersion=localStorage.getItem(KEY)}catch(e){readFailure=true}
-  function persist(next){try{if(localStorage.getItem(KEY)!==storageVersion)throw Error('工单已在其他页面更新，请刷新后重试');const data=JSON.stringify(next);localStorage.setItem(KEY,data);storageVersion=data;records=next;return true}catch(e){toast('保存失败：'+e.message+'；已保留当前输入。');return false}}
+  function persist(next){try{if(!initialized)throw Error('投诉记录尚未成功初始化，已阻止保存');PCComplaintStorage.save(next);records=next;return true}catch(e){toast(e.message);return false}}
   function toast(message){PCUI.message(message,{type:'info',duration:4000});}
   function interval(record){if(!record.contactTime)return '待补充客户陈述';const delta=new Date(record.created.replace(' ','T')+':00+08:00')-new Date(record.contactTime+':00+08:00');if(!Number.isFinite(delta))return '—';const minutes=Math.round(Math.abs(delta)/60000),duration=minutes<60?minutes+'分钟':minutes<1440?Math.floor(minutes/60)+'小时'+(minutes%60?minutes%60+'分':''):Math.floor(minutes/1440)+'天'+(Math.floor(minutes%1440/60)?Math.floor(minutes%1440/60)+'小时':'');return delta>=0?'联系至上报 '+duration:'提交后联系 '+duration}
   function complaintKeywordMatch(r,criteria){
@@ -732,11 +732,10 @@
     const customer=customerDirectory().find(item=>item.customerId===customerId),linked=customer?orders.filter(order=>order.customerId===customer.customerId).map(order=>({id:order.id,wechatId:order.bookingWechatId||''})):[];
     return customerPageView(customer,linked);
   }
-  function mount(content,options={}){if(!content)return;root=content;root.classList.add('uc-scope');portal=document.getElementById('mergeDrawers');bind(root);clearInterval(listClock);if(options.customerId!==undefined&&options.customerId!==null){root.innerHTML=customerPage(options.customerId);return}renderList();listClock=setInterval(refreshListTimings,60000);document.addEventListener('visibilitychange',refreshListTimings);if(readFailure)toast('本地记录读取失败，已恢复初始列表');if(dictionary.error)toast('下拉配置读取失败：'+dictionary.error+'；请在配置入口重试');}
+  function mount(content,options={}){if(!content)return;root=content;root.classList.add('uc-scope');portal=document.getElementById('mergeDrawers');bind(root);clearInterval(listClock);if(options.customerId!==undefined&&options.customerId!==null){root.innerHTML=customerPage(options.customerId);return}renderList();listClock=setInterval(refreshListTimings,60000);document.addEventListener('visibilitychange',refreshListTimings);if(dictionary.error)toast('下拉配置读取失败：'+dictionary.error+'；请在配置入口重试');}
   function leave(){clearInterval(listClock);document.removeEventListener('visibilitychange',refreshListTimings);for(const layer of layers)layer.el.remove();layers=[];main=null;unlockBackground();}
   PCUI.registerPager('complaints',(value,config)=>{if(config.scope==='create-orders'){const layer=layers.at(-1);if(!layer?.creationOrders)return;layer.creationOrders.page=value.currentPage;layer.creationOrders.size=value.pageSize;createOrderPickerView(layer);return}if(config.scope==='orders'||config.scope==='order-customers'){const e=main?.editor;if(!e)return;if(config.scope==='orders'){e.orderPage=value.currentPage;e.orderPageSize=value.pageSize}else{e.customerPage=value.currentPage;e.customerPageSize=value.pageSize}renderEditor();}else{filterDraft={...filterDraft,...readListSearch()};page=value.currentPage;pageSize=value.pageSize;renderList();}});
   document.addEventListener('keydown',keyboard,true);
   window.addEventListener('beforeunload',event=>{if(layers.some(dirty)){event.preventDefault();event.returnValue=''}});
-  window.PCComplaints={mount,leave};
-  const initial=document.getElementById('pc-complaints');if(initial)mount(initial);
+  window.PCComplaints={mount,leave,initialize};
 })();

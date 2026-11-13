@@ -8,4 +8,4 @@ window.PCModules.complaints = {
   },
   leave() { PCComplaints.leave(); }
 };
-window.PCModules.complaints.ready = PCComplaintOptions.refresh();
+window.PCModules.complaints.ready = Promise.resolve().then(()=>{PCComplaints.initialize();return PCComplaintOptions.refresh()});
