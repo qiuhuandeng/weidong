@@ -88,7 +88,7 @@ function refundConfigRules(model){
       return [`<div class="input-with-unit">${refundConfigPeriod(rule,index,index===model.rules.length-1)}</div>`,mode,`<div data-refund-amount="${index}">${refundConfigAmount(rule,index)}</div>`,...(hasSplits?[index>0&&index<model.rules.length-1?b('删除',`UB.refundConfigRemoveRule(${index})`,'text').replace('<button ',`<button aria-label="删除第 ${index+1} 条时间段" `):'—']:[])];
     });
     let rules=tableHTML(['适用时间','金额条件','订单实付金额上限',...(hasSplits?['操作']:[])],rows);
-    rules=rules.replace('<table','<table data-pc-scroll="parent" data-pc-min-height="0"').replace('<thead>','<colgroup>'+[330,130,260,...(hasSplits?[68]:[])].map(width=>`<col style="width:${width}px">`).join('')+'</colgroup><thead>');
+    rules=rules.replace('<table','<table data-pc-scroll="parent" data-pc-min-height="0"').replace('<thead>','<colgroup>'+[250,150,hasSplits?310:388,...(hasSplits?[78]:[])].map(width=>`<col style="width:${width}px">`).join('')+'</colgroup><thead>');
     const categories=[...new Set([...shopProjectCategories,...model.blockedProjectCategories])];
     const categorySelect=`<select name="blockedProjectCategories" aria-label="禁用项目分类" multiple data-filterable placeholder="请选择禁用项目分类">${categories.map(category=>`<option value="${e(category)}" ${model.blockedProjectCategories.includes(category)?'selected':''}>${e(category)}</option>`).join('')}</select>`;
     return section('退款规则',rules,b('添加时间段','UB.refundConfigAddRule()','primary'))+section('禁用项目分类',`<div class="pc-form"><div class="pc-field-content" style="width:280px;max-width:100%">${categorySelect}</div></div>`);
