@@ -1,28 +1,175 @@
 /* refunds: page code loaded by the shared PC module loader. */
 (()=>{
 'use strict';
-const managementContext=UB.context;const {stack,e,input,actions,save,history,tableHTML,open,close,error,section,topPanel,collect,redraw,key,stamp,uid,refresh,details,today,link,views,b,sel,tabs,panelHTML,companyPager,exportCSV}=managementContext;
+const managementContext=UB.context;const {stack,e,input,actions,save,history,tableHTML,open,close,error,section,topPanel,collect,redraw,key,stamp,uid,refresh,details,today,link,views,b,sel,tabs,panelHTML,companyPager,exportCSV,shopProjectCategories}=managementContext;
 const refundPaymentConfig={yinsheng:{enabled:false,days:null}};
 const refundTabs=[['manage','退款管理'],['withdrawal','提现管理'],['list','退款列表'],['detail','退款明细']];
 const refundStages=['主管审核','售后审核','财务审核'];
 const refundPaymentMethods=[['yinsheng','银盛反扫',true],['scanner','扫码枪',false],['pos','POS机',false],['wecom','企微对外收款',false],['personal','个人收款码',false],['cash','现金',false]];
-function refundConfig(){
-    const saved=managementContext.data.refundPaymentConfig.yinsheng||refundPaymentConfig.yinsheng,model={enabled:!!saved.enabled,days:saved.days==null?'':String(saved.days)};
-    open('退款配置',item=>section('支付方式原路退回',tableHTML(['支付方式','原路退回','可退期限'],refundPaymentMethods.map(([id,name,supported])=>{
-      const control=switcher(supported&&item.model.enabled,supported?'UB.refundConfigChange()':'',name+'原路退回').replace('<input ',supported?'<input name="enabled" ':'<input disabled ');
-      const days=supported?`<div class="input-with-unit">${input('days',item.model.days,'number',`min="1" step="1" placeholder="请输入天数" ${item.model.enabled?'required':'disabled'}`).replace('aria-label="days"','aria-label="银盛反扫可退天数" aria-describedby="refund-config-help"')}<span class="ub-unit">天</span></div>`:'<span class="muted">—</span>';
-      return [e(name),actions(control,`<span${supported?'':' class="muted"'}>${supported?(item.model.enabled?'已开启':'已关闭'):'不支持'}</span>`),days];
-    })))+'<p class="ub-note" id="refund-config-help">开启后，支付成功起所设天数内可申请原路退回。目前仅银盛反扫支持，其他支付方式暂不支持。</p>',r=>{
-      const days=Number(r.days),valid=r.days.trim()!==''&&Number.isSafeInteger(days)&&days>0;
-      if(r.enabled&&!valid)return error('请输入大于 0 的整数天数');
-      const before=clone(managementContext.data.refundPaymentConfig);
-      managementContext.data.refundPaymentConfig={yinsheng:{enabled:r.enabled,days:valid?days:null}};
-      history('refund-config','payment-methods','更新支付方式原路退回配置',before,managementContext.data.refundPaymentConfig);
-      save('退款配置已保存');close(true);
-    },860,model);
-    stack.at(-1).read=(root,r)=>{r.enabled=root.querySelector('[name="enabled"]').checked;r.days=root.querySelector('[name="days"]').value};
+// Rules are data-driven; the legacy tiers below are read only when opening an older configuration.
+function refundConfigModel(config){
+    const value=x=>x==null?'':String(x),supported=refundPaymentMethods.filter(x=>x[2]);
+    const payments=Object.fromEntries(supported.map(([id])=>{const saved=config[id]||{};return [id,{enabled:!!saved.enabled,days:value(saved.days)}]}));
+    let rules=config.rules;
+    if(rules===undefined){
+      rules=[];
+      for(const [id] of supported){
+        const saved=config[id]||{},days=Number(saved.days);
+        if(!Number.isSafeInteger(days)||days<1)continue;
+        if(Object.hasOwn(saved,'day2MaxAmount')||Object.hasOwn(saved,'day3MaxAmount')){
+          rules.push({paymentMethod:id,fromDay:1,toDay:1,amountMode:'unlimited'});
+          if(days>=2)rules.push({paymentMethod:id,fromDay:2,toDay:2,amountMode:'limited',maxAmount:saved.day2MaxAmount});
+          if(days>=3)rules.push({paymentMethod:id,fromDay:3,toDay:null,amountMode:'limited',maxAmount:saved.day3MaxAmount});
+        }else rules.push({paymentMethod:id,fromDay:1,toDay:null,amountMode:'unlimited'});
+      }
+    }
+    const normalized=refundConfigNormalizeRules(rules);if(!normalized)return null;
+    return {tab:'payments',payments,blockedProjectCategories:[...(config.blockedProjectCategories||[])],rules:normalized.map(r=>({fromDay:value(r.fromDay),toDay:value(r.toDay),amountMode:r.amountMode,maxAmount:value(r.maxAmount)}))};
   }
-function refundConfigChange(){collect();redraw();topPanel()?.querySelector('[name="enabled"]')?.focus()}
+// Keep saved amounts while converting the terminal interval to a per-payment deadline.
+// Previously unconfigured gaps remain explicit, unfilled limits for the user to resolve.
+function refundConfigNormalizeRules(source){
+    const defaults=()=>[{fromDay:1,toDay:1,amountMode:'unlimited',maxAmount:null},{fromDay:2,toDay:null,amountMode:'limited',maxAmount:null}];
+    if(!source.length)return defaults();
+    const rows=source.map(r=>({...r,fromDay:Number(r.fromDay),toDay:r.toDay==null||r.toDay===''?null:Number(r.toDay)})).sort((a,b)=>a.fromDay-b.fromDay);
+    if(rows.some((r,i)=>!Number.isSafeInteger(r.fromDay)||r.fromDay<1||r.toDay!==null&&(!Number.isSafeInteger(r.toDay)||r.toDay<r.fromDay)||i&&r.fromDay<=(rows[i-1].toDay??Infinity)))return null;
+    const first=rows.find(r=>r.fromDay===1),result=[{fromDay:1,toDay:1,amountMode:first?.amountMode||'limited',maxAmount:first?.maxAmount??null}];
+    let next=2;
+    for(const row of rows){
+      if(row.toDay!==null&&row.toDay<2)continue;
+      const from=Math.max(2,row.fromDay);
+      if(from>next)result.push({fromDay:next,toDay:from-1,amountMode:'limited',maxAmount:null});
+      result.push({...row,fromDay:from});next=row.toDay===null?Infinity:row.toDay+1;
+    }
+    if(result.length===1)result.push(defaults()[1]);
+    result.at(-1).toDay=null;
+    return result;
+  }
+function refundConfigSyncStarts(model){
+    model.rules.forEach((rule,index)=>{rule.fromDay=index===0?'1':index===1?'2':(/^\d+$/.test(model.rules[index-1].toDay)&&Number.isSafeInteger(Number(model.rules[index-1].toDay)+1)?String(Number(model.rules[index-1].toDay)+1):'')});
+  }
+function refundConfigPeriod(rule,index,last){
+    if(index===0)return '支付当天';
+    if(last)return `<span data-refund-tail title="包含起始当天，截止日期按对应支付方式的退款期限计算">${rule.fromDay?'第 '+e(rule.fromDay)+' 天以后':'后续时间'}</span>`;
+    return `<div class="input-with-unit"><span>第 <span data-refund-start="${index}">${e(rule.fromDay)||'—'}</span> 天至第</span>${input(`rule-${index}-toDay`,rule.toDay,'number',`min="${e(rule.fromDay)||2}" step="1" style="width:80px;flex:0 0 80px" required oninput="UB.refundConfigDaysChange()"`).replace(`aria-label="rule-${index}-toDay"`,`aria-label="第 ${index+1} 条规则结束天数"`)}<span>天</span></div>`;
+  }
+function refundConfig(){
+    const config=managementContext.data.refundPaymentConfig;
+    if(config.rules!==undefined&&(!Array.isArray(config.rules)||config.rules.some(r=>!r||typeof r!=='object'||Array.isArray(r))))return toast('退款规则格式不兼容，原配置已保留');
+    if(config.blockedProjectCategories!==undefined&&(!Array.isArray(config.blockedProjectCategories)||config.blockedProjectCategories.some(category=>typeof category!=='string')))return toast('禁用项目分类格式不兼容，原配置已保留');
+    const model=refundConfigModel(config);if(!model)return toast('原退款时间段存在重叠或格式错误，原配置已保留');
+    open('退款配置',item=>tabs([['payments','支付方式设置'],['rules','退款规则']],item.model.tab,id=>`UB.refundConfigTab('${id}')`)+(item.model.tab==='rules'?refundConfigRules(item.model):refundConfigPayments(item.model)),refundConfigSave,860,model);
+    stack.at(-1).read=(root,r)=>{
+      for(const [id,payment] of Object.entries(r.payments)){
+        const enabled=root.querySelector(`[name="payment-${id}-enabled"]`),days=root.querySelector(`[name="payment-${id}-days"]`);
+        if(enabled)payment.enabled=enabled.checked;if(days)payment.days=days.value;
+      }
+      r.rules.forEach((rule,index)=>{for(const field of ['toDay','amountMode','maxAmount']){
+        const control=root.querySelector(`[name="rule-${index}-${field}"]`);if(control)rule[field]=control.value;
+      }});
+      refundConfigSyncStarts(r);
+      const categories=root.querySelector('[name="blockedProjectCategories"]');
+      if(categories)r.blockedProjectCategories=[...categories.selectedOptions].map(option=>option.value);
+    };
+  }
+function refundConfigPayments(model){
+    return section('支付方式原路退回',tableHTML(['支付方式','原路退回','最长可退天数'],refundPaymentMethods.map(([id,name,supported])=>{
+      const payment=model.payments[id]||{};
+      const control=switcher(supported&&payment.enabled,"this.closest('td').querySelector('[data-refund-payment-state]').textContent=this.checked?'已开启':'已关闭'",name+'原路退回').replace('<input ',supported?`<input name="payment-${id}-enabled" `:'<input disabled ');
+      const days=supported?`<div class="input-with-unit">${input(`payment-${id}-days`,payment.days,'number','min="1" step="1" placeholder="请输入天数"').replace(`aria-label="payment-${id}-days"`,`aria-label="${name}最长可退天数" aria-describedby="refund-config-help"`)}<span class="ub-unit">天</span></div>`:'<span class="muted">—</span>';
+      return [e(name),actions(control,supported?`<span data-refund-payment-state>${payment.enabled?'已开启':'已关闭'}</span>`:'<span class="muted">不支持</span>'),days];
+    })))+'<p class="ub-note" id="refund-config-help">按自然日计算，支付当天为第 1 天，最长可退天数包含支付当天及截止当天。金额与时间段条件在“退款规则”中配置，保存并开启对应支付方式后生效。</p>';
+  }
+function refundConfigRules(model){
+    const hasSplits=model.rules.length>2;
+    const rows=model.rules.map((rule,index)=>{
+      const name=field=>`rule-${index}-${field}`,label=field=>`第 ${index+1} 条规则${field}`;
+      const mode=sel(name('amountMode'),[['limited','限额'],['unlimited','不限金额']],rule.amountMode).replace('<select ',`<select onchange="UB.refundConfigRuleMode(${index})" `).replace(`aria-label="${name('amountMode')}"`,`aria-label="${label('金额条件')}"`);
+      return [`<div class="input-with-unit">${refundConfigPeriod(rule,index,index===model.rules.length-1)}</div>`,mode,`<div data-refund-amount="${index}">${refundConfigAmount(rule,index)}</div>`,...(hasSplits?[index>0&&index<model.rules.length-1?b('删除',`UB.refundConfigRemoveRule(${index})`,'text').replace('<button ',`<button aria-label="删除第 ${index+1} 条时间段" `):'—']:[])];
+    });
+    let rules=tableHTML(['适用时间','金额条件','订单实付金额上限',...(hasSplits?['操作']:[])],rows);
+    rules=rules.replace('<table','<table data-pc-scroll="parent" data-pc-min-height="0"').replace('<thead>','<colgroup>'+[330,130,260,...(hasSplits?[68]:[])].map(width=>`<col style="width:${width}px">`).join('')+'</colgroup><thead>');
+    const categories=[...new Set([...shopProjectCategories,...model.blockedProjectCategories])];
+    const categorySelect=`<select name="blockedProjectCategories" aria-label="禁用项目分类" multiple data-filterable placeholder="请选择禁用项目分类">${categories.map(category=>`<option value="${e(category)}" ${model.blockedProjectCategories.includes(category)?'selected':''}>${e(category)}</option>`).join('')}</select>`;
+    return section('退款规则',rules,b('添加时间段','UB.refundConfigAddRule()','primary'))+section('禁用项目分类',`<div class="pc-form"><div class="pc-field-content" style="width:280px;max-width:100%">${categorySelect}</div></div>`);
+  }
+function refundConfigTab(tab){
+    if(!['payments','rules'].includes(tab))return;collect();stack.at(-1).model.tab=tab;redraw();
+    topPanel()?.querySelector('[role="tab"][aria-selected="true"]')?.focus({preventScroll:true});
+  }
+function refundConfigAddRule(){
+    collect();const model=stack.at(-1).model;
+    const issue=refundConfigRangeError(model);if(issue)return refundConfigIssue('rules',issue.message,issue.name);
+    const last=model.rules.at(-1),start=Number(last.fromDay);
+    if(!Number.isSafeInteger(start+1))return error('分界天数过大，请调整已有时间段');
+    last.toDay=String(start);
+    model.rules.push({...last,fromDay:String(start+1),toDay:''});
+    redraw();topPanel()?.querySelector(`[name="rule-${model.rules.length-2}-toDay"]`)?.focus();
+  }
+function refundConfigRemoveRule(index){
+    collect();const model=stack.at(-1).model,rules=model.rules;
+    if(index<=0||index>=rules.length-1)return;
+    rules.splice(index,1);refundConfigSyncStarts(model);redraw();
+    topPanel()?.querySelector('button[onclick="UB.refundConfigAddRule()"]')?.focus({preventScroll:true});
+  }
+function refundConfigRuleMode(index){
+    collect();const rule=stack.at(-1).model.rules[index],container=topPanel()?.querySelector(`[data-refund-amount="${index}"]`);if(rule&&container)container.innerHTML=refundConfigAmount(rule,index);
+  }
+function refundConfigAmount(rule,index){
+    if(rule.amountMode==='unlimited')return '<span class="muted">—</span>';
+    return `<div class="input-with-unit"><span>≤</span>${input(`rule-${index}-maxAmount`,rule.maxAmount,'number','min="0.01" step="0.01" placeholder="请输入金额上限" required').replace(`aria-label="rule-${index}-maxAmount"`,`aria-label="第 ${index+1} 条规则金额上限"`)}<span class="ub-unit">元</span></div>`;
+  }
+function refundConfigRangeError(model){
+    const integer=value=>/^\d+$/.test(value)&&Number.isSafeInteger(Number(value))&&Number(value)>0;
+    for(const [index,rule] of model.rules.entries()){
+      const issue=message=>({message:`第 ${index+1} 条规则：${message}`,name:`rule-${index}-toDay`});
+      if(!integer(rule.fromDay))return issue('请先填写上一时间段的有效结束天数');
+      if(index===model.rules.length-1){if(rule.toDay!=='')return issue('最后一段应跟随各支付方式退款期限');continue}
+      if(!integer(rule.toDay)||!Number.isSafeInteger(Number(rule.toDay)+1))return issue('结束天数须为有效的正整数');
+      if(Number(rule.toDay)<Number(rule.fromDay))return issue('时间段重复或重叠，结束天数不能小于开始天数');
+    }
+    return null;
+  }
+function refundConfigDaysChange(){
+    collect();const root=topPanel(),model=stack.at(-1).model,issue=refundConfigRangeError(model);
+    root.querySelectorAll('input[name^="rule-"]').forEach(control=>{control.setCustomValidity('');control.removeAttribute('aria-invalid')});
+    model.rules.forEach((rule,index)=>{
+      const start=root.querySelector(`[data-refund-start="${index}"]`),end=root.querySelector(`[name="rule-${index}-toDay"]`);
+      if(start)start.textContent=rule.fromDay||'—';if(end)end.min=rule.fromDay||'2';
+    });
+    const tail=root.querySelector('[data-refund-tail]');if(tail)tail.outerHTML=refundConfigPeriod(model.rules.at(-1),model.rules.length-1,true);
+    if(issue){const control=root.querySelector(`[name="${issue.name}"]`);control?.setCustomValidity(issue.message);control?.setAttribute('aria-invalid','true')}
+    error(issue?.message||'');
+  }
+function refundConfigIssue(tab,message,name){
+    const model=stack.at(-1).model;if(model.tab!==tab){model.tab=tab;redraw()}
+    error(message);if(name)PCUI.whenReady().then(()=>{const control=topPanel()?.querySelector(`[name="${name}"]`);if(control)PCUI.focusControl(control)});return false;
+  }
+function refundConfigSave(model){
+    const integer=value=>/^\d+$/.test(value)&&Number.isSafeInteger(Number(value))&&Number(value)>0;
+    const payments={},rules=[];
+    for(const [id,payment] of Object.entries(model.payments)){
+      const name=refundPaymentMethods.find(x=>x[0]===id)[1];
+      if((payment.enabled||payment.days!=='')&&!integer(payment.days))return refundConfigIssue('payments',`请输入${name}大于 0 的整数天数`,`payment-${id}-days`);
+      payments[id]={enabled:payment.enabled,days:payment.days===''?null:Number(payment.days)};
+    }
+    const rangeIssue=refundConfigRangeError(model);if(rangeIssue)return refundConfigIssue('rules',rangeIssue.message,rangeIssue.name);
+    for(const [index,rule] of model.rules.entries()){
+      const issue=(message,field)=>refundConfigIssue('rules',`第 ${index+1} 条规则：${message}`,`rule-${index}-${field}`);
+      if(!['limited','unlimited'].includes(rule.amountMode))return issue('请选择金额条件','amountMode');
+      const amount=Number(rule.maxAmount),validAmount=/^\d+(\.\d{1,2})?$/.test(rule.maxAmount)&&amount>0&&Number.isSafeInteger(Math.round(amount*100));
+      if(rule.amountMode==='limited'&&!validAmount)return issue('金额上限须大于 0 且最多两位小数','maxAmount');
+      rules.push({fromDay:Number(rule.fromDay),toDay:rule.toDay===''?null:Number(rule.toDay),amountMode:rule.amountMode,maxAmount:validAmount?amount:null});
+    }
+    const before=clone(managementContext.data.refundPaymentConfig),next={...before,rules,blockedProjectCategories:[...new Set(model.blockedProjectCategories)],deadlineBasis:'payment-method',dayBasis:'natural-day',amountBasis:'order-paid'};
+    for(const [id,payment] of Object.entries(payments)){
+      const {day2MaxAmount,day3MaxAmount,dayBasis,amountBasis,...retained}=before[id]||{};
+      next[id]={...retained,...payment};
+    }
+    managementContext.data.refundPaymentConfig=next;
+    history('refund-config','payment-methods','更新支付方式与退款规则',before,next);
+    managementContext.persist();toast('退款配置已保存');close(true);
+  }
 const refundSeedRows=[
     ['2509301732009322','4633199','rock࿐ོ₂₀₂3','130****2379',170,'454','2509301618298501','456'],
     ['2509301609491303','9631270','肖小洁','',1000,'1111','2509301520240649','1111'],
@@ -167,7 +314,7 @@ function refundVoucherSVG(){return '<svg xmlns="http://www.w3.org/2000/svg" view
 function refundVoucher(){let content=item=>`<div class="refund-voucher-controls">${item.refundPrevious?b('返回退款详情','UB.refundVoucherBack()'):''}${b('缩小',"UB.refundVoucherView('out')")}${b('放大',"UB.refundVoucherView('in')")}${b('向左旋转',"UB.refundVoucherView('left')")}${b('向右旋转',"UB.refundVoucherView('right')")}${b('还原',"UB.refundVoucherView('reset')")}</div><div class="refund-voucher-preview"><div style="transform:scale(${item.zoom||1}) rotate(${item.angle||0}deg)">${refundVoucherSVG()}</div></div><p class="ub-note">示例凭证预览。</p>`;if(stack.length===2){let item=stack.at(-1);item.refundPrevious={title:item.title,content:item.content,width:item.width};item.title='退款凭证';item.content=content;item.width=860;redraw()}else open('退款凭证',content,null,860)}
 function refundVoucherBack(){let item=stack.at(-1);if(!item?.refundPrevious)return;Object.assign(item,item.refundPrevious);delete item.refundPrevious;redraw()}
 function refundVoucherView(action){let item=stack.at(-1);if(action==='reset'){item.zoom=1;item.angle=0}else if(action==='in'||action==='out')item.zoom=Math.max(.5,Math.min(3,(item.zoom||1)+(action==='in'?.25:-.25)));else item.angle=(item.angle||0)+(action==='left'?-90:90);redraw()}
-UB.register("refunds",{"refunds":refundsPage},{refundConfig,refundConfigChange,refundStoreEntry,withdrawalConfirm,withdrawalPay,withdrawalTransfer,withdrawalCancel,withdrawalExport,refundDraftChange,refundSearch,refundTab,refundQuick,refundPick,refundPaging,refundAudit,refundPaid,refundExport,refundDetail,refundCustomer,refundVoucher,refundVoucherBack,refundVoucherView},()=>{
+UB.register("refunds",{"refunds":refundsPage},{refundConfig,refundConfigTab,refundConfigDaysChange,refundConfigAddRule,refundConfigRemoveRule,refundConfigRuleMode,refundStoreEntry,withdrawalConfirm,withdrawalPay,withdrawalTransfer,withdrawalCancel,withdrawalExport,refundDraftChange,refundSearch,refundTab,refundQuick,refundPick,refundPaging,refundAudit,refundPaid,refundExport,refundDetail,refundCustomer,refundVoucher,refundVoucherBack,refundVoucherView},()=>{
 
 if(!Object.hasOwn(managementContext.data,'refundPaymentConfig'))managementContext.data.refundPaymentConfig=clone(refundPaymentConfig);refundInit();refundRecoveryInit();refundImportMobile();
 },()=>{refundEnter();const id=new URLSearchParams(location.hash.split('?')[1]||'').get('riskRefund');if(id)refundDetail(id)},refundLeave);
