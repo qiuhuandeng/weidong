@@ -894,7 +894,7 @@ function afRefundGuard(orderId){
  const action=(g,kind)=>`afRefundAction(${esc(JSON.stringify(orderId))},${esc(JSON.stringify(g.id))},'${kind}')`;
  openSheet('建议先处理已有退款',`<div class="rf-review af-refund-notice"><p>该订单已有退款申请尚未完成，建议优先处理原退款；如有其他售后诉求，也可继续申请。</p>${groups.map(g=>{
   const retryable=g.tasks.some(rfTaskCanRetry),failed=g.tasks.some(t=>/失败|异常/.test(rfTaskState(t)))||(!g.tasks.length&&/失败|异常/.test(g.r?.status||''));
-  return `<section class="rf-review-section"><h3>${failed?'退款未完成':'退款处理中'}</h3>${rfDetailRows([['退款申请号',g.r?.number||g.id],['申请金额',rfMoney(rfGroupSummary(g).total)]])}${rfMethodRows(g)}<p>${retryable?'原路退款失败，建议转人工转账，由财务继续处理；也可重试催办。':failed?'建议优先联系财务人工核查退款异常，并提供原退款申请号。':'请等待当前退款结果；需要催办或反馈问题，请联系财务并提供原退款申请号。'}</p>${retryable?`<div class="rf-result-actions">${btn('转人工转账',action(g,'transfer'),'primary')}${btn('重试催办',action(g,'retry'))}</div>`:''}</section>`;
+  return `<section class="rf-review-section"><h3>${failed?'退款未完成':'退款处理中'}</h3>${rfDetailRows([['退款申请号',g.r?.number||g.id],['申请金额',rfMoney(rfGroupSummary(g).total)]])}${rfMethodRows(g)}<p>${retryable?'原路退款失败，建议转人工转账，由财务继续处理；也可重试催办。':failed?'建议优先联系财务人工核查退款异常，并提供原退款申请号。':'请等待当前退款结果；需要催办或反馈问题，请联系财务并提供原退款申请号。'}</p>${retryable?`<div class="rf-result-actions">${btn('转售后人工转帐',action(g,'transfer'),'primary')}${btn('重试付款',action(g,'retry'))}</div>`:''}</section>`;
  }).join('')}</div>`,`<button class="af-refund-continue" type="button" onclick="afContinueAfterSales(${esc(JSON.stringify(orderId))})">继续申请售后</button>`);
  return true;
 }
