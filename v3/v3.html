@@ -52,6 +52,13 @@
 .sheet:has(:is(.rf-review,.af-detail,.member-assign,.vs-sku-picker)) .sheet-head{padding:16px 16px 12px;border-bottom:0}.sheet:has(:is(.rf-review,.af-detail,.member-assign,.vs-sku-picker)) .sheet-head h2{font-size:14px;font-weight:600}.sheet:has(:is(.rf-review,.af-detail,.member-assign,.vs-sku-picker)) .sheet-head>button{width:30px;height:30px;line-height:28px;border-radius:50%;background:#f3f5f8;color:#9ba8b9;font-size:20px}.sheet:has(:is(.rf-review,.af-detail,.member-assign,.vs-sku-picker)) .sheet-body{padding:0 16px 12px}.sheet:has(:is(.rf-review,.af-detail,.member-assign,.vs-sku-picker)) .sheet-foot{padding:10px 16px max(12px,env(safe-area-inset-bottom))}.sheet:has(:is(.rf-review,.af-detail,.member-assign,.vs-sku-picker)) .sheet-foot .btn{min-height:38px;border-radius:8px;font-size:12px}.sheet:has(:is(.rf-review,.af-detail,.member-assign,.vs-sku-picker)) .sheet-foot .primary{background:#337af6;border-color:#337af6}
 @media(prefers-reduced-motion:reduce){.refund-page *,.sheet:has(:is(.rf-review,.af-detail,.member-assign)){animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 
+/* Keep existing-refund recovery primary and continued after-sales separate. */
+.af-refund-notice .rf-result-actions{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr)}
+.af-refund-notice .rf-review-section:last-child{padding-bottom:0}
+.sheet:has(.af-refund-notice) .form-error:empty{display:none}
+.sheet:has(.af-refund-notice) .sheet-foot{justify-content:center}
+.af-refund-continue{min-height:40px;padding:8px 16px;color:var(--muted);font-size:12px}
+
 /* Refund application result: arrival estimates follow each refund route. */
 .refund-page.rf-result{padding:0 14px 28px}.rf-result-hero{text-align:center;padding:32px 6px 24px}.rf-result-mark{display:grid;place-items:center;width:42px;height:42px;border-radius:50%;margin:0 auto 14px;background:#e9f7f0;color:#2eb58a}.rf-result-mark svg{width:24px;height:24px;stroke-width:2.3}.rf-result-hero h2{font-size:16px;line-height:24px;font-weight:600;outline:none}.rf-result-hero p{font-size:12px;color:#8b97a8;line-height:20px;margin-top:7px}.refund-page .rf-result-card{padding:0 14px}.rf-result-route{padding:16px 0}.rf-result-route+.rf-result-route{border-top:1px solid var(--rf-line)}.rf-result-line{display:flex;align-items:center;justify-content:space-between;gap:12px}.rf-result-line h3{font-size:13px;line-height:21px;font-weight:500}.rf-result-line strong{font-size:17px;line-height:22px;font-weight:600;font-variant-numeric:tabular-nums}.rf-result-eta{margin-top:10px;font-size:12px;line-height:21px;color:#64768f}.rf-result-eta b{font-weight:500;color:#2e6ed0}.rf-result-destination{margin-top:4px;font-size:11px;line-height:18px;color:#929eae;overflow-wrap:anywhere}.rf-result-submitted{display:flex;justify-content:space-between;gap:12px;border-top:1px solid var(--rf-line);padding:12px 0;font-size:11px;line-height:18px;color:#929eae}.rf-result-submitted time{font-variant-numeric:tabular-nums}.rf-result-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:20px}.rf-result-actions .btn{min-height:39px;border-radius:8px;padding:9px 12px;font-size:12px}.rf-result-actions .primary{background:#337af6;border-color:#337af6}
 
@@ -386,7 +393,7 @@ function installRefundDemoData(now=time()){
  return changed;
 }
 
-function showRefundDemoOrders(){installRefundDemoData();ui.day=time().slice(0,10);ui.store='上海徐汇店';ui.status='全部';ui.kind='总客数';ui.recording='';ui.sales='';go('orders')}
+function showRefundDemoOrders(){installRefundDemoData();rfInstallAfterSaleDemo();ui.day=time().slice(0,10);ui.store='上海徐汇店';ui.status='全部';ui.kind='总客数';ui.recording='';ui.sales='';go('orders')}
 
 installRefundDemoData();
 const ui={day:time().slice(0,10),store:'上海徐汇店',status:'全部',kind:'总客数',recording:'',sales:'',orderTab:'项目信息',profileTab:'订单',memberTab:'客户列表',searchType:'手机',query:'',searched:false,receiptQuery:'',receiptFrom:'',receiptTo:'',checkoutId:'',checkoutTab:'当日排客',checkoutKind:'新客',rating:5,group:'',selectedMembers:[],memberSelectionScope:''};
@@ -406,7 +413,7 @@ function resolveOrderRoute(){
  else route={page:'orders',id:''};
  history.replaceState(null,'','#'+route.page+(route.id?'?id='+encodeURIComponent(route.id):''));
 }
-function readRoute(){let [p,q]=location.hash.slice(1).split('?');if(p==='member-bind-create'){p='member-bind-select';history.replaceState(null,'','#'+p+(q?'?'+q:''))}route={page:['orders','order','customer','workbench','members','data','receipts','checkout','add-member','edit-member','booking','billing','visit','consult','recharge','transfer','group','member-group','refund','refund-records','refund-record','refund-transfer-result','refund-result','after-sale','after-sale-result','assignment-list','assignment-rules','assignment-records','assignment-result','customer-followup','wecom-clients','wecom-conversation',...MB_PAGES,...(window.VStock?.pages||[]),...(window.RVM?.pages||[]),...Object.keys(embeddedModules)].includes(p)?p:'orders',id:new URLSearchParams(q||'').get('id')||''};if(route.page==='refund-records'&&route.id){route.id='';history.replaceState(null,'','#refund-records')}resolveOrderRoute();draft=null;closeSheet(true);if(data.assignment&&mgNormalize(data))save();if(route.page==='member-bind'&&!mbIsReplay()&&mbBinding()&&mbOpenBoundCustomer())return;render();if($('#screen'))$('#screen').scrollTop=0;mbShowArrivalPrompt()}
+function readRoute(){let [p,q]=location.hash.slice(1).split('?');if(p==='member-bind-create'){p='member-bind-select';history.replaceState(null,'','#'+p+(q?'?'+q:''))}route={page:['orders','order','customer','workbench','members','data','receipts','checkout','add-member','edit-member','booking','billing','visit','consult','recharge','transfer','group','member-group','refund','refund-records','refund-record','refund-transfer-result','refund-result','after-sale','after-sale-result','assignment-list','assignment-rules','assignment-records','assignment-result','customer-followup','wecom-clients','wecom-conversation',...MB_PAGES,...(window.VStock?.pages||[]),...(window.RVM?.pages||[]),...Object.keys(embeddedModules)].includes(p)?p:'orders',id:new URLSearchParams(q||'').get('id')||''};if(route.page==='refund-records'&&route.id){route.id='';history.replaceState(null,'','#refund-records')}resolveOrderRoute();draft=null;closeSheet(true);if(data.assignment&&mgNormalize(data))save();if(route.page==='member-bind'&&!mbIsReplay()&&mbBinding()&&mbOpenBoundCustomer())return;render();if($('#screen'))$('#screen').scrollTop=0;mbShowArrivalPrompt();if(route.page==='after-sale'&&mgRouteAllowed()&&afRefundNoticeNeeded(route.id))afRefundGuard(route.id)}
 function bottom(){return `<nav class="bottom" aria-label="主导航">${[['orders','门店订单','home'],['workbench','工作台','grid'],['data','数据','pie'],['members','客户','gem']].map(([p,t,ic])=>{const active=route.page===p||(p==='data'&&embeddedModules[route.page]?.parent==='data');return `<button class="${active?'active':''}" ${active?'aria-current="page"':''} onclick="go('${p}')">${icon(ic)}<span>${t}</span>${p==='workbench'?'<span class="bubble">99+</span>':''}</button>`}).join('')}</nav>`}
 function subnav(title){return `<header class="subnav"><button class="back" onclick="back()" aria-label="返回上一页">${icon('left')}返回</button><h1>${esc(title)}</h1></header>`}
 function tabs(list,active,key){return `<div class="tabs ${key==='profileTab'?'profile-tabs':''}" role="tablist">${list.map(x=>`<button role="tab" aria-selected="${active===x}" class="${active===x?'active':''}" onclick="setTab('${key}','${x}')">${x}</button>`).join('')}</div>`}
@@ -857,7 +864,49 @@ function rfResultPage(){
 }
 
 let afDraft=null,afSubmitting=false;
-function afterSales(){const o=order();afDraftFor(o);go('after-sale',o.id)}
+// Seed the first daily order once, also upgrading an existing browser installation.
+function rfInstallAfterSaleDemo(){
+ const o=data.orders.find(o=>o.refundDemo?.scenario==='ledger'&&o.day===time().slice(0,10));
+ if(!o||o.refundDemo.afterSaleVersion>=1)return false;
+ if(afPendingRefunds(o.id).length){o.refundDemo.afterSaleVersion=1;save();return false}
+ const snap=rfSnapshot(o),item=snap.items.find(x=>x.available>0),receipt=snap.payments.find(p=>p.available>0&&rfChannel(p.payment)==='银盛支付');
+ if(!item||!receipt)return false;
+ const amount=Math.min(20000,snap.orderAvailable,item.available,receipt.available);if(amount<=0)return false;
+ const at=o.created,id='DEMO-AF-'+o.refundDemo.seedDay.replace(/-/g,'')+'-ledger';
+ const r={id,version:4,orderId:o.id,time:at,status:'待财务处理',mode:'original',amountCents:amount,originalCents:amount,manualCents:0,
+  payments:[{paymentId:receipt.id,reference:receipt.payment.reference||receipt.id,method:'银盛支付',source:receipt.payment.source,time:receipt.payment.time,amountCents:amount,mode:'original'}],
+  items:[{itemId:item.id,name:item.item.name,quantity:item.item.quantity,refundQuantity:0,remainingQuantity:item.remainingQuantity,paidCents:item.paidCents,availableCents:item.available,amountCents:amount}],
+  reason:'示例：未消费项目申请退款，原路退款失败，需转人工处理',proofs:[],payout:null,fallbackPayout:null};
+ const tasks=rfCreateTasks(o,r);
+ for(const t of tasks){Object.assign(t,{recoveryStatus:'原路退款失败',failureReason:'原支付账户受限，请转人工转账处理',approvedAt:at,confirmedAt:at,failedAt:at,refundDemoScenario:'retry-failed',originalRequest:{id:'DEMO-FAILED-'+t.id,status:'failed',requestedAt:at,completedAt:at,message:'原支付账户受限'}});t.audit.forEach(a=>{if(a.stage==='财务审核')Object.assign(a,{status:'已审核',by:'演示财务',at})});t.refundEvents.push({time:at,by:'支付渠道（演示）',action:'原路退款失败',detail:t.failureReason});rfTaskSync(t)}
+ r.financeTaskIds=tasks.map(t=>t.id);(o.refunds??=[]).unshift(r);(data.refundTasks??=[]).push(...tasks);
+ (o.logs??=[]).unshift({time:at,action:'原路退款失败（示例）',content:rfMoney(amount)+' · 原支付账户受限，待转人工处理'});
+ o.refundDemo.afterSaleVersion=1;save();return true;
+}
+// Resolve the original refund application, including finance-only records, before creating after-sales work.
+function afPendingRefunds(orderId){
+ const finished=state=>['已退款','已取消','已拒绝','已驳回'].includes(state);
+ return rfRecordGroups().filter(g=>(g.o?g.o.id===orderId:g.tasks.some(t=>(t.sourceOrderId||t.order)===orderId))&&(g.tasks.length?g.tasks.some(t=>!finished(rfTaskState(t))):!finished(g.r?.status)));
+}
+function afRefundNoticeNeeded(orderId){const seen=afDraft?.orderId===orderId?afDraft.refundNoticeIds||[]:[];return afPendingRefunds(orderId).some(g=>!seen.includes(g.id))}
+function afRefundGuard(orderId){
+ const groups=afPendingRefunds(orderId);if(!groups.length)return false;
+ const action=(g,kind)=>`afRefundAction(${esc(JSON.stringify(orderId))},${esc(JSON.stringify(g.id))},'${kind}')`;
+ openSheet('建议先处理已有退款',`<div class="rf-review af-refund-notice"><p>该订单已有退款申请尚未完成，建议优先处理原退款；如有其他售后诉求，也可继续申请。</p>${groups.map(g=>{
+  const retryable=g.tasks.some(rfTaskCanRetry),failed=g.tasks.some(t=>/失败|异常/.test(rfTaskState(t)))||(!g.tasks.length&&/失败|异常/.test(g.r?.status||''));
+  return `<section class="rf-review-section"><h3>${failed?'退款未完成':'退款处理中'}</h3>${rfDetailRows([['退款申请号',g.r?.number||g.id],['申请金额',rfMoney(rfGroupSummary(g).total)]])}${rfMethodRows(g)}<p>${retryable?'原路退款失败，建议转人工转账，由财务继续处理；也可重试催办。':failed?'建议优先联系财务人工核查退款异常，并提供原退款申请号。':'请等待当前退款结果；需要催办或反馈问题，请联系财务并提供原退款申请号。'}</p>${retryable?`<div class="rf-result-actions">${btn('转人工转账',action(g,'transfer'),'primary')}${btn('重试催办',action(g,'retry'))}</div>`:''}</section>`;
+ }).join('')}</div>`,`<button class="af-refund-continue" type="button" onclick="afContinueAfterSales(${esc(JSON.stringify(orderId))})">继续申请售后</button>`);
+ return true;
+}
+function afContinueAfterSales(orderId){const o=data.orders.find(o=>o.id===orderId);if(!o)return;const d=afDraftFor(o);d.refundNoticeIds=afPendingRefunds(orderId).map(g=>g.id);go('after-sale',orderId)}
+function afRefundAction(orderId,groupId,action){
+ const g=afPendingRefunds(orderId).find(g=>g.id===groupId);
+ if(!g||!g.tasks.some(rfTaskCanRetry)){closeSheet(true);render();afRefundGuard(orderId);toast('退款状态已变化，请重新核对');return}
+ // Enter the existing record first so cancelling account entry returns to this refund.
+ historyDepth++;history.pushState(null,'','#refund-record?id='+encodeURIComponent(g.id));readRoute();
+ if(action==='transfer')rfTransferApplication(g.id);else if(action==='retry')rfRetryApplication(g.id);
+}
+function afterSales(){const o=order();if(afRefundGuard(o.id))return;afDraftFor(o);go('after-sale',o.id)}
 function afDraftFor(o){if(!afDraft||afDraft.orderId!==o.id)afDraft={id:rfUid('AS'),orderId:o.id,reason:'',images:[],uploading:false};return afDraft}
 function afPage(){const o=data.orders.find(x=>x.id===route.id);if(!o)return `<div class="refund-page"><section class="rf-card rf-empty"><strong>订单不存在</strong>${btn('返回订单列表',"go('orders')")}</section></div>`;const d=afDraftFor(o);return `<div class="refund-page af-page"><form id="afterSaleForm" novalidate onsubmit="event.preventDefault();saveAfterSales()"><section class="rf-source-summary"><div class="rf-source-line">${icon('chat')}<span>售后类型 <strong>其他</strong></span><small>需售后与客户沟通</small></div></section><section class="rf-card rf-reason-card af-reason"><h2 class="rf-title"><span>客诉原因<i class="rf-required">*</i></span></h2><textarea id="afReason" aria-label="客诉原因" maxlength="1000" required placeholder="请描述客户遇到的问题及诉求…" oninput="afSetReason(this)">${esc(d.reason)}</textarea><div class="af-character-count"><span id="afReasonCount">${d.reason.length}</span> / 1000</div><p id="afReasonError" class="rf-control-error" role="alert"></p></section><section class="rf-card"><h2 class="rf-title"><span>上传图片</span><small>选填</small></h2><div class="af-images" id="afImages">${afImagesHTML(d.images,true)}</div><label class="rf-upload af-upload" ${d.images.length>=3?'hidden':''}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>添加图片</span><input id="afFilesInput" type="file" accept="image/png,image/jpeg,image/webp" multiple aria-label="上传客诉图片" onchange="afAddImages(this)" ${d.uploading?'disabled':''}></label><p class="rf-help">JPG / PNG / WebP，最多 3 张，合计不超过 2 MB</p><p id="afError" class="rf-error" role="alert" tabindex="-1"></p></section><footer class="rf-footer af-footer"><button id="afSubmit" class="btn primary" type="submit" ${d.uploading?'disabled':''}>${d.uploading?'图片读取中':'提交申请'}</button></footer></form></div>`}
 function afSetReason(input){afDraft.reason=input.value;$('#afReasonCount').textContent=input.value.length;$('#afReasonError').textContent='';input.removeAttribute('aria-invalid');input.removeAttribute('aria-describedby')}
@@ -868,7 +917,7 @@ function afRemoveImage(index){if(!afDraft||afDraft.uploading)return;afDraft.imag
 async function afAddImages(input){const d=afDraft,files=[...input.files];input.value='';if(!d||d.uploading||!files.length)return;if(d.images.length+files.length>3)return afError('最多上传 3 张图片');if(files.some(f=>!['image/jpeg','image/png','image/webp'].includes(f.type)))return afError('请上传 JPG、PNG 或 WebP 图片');if(files.some(f=>!f.size)||d.images.reduce((n,f)=>n+f.size,0)+files.reduce((n,f)=>n+f.size,0)>2*1024*1024)return afError('图片不能为空，合计大小不能超过 2 MB');d.uploading=true;afRefreshImages();try{const loaded=await Promise.all(files.map(f=>new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve({name:f.name,type:f.type,size:f.size,src:reader.result});reader.onerror=()=>reject(Error('读取图片失败，请重新上传'));reader.readAsDataURL(f)})));if(afDraft!==d)return;d.images.push(...loaded);if($('#afError'))$('#afError').textContent=''}catch(e){if(afDraft===d)afError(e.message)}finally{d.uploading=false;if(afDraft===d)afRefreshImages()}}
 function afFind(id=route.id){const o=data.orders.find(o=>o.afterSales?.some(a=>a.id===id));return o?{o,a:o.afterSales.find(a=>a.id===id)}:null}
 function afPreviewImage(id,index){const images=id==='draft'?afDraft?.images:afFind(id)?.a.images,f=images?.[index];if(!f)return;openSheet('客诉图片',`<div class="af-detail"><img class="rf-preview" src="${esc(f.src)}" alt="${esc(f.name)}"></div>`,id==='draft'?btn('返回填写','closeSheet()'):btn('返回申请详情',`afView(${esc(JSON.stringify(id))})`))}
-function saveAfterSales(){if(afSubmitting||!afDraft)return;const d=afDraft;if(!d.reason.trim())return afError('请填写客诉原因',true);if(d.reason.trim().length>1000)return afError('客诉原因不能超过 1000 字',true);if(d.uploading)return afError('图片正在读取，请稍后提交');afSubmitting=true;afRefreshImages();try{let latest;try{latest=JSON.parse(v3Storage.getItem(KEY))}catch{}const next=copy(latest?.customers&&latest.orders?.some(o=>o.id===d.orderId)?latest:data),o=next.orders.find(x=>x.id===d.orderId);if(!o)throw Error('订单不存在');if(!o.afterSales?.some(a=>a.id===d.id)){const a={id:d.id,orderId:o.id,type:'other',reason:d.reason.trim(),images:copy(d.images),time:time(),status:'待沟通'};(o.afterSales??=[]).unshift(a);(o.logs??=[]).unshift({time:a.time,action:'申请售后',content:'其他：'+a.reason,afterSalesId:a.id});v3Storage.setItem(KEY,JSON.stringify(next));}data=next;const id=d.id;afDraft=null;closeSheet(true);history.replaceState(null,'','#after-sale-result?id='+encodeURIComponent(id));readRoute();$('#afResultHeading')?.focus({preventScroll:true})}catch(e){afError(e.message)}finally{afSubmitting=false;afRefreshImages()}}
+function saveAfterSales(){if(afSubmitting||!afDraft)return;const d=afDraft;if(afRefundNoticeNeeded(d.orderId)){afRefundGuard(d.orderId);return}if(!d.reason.trim())return afError('请填写客诉原因',true);if(d.reason.trim().length>1000)return afError('客诉原因不能超过 1000 字',true);if(d.uploading)return afError('图片正在读取，请稍后提交');afSubmitting=true;afRefreshImages();try{let latest;try{latest=JSON.parse(v3Storage.getItem(KEY))}catch{}const next=copy(latest?.customers&&latest.orders?.some(o=>o.id===d.orderId)?latest:data),o=next.orders.find(x=>x.id===d.orderId);if(!o)throw Error('订单不存在');if(!o.afterSales?.some(a=>a.id===d.id)){const a={id:d.id,orderId:o.id,type:'other',reason:d.reason.trim(),images:copy(d.images),time:time(),status:'待沟通'};(o.afterSales??=[]).unshift(a);(o.logs??=[]).unshift({time:a.time,action:'申请售后',content:'其他：'+a.reason,afterSalesId:a.id});v3Storage.setItem(KEY,JSON.stringify(next));}data=next;const id=d.id;afDraft=null;closeSheet(true);history.replaceState(null,'','#after-sale-result?id='+encodeURIComponent(id));readRoute();$('#afResultHeading')?.focus({preventScroll:true})}catch(e){afError(e.message)}finally{afSubmitting=false;afRefreshImages()}}
 function afRecordHTML(o,id){const a=o.afterSales?.find(a=>a.id===id);if(!a)return '';return `<button class="record af-record" onclick="afView(${esc(JSON.stringify(a.id))})"><div class="top"><strong>售后申请 · 其他</strong><span class="badge blue">${esc(a.status)}</span></div><p>${esc(a.reason)}</p><div class="top"><small class="muted">${esc(a.time)}</small><small class="af-record-link">查看详情 ›</small></div></button>`}
 function afView(id=route.id){const found=afFind(id);if(!found)return;const {a}=found;openSheet('售后申请详情',`<div class="af-detail"><div class="af-detail-type"><span>售后类型 <b>其他</b></span><span class="badge blue">${esc(a.status)}</span></div><section class="af-detail-section"><h3>客诉原因</h3><p>${esc(a.reason)}</p></section>${a.images.length?`<section class="af-detail-section"><h3>客诉图片</h3><div class="af-images">${afImagesHTML(a.images,false,a.id)}</div></section>`:''}<p class="rf-help">提交时间 ${esc(a.time)}</p></div>`)}
 function afResultOrder(){const found=afFind();ui.orderTab='操作记录';go(found?'order':'orders',found?.o.id||'')}
@@ -1102,7 +1151,7 @@ function mbInstallDemo(){
 installMemberDemoData();
 mgInitialize();
 mbInstallDemo();
-rfInstallExecutionDemo();rfResumeExecutions();
+rfInstallExecutionDemo();rfInstallAfterSaleDemo();rfResumeExecutions();
 /* BEGIN STORE INVENTORY — standalone embedded business and mobile UI */
 /* Inventory business rules. V3 carries an inline copy; neither UI imports the other project.
  * Quantities are per product specification. Ledger entries are append-only and tied to
