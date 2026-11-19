@@ -38,20 +38,20 @@ window.PCModules.activities=(()=>{
     if(l.type==='edit'){
       const a=l.value;html='<form id="activity-form">'+section('活动信息','<div class="pc-form">'+field('活动名称',I('活动名称','name',a.name,'text','maxlength="60"'),true)+field('参与限制',C('参与限制','audience',['不限','新客','老客'],a.audience),true)+field('开始时间',I('开始时间','start',a.start,'datetime-local'),true)+field('结束时间',I('结束时间','end',a.end,'datetime-local'),true)+field('限购设置',C('限购设置','limitMode',limits,a.limitMode,'data-activity-limit'))+(a.limitMode!=='none'?field(a.limitMode==='times'?'限购次数':'限购数量',I('限购值','limitValue',a.limitValue,'number','min="1" step="1"'),true):'')+field('叠加优惠','<span>允许叠加其他优惠</span>')+field('活动说明','<textarea name="note" aria-label="活动说明" rows="2">'+E(a.note||'')+'</textarea>')+'</div>')+
         section('活动门店',a.stores.length?'<div>已选择 '+a.stores.length+' 家门店</div>':'<p class="activity-muted">请选择参与活动的门店</p>',B('选择门店','stores'))+
-        section('活动商品',T(['产品 / 规格','普通价','底价','活动价','操作'],a.items.map((x,i)=>[itemName(x),moneyText(x.normalPrice),moneyText(x.floorPrice),I(x.name+' 活动价','price-'+i,x.activityPrice,'number','min="'+x.floorPrice+'" step="0.01"'),B('移除','remove',[i],'text')])),B('添加商品','products'))+'</form>';
+        section('活动商品',T(['产品 / 规格','原价','底价','活动价','操作'],a.items.map((x,i)=>[itemName(x),moneyText(x.normalPrice),moneyText(x.floorPrice),I(x.name+' 活动价','price-'+i,x.activityPrice,'number','min="'+x.floorPrice+'" step="0.01"'),B('移除','remove',[i],'text')])),B('添加商品','products'))+'</form>';
       foot=B('取消','close')+B('保存并发布','save',[],'primary');
     }else if(l.type==='stores'){
       html='<div data-activity-stores data-pc-hierarchy="'+E(JSON.stringify({nodes:WeidSalesModel.storeTree(StockPC.data),value:l.selected,query:l.query,entityLabel:'门店'}))+'"></div>';
       foot=B('取消','close')+B('确定选择','confirmStores',[],'primary');
     }else if(l.type==='products'){
       const list=catalog().filter(x=>x.enabled&&(!l.query||(x.name+x.specName).includes(l.query)));
-      html=queryModule(I('产品名称 / 规格','query',l.query),call('productSearch'),call('productReset'))+T(['选择','产品 / 规格','类型','普通价','底价'],list.map(x=>['<input type="checkbox" aria-label="选择 '+E(x.name+' '+x.specName)+'" data-activity-product="'+E(x.key)+'" '+(l.selected.includes(x.key)?'checked':'')+'>',itemName(x),E(x.type),moneyText(x.normalPrice),moneyText(x.floorPrice)]));
+      html=queryModule(I('产品名称 / 规格','query',l.query),call('productSearch'),call('productReset'))+T(['选择','产品 / 规格','类型','原价','底价'],list.map(x=>['<input type="checkbox" aria-label="选择 '+E(x.name+' '+x.specName)+'" data-activity-product="'+E(x.key)+'" '+(l.selected.includes(x.key)?'checked':'')+'>',itemName(x),E(x.type),moneyText(x.normalPrice),moneyText(x.floorPrice)]));
       foot=B('取消','close')+B('确定选择','confirmProducts',[],'primary');
     }else{
       const a=rows().find(x=>x.id===l.value.id)||l.value;
       html=section('活动信息','<div class="activity-detail">'+kv({'活动名称':E(a.name),'活动状态':stateTag(a),'活动时间':E(a.start.replace('T',' ')+' 至 '+a.end.replace('T',' ')),'参与限制':E(a.audience),'限购设置':E(M.limitText(a)),'叠加优惠':'允许','活动说明':E(a.note||'—'),...(a.endedAt?{'实际结束':E(a.endedAt.replace('T',' '))}:{})})+'</div>')+
         section('活动门店','<div class="activity-store-list">'+a.stores.map(s=>'<span>'+E(s.name)+'</span>').join('')+'</div>')+
-        section('活动商品',T(['产品 / 规格','普通价','底价','活动价','参与状态','操作'],a.items.map((x,i)=>[itemName(x),moneyText(x.normalPrice),moneyText(x.floorPrice),moneyText(x.activityPrice),x.participating===false?'已停止':'参与活动',M.status(a)==='进行中'&&x.participating!==false?B('停止参与','stopItem',[a.id,i],'text'):'—'])))+
+        section('活动商品',T(['产品 / 规格','原价','底价','活动价','参与状态','操作'],a.items.map((x,i)=>[itemName(x),moneyText(x.normalPrice),moneyText(x.floorPrice),moneyText(x.activityPrice),x.participating===false?'已停止':'参与活动',M.status(a)==='进行中'&&x.participating!==false?B('停止参与','stopItem',[a.id,i],'text'):'—'])))+
         section('操作记录',T(['时间','操作','操作人'],[...(a.logs||[])].reverse().map(x=>[E(x.at.replace('T',' ')),E(x.action),E(x.actor)])));
       foot=B('关闭','close')+B('复制活动','copy',[a.id]);
     }
