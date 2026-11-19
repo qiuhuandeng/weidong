@@ -1,0 +1,164 @@
+<div id="broadcast-calendar-preview" class="viz-dotted-background">
+  <section class="bc-window" aria-label="群发日历设计草案">
+    <header class="bc-head"><h2>群发日历 · 加微未下单客户回访</h2><span class="bc-muted">交互草案 · 示例数据</span></header>
+    <div class="bc-body">
+      <form class="bc-search" aria-label="群发数据筛选">
+        <input name="keyword" aria-label="客户或账号" placeholder="姓名 / 微动会员ID / 微信识别码 / 账号">
+        <select name="timeType" aria-label="时间类型"><option value="added">加微时间</option><option value="ordered">下单时间</option><option value="settled">结算时间</option><option value="planned" selected>任务发送时间</option></select>
+        <div class="bc-range"><input type="date" name="start" aria-label="开始日期"><span>至</span><input type="date" name="end" aria-label="结束日期"></div>
+        <button type="submit">搜索</button><button type="reset">重置</button>
+      </form>
+      <p class="bc-error" role="alert" hidden></p>
+      <div class="bc-content"></div>
+    </div>
+  </section>
+</div>
+<style>
+#broadcast-calendar-preview{--bc-bg:light-dark(#fff,#18212e);--bc-ink:light-dark(#1f2937,#e6edf6);--bc-muted:light-dark(#697b91,#a4b2c6);--bc-border:light-dark(#e6ebf1,#344153);--bc-blue:light-dark(#1677ff,#80b5ff);--bc-soft:light-dark(#f0f6ff,#21364e);--bc-gray:light-dark(#f7f9fc,#202c3b);--bc-green:light-dark(#278442,#85d59b);--bc-red:light-dark(#d23736,#ff9793);--bc-red-bg:light-dark(#fff2f0,#402a30);color:var(--bc-ink);font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;font-size:13px;line-height:1.5}
+#broadcast-calendar-preview *{box-sizing:border-box}
+#broadcast-calendar-preview .bc-window{background:var(--bc-bg);border:1px solid var(--bc-border);width:100%;text-align:left}
+#broadcast-calendar-preview .bc-head{padding:16px 24px;border-bottom:1px solid var(--bc-border);display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding-right:100px}
+#broadcast-calendar-preview h2{font-size:16px;font-weight:600;line-height:24px;margin:0}
+#broadcast-calendar-preview h3{font-size:14px;font-weight:600;margin:0}
+#broadcast-calendar-preview p{margin:0}
+#broadcast-calendar-preview .bc-body{padding:20px 24px 24px}
+#broadcast-calendar-preview .bc-muted{color:var(--bc-muted);font-size:12px}
+#broadcast-calendar-preview .bc-search{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+#broadcast-calendar-preview button,#broadcast-calendar-preview input,#broadcast-calendar-preview select{font:inherit;color:var(--bc-ink);background:var(--bc-bg);border:1px solid var(--bc-border);border-radius:6px;min-height:32px;padding:5px 12px}
+#broadcast-calendar-preview button:not(:disabled){cursor:pointer}
+#broadcast-calendar-preview button:hover:not(:disabled){color:var(--bc-blue);border-color:var(--bc-blue)}
+#broadcast-calendar-preview button:disabled{opacity:.45;cursor:default}
+#broadcast-calendar-preview input[name=keyword]{width:250px;min-width:0;max-width:100%}
+#broadcast-calendar-preview select{width:140px}
+#broadcast-calendar-preview input[type=date]{width:138px;min-width:0;padding:5px 8px}
+#broadcast-calendar-preview .bc-range{display:flex;gap:8px;align-items:center;max-width:100%}
+#broadcast-calendar-preview .bc-content{min-width:0}
+#broadcast-calendar-preview .bc-workspace{display:grid;grid-template-columns:minmax(0,43fr) minmax(0,57fr);gap:24px}
+#broadcast-calendar-preview .bc-calendar{min-width:0}
+#broadcast-calendar-preview .bc-month-head{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap}
+#broadcast-calendar-preview .bc-month-actions{display:flex;gap:4px}
+#broadcast-calendar-preview .bc-month-actions button{padding:4px 8px}
+#broadcast-calendar-preview .bc-weekdays,#broadcast-calendar-preview .bc-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}
+#broadcast-calendar-preview .bc-weekdays span{text-align:center;padding:6px 0;color:var(--bc-muted);font-size:12px}
+#broadcast-calendar-preview .bc-days{border-top:1px solid var(--bc-border);border-left:1px solid var(--bc-border)}
+#broadcast-calendar-preview .bc-day,#broadcast-calendar-preview .bc-blank{min-height:89px;border:0;border-right:1px solid var(--bc-border);border-bottom:1px solid var(--bc-border);border-radius:0;padding:6px 3px;display:flex;flex-direction:column;align-items:center;gap:1px;font-size:12px}
+#broadcast-calendar-preview .bc-blank{background:var(--bc-gray)}
+#broadcast-calendar-preview .bc-day[aria-pressed=true]{background:var(--bc-soft);box-shadow:inset 0 0 0 2px var(--bc-blue)}
+#broadcast-calendar-preview .bc-day-number{font-weight:600;font-size:13px;line-height:22px}
+#broadcast-calendar-preview .bc-today{color:var(--bc-blue)}
+#broadcast-calendar-preview .bc-day-total{white-space:nowrap}
+#broadcast-calendar-preview .bc-failure{color:var(--bc-red)}
+#broadcast-calendar-preview .bc-success{color:var(--bc-green)}
+#broadcast-calendar-preview .bc-sending{color:var(--bc-blue)}
+#broadcast-calendar-preview .bc-calendar-note{margin-top:10px;font-size:12px;color:var(--bc-muted)}
+#broadcast-calendar-preview .bc-day-panel{border-left:1px solid var(--bc-border);padding-left:24px;min-width:0}
+#broadcast-calendar-preview .bc-day-title{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+#broadcast-calendar-preview .bc-metrics{display:flex;gap:20px;flex-wrap:wrap;padding:12px 0;border-top:1px solid var(--bc-border);border-bottom:1px solid var(--bc-border)}
+#broadcast-calendar-preview .bc-metric{display:flex;flex-direction:column;gap:2px}
+#broadcast-calendar-preview .bc-metric strong{font-size:22px;font-weight:600;line-height:28px;font-variant-numeric:tabular-nums}
+#broadcast-calendar-preview .bc-results{display:flex;gap:12px;flex-wrap:wrap;margin:12px 0 4px}
+#broadcast-calendar-preview .bc-link{border:0;background:transparent;padding:0;min-height:24px;border-radius:0;color:var(--bc-blue);text-align:left}
+#broadcast-calendar-preview .bc-link.bc-failure{color:var(--bc-red)}
+#broadcast-calendar-preview .bc-link.bc-success{color:var(--bc-green)}
+#broadcast-calendar-preview .bc-link.bc-neutral{color:var(--bc-muted)}
+#broadcast-calendar-preview .bc-task{padding:18px 0;border-bottom:1px solid var(--bc-border)}
+#broadcast-calendar-preview .bc-task-top{display:grid;grid-template-columns:48px minmax(0,1fr) auto;gap:8px;align-items:start}
+#broadcast-calendar-preview .bc-time{font-weight:600;font-variant-numeric:tabular-nums;padding-top:2px}
+#broadcast-calendar-preview .bc-task-name{font-weight:500;color:var(--bc-ink)}
+#broadcast-calendar-preview .bc-status{font-size:12px;padding:2px 6px;border-radius:4px;white-space:nowrap;background:var(--bc-gray);color:var(--bc-muted)}
+#broadcast-calendar-preview .bc-status.bc-failure{background:var(--bc-red-bg);color:var(--bc-red)}
+#broadcast-calendar-preview .bc-status.bc-sending{background:var(--bc-soft);color:var(--bc-blue)}
+#broadcast-calendar-preview .bc-task-bottom{padding-left:56px;display:flex;gap:8px 12px;flex-wrap:wrap;margin-top:8px}
+#broadcast-calendar-preview .bc-task-bottom .bc-link{font-size:12px}
+#broadcast-calendar-preview .bc-context{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+#broadcast-calendar-preview .bc-context-copy{display:flex;flex-direction:column;gap:4px}
+#broadcast-calendar-preview .bc-filter-status{display:flex;gap:20px;flex-wrap:wrap;border-bottom:1px solid var(--bc-border);margin-bottom:12px}
+#broadcast-calendar-preview .bc-filter-status button{padding:10px 0;border:0;border-radius:0;background:transparent;min-height:42px;color:var(--bc-muted)}
+#broadcast-calendar-preview .bc-filter-status button[aria-pressed=true]{color:var(--bc-blue);box-shadow:inset 0 -2px var(--bc-blue)}
+#broadcast-calendar-preview .bc-table-wrap{overflow:auto}
+#broadcast-calendar-preview table{border-collapse:collapse;width:100%;min-width:670px;font-size:13px}
+#broadcast-calendar-preview th{background:var(--bc-gray);font-weight:500;color:var(--bc-muted);white-space:nowrap}
+#broadcast-calendar-preview th,#broadcast-calendar-preview td{padding:12px;text-align:left;border-bottom:1px solid var(--bc-border)}
+#broadcast-calendar-preview .bc-pagination{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:16px;flex-wrap:wrap}
+#broadcast-calendar-preview .bc-pagination div{display:flex;align-items:center;gap:12px}
+#broadcast-calendar-preview .bc-empty{padding:48px 16px;text-align:center;color:var(--bc-muted)}
+#broadcast-calendar-preview .bc-error{color:var(--bc-red);margin-bottom:12px}
+#broadcast-calendar-preview .bc-receipt{background:var(--bc-gray);padding:16px;margin:12px 0;display:grid;gap:8px}
+#broadcast-calendar-preview .bc-receipt-head{display:flex;justify-content:space-between;align-items:center}
+@media(max-width:780px){#broadcast-calendar-preview .bc-workspace{grid-template-columns:1fr}#broadcast-calendar-preview .bc-day-panel{border-left:0;border-top:1px solid var(--bc-border);padding:20px 0 0}#broadcast-calendar-preview .bc-day{min-height:85px}#broadcast-calendar-preview .bc-body{padding:16px}#broadcast-calendar-preview .bc-head{padding-left:16px}#broadcast-calendar-preview .bc-search{gap:8px}#broadcast-calendar-preview .bc-day-title{margin-top:0}}
+@media(max-width:400px){#broadcast-calendar-preview .bc-body{padding:12px}#broadcast-calendar-preview .bc-day,#broadcast-calendar-preview .bc-blank{padding:6px 1px;font-size:11px}#broadcast-calendar-preview .bc-range input{width:122px}#broadcast-calendar-preview .bc-task-top{grid-template-columns:42px minmax(0,1fr)}#broadcast-calendar-preview .bc-status{grid-column:2;justify-self:start}#broadcast-calendar-preview .bc-task-bottom{padding-left:50px}#broadcast-calendar-preview .bc-head{padding-right:16px;padding-top:54px}}
+@media(pointer:coarse){#broadcast-calendar-preview button,#broadcast-calendar-preview input,#broadcast-calendar-preview select{min-height:44px}#broadcast-calendar-preview input,#broadcast-calendar-preview select{font-size:16px}}
+</style>
+<script>
+(() => {
+  const root=document.getElementById('broadcast-calendar-preview');
+  const form=root.querySelector('form'),content=root.querySelector('.bc-content'),error=root.querySelector('.bc-error');
+  const baseDate='2026-11-19',statuses={all:'全部',success:'发送成功',failed:'发送失败',sending:'发送中',pending:'待发送'};
+  const state={month:'2026-11',day:baseDate,screen:'calendar',task:null,status:'all',page:1,receipt:null,filters:{keyword:'',timeType:'planned',start:'',end:''}};
+  const design={showTaskCount:true};
+  const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const pad=n=>String(n).padStart(2,'0');
+  const fmt=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  const shift=(day,n)=>{const d=new Date(day+'T12:00:00');d.setDate(d.getDate()+n);return fmt(d)};
+  const taskNames=['加微后第3天回访','加微后第5天跟进','加微后第7天关怀'];
+  const data=[];
+  for(let day=1;day<=30;day++){
+    const date=`2026-11-${pad(day)}`,wd=new Date(date+'T12:00:00').getDay();if(wd===0||wd===6)continue;
+    const base=80+(day%5)*10,sizes=[base,base-20,base-40],starts=[1,base-29,base+sizes[1]-59];
+    ['10:00','14:00','16:00'].forEach((time,t)=>{
+      for(let i=0;i<sizes[t];i++){
+        const n=starts[t]+i;
+        let status='pending';
+        if(day<19)status=(t===0&&i<(day%4))?'failed':'success';
+        if(day===19&&t===0)status=i<6?'failed':'success';
+        if(day===19&&t===1)status=i<40?'success':i<80?'sending':'pending';
+        data.push({key:`${date}-${t}-${i}`,date,time,task:`${date}-${t}`,title:taskNames[t],customer:String(282700+n),name:['林','孙','陈','李','王','周','赵','吴','郑','黄'][n%10]+(n%3===0?'先生':'女士'),wechat:'wx_customer_'+n,account:n%2?'白思静':'BSJ001',status,added:shift(date,-(3+t*2)),ordered:'',settled:'',planned:date,reason:status==='failed'?(i%2?'客户已删除好友':'账号登录失效'):'—'});
+      }
+    });
+  }
+  function filtered(){const f=state.filters,k=f.keyword.toLowerCase();return data.filter(r=>(!k||[r.name,r.customer,r.wechat,r.account].some(v=>v.toLowerCase().includes(k)))&&(!(f.start||f.end)||(r[f.timeType]&&(!f.start||r[f.timeType]>=f.start)&&(!f.end||r[f.timeType]<=f.end))));}
+  function stats(rows){return {unique:new Set(rows.map(r=>r.customer)).size,tasks:new Set(rows.map(r=>r.task)).size,total:rows.length,...Object.fromEntries(['success','failed','sending','pending'].map(s=>[s,rows.filter(r=>r.status===s).length]))};}
+  function save(){try{const result=window.openai?.setWidgetState?.({modelContent:{view:state.screen,selectedDate:state.day,task:state.task,status:state.status,design},privateContent:{...state,design}});result?.catch(()=>{});}catch(e){}}
+  function applySaved(saved){const s=saved?.privateContent;if(!s)return;if(/^\d{4}-\d{2}$/.test(s.month))state.month=s.month;if(/^\d{4}-\d{2}-\d{2}$/.test(s.day))state.day=s.day;if(['calendar','detail'].includes(s.screen))state.screen=s.screen;if(s.status in statuses)state.status=s.status;if(typeof s.task==='string'||s.task===null)state.task=s.task;if(s.filters&&['added','ordered','settled','planned'].includes(s.filters.timeType))state.filters={...state.filters,...s.filters};if(s.design)Object.assign(design,s.design);syncForm();}
+  function syncForm(){Object.entries(state.filters).forEach(([k,v])=>{if(form.elements[k])form.elements[k].value=v;});}
+  function results(s,task=null){return ['success','failed','sending','pending'].map(key=>`<button type="button" class="bc-link ${key==='failed'?'bc-failure':key==='success'?'bc-success':key==='pending'?'bc-neutral':''}" data-open="${esc(task||'')}" data-status="${key}">${{success:'成功',failed:'失败',sending:'发送中',pending:'待发送'}[key]} ${s[key]}</button>`).join('');}
+  function calendar(rows){
+    const [year,month]=state.month.split('-').map(Number),first=new Date(year,month-1,1),offset=(first.getDay()+6)%7,last=new Date(year,month,0).getDate();
+    let days=Array.from({length:offset},()=>'<div class="bc-blank" aria-hidden="true"></div>').join('');
+    for(let d=1;d<=last;d++){
+      const date=`${state.month}-${pad(d)}`,s=stats(rows.filter(r=>r.date===date));
+      days+=`<button type="button" class="bc-day" data-day="${date}" aria-pressed="${date===state.day}" aria-label="${date}，${s.unique}位客户，${s.tasks}条任务，失败${s.failed}人次"><span class="bc-day-number ${date===baseDate?'bc-today':''}">${d}${date===baseDate?'·今':''}</span>${s.total?`<span class="bc-day-total">${s.unique}人</span>${design.showTaskCount?`<span class="bc-muted">${s.tasks}任务</span>`:''}${s.failed?`<span class="bc-failure">失败${s.failed}</span>`:s.sending?'<span class="bc-sending">发送中</span>':s.pending?'<span class="bc-muted">待发送</span>':'<span class="bc-success">已完成</span>'}`:'<span class="bc-muted">—</span>'}</button>`;
+    }
+    const padEnd=(7-(offset+last)%7)%7;days+=Array.from({length:padEnd},()=>'<div class="bc-blank" aria-hidden="true"></div>').join('');
+    const daily=rows.filter(r=>r.date===state.day),s=stats(daily),tasks=[...new Set(daily.map(r=>r.task))];
+    const taskHTML=tasks.map(task=>{const batch=daily.filter(r=>r.task===task),a=batch[0],t=stats(batch);const status=t.sending?'发送中':t.failed?'有失败':t.pending?'待发送':'已完成';return `<article class="bc-task"><div class="bc-task-top"><span class="bc-time">${a.time}</span><div><button type="button" class="bc-link bc-task-name" data-open="${task}" data-status="all">${esc(a.title)}</button><p class="bc-muted">目标 ${t.unique} 位客户</p></div><span class="bc-status ${t.sending?'bc-sending':t.failed?'bc-failure':''}">${status}</span></div><div class="bc-task-bottom">${results(t,task)}</div></article>`;}).join('');
+    content.innerHTML=`<div class="bc-workspace"><section class="bc-calendar" aria-label="发送日期月历"><div class="bc-month-head"><h3>${year}年${month}月</h3><div class="bc-month-actions"><button type="button" data-month="-1" aria-label="上个月">‹</button><button type="button" data-today>今天</button><button type="button" data-month="1" aria-label="下个月">›</button></div></div><div class="bc-weekdays">${['一','二','三','四','五','六','日'].map(d=>`<span>${d}</span>`).join('')}</div><div class="bc-days">${days}</div><p class="bc-calendar-note">按任务发送日期展示 · 人数为当日去重客户</p></section><section class="bc-day-panel" aria-label="选中日期的任务" aria-live="polite"><div class="bc-day-title"><h3>${Number(state.day.slice(5,7))}月${Number(state.day.slice(8))}日 · ${['周日','周一','周二','周三','周四','周五','周六'][new Date(state.day+'T12:00:00').getDay()]}</h3><button type="button" class="bc-link" data-open="" data-status="all">全部客户明细</button></div><div class="bc-metrics"><div class="bc-metric"><span class="bc-muted">覆盖客户</span><strong>${s.unique}<small style="font-size:12px;font-weight:400"> 人</small></strong></div><div class="bc-metric"><span class="bc-muted">发送人次</span><strong>${s.total}</strong></div><div class="bc-metric"><span class="bc-muted">群发任务</span><strong>${s.tasks}<small style="font-size:12px;font-weight:400"> 条</small></strong></div></div><div class="bc-results">${results(s)}</div><p class="bc-muted">执行结果按人次统计 · 点击结果查看名单</p>${taskHTML||'<div class="bc-empty">当日暂无符合条件的任务</div>'}</section></div>`;
+  }
+  function detail(rows){
+    const scope=rows.filter(r=>r.date===state.day&&(!state.task||r.task===state.task)),selected=scope.filter(r=>state.status==='all'||r.status===state.status),pages=Math.max(1,Math.ceil(selected.length/7));state.page=Math.max(1,Math.min(state.page,pages));
+    const title=state.task?(data.find(r=>r.task===state.task)?.title||'任务'):'当天全部任务',time=state.task?(data.find(r=>r.task===state.task)?.time||''):'';
+    const clock=state.filters.timeType==='planned'?'added':state.filters.timeType,clockLabel={added:'加微时间',ordered:'下单时间',settled:'结算时间'}[clock];
+    const pageRows=selected.slice((state.page-1)*7,state.page*7),receipt=data.find(r=>r.key===state.receipt);
+    content.innerHTML=`<div class="bc-context"><div class="bc-context-copy"><h3>${state.day} ${time} · ${esc(title)}</h3><p class="bc-muted">当前筛选覆盖 ${stats(scope).unique} 位客户 · ${scope.length} 发送人次</p></div><button type="button" data-back>返回日历</button></div><div class="bc-filter-status" aria-label="执行结果筛选">${Object.entries(statuses).map(([s,label])=>`<button type="button" data-filter-status="${s}" aria-pressed="${s===state.status}">${label}</button>`).join('')}</div>${receipt?`<section class="bc-receipt" aria-label="客户发送回执"><div class="bc-receipt-head"><h3>${esc(receipt.name)} · ${receipt.customer}</h3><button class="bc-link" type="button" data-close-receipt>收起回执</button></div><p>任务发送时间：${receipt.date} ${receipt.time}</p><p>发送结果：${statuses[receipt.status]}</p><p>${receipt.status==='failed'?'失败原因：'+receipt.reason:receipt.status==='pending'?'等待任务发送':receipt.status==='sending'?'等待发送回执':'消息发送成功'}</p></section>`:''}<div class="bc-table-wrap"><table><thead><tr><th>客户 / 会员ID</th><th>关联账号</th><th>${clockLabel}</th><th>任务发送时间</th><th>发送结果</th><th>失败原因</th><th>操作</th></tr></thead><tbody>${pageRows.map(r=>`<tr><td>${esc(r.name)}<div class="bc-muted">${r.customer}</div></td><td>${r.account}</td><td>${r[clock]||'—'}</td><td>${r.date}<div class="bc-muted">${r.time}</div></td><td class="${r.status==='failed'?'bc-failure':r.status==='success'?'bc-success':r.status==='sending'?'bc-sending':''}">${statuses[r.status]}</td><td>${r.reason}</td><td><button class="bc-link" type="button" data-receipt="${r.key}">查看</button></td></tr>`).join('')||'<tr><td colspan="7" class="bc-empty">暂无符合条件的数据</td></tr>'}</tbody></table></div><div class="bc-pagination"><span class="bc-muted">共 ${selected.length} 条发送记录</span><div><button type="button" data-page="-1" ${state.page<=1?'disabled':''}>上一页</button><span>${state.page} / ${pages}</span><button type="button" data-page="1" ${state.page>=pages?'disabled':''}>下一页</button></div></div>`;
+  }
+  function render(){const rows=filtered();if(state.screen==='calendar')calendar(rows);else detail(rows);}
+  root.addEventListener('click',e=>{const b=e.target.closest('button');if(!b||!root.contains(b))return;let changed=true;
+    if(b.hasAttribute('data-day')){state.day=b.dataset.day;state.receipt=null;}
+    else if(b.hasAttribute('data-month')){const [y,m]=state.month.split('-').map(Number),d=new Date(y,m-1+Number(b.dataset.month),1);state.month=fmt(d).slice(0,7);state.day=fmt(d);}
+    else if(b.hasAttribute('data-today')){state.month=baseDate.slice(0,7);state.day=baseDate;}
+    else if(b.hasAttribute('data-open')){state.screen='detail';state.task=b.dataset.open||null;state.status=b.dataset.status;state.page=1;state.receipt=null;}
+    else if(b.hasAttribute('data-back')){state.screen='calendar';state.receipt=null;}
+    else if(b.hasAttribute('data-filter-status')){state.status=b.dataset.filterStatus;state.page=1;state.receipt=null;}
+    else if(b.hasAttribute('data-page')){state.page+=Number(b.dataset.page);state.receipt=null;}
+    else if(b.hasAttribute('data-receipt'))state.receipt=b.dataset.receipt;
+    else if(b.hasAttribute('data-close-receipt'))state.receipt=null;
+    else changed=false;
+    if(changed){render();save();}
+  });
+  form.addEventListener('submit',e=>{e.preventDefault();const f=Object.fromEntries(new FormData(form));if(f.start&&f.end&&f.start>f.end){error.textContent='开始日期不能晚于结束日期';error.hidden=false;return;}error.hidden=true;state.filters=f;state.screen='calendar';state.task=null;state.page=1;state.receipt=null;const rows=filtered();if(!rows.some(r=>r.date===state.day)&&rows.length){state.day=rows[0].date;state.month=state.day.slice(0,7);}render();save();});
+  form.addEventListener('reset',e=>{e.preventDefault();state.filters={keyword:'',timeType:'planned',start:'',end:''};state.month='2026-11';state.day=baseDate;state.screen='calendar';state.receipt=null;error.hidden=true;syncForm();render();save();});
+  applySaved(window.openai?.widgetState);render();
+  window.addEventListener('openai:set_globals',e=>{if(e.detail?.globals?.widgetState){applySaved(e.detail.globals.widgetState);render();}});
+  if(globalThis.Tweak){const tweak=new Tweak({container:root.querySelector('.bc-window'),onChange:()=>{render();save();}});tweak.addToggle(design,'showTaskCount',{label:'在日期格中显示任务数'});}
+})();
+</script>
