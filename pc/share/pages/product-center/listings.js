@@ -2,9 +2,14 @@
   'use strict';
   const {M,E}=S,B=S.button,L=S.link,I=S.input,F=S.field,C=S.select;
   const yes=[['true','是'],['false','否']],itemName=x=>P.item(S.sales,x)?.name||'—';
+  S.salesActivityCell=key=>{
+    const list=(PCModules['activity-data'].store.current?.activities||[]).filter(a=>WeidActivityModel.status(a)!=='已结束'&&a.items.some(x=>(key.includes(':')?x.key===key:x.productId===key)&&x.participating!==false));
+    return list.length?list.map(a=>L(a.name+' · '+WeidActivityModel.status(a),'salesActivityView',a.id)).join('<br>'):'—';
+  };
+  S.actions.salesActivityView=id=>{location.hash='activities?id='+encodeURIComponent(id);};
   S.views['sales-listings']=()=>{
     const f=S.page.applied,rows=S.sales.listings.filter(x=>S.matches(x.name,f.name)&&(P.inCategory(x.category,f.category))&&(!f.type||x.type===f.type)).sort((a,b)=>b.sort-a.sort);
-    return S.search([S.filter('产品名称','name'),S.filter('所属分类','category','select',[['','全部'],...P.categoryOptions()]),S.filter('类型','type','select',[['','全部'],'服务','商品'])])+S.panel('产品上架',S.paged([['ID',x=>x.no],['产品名称',x=>E(x.name),220],['类型',x=>E(x.type)],['所属分类',x=>E(P.categoryLabel(x.category)),140],['状态',x=>S.tag(x.enabled?'上架':'下架')],['排序值',x=>x.sort],['更新时间',x=>E(x.updatedAt),170],['操作',x=>L('编辑','salesListing',x.id),100,true]],rows),B('上架产品','salesListing','','','primary'));
+    return S.search([S.filter('产品名称','name'),S.filter('所属分类','category','select',[['','全部'],...P.categoryOptions()]),S.filter('类型','type','select',[['','全部'],'服务','商品'])])+S.panel('产品上架',S.paged([['ID',x=>x.no],['产品名称',x=>E(x.name),220],['类型',x=>E(x.type)],['所属分类',x=>E(P.categoryLabel(x.category)),140],['状态',x=>S.tag(x.enabled?'上架':'下架')],['关联活动',x=>S.salesActivityCell(x.id),230],['排序值',x=>x.sort],['更新时间',x=>E(x.updatedAt),170],['操作',x=>L('编辑','salesListing',x.id),100,true]],rows),B('上架产品','salesListing','','','primary'));
   };
   S.actions.salesListing=id=>S.open('salesListing',{value:M.copy(S.sales.listings.find(x=>x.id===id)||P.listingDefault())},id?'编辑上架产品':'上架产品',1120);
   S.drawers.salesListing=l=>{

@@ -1,0 +1,10 @@
+@layer pc-business {
+.pc-page-activities .activity-section{margin-bottom:20px}
+.pc-page-activities .activity-section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.pc-page-activities .activity-section-head h3{margin:0;font-size:14px;font-weight:500}
+.pc-page-activities .activity-store-list{display:flex;flex-wrap:wrap;gap:8px 20px;line-height:24px}
+.pc-page-activities .activity-muted{color:var(--pc-muted);font-size:12px;line-height:20px}
+.pc-page-activities .activity-error{color:var(--pc-danger,#f56c6c)}
+.pc-page-activities .activity-detail{max-width:880px}
+
+}

@@ -290,9 +290,21 @@
         "sales-recipes"
       ]
     },
+    "activity-data": {
+      "requiresUI": false,
+      "scripts": ["pages/activity-data/model.js", "pages/activity-data/storage.js", "pages/activity-data/index.js"],
+      "styles": [],
+      "routes": []
+    },
+    "activities": {
+      "dependencies": ["product-center", "activity-data"],
+      "scripts": ["pages/activities/index.js"],
+      "styles": ["pages/activities/style.css"],
+      "routes": ["activities"]
+    },
     "product-center": {
       "dependencies": [
-        "stock-management"
+        "stock-management", "activity-data"
       ],
       "scripts": [
         "pages/product-center/model.js",
@@ -945,6 +957,11 @@
         [
           "sales-prices",
           "产品售价表（新版）",
+          "file"
+        ],
+        [
+          "activities",
+          "活动管理",
           "file"
         ]
       ]

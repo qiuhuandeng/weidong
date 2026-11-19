@@ -1,50 +1,52 @@
 {
-  "entryBytes": 15579,
+  "entryBytes": 15933,
   "entries": {
-    "pc.html": 15579,
+    "pc.html": 15933,
     "inventory.html": 9325
   },
   "sharedGzipBytes": 70307,
   "firstRouteGzipBytes": {
-    "customer": 126308,
-    "customer-archive": 80719,
-    "management": 94579,
-    "complaints": 174422,
-    "home": 16724,
-    "complaint-storage": 52476,
-    "complaint-intake": 59231,
-    "complaint-order-linking": 54852,
-    "complaint-detail": 69358,
-    "complaint-fixtures": 59889,
-    "complaint-workflow": 54828,
-    "complaint-follow": 61072,
-    "complaint-options": 62908,
-    "complaint-solutions": 76904,
-    "supply-chain": 163166,
-    "inventory-core": 116695,
-    "inventory-clinical": 180654,
-    "group-approval": 139907,
-    "group-approval-designer": 159902,
-    "group-approval-data": 89514,
-    "refund-risk": 81769,
-    "stock-management": 123574,
-    "sales-recipes": 150808,
-    "product-center": 147281,
-    "stock-overview": 129446,
-    "customer-state": 83928,
-    "customer-rules": 95583,
-    "customer-mobile": 220889,
-    "customer-merge": 172739,
-    "customer-correction": 184629,
-    "customer-review": 161270,
-    "customer-detail": 140165,
-    "customer-engine": 125013,
-    "customer-shared-ui": 139509,
-    "management-core": 81426,
-    "refunds": 98995,
-    "finance": 84077,
-    "store-beds": 97766,
-    "store-settings": 88550
+    "customer": 126398,
+    "customer-archive": 80809,
+    "management": 94669,
+    "complaints": 174512,
+    "home": 16814,
+    "complaint-storage": 52566,
+    "complaint-intake": 59321,
+    "complaint-order-linking": 54942,
+    "complaint-detail": 69448,
+    "complaint-fixtures": 59979,
+    "complaint-workflow": 54918,
+    "complaint-follow": 61162,
+    "complaint-options": 62998,
+    "complaint-solutions": 76994,
+    "supply-chain": 163256,
+    "inventory-core": 116785,
+    "inventory-clinical": 180744,
+    "group-approval": 139997,
+    "group-approval-designer": 159992,
+    "group-approval-data": 89604,
+    "refund-risk": 81859,
+    "stock-management": 123664,
+    "sales-recipes": 155252,
+    "activity-data": 55539,
+    "activities": 157729,
+    "product-center": 151725,
+    "stock-overview": 129536,
+    "customer-state": 84018,
+    "customer-rules": 95673,
+    "customer-mobile": 220979,
+    "customer-merge": 172829,
+    "customer-correction": 184719,
+    "customer-review": 161360,
+    "customer-detail": 140255,
+    "customer-engine": 125103,
+    "customer-shared-ui": 139599,
+    "management-core": 81516,
+    "refunds": 99178,
+    "finance": 84167,
+    "store-beds": 97856,
+    "store-settings": 88640
   },
   "files": {
     "js/components.ddba8681c45a8839.js": {
@@ -222,10 +224,25 @@
       "gzipBytes": 233,
       "sha256": "925d6e5d31c5d0814efd51168fc366d755b0e5f3233a3991dae9170b2c5380cb"
     },
-    "js/product-center.a86beb0949c4677c.js": {
-      "bytes": 70165,
-      "gzipBytes": 22754,
-      "sha256": "a86beb0949c4677c0e178bfc24f46ef09ab3befa9e0cc9411923a09302190de0"
+    "js/activity-data.4977d99930ac3457.js": {
+      "bytes": 9475,
+      "gzipBytes": 4083,
+      "sha256": "4977d99930ac3457c149be8e911ff71edd2425c1edc19278ff79399a84534b19"
+    },
+    "js/activities.8efd5b1992f5ac8b.js": {
+      "bytes": 16061,
+      "gzipBytes": 5720,
+      "sha256": "8efd5b1992f5ac8b769aadbe37a1a66003723449e01a1307bec5a4cba87dd867"
+    },
+    "css/activities.350e049f191205e3.css": {
+      "bytes": 615,
+      "gzipBytes": 284,
+      "sha256": "350e049f191205e3fa976417b51e08941616199081c856fb5df6bfaf53e595b3"
+    },
+    "js/product-center.c526e5e279e09f0b.js": {
+      "bytes": 70741,
+      "gzipBytes": 23025,
+      "sha256": "c526e5e279e09f0bb0b4b264f1bef1a2e0d98f3fe888d5df63c268eaac4ab742"
     },
     "css/product-center.51d0401df0ffb0ca.css": {
       "bytes": 2969,
@@ -297,10 +314,10 @@
       "gzipBytes": 10636,
       "sha256": "74b612bb354daf56949fe6f7b15e0c2b0169eab2cb255fc91ce8700228e515ef"
     },
-    "js/refunds.d0e7f889fd8d98d7.js": {
-      "bytes": 59706,
-      "gzipBytes": 17569,
-      "sha256": "d0e7f889fd8d98d7d681e1761c3479e4eacff2d4a1c33d362c81e4d6cb8d7380"
+    "js/refunds.00482d0e21beafd4.js": {
+      "bytes": 59953,
+      "gzipBytes": 17662,
+      "sha256": "00482d0e21beafd47ec0aab1b75e19e687e5a6d4c8296abbee1665d4d5ae875e"
     },
     "js/finance.cb1d9ea64f4177a6.js": {
       "bytes": 6596,
