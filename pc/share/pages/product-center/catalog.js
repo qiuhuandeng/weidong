@@ -109,19 +109,37 @@
   S.actions.salesMultiple=async id=>{
     const v=M.copy(S.sales.multiples.find(x=>x.id===id)||{name:'',options:[],count:1,duration:0,thumbnail:''}),revision=S.data.revision;
     v.optionQuantities=Object.fromEntries(v.options.map(key=>[key,v.optionQuantities?.[key]===undefined?1:v.optionQuantities[key]]));
-    let pending=[],saving=false,reading=false,root;
+    let saving=false,reading=false,root;
     // Keep this form's draft separate from the inventory drawer stack.
     const controls=html=>html.replaceAll('data-stock-bind','data-sales-multiple-bind').replaceAll('data-stock-action','data-sales-multiple-action');
-    const integer=(label,value,bind)=>I(label,value,bind,'number').replace('min="0" step="0.001"','min="1" step="1" data-pc-stepper data-pc-precision="0" data-pc-step-strictly="true"');
+    const numberField=control=>'<div class="sales-multiple-number">'+control+'</div>';
+    const integer=(label,value,bind)=>numberField(I(label,value,bind,'number').replace('min="0" step="0.001"','min="1" step="1" data-pc-stepper data-pc-precision="0" data-pc-step-strictly="true"'));
     const photos=()=>controls(S.salesPhotos(v,'thumbnail'));
-    const options=()=>controls('<div class="sales-multiple-options"><div class="sales-multiple-picker">'+C('选择添加项目',S.sales.basics.filter(x=>!v.options.includes(x.id)).map(x=>[x.id,x.name]),pending,'pending','multiple placeholder="请选择项目，可搜索"')+B('添加','add')+'</div>'+S.table([['项目名称',key=>E(S.salesBasic(key)?.name||'—'),130],['数量',key=>integer((S.salesBasic(key)?.name||'项目')+'数量',v.optionQuantities[key],'qty.'+key),150],['操作',key=>L('移除','remove',key),70]],v.options)+'</div>');
+    const choices=()=>S.sales.basics.map(x=>[x.id,x.name]);
+    const items=()=>{
+      // Explicit column widths keep the single action from taking the default 150px.
+      return S.table([
+        ['项目名称',key=>E(S.salesBasic(key)?.name||'—'),180],
+        ['数量',key=>integer((S.salesBasic(key)?.name||'项目')+'数量',v.optionQuantities[key],'qty.'+key),156],
+        ['操作',key=>L('移除','remove',key),76]
+      ],v.options).replace('<thead>','<colgroup><col style="width:180px"><col style="width:156px"><col style="width:76px"></colgroup><thead>');
+    };
+    const options=()=>controls('<div class="sales-multiple-options"><div class="sales-multiple-picker">'+C('选择添加项目',choices(),v.options,'option','multiple placeholder="搜索并选择项目，选中即添加"')+'</div><div data-sales-multiple-items>'+items()+'</div></div>');
     const active=()=>root?.isConnected&&!root.closest('.is-closing');
     const error=message=>{if(!active())return;const el=root.querySelector('[data-sales-multiple-error]');el.textContent=message;el.hidden=!message;if(message)el.scrollIntoView({block:'nearest'});};
-    const refresh=part=>{root.querySelector('[data-sales-multiple-'+part+']').innerHTML=part==='options'?options():photos();PCUI.sweep();};
+    const refreshPhotos=()=>{root.querySelector('[data-sales-multiple-photos]').innerHTML=photos();PCUI.sweep();};
+    const refreshOptions=()=>{
+      const picker=root.querySelector('select[data-sales-multiple-bind="option"]'),popupId=picker.parentElement.querySelector('[role="combobox"]').getAttribute('aria-controls');
+      const search=document.getElementById(popupId)?.querySelector('.pc-select-search');
+      for(const option of picker.options)option.selected=v.options.includes(option.value);
+      PCUI.syncControl(picker);
+      root.querySelector('[data-sales-multiple-items]').innerHTML=controls(items());PCUI.sweep();
+      // Keep the open search available for adding several projects in succession.
+      queueMicrotask(()=>{if(search?.isConnected)search.focus({preventScroll:true});});
+    };
     const save=async()=>{
       if(saving||S.state.busy)return;
       if(reading){error('缩略图正在读取，请稍后保存。');return;}
-      if(pending.length){error('请先添加已选择的项目，或清除待添加项。');return;}
       saving=true;S.state.busy=true;error('');
       try{await S.db.commit('sales.multiple',{value:M.copy(v)},revision);if(active())PCUI.closeDialog();S.state.error=null;S.render();toast('已保存');}
       catch(e){error(e.message);}
@@ -132,14 +150,21 @@
       S.salesWideField('缩略图','<div data-sales-multiple-photos>'+photos()+'</div>'),
       S.salesWideField('可选项','<div data-sales-multiple-options>'+options()+'</div>',true),
       S.salesWideField('可选项目数',integer('可选项目数',v.count,'count'),true),
-      S.salesWideField('耗时（分钟）',I('耗时（分钟）',v.duration,'duration','number'),true)
+      S.salesWideField('耗时（分钟）',numberField(I('耗时（分钟）',v.duration,'duration','number')),true)
     ]))+'<p class="stock-error" data-sales-multiple-error role="alert" hidden></p></div>',buttons:[{text:'取消',action:()=>{if(!saving)PCUI.closeDialog();}},{text:'确定',primary:true,action:save}]});
     await PCUI.whenReady();
     root=document.querySelector('[data-sales-multiple-editor]');
     const bind=event=>{
       const el=event.target;if(!el.matches('input,select,textarea')||!el.dataset.salesMultipleBind)return;
       const key=el.dataset.salesMultipleBind,value=el.type==='number'?(el.value===''?'':Number(el.value)):el.value;
-      if(key==='pending')pending=[...el.selectedOptions].map(x=>x.value);
+      if(key==='option'){
+        if(event.type!=='change'||saving)return;
+        const selected=[...el.selectedOptions].map(x=>x.value);
+        v.options=v.options.filter(key=>selected.includes(key));
+        selected.forEach(key=>{if(!v.options.includes(key)){v.options.push(key);v.optionQuantities[key]=1;}});
+        v.optionQuantities=Object.fromEntries(v.options.map(key=>[key,v.optionQuantities[key]]));
+        error('');refreshOptions();
+      }
       else if(key.startsWith('qty.'))v.optionQuantities[key.slice(4)]=value;
       else v[key]=value;
     };
@@ -147,17 +172,14 @@
     root.addEventListener('click',event=>{
       const el=event.target.closest('button[data-sales-multiple-action]');if(!el||saving||reading)return;
       const action=el.dataset.salesMultipleAction;error('');
-      if(action==='add'){
-        if(!pending.length){error('请选择要添加的项目。');return;}
-        pending.forEach(key=>{if(!v.options.includes(key)){v.options.push(key);v.optionQuantities[key]=1;}});pending=[];refresh('options');
-      }else if(action==='remove'){
-        const key=el.dataset.stockId;v.options=v.options.filter(x=>x!==key);delete v.optionQuantities[key];refresh('options');
-      }else if(action==='salesImageRemove'){v.thumbnail='';refresh('photos');}
+      if(action==='remove'){
+        const key=el.dataset.stockId;v.options=v.options.filter(x=>x!==key);delete v.optionQuantities[key];refreshOptions();
+      }else if(action==='salesImageRemove'){v.thumbnail='';refreshPhotos();}
     });
     root.addEventListener('change',async event=>{
       const el=event.target;if(!el.matches('input[type="file"]')||saving||reading)return;
       reading=true;error('');
-      try{const images=await S.readImages(el.files);if(active()){v.thumbnail=images[0]?.src||v.thumbnail;refresh('photos');}}
+      try{const images=await S.readImages(el.files);if(active()){v.thumbnail=images[0]?.src||v.thumbnail;refreshPhotos();}}
       catch(e){error(e.message);el.value='';}
       finally{reading=false;}
     });
