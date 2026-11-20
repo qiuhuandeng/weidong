@@ -45,7 +45,9 @@ function shopsPage(){
     const header=[`<input type="checkbox" aria-label="选择本页门店" ${visible.length&&visible.every(r=>shopSelected.has(r.id))?'checked':''} onchange="UB.shopSelect(this.checked)">`,'序号','ID','门店','城市','地址','负责人','关停天数','联系方式','营业时间',...shopFlags.map(x=>x[1]),'操作'];
     const cells=visible.map((r,i)=>[`<input type="checkbox" aria-label="选择${e(r.name)}" ${shopSelected.has(r.id)?'checked':''} onchange="UB.shopSelect(this.checked,'${r.id}')">`,(current-1)*shopPageSize+i+1,e(r.id),`<span class="ub-ellipsis" title="${e(r.name)}">${e(r.name)}</span>`,`<span class="ub-ellipsis" title="${e(r.city)}">${e(r.city)}</span>`,`<span class="ub-ellipsis" title="${e(r.address)}">${e(r.address)||'—'}</span>`,e(r.manager)||'—',!r.enabled&&r.closedAt?Math.max(0,Math.floor((Date.now()-Date.parse(r.closedAt))/86400000)):'—',e(r.phone)||'—',`${e(r.start)} – ${e(r.end)}`,...shopFlags.map(([k,label])=>`<div class="actions">${switcher(r[k],`UB.shopToggle('${r.id}','${k}',this.checked)`,r.name+' · '+label)}<span class="pc-switch-status">${r[k]?'开启':'关闭'}</span></div>`),actions(link('修改',`UB.shopEdit('${r.id}')`),link('床位',`UB.shopCapacity('${r.id}')`),link('班次',`UB.shopShifts('${r.id}')`),link('服务规则',`UB.shopRules('${r.id}')`))]);
     const pager=companyPager(rows.length,current,shopPageSize,'shopPaging',[10,20,50,100],shopSelected.size);
-    return search+panelHTML('门店列表',tableHTML(header,cells).replace('<table>','<table><colgroup><col style="width:48px"><col style="width:60px"><col style="width:64px"><col style="width:164px"><col style="width:160px"><col><col style="width:100px"><col style="width:96px"><col style="width:136px"><col style="width:144px"><col style="width:112px"><col style="width:112px"><col style="width:96px"><col style="width:128px"><col style="width:112px"><col style="width:128px"><col style="width:112px"><col style="width:112px"><col style="width:224px"></colgroup>').replace('class="table-wrap ub-table"','class="table-wrap ub-table shop-list-table"')+pager,actions(b('新增门店','UB.shopEdit()','primary'),b('转出设置','UB.shopTransfer()').replace('<button ',`<button ${shopSelected.size?'':'disabled '}`),b('日志','UB.shopLogs()')));
+    const settingsMenu=`<span data-pc-menu="规则设置">${b('转出设置','UB.shopTransfer()').replace('<button ',`<button ${shopSelected.size?'':'disabled '}`)}${b('撤销流退设置','UB.shopFlowReversal()')}</span>`;
+    const toolbar=b('新增门店','UB.shopEdit()','primary')+settingsMenu+actions(b('日志','UB.shopLogs()')).replace('<div class="ub-actions">','<div class="ub-actions" style="margin-left:auto">');
+    return search+panelHTML('门店列表',tableHTML(header,cells).replace('<table>','<table><colgroup><col style="width:48px"><col style="width:60px"><col style="width:64px"><col style="width:164px"><col style="width:160px"><col><col style="width:100px"><col style="width:96px"><col style="width:136px"><col style="width:144px"><col style="width:112px"><col style="width:112px"><col style="width:96px"><col style="width:128px"><col style="width:112px"><col style="width:128px"><col style="width:112px"><col style="width:112px"><col style="width:224px"></colgroup>').replace('class="table-wrap ub-table"','class="table-wrap ub-table shop-list-table"')+pager,toolbar).replace('<div class="actions">','<div class="actions" style="width:100%">');
   }
 function shopPaging(p,size){if(size)shopPageSize=size;pageNumbers['shops:']=p;refresh()}
 function shopSelect(on,id){(id?[shopById(id)]:shopPageRows()).filter(Boolean).forEach(r=>on?shopSelected.add(r.id):shopSelected.delete(r.id));refresh()}
@@ -178,12 +180,45 @@ function shopRuleContent(item,store){
       section('按服务团队分配人员业绩',form(shopMode('服务团队岗位','team',r)))+
       section('组长岗位',form(shopMode('组长岗位','leader',r)))+
       section('组员岗位',form(shopMode('组员岗位','member',r)));
-    if(view==='mobile')content=section('移动端权限',form(field('允许修改时间间隔',shopChoose('intervalPosts','选择允许修改时间间隔的岗位',r.intervalPosts))+field('允许修改床位数量',shopChoose('bedPosts','选择允许修改床位数量的岗位',r.bedPosts))+field('实时退款',`<div class="actions">${switcher(r.realTimeRefund,'UB.shopRuleChange()','实时退款').replace('<input ','<input name="realTimeRefund" ')}<span>${r.realTimeRefund?'开启':'关闭'}</span></div>`,true))+'<p class="ub-note">开启后，该门店可在移动端申请退款。</p>');
+    if(view==='mobile')content=section('移动端权限',form(field('允许修改时间间隔',shopChoose('intervalPosts','选择允许修改时间间隔的岗位',r.intervalPosts))+field('允许修改床位数量',shopChoose('bedPosts','选择允许修改床位数量的岗位',r.bedPosts))+field('实时退款',`<div class="actions">${switcher(r.realTimeRefund,'UB.shopRuleChange()','实时退款').replace('<input ','<input name="realTimeRefund" ')}<span>${r.realTimeRefund?'开启':'关闭'}</span></div>`,true))+'<p class="ub-note">开启后，该门店可在移动端申请退款。</p>')+section('撤销流退',flowFields(r.flowReversal,true));
     return tab+shopConfigContent(view,content);
   }
+// Global defaults and optional per-store overrides share the existing guarded store.
+const flowReversalDefault=()=>({enabled:false,cutoff:'23:30',minutes:30});
+const flowDefaults=()=>clone(managementContext.data.flowReversalDefaults||flowReversalDefault());
+const flowSetting=store=>clone({mode:'inherit',...flowDefaults(),...store.rules?.flowReversal});
+function flowDescription(r){return r.enabled?`允许撤销；当日 ${r.cutoff} 前；撤销后 ${r.minutes} 分钟内结算`:'不允许撤销流退'}
+function flowValidation(r){
+    if(!r||typeof r.enabled!=='boolean')return '请选择是否允许撤销流退';
+    if(r.enabled&&!/^([01]\d|2[0-3]):[0-5]\d$/.test(r.cutoff))return '请选择有效的当日撤销截止时间';
+    if(r.enabled&&(!Number.isSafeInteger(r.minutes)||r.minutes<=0))return '撤销后结算时限须为正整数分钟';
+    return '';
+  }
+function flowFields(r,mode=false){
+    let html=mode?form(field('设置方式',sel('_flowMode',[['inherit','跟随统一设置'],['custom','单独设置']],r.mode,r.mode?'': '请选择设置方式').replace('<select ','<select onchange="UB.shopRuleChange()" '))):'';
+    if(mode&&r.mode==='inherit')return html+details([['当前统一规则',e(flowDescription(flowDefaults()))]])+'<p class="ub-note">统一规则调整后，本门店自动跟随；已开始的结算倒计时保持不变。</p>';
+    if(mode&&r.mode!=='custom')return html;
+    html+=form(field('允许撤销流退',`<div class="actions">${switcher(r.enabled,'UB.shopRuleChange()','允许撤销流退').replace('<input ','<input name="_flowEnabled" ')}<span>${r.enabled?'开启':'关闭'}</span></div>`)+
+      (r.enabled?field('当日撤销截止',shopInput('_flowCutoff',r.cutoff,'time','step="60"'))+field('结算时限（分钟）',shopInput('_flowMinutes',r.minutes,'number','min="1" step="1"')):''));
+    return html+'<p class="ub-note">仅允许撤销当天的流退订单。截止时间限制发起撤销；结算时限从撤销成功开始计算，超时未结算自动重新流退。</p>';
+  }
+function readFlow(root,r){
+    const mode=root.querySelector('[name="_flowMode"]'),enabled=root.querySelector('[name="_flowEnabled"]'),cutoff=root.querySelector('[name="_flowCutoff"]'),minutes=root.querySelector('[name="_flowMinutes"]');
+    if(mode)r.mode=mode.value;if(enabled)r.enabled=enabled.checked;if(cutoff)r.cutoff=cutoff.value;if(minutes)r.minutes=minutes.value===''?'':Number(minutes.value);
+  }
+function shopFlowReversal(){
+    const m=flowDefaults();
+    open('撤销流退统一设置',()=>section('撤销流退',flowFields(m)),r=>{
+      const invalid=flowValidation(r);if(invalid)return error(invalid);
+      managementContext.data.flowReversalDefaults=clone(r);shopLog({id:'*',name:'统一默认规则',city:''},'撤销流退设置',flowDescription(r));
+      save('撤销流退统一设置已保存');close(true);refresh();
+    },560,m);
+    stack.at(-1).read=(root,r)=>readFlow(root,r);
+  }
 function shopRules(id){
-    let store=shopById(id),m=clone({realTimeRefund:false,...store.rules});
+    let store=shopById(id),m=clone({realTimeRefund:false,...store.rules,flowReversal:flowSetting(store)});
     open('服务规则 · '+store.name,item=>shopRuleContent(item,store),r=>{
+      const flowInvalid=r.flowReversal.mode==='custom'&&flowValidation(r.flowReversal);if(flowInvalid)return error(flowInvalid);
       if(!r.reception.length||!r.smartReception.length)return error('请选择新客订单及智能排客接待老师岗位');
       if(r.smartReception.some(x=>!r.reception.includes(x)))return error('智能排客岗位须属于新客订单接待岗位');
       if([r,...r.durations].some(d=>!Number.isInteger(d.standard)||!Number.isInteger(d.minimum)||d.minimum<=0||d.standard<d.minimum))return error('接待时长须为正整数，最小时长不能超过标准时长');
@@ -191,9 +226,9 @@ function shopRules(id){
       if(['outLimit','inLimit'].some(k=>!Number.isFinite(r[k])||r[k]<0||r[k]>100))return error('转出和转入上限须在 0–100% 之间');
       if(!Number.isInteger(r.managerLimit)||r.managerLimit<0)return error('店长每日接待上限须为非负整数');
       if(['order','maintain','collab','team','leader','member'].some(k=>['include','exclude'].includes(r[k+'Mode'])&&!r[k+'Posts'].length))return error('请为包含或不包含模式选择岗位');
-      const refundChanged=!!store.rules.realTimeRefund!==r.realTimeRefund;store.rules=clone(r);shopLog(store,'服务规则','更新开单设置、转单设置、业绩分配及移动端权限'+(refundChanged?'；实时退款：'+(r.realTimeRefund?'开启':'关闭'):''));save('服务规则已保存');close(true);refresh();
+      const refundChanged=!!store.rules.realTimeRefund!==r.realTimeRefund,flowChanged=JSON.stringify(flowSetting(store))!==JSON.stringify(r.flowReversal);store.rules=clone(r);if(flowChanged)shopLog(store,'撤销流退设置',r.flowReversal.mode==='inherit'?'恢复跟随统一设置':'单独设置：'+flowDescription(r.flowReversal));shopLog(store,'服务规则','更新开单设置、转单设置、业绩分配及移动端权限'+(refundChanged?'；实时退款：'+(r.realTimeRefund?'开启':'关闭'):''));save('服务规则已保存');close(true);refresh();
     },860,m);
-    stack.at(-1).view='order';stack.at(-1).read=(root,r)=>{readForm(root,r);if(root.querySelector('[name="standard"]'))r.durations.forEach((d,i)=>{d.type=root.querySelector(`[name="_bed-${i}"]`).value;d.standard=Number(root.querySelector(`[name="_standard-${i}"]`).value);d.minimum=Number(root.querySelector(`[name="_minimum-${i}"]`).value)})};
+    stack.at(-1).view='order';stack.at(-1).read=(root,r)=>{readForm(root,r);readFlow(root,r.flowReversal);if(root.querySelector('[name="standard"]'))r.durations.forEach((d,i)=>{d.type=root.querySelector(`[name="_bed-${i}"]`).value;d.standard=Number(root.querySelector(`[name="_standard-${i}"]`).value);d.minimum=Number(root.querySelector(`[name="_minimum-${i}"]`).value)})};
   }
 function shopRuleTab(view){collect();stack.at(-1).view=view;redraw();let body=topPanel().querySelector('.merge-drawer-body');body.scrollTop=0;topPanel().querySelector('.merge-rule-tab[aria-selected="true"]')?.focus()}
 function shopRuleChange(){collect();redraw()}
@@ -221,9 +256,10 @@ function shopLogDate(index){
     if(index===4){from=new Date(d.getFullYear(),d.getMonth(),1);to=new Date(d.getFullYear(),d.getMonth()+1,0)}
     item.filter={...item.filter,from:fmt(from),to:fmt(to)};item.page=1;redraw();
   }
-UB.register("management",{"shops":shopsPage},{shopPaging,shopSelect,shopToggle,shopCityFilter,shopPickField,shopEdit,shopVideoRow,shopMap,shopUpload,shopRemoveMedia,shopPreview,shopCapacity,shopShifts,shopShiftRow,shopTransfer,shopRules,shopRuleTab,shopRuleChange,shopDuration,shopLogs,shopLogSearch,shopLogPage,shopLogPick,shopLogDate},()=>{
+UB.register("management",{"shops":shopsPage},{shopPaging,shopSelect,shopToggle,shopCityFilter,shopPickField,shopEdit,shopVideoRow,shopMap,shopUpload,shopRemoveMedia,shopPreview,shopCapacity,shopShifts,shopShiftRow,shopTransfer,shopFlowReversal,shopRules,shopRuleTab,shopRuleChange,shopDuration,shopLogs,shopLogSearch,shopLogPage,shopLogPick,shopLogDate},()=>{
 
 managementContext.ensureEmployees();managementContext.ensureBedCatalog();
+if(!Object.hasOwn(managementContext.data,'flowReversalDefaults'))managementContext.data.flowReversalDefaults=flowReversalDefault();
 if(!Object.hasOwn(managementContext.data,'shops'))managementContext.data.shops=shopSeeds();if(!Object.hasOwn(managementContext.data,'shopLogs'))managementContext.data.shopLogs=[];
 });
 })();

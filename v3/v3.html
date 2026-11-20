@@ -524,25 +524,53 @@ function orderIsReturned(o){return ['流退','已流退','到店流退'].include
 function orderReversalActive(o){return o?.status==='已到店'&&!o.settled&&o.flowReversal?.state==='pending'}
 function orderSchedule(o){return String(o?.flowReversal?.scheduledAt||o?.scheduledAt||o?.arrival||'').replace(' ','T')}
 function orderTime(at){return new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'}).format(new Date(at))}
+function orderReversalPolicy(o){
+ const raw=v3Storage.getItem(RF_BACKEND_KEY);let backend;
+ try{backend=raw===null?null:JSON.parse(raw)}catch{throw Error('撤销流退配置无法读取，请在后台核对后重试')}
+ if(backend&&backend.version!==1)throw Error('撤销流退配置版本不兼容，请在后台核对');
+ const stores=backend?.shops||[],storeId=o.storeId??o.shopId;
+ const matches=stores.filter(s=>storeId?String(s.id)===String(storeId):s.name===o.store);
+ if(matches.length>1)throw Error('订单所属门店不唯一，请核对门店资料');
+ const override=matches[0]?.rules?.flowReversal;
+ if(override&&!['inherit','custom'].includes(override.mode))throw Error('门店撤销流退设置无效，请在后台核对');
+ const r=override?.mode==='custom'?override:(backend?.flowReversalDefaults??{enabled:false,cutoff:'23:30',minutes:30});
+ if(typeof r.enabled!=='boolean'||r.enabled&&(!/^([01]\d|2[0-3]):[0-5]\d$/.test(r.cutoff)||!Number.isSafeInteger(r.minutes)||r.minutes<=0))throw Error('撤销流退配置无效，请在后台核对');
+ return {enabled:r.enabled,cutoff:r.cutoff,minutes:r.minutes};
+}
+function checkOrderReversal(o,now=Date.now()){
+ if(!o||!orderIsReturned(o)||o.settled)throw Error('当前订单不可撤销流退，请核对订单状态');
+ const policy=orderReversalPolicy(o),current=orderTime(now);
+ if(!policy.enabled)throw Error('该门店未开启撤销流退，请联系后台管理员');
+ const returnedAt=o.returnedAt||o.flowReturnedAt||o.logs?.find(x=>['流退','已流退','到店流退','取消订单'].includes(x.action))?.time||orderSchedule(o);
+ const returnDate=typeof returnedAt==='number'?orderTime(returnedAt).slice(0,10):String(returnedAt).slice(0,10);
+ if(returnDate!==current.slice(0,10))throw Error('仅允许撤销当天的流退订单');
+ if(current.slice(11,16)>=policy.cutoff)throw Error('已超过当日撤销截止时间 '+policy.cutoff);
+ if(!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(orderSchedule(o)))throw Error('缺少原排客时间，请先核对订单资料');
+ return policy;
+}
 function revokeOrderReturn(){
- refreshOrderReversals();const o=rfMobileLatest().orders.find(x=>x.id===route.id)||order();if(!o)return;
- openSheet('撤销流退',`<div class="order-reversal-confirm"><p>确认撤销当前订单的流退状态？撤销后订单恢复为<strong>已到店</strong>。</p><p>到店时间沿用原排客时间：<br>${esc(orderSchedule(o).replace('T',' '))}</p><p>请在确认撤销后 <strong>30 分钟内完成订单结算</strong>，未结算的订单将自动变为<strong>到店流退</strong>。</p><p class="muted">仅允许撤销当天的流退订单。</p></div>`,btn('取消','closeSheet()')+btn('确认撤销','confirmRevokeOrderReturn()','primary'));
- sheet.orderReversal={id:o.id,scheduledAt:orderSchedule(o)};
+ refreshOrderReversals();const o=rfMobileLatest().orders.find(x=>x.id===route.id)||order();let policy;
+ try{policy=checkOrderReversal(o)}catch(e){toast(e.message);return false}
+ openSheet('撤销流退',`<div class="order-reversal-confirm"><p>确认撤销当前订单的流退状态？撤销后订单恢复为<strong>已到店</strong>。</p><p>到店时间沿用原排客时间：<br>${esc(orderSchedule(o).replace('T',' '))}</p><p>请在确认撤销后 <strong>${policy.minutes} 分钟内完成订单结算</strong>，未结算的订单将自动变为<strong>到店流退</strong>。</p><p class="muted">仅允许撤销当天的流退订单，须在当日 ${policy.cutoff} 前操作。</p></div>`,btn('取消','closeSheet()')+btn('确认撤销','confirmRevokeOrderReturn()','primary'));
+ sheet.orderReversal={id:o.id,scheduledAt:orderSchedule(o),status:o.status,revokedAt:o.flowReversal?.revokedAt||0,policy};
 }
 function confirmRevokeOrderReturn(){
  const expected=sheet?.orderReversal;if(!expected)return false;
- const now=Date.now(),next=copy(rfMobileLatest()),o=next.orders.find(x=>x.id===expected.id);if(!o)return false;
- const deadline=now+30*60*1000;
- o.flowReversal={fromStatus:o.status,previousSettled:o.settled||'',scheduledAt:expected.scheduledAt,revokedAt:now,deadline,state:'pending'};
+ const now=Date.now(),next=copy(rfMobileLatest()),o=next.orders.find(x=>x.id===expected.id);let policy;
+ try{policy=checkOrderReversal(o,now)}catch(e){return error(e.message,true)}
+ if(o.status!==expected.status||orderSchedule(o)!==expected.scheduledAt||(o.flowReversal?.revokedAt||0)!==expected.revokedAt)return error('订单状态已变化，请重新发起撤销',true);
+ if(JSON.stringify(policy)!==JSON.stringify(expected.policy))return error('门店规则已更新，请重新发起撤销',true);
+ const deadline=now+policy.minutes*60*1000;
+ o.flowReversal={fromStatus:o.status,previousSettled:o.settled||'',scheduledAt:expected.scheduledAt,revokedAt:now,deadline,minutes:policy.minutes,cutoff:policy.cutoff,state:'pending'};
  o.scheduledAt=expected.scheduledAt;o.arrival=expected.scheduledAt;o.status='已到店';o.settled='';
  (o.logs??=[]).unshift({time:orderTime(now),action:'撤销流退',content:'恢复为已到店；到店时间：'+o.arrival.replace('T',' ')+'；结算截止：'+orderTime(deadline)});
  try{v3Storage.setItem(KEY,JSON.stringify(next))}catch(e){return error('撤销未保存：'+e.message,true)}
- data=next;closeSheet(true);render();toast('已撤销流退，请在30分钟内完成订单结算');return true;
+ data=next;closeSheet(true);render();toast('已撤销流退，请在'+policy.minutes+'分钟内完成订单结算');return true;
 }
 function expireOrderReversals(now=Date.now()){
  const latest=rfMobileLatest();if(!latest.orders.some(o=>orderReversalActive(o)&&Number.isFinite(o.flowReversal.deadline)&&o.flowReversal.deadline<=now))return [];
  const next=copy(latest),ids=[];
- for(const o of next.orders){if(!orderReversalActive(o)||!Number.isFinite(o.flowReversal.deadline)||o.flowReversal.deadline>now)continue;o.status='到店流退';o.flowReversal.state='expired';ids.push(o.id);(o.logs??=[]).unshift({time:orderTime(o.flowReversal.deadline),action:'到店流退',content:'撤销流退后30分钟内未完成订单结算，自动转为到店流退'});}
+ for(const o of next.orders){if(!orderReversalActive(o)||!Number.isFinite(o.flowReversal.deadline)||o.flowReversal.deadline>now)continue;o.status='到店流退';o.flowReversal.state='expired';ids.push(o.id);(o.logs??=[]).unshift({time:orderTime(o.flowReversal.deadline),action:'到店流退',content:'撤销流退后'+(o.flowReversal.minutes||30)+'分钟内未完成订单结算，自动转为到店流退'});}
  v3Storage.setItem(KEY,JSON.stringify(next));data=next;return ids;
 }
 let orderReversalTimer;
