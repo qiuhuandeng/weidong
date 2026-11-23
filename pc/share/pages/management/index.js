@@ -187,20 +187,21 @@ function shopRuleContent(item,store){
 const flowReversalDefault=()=>({enabled:false,cutoff:'23:30',minutes:30});
 const flowDefaults=()=>clone(managementContext.data.flowReversalDefaults||flowReversalDefault());
 const flowSetting=store=>clone({mode:'inherit',...flowDefaults(),...store.rules?.flowReversal});
-function flowDescription(r){return r.enabled?`允许撤销；当日 ${r.cutoff} 前；撤销后 ${r.minutes} 分钟内结算`:'不允许撤销流退'}
+function flowDescription(r){return r.enabled?`仅限当天流退订单；当天 ${r.cutoff} 截止；撤销后 ${r.minutes} 分钟未结算，自动变为到店流退。`:'不允许撤销流退'}
 function flowValidation(r){
     if(!r||typeof r.enabled!=='boolean')return '请选择是否允许撤销流退';
-    if(r.enabled&&!/^([01]\d|2[0-3]):[0-5]\d$/.test(r.cutoff))return '请选择有效的当日撤销截止时间';
+    if(r.enabled&&!/^([01]\d|2[0-3]):[0-5]\d$/.test(r.cutoff))return '请选择有效的撤销截止时间';
     if(r.enabled&&(!Number.isSafeInteger(r.minutes)||r.minutes<=0))return '撤销后结算时限须为正整数分钟';
     return '';
   }
 function flowFields(r,mode=false){
+    const withHint=(label,control,hint)=>field(label,control).replace(/<\/div>$/,`<p class="muted">${e(hint)}</p></div>`);
     let html=mode?form(field('设置方式',sel('_flowMode',[['inherit','跟随统一设置'],['custom','单独设置']],r.mode,r.mode?'': '请选择设置方式').replace('<select ','<select onchange="UB.shopRuleChange()" '))):'';
     if(mode&&r.mode==='inherit')return html+details([['当前统一规则',e(flowDescription(flowDefaults()))]])+'<p class="ub-note">统一规则调整后，本门店自动跟随；已开始的结算倒计时保持不变。</p>';
     if(mode&&r.mode!=='custom')return html;
-    html+=form(field('允许撤销流退',`<div class="actions">${switcher(r.enabled,'UB.shopRuleChange()','允许撤销流退').replace('<input ','<input name="_flowEnabled" ')}<span>${r.enabled?'开启':'关闭'}</span></div>`)+
-      (r.enabled?field('当日撤销截止',shopInput('_flowCutoff',r.cutoff,'time','step="60"'))+field('结算时限（分钟）',shopInput('_flowMinutes',r.minutes,'number','min="1" step="1"')):''));
-    return html+'<p class="ub-note">仅允许撤销当天的流退订单。截止时间限制发起撤销；结算时限从撤销成功开始计算，超时未结算自动重新流退。</p>';
+    html+=form(withHint('允许撤销',`<div class="actions">${switcher(r.enabled,'UB.shopRuleChange()','允许撤销流退').replace('<input ','<input name="_flowEnabled" ')}<span>${r.enabled?'开启':'关闭'}</span></div>`,'仅限当天流退订单。')+
+      (r.enabled?withHint('撤销截止',shopInput('_flowCutoff',r.cutoff,'time','step="60"'),'当天到达此时间后，不可撤销。')+withHint('结算时限（分钟）',shopInput('_flowMinutes',r.minutes,'number','min="1" step="1"'),'撤销后计时，超时未结算自动变为到店流退。'):''));
+    return html;
   }
 function readFlow(root,r){
     const mode=root.querySelector('[name="_flowMode"]'),enabled=root.querySelector('[name="_flowEnabled"]'),cutoff=root.querySelector('[name="_flowCutoff"]'),minutes=root.querySelector('[name="_flowMinutes"]');
@@ -208,7 +209,7 @@ function readFlow(root,r){
   }
 function shopFlowReversal(){
     const m=flowDefaults();
-    open('撤销流退统一设置',()=>section('撤销流退',flowFields(m)),r=>{
+    open('撤销流退统一设置',()=>flowFields(m),r=>{
       const invalid=flowValidation(r);if(invalid)return error(invalid);
       managementContext.data.flowReversalDefaults=clone(r);shopLog({id:'*',name:'统一默认规则',city:''},'撤销流退设置',flowDescription(r));
       save('撤销流退统一设置已保存');close(true);refresh();
