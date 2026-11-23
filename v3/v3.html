@@ -165,7 +165,7 @@ html, body, * {
 .sheet:has(.order-more-menu) .sheet-head>button{position:absolute;right:4px;top:0;width:44px;height:44px;display:grid;place-items:center;font-size:24px;font-weight:300;color:#909399}
 .sheet:has(.order-more-menu) .sheet-body{padding:0;overscroll-behavior:contain}
 .sheet:has(.order-more-menu) .sheet-foot,.sheet:has(.order-more-menu) .form-error:empty{display:none}
-.order-more-menu{--cols:4;gap:0;padding:12px 8px max(22px,env(safe-area-inset-bottom))}
+.order-more-menu{--cols:4;gap:20px 0;padding:12px 8px max(22px,env(safe-area-inset-bottom))}
 .order-more-menu .quick{gap:4px;font-size:12px;line-height:18px;color:#555}
 .order-more-menu .disc{width:32px;height:32px;box-shadow:none}.order-more-menu .disc svg{width:21px;height:21px}
 .order-reversal-confirm p{line-height:22px;margin:0 0 12px}.order-reversal-confirm p:last-child{margin-bottom:0}
@@ -556,7 +556,7 @@ function checkOrderReversal(o,now=Date.now()){
 function revokeOrderReturn(){
  refreshOrderReversals();const o=rfMobileLatest().orders.find(x=>x.id===route.id)||order();let policy;
  try{policy=checkOrderReversal(o)}catch(e){toast(e.message);return false}
- openSheet('撤销流退',`<div class="order-reversal-confirm"><p>确认撤销当前订单的流退状态？撤销后订单恢复为<strong>已到店</strong>。</p><p>到店时间沿用原排客时间：<br>${esc(orderSchedule(o).replace('T',' '))}</p><p>请在确认撤销后 <strong>${policy.minutes} 分钟内完成订单结算</strong>，未结算的订单将自动变为<strong>到店流退</strong>。</p><p class="muted">仅允许撤销当天的流退订单，须在当日 ${policy.cutoff} 前操作。</p></div>`,btn('取消','closeSheet()')+btn('确认撤销','confirmRevokeOrderReturn()','primary'));
+ openSheet('撤销流退',`<div class="order-reversal-confirm"><p>撤销后，订单恢复为<strong>已到店</strong>。</p><p>请在 <strong>${policy.minutes} 分钟内完成结算</strong>，超时未结算将自动变为到店流退。</p></div>`,btn('取消','closeSheet()')+btn('确认撤销','confirmRevokeOrderReturn()','primary'));
  sheet.orderReversal={id:o.id,scheduledAt:orderSchedule(o),revokedAt:o.flowReversal?.revokedAt||0,policy};
 }
 function confirmRevokeOrderReturn(){
