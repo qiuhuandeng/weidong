@@ -602,7 +602,7 @@ function myRestBenefits(){
 }
 function myRestSummary(month,record){
  const {balance}=record;
- return `<section class="my-rest-summary" aria-label="假期余额"><div class="my-rest-balances"><div><span>上月余休</span><strong>${balance.carryover}<small>天</small></strong></div><button onclick="myRestBenefits()" aria-label="福利假 ${balance.benefit} 天，查看明细"><span>福利假 ›</span><strong>${balance.benefit}<small>天</small></strong></button><div><span>本月公休</span><strong>${balance.monthly}<small>天</small></strong></div></div></section>`;
+ return `<section class="my-rest-summary" aria-label="假期余额"><div class="my-rest-balances"><div><span>上月余休</span><strong>${balance.carryover}<small>天</small></strong></div><div><span>本月公休</span><strong>${balance.monthly}<small>天</small></strong></div><button onclick="myRestBenefits()" aria-label="福利假 ${balance.benefit} 天，查看明细"><span>福利假 ›</span><strong>${balance.benefit}<small>天</small></strong></button></div></section>`;
 }
 function myRestDetail(id){
  const record=myRestData(myRestMonth());if(record.loadError)return toast(record.loadError);const entry=record.calendar.find(e=>e.id===id);if(!entry)return;
