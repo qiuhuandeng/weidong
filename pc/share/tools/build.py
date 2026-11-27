@@ -193,7 +193,10 @@ def build():
     # Native UI and system fonts: no framework, component vendor or font downloads.
     scripts = [{'src': js('components', ['js/components.js', 'js/ui-collections.js', 'js/ui-richtext.js']), 'global': 'PCUI'}]
     styles = [css('business', ['css/legacy-business.css'], True), css('theme', ['css/tokens.css', 'css/theme.css'])]
-    app = js('app', ['js/shell.js', 'js/loader.js'])
+    # Keep the small failure UI inline; run preloading in the existing app asset
+    # before the shell/router. Growing navigation must not inflate the entry.
+    failure_ui, boot_runtime = runtime_source('js/bootstrap.js').split('window.PCBoot =', 1)
+    app = asset('app', 'window.PCBoot =' + boot_runtime + '\n;\n' + runtime_source('js/shell.js') + '\n;\n' + runtime_source('js/loader.js'), 'js')
     business_script = js('core', ['js/core.js'])
     modules = {}
     for name, module in routes['modules'].items():
@@ -229,7 +232,7 @@ def build():
     entry_shell_styles = [asset('shell', shell_styles(), 'css')]
     config = {'scripts': scripts, 'businessScript': business_script, 'styles': styles, 'shellStyles': entry_shell_styles}
     template = runtime_source('templates/entry.html').replace('<!-- pc-critical -->', '<style>\n' + critical_styles() + '\n</style>')
-    bootstrap = runtime_source('js/bootstrap.js')
+    bootstrap = failure_ui
     pages = {}
     for filename, entry in entries.items():
         selected_modules = {name: modules[name] for name in scopes[filename]}

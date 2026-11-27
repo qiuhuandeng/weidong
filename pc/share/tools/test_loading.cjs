@@ -306,7 +306,7 @@ test('new-page scaffold registers before a synchronous initializer throws', asyn
 
 test('generated fallback renders error text safely and offers retry', () => {
   const html=fs.readFileSync(path.join(__dirname,'../../pc.html'),'utf8');
-  const fallback=html.match(/window\.PC_BOOT_FAILED = function \(error\)[\s\S]*?(?=window.PCBoot)/)?.[0];
+  const fallback=html.match(/window\.PC_BOOT_FAILED = function \(error\)[\s\S]*?(?=<\/script>)/)?.[0];
   assert.ok(fallback,'build the PC entry first');
   const span={textContent:''},main={innerHTML:'',removeAttribute(){},querySelector:()=>span};
   const context=vm.createContext({document:{readyState:'complete',getElementById:()=>main}});context.window=context;

@@ -345,7 +345,7 @@ share/                          仅供 PC 子项目共用
       critical.css              首屏壳层和加载反馈
       legacy-business.css       现有业务结构兼容，不继续堆新页面
     js/
-      bootstrap.js              构建内联的首屏预加载与启动错误反馈
+      bootstrap.js              首屏预加载与启动错误反馈，构建拆分至应用脚本与入口
       components.js             原生公共控件、表单与表格
       ui-collections.js         分类树、层级选择与展开筛选
       ui-richtext.js            原生富文本编辑
@@ -386,7 +386,7 @@ docs/                           本项目原生 UI 规范、阅读版及业务�
 
 
 - `templates/entry.html` 是所有 PC 入口的唯一壳层模板；`css/critical.css` 与 `css/tokens.css` 提供首屏加载反馈，完整主题就绪后保持相同视觉。
-- `js/bootstrap.js` 统一预加载当前模块、递归依赖及所需公共资源，由构建内联到入口；构建输出的模块清单省略空 `routes` / `styles`，启动器在预加载和运行器使用前恢复为空数组，以缩小入口且维持相同运行时结构。源码 `routes.json` 仍明确登记这两项。`js/shell.js` / `js/loader.js` 只处理导航、首页必需工具、加载去重与生命周期，不维护第二套预加载清单。
+- `js/bootstrap.js` 统一预加载当前模块、递归依赖及所需公共资源；构建仅将启动错误反馈内联到入口，预加载代码放在现有带哈希的应用脚本开头，先于壳层与路由执行，以保持入口体积预算。构建输出的模块清单省略空 `routes` / `styles`，启动器在预加载和运行器使用前恢复为空数组，维持相同运行时结构。源码 `routes.json` 仍明确登记这两项。`js/shell.js` / `js/loader.js` 只处理导航、首页必需工具、加载去重与生命周期，不维护第二套预加载清单。
 - 客户规则页由 `customer-rules` 加载，只依赖 `customer-state`；`customer-engine` 统一承接其余客户业务的计算、执行流程、初始化与页面生命周期。客户列表 `customer` 只依赖 engine，合并、纠错、审核分别由 `customer-merge`、`customer-correction`、`customer-review` 按路由加载，经 `customer-shared-ui` 复用视图。客户详情通过 `customer-detail` 按需打开。各模块共用同一客户状态与原存储键，保留已保存方案及历史事件绑定；独立新业务仍按下述闭包与模块 API 约定实现，不继续向兼容模块添加全局函数。
 - 跨模块客户操作通过 `PCApp.loadModule()` 等待所需视图后执行；已加载操作继续同步执行。加载期间切换页面、关闭原抽屉或发起另一操作时，旧请求不能重新打开弹层。`customer-mobile` 依赖纠错与审核模块；合并记录和客户详情仍按操作加载。移动端专用样式维护在 `customer-mobile/style.css`，只随移动预览加载，共用业务和主题样式继续复用。
 - 客户列表只初始化档案、关联记录和必要迁移；订单、资产、业绩等补充示例明细及审核示例，延后至首次打开详情或进入合并、纠错、审核、移动预览时，由 `customer-shared-ui.ready` 等待 `customer-engine.initializeDetails()` 完成。补载共用一次初始化，已有版本标记跳过重复工作；刷新列表不提前补载，已审批的后台任务仍按原记录恢复。演示合并记录的补充快照在查看对应记录时生成，已保存快照保持原样。编号展示优先恢复已有映射，首次没有映射时才扫描已有数据，后续补载和新增编号按需分配。初始化回滚复用存储适配器保留的快照，避免正常路径再次深拷贝整份已保存状态；日期格式化器共用同一上海时区实例。

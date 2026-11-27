@@ -1,4 +1,4 @@
-/* Inlined by the builder before the deferred app. No boot deadline or polling. */
+/* Failure UI is inline; PCBoot starts the deferred app. No deadline or polling. */
 window.PC_BOOT_FAILED = function (error) {
   function show() {
     const main = document.getElementById('main');

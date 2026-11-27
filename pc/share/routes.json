@@ -1,6 +1,11 @@
 {
   "defaultRoute": "home",
   "modules": {
+    "decision-parameters": {
+      "scripts": ["pages/decision-parameters/model.js", "pages/decision-parameters/storage.js", "pages/decision-parameters/index.js"],
+      "styles": ["pages/decision-parameters/style.css"],
+      "routes": ["decision-parameters"]
+    },
     "customer": {
       "scripts": [
         "pages/customer/index.js"
@@ -965,6 +970,10 @@
           "file"
         ]
       ]
+    },
+    {
+      "group": "系统",
+      "items": [["decision-parameters", "决策参数", "settings"]]
     }
   ]
 }
