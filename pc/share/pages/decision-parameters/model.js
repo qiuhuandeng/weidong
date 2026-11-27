@@ -5,8 +5,8 @@ window.PCDecisionModel = (() => {
     {key:'replaceConsultant', group:'加微', label:'微信更换在职咨询日限额', period:'day', value:2, enabled:true},
     {key:'newCustomerWechat', group:'加微', label:'新增新客加微记录限额', period:'day', selectablePeriod:true, value:null, enabled:false},
     {key:'existingCustomerWechat', group:'加微', label:'新增老客加微记录限额', period:'day', selectablePeriod:true, value:null, enabled:false},
-    {key:'skipPhoneCheck', group:'空号控制', label:'跳过空手机号验证月限额', period:'month', value:3, enabled:true},
-    {key:'phoneCheckValidity', group:'空号控制', label:'跳过空手机号验证有效期', unit:'天', value:12},
+    {key:'skipPhoneCheck', group:'手机号管理', label:'跳过空手机号验证月限额', period:'month', value:3, enabled:true},
+    {key:'phoneCheckValidity', group:'手机号管理', label:'跳过空手机号验证有效期', unit:'天', value:12},
     {key:'changePhone', group:'手机号管理', label:'修改手机号限额', period:'day', selectablePeriod:true, value:null, enabled:false}
   ];
   const copy = value => JSON.parse(JSON.stringify(value));
