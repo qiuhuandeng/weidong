@@ -33,7 +33,7 @@ window.PCDecisionStorage = (() => {
     });
   }
   async function save(key, parameter, expectedRevision) {
-    M.validateParameter(key, parameter);
+    parameter = M.validateParameter(key, parameter);
     const db = await open();
     return new Promise((resolve, reject) => {
       const tx = db.transaction('settings', 'readwrite'), store = tx.objectStore('settings'), request = store.get('parameters');

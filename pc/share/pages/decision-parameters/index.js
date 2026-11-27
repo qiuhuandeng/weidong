@@ -19,6 +19,9 @@ window.PCModules['decision-parameters'] = (() => {
     const draft = drafts[item.key], parameter = draft || saved.parameters[item.key], editing = !!draft;
     const id = 'decision-'+item.key, call = method => action+'.'+method+'('+JSON.stringify(item.key)+')';
     const toggle = item.period ? switcher(parameter.enabled, call('toggle'), '启用'+item.label) : '';
+    const period = item.selectablePeriod ? '<div class="pc-field-content decision-period">'+
+      select([['day','按日'],['month','按月']], parameter.period, 'id="'+id+'-period" name="period" aria-label="'+item.label+'周期" '+
+        (!editing?'disabled ':'')+'onchange="'+esc(action+'.period('+JSON.stringify(item.key)+', this.value)')+'"')+'</div>' : '';
     const input = '<input class="pc-control" id="'+id+'" name="value" type="number" min="'+(item.period?'0':'1')+'" '+
       (item.period?'max="100" step="0.01"':'step="1"')+' aria-label="'+item.label+(item.period?'百分比':'天数')+'" placeholder="待设置" value="'+
       esc(parameter.value ?? '')+'" '+(!editing?'disabled':'')+' oninput="'+esc(action+'.input('+JSON.stringify(item.key)+', this.value)')+'">';
@@ -29,6 +32,7 @@ window.PCModules['decision-parameters'] = (() => {
     return '<form class="decision-row" data-key="'+item.key+'" onsubmit="event.preventDefault();'+esc(call('save'))+'">'+
       '<fieldset class="decision-fields" '+(busy?'disabled':'')+'>'+toggle+
       '<label class="decision-label" for="'+id+'">'+item.label+(item.period?'（四舍五入）':'')+'</label>'+
+      period+
       '<div class="decision-value">'+(item.period?'<span>＝ 管理在职成员数 ×</span>':'')+
       '<div class="input-with-unit">'+input+'<span>'+(item.period?'%':'天')+'</span></div></div>'+
       '<div class="actions">'+controls+'</div></fieldset></form>';
@@ -52,6 +56,9 @@ window.PCModules['decision-parameters'] = (() => {
   }
   function input(key, value) {
     if (drafts[key]) drafts[key].value = value === '' ? null : Number(value);
+  }
+  function period(key, value) {
+    if (!busy && drafts[key] && M.definitions.some(item => item.key === key && item.selectablePeriod) && ['day', 'month'].includes(value)) drafts[key].period = value;
   }
   function cancel(key) {
     if (busy) return;
@@ -89,6 +96,6 @@ window.PCModules['decision-parameters'] = (() => {
     finally { busy = false; paint(); }
   }
   return {ready, render() { active = true; paint(); if (saved && !Object.keys(drafts).length) refresh(); },
-    redraw:paint, edit, input, cancel, save, toggle, refresh,
+    redraw:paint, edit, input, period, cancel, save, toggle, refresh,
     leave() { active = false; drafts = {}; failure = ''; }};
 })();

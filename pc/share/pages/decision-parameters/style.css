@@ -4,5 +4,6 @@
 .pc-page-decision-parameters .decision-row + .decision-row { margin-top:14px; }
 .pc-page-decision-parameters .decision-fields { display:flex; align-items:center; flex-wrap:wrap; gap:12px; border:0; padding:0; margin:0; min-width:0; }
 .pc-page-decision-parameters .decision-label { margin:0; }
+.pc-page-decision-parameters .decision-period { flex:0 0 100px; max-width:100%; }
 .pc-page-decision-parameters .decision-value { display:flex; align-items:center; flex-wrap:wrap; gap:8px; }
 .pc-page-decision-parameters .decision-error { color:var(--pc-danger); margin:0 0 16px; overflow-wrap:anywhere; }

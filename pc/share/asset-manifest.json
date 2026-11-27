@@ -6,7 +6,7 @@
   },
   "sharedGzipBytes": 70656,
   "firstRouteGzipBytes": {
-    "decision-parameters": 74898,
+    "decision-parameters": 75242,
     "customer": 126273,
     "customer-archive": 80684,
     "management": 95764,
@@ -75,15 +75,15 @@
       "gzipBytes": 3457,
       "sha256": "d0aba8d2fdbc77b93725025397911be7a3ee2d34920be3f48ecd0c49e28c32ac"
     },
-    "js/decision-parameters.610f3655faac7b6d.js": {
-      "bytes": 11559,
-      "gzipBytes": 3807,
-      "sha256": "610f3655faac7b6d0c8114403d1fe5121b87b3b1897e69a86b37bb7702e09cbe"
+    "js/decision-parameters.03aa97729dc0c568.js": {
+      "bytes": 12678,
+      "gzipBytes": 4129,
+      "sha256": "03aa97729dc0c5686b4cfd5641edcea3d18b0cf555ba045bb0b4b902974a2133"
     },
-    "css/decision-parameters.8b2af92c2127b812.css": {
-      "bytes": 807,
-      "gzipBytes": 336,
-      "sha256": "8b2af92c2127b812959e028099f433c6682e2ad62ab1886376689ad8a0b8d4ce"
+    "css/decision-parameters.48598242f65c159a.css": {
+      "bytes": 889,
+      "gzipBytes": 358,
+      "sha256": "48598242f65c159a0f2254c730978586134d2568b10e0587cc9a9ff5c3a7377d"
     },
     "js/customer.41132967f3bb6ca3.js": {
       "bytes": 2552,

@@ -1,0 +1,12 @@
+@layer pc-business {
+/* Business layout only; controls, switches, buttons and panel use shared PCUI. */
+.pc-page-decision-parameters .decision-group + .decision-group { margin-top:24px; }
+.pc-page-decision-parameters .decision-group h3 { margin:0 0 14px; font-size:14px; font-weight:500; }
+.pc-page-decision-parameters .decision-row + .decision-row { margin-top:14px; }
+.pc-page-decision-parameters .decision-fields { display:flex; align-items:center; flex-wrap:wrap; gap:12px; border:0; padding:0; margin:0; min-width:0; }
+.pc-page-decision-parameters .decision-label { margin:0; }
+.pc-page-decision-parameters .decision-period { flex:0 0 var(--pc-search-field-width); max-width:100%; }
+.pc-page-decision-parameters .decision-value { display:flex; align-items:center; flex-wrap:wrap; gap:8px; }
+.pc-page-decision-parameters .decision-error { color:var(--pc-danger); margin:0 0 16px; overflow-wrap:anywhere; }
+
+}
